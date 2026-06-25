@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_in_Chrome__read_page",
+      "mcp__Claude_in_Chrome__javascript_tool",
+      "Bash(flutter pub *)",
+      "Bash(flutter analyze *)",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "Bash(find \"C:\\\\Users\\\\loren\\\\Downloads\" -name \"*.html\" -o -name \"tailwind.config*\" -o -name \"vite.config*\" 2>/dev/null | head -20)",
+      "Bash(flutter build *)",
+      "Bash(adb install *)",
+      "PowerShell(& \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\" install -r \"C:\\\\Users\\\\loren\\\\Downloads\\\\improvy_flutter\\\\build\\\\app\\\\outputs\\\\flutter-apk\\\\app-debug.apk\")",
+      "Bash(/c/Users/loren/AppData/Local/Android/Sdk/platform-tools/adb.exe shell *)",
+      "Bash(/c/Users/loren/AppData/Local/Android/Sdk/platform-tools/adb.exe exec-out *)"
+    ]
+  }
+}

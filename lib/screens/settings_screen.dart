@@ -1,0 +1,831 @@
+import 'dart:ui';
+import 'dart:math' as math;
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/app_provider.dart';
+
+class SettingsScreen extends StatelessWidget {
+  final void Function([String? reason]) onShowPaywall;
+  const SettingsScreen({super.key, required this.onShowPaywall});
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = context.watch<AppProvider>();
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF0F0A1A),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(24, 16, 24, 100 + MediaQuery.of(context).padding.bottom),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Text(
+                  'SETTINGS',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white.withAlpha(77),
+                    letterSpacing: 4.4,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // ACCOUNT STATUS
+              _sectionLabel('ACCOUNT STATUS'),
+              const SizedBox(height: 12),
+              GestureDetector(
+                onTap: provider.isPro ? null : onShowPaywall,
+                behavior: HitTestBehavior.opaque,
+                child: _card(
+                  shadow: const [BoxShadow(
+                    color: Color(0x66000000),
+                    blurRadius: 40,
+                    offset: Offset(0, 20),
+                  )],
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'ACCOUNT STATUS',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white.withAlpha(102),
+                                letterSpacing: 2,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  provider.isPro ? 'PRO' : 'NON-PRO',
+                                  style: const TextStyle(
+                                    fontSize: 30,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                    letterSpacing: -0.75,
+                                  ),
+                                ),
+                                if (provider.isPro) ...[
+                                  const SizedBox(width: 8),
+                                  const Icon(Icons.workspace_premium_rounded, color: Color(0xFFFBBF24), size: 26),
+                                ],
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: provider.isPro ? const Color(0x33FBBF24) : Colors.white.withAlpha(26),
+                          border: Border.all(color: provider.isPro ? const Color(0x66FBBF24) : Colors.white.withAlpha(51)),
+                          borderRadius: BorderRadius.circular(9999),
+                        ),
+                        child: Text(
+                          provider.isPro ? 'ACTIVE' : 'FREE',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            color: provider.isPro ? const Color(0xFFFBBF24) : Colors.white.withAlpha(128),
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // STORE
+              _sectionLabel('STORE'),
+              const SizedBox(height: 12),
+              _card(
+                shadow: const [BoxShadow(color: Color(0x4D000000), blurRadius: 32, offset: Offset(0, 8))],
+                child: Column(
+                  children: [
+                    if (!provider.isPro)
+                      GestureDetector(
+                        onTap: onShowPaywall,
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF9333EA), Color(0xFF4F46E5)],
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: const [BoxShadow(
+                              color: Color(0x4C7C3AED),
+                              blurRadius: 15,
+                              offset: Offset(0, 4),
+                            )],
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.star_rounded, color: Colors.white, size: 16),
+                              SizedBox(width: 8),
+                              Text('UPGRADE TO PRO', style: TextStyle(
+                                fontSize: 12, fontWeight: FontWeight.w700,
+                                color: Colors.white, letterSpacing: 0.6,
+                              )),
+                            ],
+                          ),
+                        ),
+                      ),
+                    if (!provider.isPro) const SizedBox(height: 8),
+                    GestureDetector(
+                      onTap: () {},
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0x33F59E0B),
+                          border: Border.all(color: const Color(0x4DF59E0B)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.restore_rounded, color: Color(0xFFFBBF24), size: 16),
+                            SizedBox(width: 8),
+                            Text('RESTORE PURCHASES', style: TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.w700,
+                              color: Color(0xFFFBBF24), letterSpacing: 0.6,
+                            )),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // TRAINING
+              _sectionLabel('TRAINING'),
+              const SizedBox(height: 12),
+              _card(
+                shadow: const [BoxShadow(color: Color(0x4D000000), blurRadius: 32, offset: Offset(0, 8))],
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        if (!provider.isPro) { onShowPaywall(); return; }
+                        provider.setAdaptiveDifficulty(!provider.adaptiveDifficulty);
+                      },
+                      child: Opacity(
+                        opacity: provider.isPro ? 1.0 : 0.6,
+                        child: AnimatedContainer(
+                          duration: Duration.zero, // instant on/off
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            // ON: blue-500/10 → /30 glow from top-left, blue border + glow.
+                            gradient: provider.adaptiveDifficulty
+                                ? const LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [Color(0x4D3B82F6), Color(0x143B82F6)],
+                                  )
+                                : null,
+                            color: provider.adaptiveDifficulty ? null : Colors.white.withAlpha(8),
+                            border: Border.all(
+                              color: provider.adaptiveDifficulty
+                                  ? const Color(0x663B82F6)
+                                  : Colors.white.withAlpha(13),
+                            ),
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: provider.adaptiveDifficulty
+                                ? [const BoxShadow(color: Color(0x263B82F6), blurRadius: 30)]
+                                : null,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  AnimatedContainer(
+                                    duration: Duration.zero,
+                                    width: 48, height: 48,
+                                    decoration: BoxDecoration(
+                                      color: provider.adaptiveDifficulty ? const Color(0xFF3B82F6) : Colors.white.withAlpha(26),
+                                      borderRadius: BorderRadius.circular(16),
+                                      boxShadow: provider.adaptiveDifficulty
+                                          ? [const BoxShadow(color: Color(0x663B82F6), blurRadius: 25)]
+                                          : null,
+                                    ),
+                                    child: Icon(Icons.psychology_rounded,
+                                      color: provider.adaptiveDifficulty ? Colors.white : Colors.white.withAlpha(102), size: 24),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Flexible(
+                                              child: Text(
+                                                'Adaptive Difficulty',
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w900,
+                                                  color: provider.adaptiveDifficulty ? Colors.white : Colors.white.withAlpha(179),
+                                                  letterSpacing: 0.4,
+                                                ),
+                                              ),
+                                            ),
+                                            if (provider.adaptiveDifficulty) ...[
+                                              const SizedBox(width: 8),
+                                              Container(
+                                                width: 6, height: 6,
+                                                decoration: const BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  color: Color(0xFF60A5FA),
+                                                  boxShadow: [BoxShadow(color: Color(0xCC60A5FA), blurRadius: 8)],
+                                                ),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                        const SizedBox(height: 3),
+                                        Text(
+                                          'SMART TRAINING',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w700,
+                                            color: Colors.white.withAlpha(102),
+                                            letterSpacing: 1.5,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  _ToggleSwitch(value: provider.adaptiveDifficulty),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                provider.isPro
+                                    ? 'Our algorithm analyzes your response times and accuracy to focus on the notes you find most challenging.'
+                                    : 'PRO feature — upgrade to unlock smart training that adapts to your weaknesses.',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.white.withAlpha(102),
+                                  height: 18 / 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    Row(
+                      children: [
+                        Container(
+                          width: 32, height: 32,
+                          decoration: BoxDecoration(
+                            color: const Color(0x33A855F7),
+                            border: Border.all(color: const Color(0x33A855F7)),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(Icons.translate_rounded, color: Color(0xFFC084FC), size: 16),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'NOTATION SYSTEM',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white.withAlpha(102),
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: const Color(0x66000000),
+                        border: Border.all(color: Colors.white.withAlpha(13)),
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: LayoutBuilder(
+                        builder: (ctx, box) {
+                          final isCDE = provider.notation == 'CDE';
+                          const gap = 8.0; // web: gap-2 between the two tabs
+                          final itemW = (box.maxWidth - gap) / 2;
+                          return Stack(
+                            children: [
+                              // Sliding indicator — covers one tab, rounded-xl
+                              // (12px) purple→indigo gradient with a purple glow.
+                              AnimatedPositioned(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeOutCubic,
+                                left: isCDE ? 0 : itemW + gap,
+                                top: 0,
+                                bottom: 0,
+                                width: itemW,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [Color(0xFF9333EA), Color(0xFF4F46E5)],
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: const [BoxShadow(color: Color(0x4C7C3AED), blurRadius: 15, offset: Offset(0, 4))],
+                                  ),
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  _NotationTab(label: 'C D E', selected: isCDE, onTap: () => provider.setNotation('CDE')),
+                                  const SizedBox(width: gap),
+                                  _NotationTab(label: 'DO RE MI', selected: !isCDE, onTap: () => provider.setNotation('DoReMi')),
+                                ],
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // NEWS & UPDATES
+              _sectionLabel('NEWS & UPDATES'),
+              const SizedBox(height: 12),
+              _card(
+                shadow: const [BoxShadow(color: Color(0x4D000000), blurRadius: 32, offset: Offset(0, 8))],
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 48, height: 48,
+                      decoration: BoxDecoration(
+                        color: const Color(0x3310B981),
+                        border: Border.all(color: const Color(0x3310B981)),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Icon(Icons.new_releases_rounded, color: Color(0xFF34D399), size: 26),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Chords Mode Coming Soon!',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "We're working on a revolutionary way to visualize and master chords across the entire fretboard/keyboard. Stay tuned for a beautiful new interface!",
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.white.withAlpha(128),
+                              height: 18 / 11,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Container(
+                            height: 96,
+                            clipBehavior: Clip.antiAlias,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0x339333EA), Color(0x332563EB), Color(0x3310B981)],
+                                stops: [0.0, 0.5, 1.0],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              border: Border.all(color: Colors.white.withAlpha(26)),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const _ComingSoonPreview(),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // SUPPORT
+              _sectionLabel('SUPPORT'),
+              const SizedBox(height: 12),
+              GestureDetector(
+                onTap: () {},
+                child: _blurCard(
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 32, height: 32,
+                        decoration: BoxDecoration(
+                          color: const Color(0x33F59E0B),
+                          border: Border.all(color: const Color(0x33F59E0B)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.mail_rounded, color: Color(0xFFFBBF24), size: 16),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Contact Support',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                                letterSpacing: 0.4,
+                              ),
+                            ),
+                            Text(
+                              "Questions or feedback? We're here to help.",
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white.withAlpha(102),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(Icons.chevron_right_rounded, color: Colors.white.withAlpha(51)),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // DEVELOPER DEBUG
+              _sectionLabel('DEVELOPER DEBUG'),
+              const SizedBox(height: 12),
+              _blurCard(
+                child: Column(
+                  children: [
+                    _DebugButton(
+                      icon: Icons.bolt_rounded,
+                      label: 'ENABLE PRO FEATURES',
+                      color: const Color(0xFF34D399),
+                      bgColor: const Color(0x3310B981),
+                      borderColor: const Color(0x4D10B981),
+                      onTap: () => provider.setIsPro(true),
+                    ),
+                    const SizedBox(height: 8),
+                    _DebugButton(
+                      icon: Icons.lock_rounded,
+                      label: 'RESET TO FREE TIER',
+                      color: const Color(0xFFFBBF24),
+                      bgColor: const Color(0x33F59E0B),
+                      borderColor: const Color(0x4DF59E0B),
+                      onTap: () => provider.setIsPro(false),
+                    ),
+                    const SizedBox(height: 8),
+                    _DebugButton(
+                      icon: Icons.school_rounded,
+                      label: 'SHOW TUTORIAL',
+                      color: const Color(0xFF60A5FA),
+                      bgColor: const Color(0x333B82F6),
+                      borderColor: const Color(0x4D3B82F6),
+                      onTap: () => provider.showTutorialAgain(),
+                    ),
+                    const SizedBox(height: 8),
+                    _DebugButton(
+                      icon: Icons.delete_rounded,
+                      label: 'CLEAR ALL APP DATA',
+                      color: const Color(0xFFFB7185),
+                      bgColor: const Color(0x33EF4444),
+                      borderColor: const Color(0x4DEF4444),
+                      onTap: () => _confirmReset(context, provider),
+                    ),
+                    const SizedBox(height: 8),
+                    _DebugButton(
+                      icon: Icons.star_rounded,
+                      label: 'MAX ALL LEVELS',
+                      color: const Color(0xFFE879F9),
+                      bgColor: const Color(0x33D946EF),
+                      borderColor: const Color(0x4DD946EF),
+                      onTap: () => provider.debugMaxProgress(),
+                    ),
+                    const SizedBox(height: 8),
+                    _DebugButton(
+                      icon: Icons.trending_up_rounded,
+                      label: 'NEXT ANIMAL LEVEL',
+                      color: const Color(0xFF60A5FA),
+                      bgColor: const Color(0x333B82F6),
+                      borderColor: const Color(0x4D3B82F6),
+                      onTap: () => provider.debugNextAnimalLevel(),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 32),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _sectionLabel(String text) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 8),
+    child: Text(
+      text,
+      style: TextStyle(
+        fontSize: 10,
+        fontWeight: FontWeight.w900,
+        color: Colors.white.withAlpha(102),
+        letterSpacing: 2,
+      ),
+    ),
+  );
+
+  Widget _card({required Widget child, List<BoxShadow>? shadow}) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      color: const Color(0xFF1A1625),
+      border: Border.all(color: Colors.white.withAlpha(13)),
+      borderRadius: BorderRadius.circular(32),
+      boxShadow: shadow,
+    ),
+    child: child,
+  );
+
+  Widget _blurCard({required Widget child}) => ClipRRect(
+    borderRadius: BorderRadius.circular(32),
+    child: BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: const Color(0xCC1A1625),
+          border: Border.all(color: Colors.white.withAlpha(13)),
+          borderRadius: BorderRadius.circular(32),
+        ),
+        child: child,
+      ),
+    ),
+  );
+
+  void _confirmReset(BuildContext context, AppProvider provider) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1625),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Clear All Data?', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+        content: const Text('This will permanently delete all your progress and stats.',
+            style: TextStyle(color: Colors.white54)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+          ),
+          TextButton(
+            onPressed: () { provider.resetAll(); Navigator.pop(context); },
+            child: const Text('Clear', style: TextStyle(color: Color(0xFFFB7185), fontWeight: FontWeight.w900)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ToggleSwitch extends StatelessWidget {
+  final bool value;
+  final ValueChanged<bool>? onChanged;
+  const _ToggleSwitch({required this.value, this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      // The pill background fades in sync with the thumb slide.
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
+      width: 56,
+      height: 28,
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: value ? const Color(0xFF3B82F6) : Colors.white.withAlpha(26),
+        border: Border.all(color: value ? const Color(0x8060A5FA) : Colors.white.withAlpha(26)),
+        borderRadius: BorderRadius.circular(9999),
+      ),
+      child: AnimatedAlign(
+        // The only animation that remains: a short, fluid thumb slide.
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+        child: Container(
+          width: 20, height: 20,
+          alignment: Alignment.center,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            boxShadow: [BoxShadow(color: Color(0x66000000), blurRadius: 10, offset: Offset(0, 2))],
+          ),
+          child: value
+              ? Container(
+                  width: 6, height: 6,
+                  decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFF3B82F6)),
+                )
+              : null,
+        ),
+      ),
+    );
+  }
+}
+
+class _NotationTab extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  const _NotationTab({required this.label, required this.selected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          child: Center(
+            child: AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 200),
+              // AnimatedDefaultTextStyle replaces the inherited style, so the
+              // font family must be set explicitly or it falls back to Roboto.
+              style: TextStyle(
+                fontFamily: 'Lexend',
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1,
+                color: selected ? Colors.white : Colors.white.withAlpha(77),
+              ),
+              child: Text(label),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// "Coming Soon" preview: three small note-cards that float up while pulsing
+// opacity, with a radial pulse behind them — matches the original web app.
+class _ComingSoonPreview extends StatefulWidget {
+  const _ComingSoonPreview();
+
+  @override
+  State<_ComingSoonPreview> createState() => _ComingSoonPreviewState();
+}
+
+class _ComingSoonPreviewState extends State<_ComingSoonPreview> with SingleTickerProviderStateMixin {
+  late final AnimationController _c;
+
+  @override
+  void initState() {
+    super.initState();
+    _c = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat();
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _c,
+      builder: (_, __) {
+        // Center radial pulse (animate-pulse).
+        final pulse = 0.4 + 0.6 * (1 - math.cos(_c.value * 2 * math.pi)) / 2;
+        return Stack(
+          children: [
+            Positioned.fill(
+              child: IgnorePointer(
+                child: Opacity(
+                  opacity: pulse,
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      gradient: RadialGradient(
+                        radius: 0.7,
+                        colors: [Color(0x1AFFFFFF), Colors.transparent],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (int i = 0; i < 3; i++) ...[
+                    if (i > 0) const SizedBox(width: 8),
+                    _noteCard(i),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Small card that floats up 10px while pulsing opacity, staggered per index.
+  Widget _noteCard(int i) {
+    final w = (1 - math.cos((_c.value - i * 0.2) * 2 * math.pi)) / 2; // 0..1
+    return Transform.translate(
+      offset: Offset(0, -10.0 * w),
+      child: Opacity(
+        opacity: 0.3 + 0.7 * w,
+        child: Container(
+          width: 32, height: 48,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: Colors.white.withAlpha(26),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.white.withAlpha(51)),
+          ),
+          child: Icon(Icons.music_note_rounded, size: 16, color: Colors.white.withAlpha(102)),
+        ),
+      ),
+    );
+  }
+}
+
+class _DebugButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final Color bgColor;
+  final Color borderColor;
+  final VoidCallback onTap;
+
+  const _DebugButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.bgColor,
+    required this.borderColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: bgColor,
+          border: Border.all(color: borderColor),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 16),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: color,
+                letterSpacing: 0.6,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

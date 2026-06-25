@@ -1,0 +1,853 @@
+import 'dart:ui';
+import 'package:flutter/material.dart';
+import '../constants/app_colors.dart';
+import '../constants/music_constants.dart';
+import '../widgets/note_text.dart';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NoteToNumberSetup
+// ─────────────────────────────────────────────────────────────────────────────
+
+class NoteToNumberSetup extends StatefulWidget {
+  final String initialKey;
+  final void Function(String key, List<String> degrees, int difficulty) onStart;
+  final VoidCallback onCancel;
+
+  const NoteToNumberSetup({
+    super.key,
+    required this.initialKey,
+    required this.onStart,
+    required this.onCancel,
+  });
+
+  @override
+  State<NoteToNumberSetup> createState() => _NoteToNumberSetupState();
+}
+
+class _NoteToNumberSetupState extends State<NoteToNumberSetup> {
+  late String _key;
+  bool _chromatic = false;
+  int _diff = 1;
+
+  static const _diffLabels = ['Apprentice', 'Virtuoso', 'Master'];
+  static const _accent = Color(0xFF2EE9B0);
+  static const _grad = [Color(0xFF2EE9B0), Color(0xFF2EE9B0)]; // monochrome green (START button)
+
+  @override
+  void initState() {
+    super.initState();
+    _key = widget.initialKey;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (_, __) => widget.onCancel(),
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        body: Stack(
+          children: [
+            _GlowBg(primary: _accent, secondary: const Color(0xFF00BFFF)),
+            SafeArea(
+              child: Column(
+                children: [
+                  // The whole page scrolls — header included.
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _Header(
+                            title: 'Note to Number',
+                            subtitle: 'TRAINING SETUP',
+                            // Monochrome title (solid green), not a gradient.
+                            gradColors: const [Color(0xFF2EE9B0), Color(0xFF2EE9B0)],
+                            onBack: widget.onCancel,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(24, 28, 24, 0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const _SectionTitle(
+                                  icon: Icons.music_note_rounded,
+                                  title: 'Select Root Key',
+                                  subtitle: 'Choose the foundation for your training.',
+                                ),
+                                const SizedBox(height: 18),
+                                _KeyGrid(
+                                  selected: _key,
+                                  accentColor: _accent,
+                                  onSelect: (k) => setState(() => _key = k),
+                                ),
+                                const SizedBox(height: 36),
+                                _SectionTitle(
+                                  icon: Icons.bolt_rounded,
+                                  title: 'Training Intensity',
+                                  subtitle: _chromatic
+                                      ? 'Master all 12 chromatic notes in this key.'
+                                      : 'Focus on the 7 notes of the major scale.',
+                                ),
+                                const SizedBox(height: 18),
+                                _SlidingPillRow(
+                                  opts: const ['Diatonic', 'Chromatic'],
+                                  sel: _chromatic ? 'Chromatic' : 'Diatonic',
+                                  accentColor: _accent,
+                                  onChange: (v) => setState(() => _chromatic = v == 'Chromatic'),
+                                ),
+                                const SizedBox(height: 36),
+                                const _SectionTitle(
+                                  icon: Icons.track_changes_rounded,
+                                  title: 'Difficulty',
+                                  subtitle: 'Higher difficulty means less time to answer.',
+                                ),
+                                const SizedBox(height: 18),
+                                _SlidingPillRow(
+                                  opts: _diffLabels,
+                                  sel: _diffLabels[_diff - 1],
+                                  accentColor: _accent,
+                                  onChange: (v) => setState(() => _diff = _diffLabels.indexOf(v) + 1),
+                                ),
+                                const SizedBox(height: 40),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  _StartBtn(
+                    gradColors: _grad,
+                    shadowColor: _accent.withOpacity(0.4),
+                    onTap: () {
+                      final degrees = _chromatic
+                          ? kChromaticDegrees.toList()
+                          : ['1', '2', '3', '4', '5', '6', '7'];
+                      widget.onStart(_key, degrees, _diff);
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CustomModeSetup
+// ─────────────────────────────────────────────────────────────────────────────
+
+class CustomModeSetup extends StatefulWidget {
+  final String initialKey;
+  final void Function(
+    String key,
+    List<String> degrees,
+    bool isReverse,
+    int difficulty,
+    int questions,
+  ) onStart;
+  final VoidCallback onCancel;
+
+  const CustomModeSetup({
+    super.key,
+    required this.initialKey,
+    required this.onStart,
+    required this.onCancel,
+  });
+
+  @override
+  State<CustomModeSetup> createState() => _CustomModeSetupState();
+}
+
+class _CustomModeSetupState extends State<CustomModeSetup> {
+  late String _key;
+  bool _isReverse = false;
+  // web default: ["1","3","5"]; every degree is freely selectable.
+  Set<String> _degs = {'1', '3', '5'};
+  int _diff = 1;
+  int _questions = 15;
+
+  static const _diffLabels = ['Apprentice', 'Virtuoso', 'Master'];
+  static const _questionOpts = ['15', '30', '50', '75', '100'];
+  static const _accent = Color(0xFFE040FB);
+  static const _grad = [Color(0xFFE040FB), Color(0xFFE040FB)]; // monochrome purple (START button)
+
+  @override
+  void initState() {
+    super.initState();
+    _key = widget.initialKey;
+  }
+
+  void _setDiatonic() => setState(() => _degs = {'1', '2', '3', '4', '5', '6', '7'});
+  void _setAll() => setState(() => _degs = Set.of(kChromaticDegrees));
+
+  void _toggleDeg(String deg) {
+    setState(() {
+      if (_degs.contains(deg)) {
+        if (_degs.length > 1) _degs.remove(deg); // keep at least one selected
+      } else {
+        _degs.add(deg);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (_, __) => widget.onCancel(),
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        body: Stack(
+          children: [
+            _GlowBg(primary: _accent, secondary: const Color(0xFF7C4DFF)),
+            SafeArea(
+              child: Column(
+                children: [
+                  // The whole page scrolls — header included.
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _Header(
+                            title: 'Custom Mode',
+                            subtitle: 'PERSONALIZED SESSION',
+                            // Monochrome title (solid purple), not a gradient.
+                            gradColors: const [Color(0xFFE040FB), Color(0xFFE040FB)],
+                            onBack: widget.onCancel,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(24, 28, 24, 0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const _SectionTitle(
+                                  icon: Icons.music_note_rounded,
+                                  title: 'Select Root Key',
+                                ),
+                                const SizedBox(height: 18),
+                                _KeyGrid(
+                                  selected: _key,
+                                  accentColor: _accent,
+                                  onSelect: (k) => setState(() => _key = k),
+                                ),
+                                const SizedBox(height: 36),
+
+                                _SectionTitle(
+                                  icon: Icons.track_changes_rounded,
+                                  title: 'Direction',
+                                  subtitle: _isReverse
+                                      ? 'Identify the degree from its note.'
+                                      : 'Identify the note from its degree.',
+                                ),
+                                const SizedBox(height: 18),
+                                _SlidingPillRow(
+                                  opts: const ['Degree → Note', 'Note → Degree'],
+                                  sel: _isReverse ? 'Note → Degree' : 'Degree → Note',
+                                  accentColor: _accent,
+                                  onChange: (v) => setState(() => _isReverse = v == 'Note → Degree'),
+                                ),
+                                const SizedBox(height: 36),
+
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    const Expanded(
+                                      child: _SectionTitle(
+                                        icon: Icons.tune_rounded,
+                                        title: 'Select Degrees',
+                                      ),
+                                    ),
+                                    _QuickBtn(label: 'DIATONIC', onTap: _setDiatonic),
+                                    const SizedBox(width: 8),
+                                    _QuickBtn(label: 'ALL', onTap: _setAll),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                _DegreeGrid(
+                                  selected: _degs,
+                                  onToggle: _toggleDeg,
+                                ),
+                                const SizedBox(height: 36),
+
+                                const _SectionTitle(
+                                  icon: Icons.track_changes_rounded,
+                                  title: 'Difficulty',
+                                  subtitle: 'Higher difficulty means less time to answer.',
+                                ),
+                                const SizedBox(height: 18),
+                                _SlidingPillRow(
+                                  opts: _diffLabels,
+                                  sel: _diffLabels[_diff - 1],
+                                  accentColor: _accent,
+                                  onChange: (v) => setState(() => _diff = _diffLabels.indexOf(v) + 1),
+                                ),
+                                const SizedBox(height: 36),
+
+                                const _SectionTitle(
+                                  icon: Icons.auto_awesome_rounded,
+                                  title: 'Number of Questions',
+                                  subtitle: 'How many questions for this session?',
+                                ),
+                                const SizedBox(height: 18),
+                                _QuestionRow(
+                                  opts: _questionOpts,
+                                  selected: '$_questions',
+                                  accentColor: _accent,
+                                  onSelect: (v) => setState(() => _questions = int.parse(v)),
+                                ),
+                                const SizedBox(height: 40),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  _StartBtn(
+                    gradColors: _grad,
+                    shadowColor: _accent.withOpacity(0.4),
+                    icon: Icons.bolt_rounded, // web: Zap
+                    onTap: () => widget.onStart(
+                      _key, _degs.toList(), _isReverse, _diff, _questions,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Shared private widgets
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _GlowBg extends StatelessWidget {
+  final Color primary;
+  final Color secondary;
+  const _GlowBg({required this.primary, required this.secondary});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(children: [
+      Positioned(top: -80, right: -60, child: _blob(280, primary.withOpacity(0.13))),
+      Positioned(bottom: -60, left: -40, child: _blob(220, secondary.withOpacity(0.10))),
+      Positioned(top: MediaQuery.of(context).size.height * 0.4, left: -80,
+        child: _blob(200, primary.withOpacity(0.06))),
+    ]);
+  }
+
+  Widget _blob(double size, Color color) => ImageFiltered(
+    imageFilter: ImageFilter.blur(sigmaX: 60, sigmaY: 60),
+    child: SizedBox(
+      width: size + 120, height: size + 120,
+      child: Center(child: Container(
+        width: size, height: size,
+        decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+      )),
+    ),
+  );
+}
+
+// ── Header: back arrow left, title centered, spacer right ───────────────────
+
+class _Header extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final List<Color> gradColors;
+  final VoidCallback onBack;
+
+  const _Header({required this.title, required this.subtitle, required this.gradColors, required this.onBack});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+      child: Row(
+        children: [
+          // Circular back button (web: w-12 h-12 rounded-full bg-white/5)
+          GestureDetector(
+            onTap: onBack,
+            child: Container(
+              width: 48, height: 48,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.05),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.chevron_left_rounded, color: Colors.white70, size: 26),
+            ),
+          ),
+          Expanded(
+            child: Column(
+              children: [
+                ShaderMask(
+                  shaderCallback: (b) => LinearGradient(colors: gradColors).createShader(b),
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      letterSpacing: -0.5,
+                      height: 1,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white.withOpacity(0.4),
+                    letterSpacing: 3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 48), // mirror of back button
+        ],
+      ),
+    );
+  }
+}
+
+// ── Section title (icon + title + subtitle) ──────────────────────────────────
+
+class _SectionTitle extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  const _SectionTitle({required this.icon, required this.title, this.subtitle = ''});
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(children: [
+        Icon(icon, size: 18, color: Colors.white.withOpacity(0.6)),
+        const SizedBox(width: 8),
+        Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.3)),
+      ]),
+      if (subtitle.isNotEmpty) ...[
+        const SizedBox(height: 4),
+        Text(subtitle, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white.withOpacity(0.4))),
+      ],
+    ],
+  );
+}
+
+
+// ── Key Grid ─────────────────────────────────────────────────────────────────
+
+class _KeyGrid extends StatelessWidget {
+  final String selected;
+  final Color accentColor;
+  final ValueChanged<String> onSelect;
+  const _KeyGrid({required this.selected, required this.accentColor, required this.onSelect});
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 4,
+        crossAxisSpacing: 12, // web: gap-3
+        mainAxisSpacing: 12,
+        mainAxisExtent: 56, // web: h-14
+      ),
+      itemCount: kAllKeys.length,
+      itemBuilder: (_, i) {
+        final k = kAllKeys[i];
+        final sel = k == selected;
+        final color = sel ? (AppColors.noteColors[k] ?? accentColor) : accentColor;
+        return _KeyCell(noteKey: k, displayColor: color, selected: sel, onTap: () => onSelect(k));
+      },
+    );
+  }
+}
+
+class _KeyCell extends StatelessWidget {
+  final String noteKey;
+  final Color displayColor;
+  final bool selected;
+  final VoidCallback onTap;
+  const _KeyCell({required this.noteKey, required this.displayColor, required this.selected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final sel = selected;
+    final c = displayColor;
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      // No press/illuminate animation — the key colours instantly on tap.
+      child: Container(
+        decoration: BoxDecoration(
+          // web: selected = vivid note colour with a glossy sheen + neon glow;
+          // unselected = bg-white/5.
+          color: sel ? null : Colors.white.withOpacity(0.05),
+          gradient: sel
+              ? LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color.lerp(c, Colors.white, 0.18)!, c],
+                )
+              : null,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: null,
+        ),
+        child: Center(
+          child: NoteText(
+            note: noteKey,
+            style: TextStyle(
+              fontSize: 18, // web: text-lg
+              fontWeight: FontWeight.w900,
+              color: sel ? Colors.white : Colors.white.withOpacity(0.4),
+              letterSpacing: -0.5,
+              shadows: sel
+                  ? const [Shadow(color: Color(0x66000000), blurRadius: 4, offset: Offset(0, 1))]
+                  : null,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Sliding Pill Row ─────────────────────────────────────────────────────────
+// Animated indicator that slides between options (like the bottom nav bar)
+
+class _SlidingPillRow extends StatelessWidget {
+  final List<String> opts;
+  final String sel;
+  final Color accentColor;
+  final ValueChanged<String> onChange;
+
+  const _SlidingPillRow({
+    required this.opts,
+    required this.sel,
+    required this.accentColor,
+    required this.onChange,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final selIdx = opts.indexOf(sel).clamp(0, opts.length - 1);
+    const pad = 6.0; // web: p-1.5
+
+    return LayoutBuilder(builder: (ctx, box) {
+      final totalInner = box.maxWidth - pad * 2;
+      final itemW = totalInner / opts.length;
+
+      return Container(
+        height: 56, // web: h-14
+        padding: const EdgeInsets.all(pad),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.05), // web: bg-white/5
+          borderRadius: BorderRadius.circular(16), // rounded-2xl
+        ),
+        child: Stack(children: [
+          // Sliding indicator (web: h-11 rounded-xl, activeColor @ 0.4, shadow-lg)
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOutCubic,
+            left: selIdx * itemW + 3,
+            top: 0,
+            bottom: 0,
+            width: itemW - 6,
+            child: Container(
+              decoration: BoxDecoration(
+                color: accentColor.withOpacity(0.4),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withOpacity(0.25), blurRadius: 12, offset: const Offset(0, 4)),
+                ],
+              ),
+            ),
+          ),
+          // Labels (web: text-xs font-black uppercase tracking-widest)
+          Row(
+            children: opts.map((opt) {
+              final active = opt == sel;
+              return Expanded(
+                child: GestureDetector(
+                  onTap: () => onChange(opt),
+                  behavior: HitTestBehavior.opaque,
+                  child: Center(
+                    child: AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 200),
+                      // Set the family explicitly — AnimatedDefaultTextStyle does
+                      // not inherit it, so it would otherwise fall back to Roboto.
+                      style: TextStyle(
+                        fontFamily: 'Lexend',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
+                        color: active ? Colors.white : Colors.white.withOpacity(0.4),
+                        letterSpacing: 1.5,
+                      ),
+                      child: Text(opt.toUpperCase(), textAlign: TextAlign.center),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ]),
+      );
+    });
+  }
+}
+
+// ── Quick-select chip (Diatonic / All) ───────────────────────────────────────
+// web: text-[10px] uppercase font-black text-white/40 bg-white/5 px-3 py-1.5 rounded-lg
+
+class _QuickBtn extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+  const _QuickBtn({required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    behavior: HitTestBehavior.opaque,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w900,
+          color: Colors.white.withOpacity(0.4),
+          letterSpacing: 0.5,
+        ),
+      ),
+    ),
+  );
+}
+
+// ── Number-of-questions row (5 discrete buttons) ─────────────────────────────
+// web: flex gap-3, each flex-1 py-3 rounded-xl font-black text-sm
+
+class _QuestionRow extends StatelessWidget {
+  final List<String> opts;
+  final String selected;
+  final Color accentColor;
+  final ValueChanged<String> onSelect;
+  const _QuestionRow({required this.opts, required this.selected, required this.accentColor, required this.onSelect});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        for (int i = 0; i < opts.length; i++) ...[
+          if (i > 0) const SizedBox(width: 12), // gap-3
+          Expanded(
+            child: _QuestionBtn(
+              label: opts[i],
+              active: opts[i] == selected,
+              accentColor: accentColor,
+              onTap: () => onSelect(opts[i]),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _QuestionBtn extends StatelessWidget {
+  final String label;
+  final bool active;
+  final Color accentColor;
+  final VoidCallback onTap;
+  const _QuestionBtn({required this.label, required this.active, required this.accentColor, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    behavior: HitTestBehavior.opaque,
+    child: AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      padding: const EdgeInsets.symmetric(vertical: 12), // py-3
+      decoration: BoxDecoration(
+        color: active ? accentColor.withOpacity(0.2) : Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12), // rounded-xl
+        border: Border.all(
+          color: active ? accentColor.withOpacity(0.5) : Colors.white.withOpacity(0.05),
+          width: 1,
+        ),
+        boxShadow: null,
+      ),
+      child: Text(
+        label,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 14, // text-sm
+          fontWeight: FontWeight.w900,
+          color: active ? accentColor : Colors.white.withOpacity(0.4),
+        ),
+      ),
+    ),
+  );
+}
+
+// ── Degree Grid ──────────────────────────────────────────────────────────────
+
+class _DegreeGrid extends StatelessWidget {
+  final Set<String> selected;
+  final ValueChanged<String> onToggle;
+
+  const _DegreeGrid({required this.selected, required this.onToggle});
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 4,
+        crossAxisSpacing: 12, // web: gap-3
+        mainAxisSpacing: 12,
+        mainAxisExtent: 48, // web: h-12
+      ),
+      itemCount: kChromaticDegrees.length,
+      itemBuilder: (_, i) {
+        final deg = kChromaticDegrees[i];
+        final active = selected.contains(deg);
+        final color = AppColors.degreeColors[deg.split('/')[0]] ?? Colors.white;
+        return _DegreeCell(deg: deg, color: color, active: active, onTap: () => onToggle(deg));
+      },
+    );
+  }
+}
+
+class _DegreeCell extends StatelessWidget {
+  final String deg;
+  final Color color;
+  final bool active;
+  final VoidCallback onTap;
+
+  const _DegreeCell({required this.deg, required this.color, required this.active, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final a = active;
+    final c = color;
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      // No press/illuminate animation — the degree colours instantly on tap.
+      child: Container(
+        decoration: BoxDecoration(
+          // web: selected = vivid degree colour with a glossy sheen + neon glow;
+          // unselected = bg-white/5
+          color: a ? null : Colors.white.withOpacity(0.05),
+          gradient: a
+              ? LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color.lerp(c, Colors.white, 0.18)!, c],
+                )
+              : null,
+          borderRadius: BorderRadius.circular(12), // rounded-xl
+          boxShadow: null,
+        ),
+        child: Center(
+          child: Text(
+            deg,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: deg.length > 3 ? 11 : 14, // web: text-sm
+              fontWeight: FontWeight.w900,
+              color: a ? Colors.white : Colors.white.withOpacity(0.3),
+              letterSpacing: -0.2,
+              shadows: a ? const [Shadow(color: Color(0x66000000), blurRadius: 4, offset: Offset(0, 1))] : null,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Start Button ─────────────────────────────────────────────────────────────
+
+class _StartBtn extends StatefulWidget {
+  final List<Color> gradColors;
+  final Color shadowColor;
+  final VoidCallback onTap;
+  final IconData icon;
+
+  const _StartBtn({required this.gradColors, required this.shadowColor, required this.onTap, this.icon = Icons.auto_awesome_rounded});
+
+  @override
+  State<_StartBtn> createState() => _StartBtnState();
+}
+
+class _StartBtnState extends State<_StartBtn> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20, 12, 20, 20 + MediaQuery.of(context).padding.bottom),
+      child: GestureDetector(
+        onTapDown: (_) => setState(() => _pressed = true),
+        onTapUp: (_) { setState(() => _pressed = false); widget.onTap(); },
+        onTapCancel: () => setState(() => _pressed = false),
+        child: AnimatedScale(
+          scale: _pressed ? 0.97 : 1.0,
+          duration: const Duration(milliseconds: 100),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 20), // web: py-5
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: widget.gradColors,
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              borderRadius: BorderRadius.circular(16), // web: rounded-2xl
+              boxShadow: [
+                BoxShadow(color: widget.shadowColor, blurRadius: 30, offset: const Offset(0, 10)),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(widget.icon, color: Colors.white, size: 22),
+                const SizedBox(width: 12), // web: gap-3
+                const Text(
+                  'START TRAINING',
+                  style: TextStyle(
+                    fontSize: 18, // web: text-lg
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 2, // tracking-widest
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
