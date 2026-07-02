@@ -46,7 +46,13 @@ class AnalyticsService {
       return;
     }
     if (kDebugMode) debugPrint('[PostHog] capture: $event ${properties ?? {}}');
-    Posthog().capture(eventName: event, properties: properties?.cast<String, Object>());
+    // Analytics must NEVER break app flow — swallow any SDK/channel error so a
+    // failed capture can't stop e.g. the paywall from opening.
+    try {
+      Posthog().capture(eventName: event, properties: properties?.cast<String, Object>());
+    } catch (e) {
+      if (kDebugMode) debugPrint('[PostHog] capture failed: $e');
+    }
   }
 
   void screen(String name) => capture('\$screen', {'name': name});
