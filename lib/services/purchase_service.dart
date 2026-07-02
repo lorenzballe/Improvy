@@ -27,10 +27,15 @@ class PurchaseService {
   PurchaseService._();
   static final PurchaseService instance = PurchaseService._();
 
-  /// RevenueCat **public** SDK key. Public keys are designed to ship inside the
-  /// app binary (they are not the secret key), so hard-coding it here is safe.
-  /// Swap in platform-specific `appl_…` / `goog_…` keys once you have them.
-  static const String _apiKey = 'test_LgcqGNJPEKhaFLRHFKYpmiTrYrK';
+  /// RevenueCat **public** SDK keys. Public keys are designed to ship inside the
+  /// app binary (they are not the secret key), so hard-coding them here is safe.
+  /// Each platform uses its own key from RevenueCat → Project settings → API keys.
+  static const String _androidApiKey = 'goog_DzefZojgkijVyeXxsKjLunDbctO';
+  // TODO: replace with your iOS key (starts with `appl_`) when you set up iOS.
+  static const String _iosApiKey = 'appl_REPLACE_WITH_YOUR_IOS_KEY';
+
+  static String get _apiKey =>
+      defaultTargetPlatform == TargetPlatform.iOS ? _iosApiKey : _androidApiKey;
 
   /// Entitlement identifier as set in RevenueCat → Entitlements. We actually
   /// gate on "any active entitlement" below (robust for a single-entitlement
