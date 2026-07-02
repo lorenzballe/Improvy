@@ -325,38 +325,44 @@ class _ModalCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         // "You are now a [Name]!" with gradient on name
-                        RichText(
-                          textAlign: TextAlign.center,
-                          text: TextSpan(
-                            style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w900,
-                              color: Colors.white,
-                              letterSpacing: -0.75,
-                              fontFamily: 'Lexend',
-                            ),
-                            children: [
-                              const TextSpan(text: 'You are now a '),
-                              WidgetSpan(
-                                alignment: PlaceholderAlignment.middle,
-                                child: ShaderMask(
-                                  shaderCallback: (bounds) => LinearGradient(
-                                    colors: [color, color.withValues(alpha:0.67)],
-                                  ).createShader(bounds),
-                                  child: Text(
-                                    animal.name,
-                                    style: const TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w900,
-                                      color: Colors.white,
-                                      letterSpacing: -0.75,
-                                      fontFamily: 'Lexend',
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.center,
+                          child: RichText(
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            softWrap: false,
+                            text: TextSpan(
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                                letterSpacing: -0.75,
+                                fontFamily: 'Lexend',
+                              ),
+                              children: [
+                                const TextSpan(text: 'You are now a '),
+                                WidgetSpan(
+                                  alignment: PlaceholderAlignment.middle,
+                                  child: ShaderMask(
+                                    shaderCallback: (bounds) => LinearGradient(
+                                      colors: [color, color.withValues(alpha:0.67)],
+                                    ).createShader(bounds),
+                                    child: Text(
+                                      animal.name,
+                                      style: const TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w900,
+                                        color: Colors.white,
+                                        letterSpacing: -0.75,
+                                        fontFamily: 'Lexend',
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                              const TextSpan(text: '!'),
-                            ],
+                                const TextSpan(text: '!'),
+                              ],
+                            ),
                           ),
                         ),
                         const SizedBox(height: 12),

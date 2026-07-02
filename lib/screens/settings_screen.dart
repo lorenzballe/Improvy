@@ -19,7 +19,7 @@ class SettingsScreen extends StatelessWidget {
       backgroundColor: const Color(0xFF0F0A1A),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(24, 16, 24, 100 + MediaQuery.of(context).padding.bottom),
+          padding: EdgeInsets.fromLTRB(24, 16, 24, 140 + MediaQuery.of(context).padding.bottom),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -67,13 +67,21 @@ class SettingsScreen extends StatelessWidget {
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Text(
-                                  provider.isPro ? 'PRO' : 'NON-PRO',
-                                  style: const TextStyle(
-                                    fontSize: 30,
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.white,
-                                    letterSpacing: -0.75,
+                                Flexible(
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      provider.isPro ? 'PRO' : 'NON-PRO',
+                                      maxLines: 1,
+                                      softWrap: false,
+                                      style: const TextStyle(
+                                        fontSize: 30,
+                                        fontWeight: FontWeight.w900,
+                                        color: Colors.white,
+                                        letterSpacing: -0.75,
+                                      ),
+                                    ),
                                   ),
                                 ),
                                 if (provider.isPro) ...[
@@ -250,13 +258,19 @@ class SettingsScreen extends StatelessWidget {
                                         Row(
                                           children: [
                                             Flexible(
-                                              child: Text(
-                                                'Adaptive Difficulty',
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w900,
-                                                  color: provider.adaptiveDifficulty ? Colors.white : Colors.white.withAlpha(179),
-                                                  letterSpacing: 0.4,
+                                              child: FittedBox(
+                                                fit: BoxFit.scaleDown,
+                                                alignment: Alignment.centerLeft,
+                                                child: Text(
+                                                  'Adaptive Difficulty',
+                                                  maxLines: 1,
+                                                  softWrap: false,
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w900,
+                                                    color: provider.adaptiveDifficulty ? Colors.white : Colors.white.withAlpha(179),
+                                                    letterSpacing: 0.4,
+                                                  ),
                                                 ),
                                               ),
                                             ),
@@ -466,13 +480,19 @@ class SettingsScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Contact Support',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                                letterSpacing: 0.4,
+                            const FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Contact Support',
+                                maxLines: 1,
+                                softWrap: false,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                  letterSpacing: 0.4,
+                                ),
                               ),
                             ),
                             Text(
@@ -609,7 +629,13 @@ class SettingsScreen extends StatelessWidget {
           child: Icon(icon, color: Colors.white70, size: 16),
         ),
         const SizedBox(width: 12),
-        Expanded(child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: 0.4))),
+        Expanded(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(title, maxLines: 1, softWrap: false, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: 0.4)),
+          ),
+        ),
         Icon(Icons.chevron_right_rounded, color: Colors.white.withAlpha(51)),
       ]),
     ),
@@ -631,7 +657,13 @@ class SettingsScreen extends StatelessWidget {
           child: Icon(icon, color: Colors.white70, size: 16),
         ),
         const SizedBox(width: 12),
-        Expanded(child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: 0.4))),
+        Expanded(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(title, maxLines: 1, softWrap: false, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: 0.4)),
+          ),
+        ),
         Icon(Icons.chevron_right_rounded, color: Colors.white.withAlpha(51)),
       ]),
     ),
@@ -741,13 +773,19 @@ class _KeyboardFromTonicCard extends StatelessWidget {
                       Row(
                         children: [
                           Flexible(
-                            child: Text('Keyboard from Tonic',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w900,
-                                  color: on ? Colors.white : Colors.white.withAlpha(179),
-                                  letterSpacing: 0.4,
-                                )),
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text('Keyboard from Tonic',
+                                  maxLines: 1,
+                                  softWrap: false,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w900,
+                                    color: on ? Colors.white : Colors.white.withAlpha(179),
+                                    letterSpacing: 0.4,
+                                  )),
+                            ),
                           ),
                           if (on) ...[
                             const SizedBox(width: 8),

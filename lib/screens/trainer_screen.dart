@@ -418,7 +418,7 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
     final sh = MediaQuery.of(context).size.height;
     // Single reserved height for the input zone — identical for the grid and the
     // piano keyboard, so the buttons/keys sit at the exact same place in every mode.
-    final inputH = (sh * 0.35).clamp(250.0, 330.0);
+    final inputH = (sh * 0.35).clamp(120.0, 330.0);
 
     return PopScope(
       canPop: false,
@@ -592,8 +592,15 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Text(_pianoMode ? 'GRID VIEW' : 'PIANO KEYBOARD',
-                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 4.8)),
+                                    Flexible(
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Text(_pianoMode ? 'GRID VIEW' : 'PIANO KEYBOARD',
+                                          maxLines: 1,
+                                          softWrap: false,
+                                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 4.8)),
+                                      ),
+                                    ),
                                     const SizedBox(width: 8),
                                     Icon(_pianoMode ? Icons.grid_view_rounded : Icons.piano_rounded, color: Colors.white, size: 20),
                                   ],
@@ -685,22 +692,35 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
                   child: Icon(correct ? Icons.check_rounded : Icons.close_rounded, color: Colors.white, size: 34),
                 ),
                 const SizedBox(height: 16),
-                Text(
-                  correct ? 'CORRECT' : 'WRONG',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 4, color: accent),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    correct ? 'CORRECT' : 'WRONG',
+                    maxLines: 1,
+                    softWrap: false,
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 4, color: accent),
+                  ),
                 ),
                 if (!correct) ...[
                   const SizedBox(height: 16),
                   Container(height: 1, width: 64, color: Colors.white.withValues(alpha:0.1)),
                   const SizedBox(height: 16),
-                  Text(
-                    'CORRECT ANSWER',
-                    style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.white.withValues(alpha:0.45)),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      'CORRECT ANSWER',
+                      maxLines: 1,
+                      softWrap: false,
+                      style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.white.withValues(alpha:0.45)),
+                    ),
                   ),
                   const SizedBox(height: 8),
-                  NoteText(
-                    note: formatNoteForDisplay(_correctAnswer, widget.notation),
-                    style: TextStyle(fontSize: 34, fontWeight: FontWeight.w900, height: 1.0, color: _answerColor()),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: NoteText(
+                      note: formatNoteForDisplay(_correctAnswer, widget.notation),
+                      style: TextStyle(fontSize: 34, fontWeight: FontWeight.w900, height: 1.0, color: _answerColor()),
+                    ),
                   ),
                 ],
               ],
@@ -789,7 +809,10 @@ class _TopBar extends StatelessWidget {
                 child: Column(
                   children: [
                     const Center(
-                      child: Text('PROGRESS', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white70, letterSpacing: 4)),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text('PROGRESS', maxLines: 1, softWrap: false, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white70, letterSpacing: 4)),
+                      ),
                     ),
                     const SizedBox(height: 3),
                     // Progress bar — gradient fill like web app
@@ -839,10 +862,16 @@ class _TopBar extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('KEY', style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.white60, letterSpacing: 1.5)),
-                    NoteText(
-                      note: currentKey,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white, height: 1.1),
+                    const FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text('KEY', maxLines: 1, softWrap: false, style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.white60, letterSpacing: 1.5)),
+                    ),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: NoteText(
+                        note: currentKey,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white, height: 1.1),
+                      ),
                     ),
                   ],
                 ),
@@ -886,9 +915,15 @@ class _StatItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Column(
     children: [
-      Text(label, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white60, letterSpacing: 2)),
+      FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(label, maxLines: 1, softWrap: false, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white60, letterSpacing: 2)),
+      ),
       const SizedBox(height: 2),
-      Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: valueColor)),
+      FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(value, maxLines: 1, softWrap: false, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: valueColor)),
+      ),
     ],
   );
 }
@@ -945,14 +980,19 @@ class _QuestionDisplay extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(
-          isReverse ? 'NOTE' : 'DEGREE',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w900,
-            color: Colors.white.withAlpha(204),
-            letterSpacing: 7.2,
-            height: 1.0,
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            isReverse ? 'NOTE' : 'DEGREE',
+            maxLines: 1,
+            softWrap: false,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+              color: Colors.white.withAlpha(204),
+              letterSpacing: 7.2,
+              height: 1.0,
+            ),
           ),
         ),
         const SizedBox(height: 8),

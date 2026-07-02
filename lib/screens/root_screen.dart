@@ -533,13 +533,21 @@ class _FloatingNav extends StatelessWidget {
                                 size: 16,
                               ),
                               const SizedBox(width: 6),
-                              Text(
-                                label,
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w900,
-                                  color: isActive ? Colors.white : const Color(0xFF94A3B8),
-                                  letterSpacing: 0.9,
+                              Flexible(
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    label,
+                                    maxLines: 1,
+                                    softWrap: false,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w900,
+                                      color: isActive ? Colors.white : const Color(0xFF94A3B8),
+                                      letterSpacing: 0.9,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],

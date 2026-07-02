@@ -160,7 +160,7 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(20, 4, 20, 40 + MediaQuery.of(context).padding.bottom),
+          padding: EdgeInsets.fromLTRB(20, 4, 20, 140 + MediaQuery.of(context).padding.bottom),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

@@ -177,7 +177,7 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
       backgroundColor: const Color(0xFF0F0A1A),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.only(bottom: 100 + MediaQuery.of(context).padding.bottom),
+          padding: EdgeInsets.only(bottom: 140 + MediaQuery.of(context).padding.bottom),
           child: Column(
             children: [
               // ── TOP: badge + ring + 3 cards ──
@@ -215,16 +215,22 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
                         child: Stack(alignment: Alignment.center, children: [
                           CustomPaint(size: const Size(218, 218), painter: _RingPainter(progress: p / 100)),
                           Column(mainAxisSize: MainAxisSize.min, children: [
-                            ShaderMask(
-                              shaderCallback: (b) => const LinearGradient(
-                                colors: [Color(0xFF22D3EE), Color(0xFF818CF8), Color(0xFFF472B6)],
-                              ).createShader(b),
-                              child: Text('${p.round()}%',
-                                style: const TextStyle(fontSize: 60, fontWeight: FontWeight.w900, color: Colors.white, height: 1, letterSpacing: -3)),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: ShaderMask(
+                                shaderCallback: (b) => const LinearGradient(
+                                  colors: [Color(0xFF22D3EE), Color(0xFF818CF8), Color(0xFFF472B6)],
+                                ).createShader(b),
+                                child: Text('${p.round()}%',
+                                  style: const TextStyle(fontSize: 60, fontWeight: FontWeight.w900, color: Colors.white, height: 1, letterSpacing: -3)),
+                              ),
                             ),
                             const SizedBox(height: 6),
-                            Text('OVERALL\nPROFICIENCY', textAlign: TextAlign.center,
-                              style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white.withAlpha(102), letterSpacing: 2.25, height: 1.4)),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text('OVERALL\nPROFICIENCY', textAlign: TextAlign.center,
+                                style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white.withAlpha(102), letterSpacing: 2.25, height: 1.4)),
+                            ),
                           ]),
                         ]),
                       );
@@ -438,9 +444,12 @@ class _MiniCard extends StatelessWidget {
         ],
       ),
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        Text(label, style: TextStyle(
-          fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 0.8,
-          color: isStreak ? const Color(0xFFFED7AA).withAlpha(153) : Colors.white.withAlpha(102))),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(label, style: TextStyle(
+            fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 0.8,
+            color: isStreak ? const Color(0xFFFED7AA).withAlpha(153) : Colors.white.withAlpha(102))),
+        ),
         const SizedBox(height: 8),
         if (isStreak)
           ShaderMask(
@@ -452,12 +461,12 @@ class _MiniCard extends StatelessWidget {
             child: Row(mainAxisSize: MainAxisSize.min, children: [
               const Icon(Icons.local_fire_department_rounded, color: Colors.white, size: 20),
               const SizedBox(width: 4),
-              Text(value, style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: Colors.white, height: 1, letterSpacing: -1.5)),
+              Flexible(child: FittedBox(fit: BoxFit.scaleDown, child: Text(value, style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: Colors.white, height: 1, letterSpacing: -1.5)))),
             ]),
           )
         else
           Row(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
-            Text(value, style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: glowColor, height: 1, letterSpacing: -1.5)),
+            Flexible(child: FittedBox(fit: BoxFit.scaleDown, child: Text(value, style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: glowColor, height: 1, letterSpacing: -1.5)))),
             if (valueSuffix != null) Text(valueSuffix!,
               style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: glowColor.withAlpha(178))),
           ]),

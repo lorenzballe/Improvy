@@ -115,6 +115,8 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
                     _in(0.2, 0.68, child: Text(
                       'Unlock every mode and master\nall 12 keys — forever.',
                       textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, height: 1.45,
                         color: Colors.white.withValues(alpha: 0.55)),
                     )),
@@ -141,24 +143,31 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
     );
   }
 
-  Widget _wordmark() => Row(
-    mainAxisAlignment: MainAxisAlignment.center,
-    crossAxisAlignment: CrossAxisAlignment.baseline,
-    textBaseline: TextBaseline.alphabetic,
-    children: [
-      ShaderMask(
-        shaderCallback: (b) => const LinearGradient(
-          colors: [Color(0xFF60A5FA), Color(0xFFA855F7), Color(0xFFEC4899)],
-        ).createShader(b),
-        child: const Text('Improvy ',
-          style: TextStyle(fontSize: 42, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -1.4, height: 1)),
-      ),
-      ShaderMask(
-        shaderCallback: (b) => const LinearGradient(colors: [_amberSoft, _orange]).createShader(b),
-        child: const Text('PRO',
-          style: TextStyle(fontSize: 42, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -1.4, height: 1)),
-      ),
-    ],
+  Widget _wordmark() => FittedBox(
+    fit: BoxFit.scaleDown,
+    alignment: Alignment.center,
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
+      children: [
+        ShaderMask(
+          shaderCallback: (b) => const LinearGradient(
+            colors: [Color(0xFF60A5FA), Color(0xFFA855F7), Color(0xFFEC4899)],
+          ).createShader(b),
+          child: const Text('Improvy ',
+            maxLines: 1, softWrap: false,
+            style: TextStyle(fontSize: 42, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -1.4, height: 1)),
+        ),
+        ShaderMask(
+          shaderCallback: (b) => const LinearGradient(colors: [_amberSoft, _orange]).createShader(b),
+          child: const Text('PRO',
+            maxLines: 1, softWrap: false,
+            style: TextStyle(fontSize: 42, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -1.4, height: 1)),
+        ),
+      ],
+    ),
   );
 
   Widget _bottomBar(BuildContext context) {
@@ -167,16 +176,25 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         _BuyButton(label: 'Unlock $_fallbackPrice', onTap: widget.onPurchase),
         const SizedBox(height: 12),
-        Text('One-time purchase  ·  lifetime access',
-          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: Colors.white.withValues(alpha: 0.5))),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.center,
+          child: Text('One-time purchase  ·  lifetime access',
+            maxLines: 1, softWrap: false,
+            style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: Colors.white.withValues(alpha: 0.5))),
+        ),
         const SizedBox(height: 14),
-        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          _miniLink(_restoring ? 'Restoring…' : 'Restore', _restoring ? null : _restore),
-          _dot(),
-          _miniLink('Terms', () => _openLegal('Terms of Service', kTermsBody)),
-          _dot(),
-          _miniLink('Privacy', () => _openLegal('Privacy Policy', kPrivacyPolicyBody)),
-        ]),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.center,
+          child: Row(mainAxisSize: MainAxisSize.min, mainAxisAlignment: MainAxisAlignment.center, children: [
+            _miniLink(_restoring ? 'Restoring…' : 'Restore', _restoring ? null : _restore),
+            _dot(),
+            _miniLink('Terms', () => _openLegal('Terms of Service', kTermsBody)),
+            _dot(),
+            _miniLink('Privacy', () => _openLegal('Privacy Policy', kPrivacyPolicyBody)),
+          ]),
+        ),
         const SizedBox(height: 2),
       ]),
     );
@@ -372,9 +390,13 @@ class _FeatureRow extends StatelessWidget {
       Expanded(child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontSize: 17.5, fontWeight: FontWeight.w800, color: Colors.white, height: 1.1)),
+          Text(title,
+            maxLines: 1, overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 17.5, fontWeight: FontWeight.w800, color: Colors.white, height: 1.1)),
           const SizedBox(height: 4),
-          Text(desc, style: TextStyle(fontSize: 13.5, color: Colors.white.withValues(alpha: 0.5), height: 1.2)),
+          Text(desc,
+            maxLines: 1, overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontSize: 13.5, color: Colors.white.withValues(alpha: 0.5), height: 1.2)),
         ],
       )),
     ]),
@@ -447,8 +469,15 @@ class _BuyButtonState extends State<_BuyButton> with SingleTickerProviderStateMi
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
                   const Icon(Icons.lock_open_rounded, color: Colors.white, size: 20),
                   const SizedBox(width: 10),
-                  Text(widget.label,
-                    style: const TextStyle(fontSize: 16.5, fontWeight: FontWeight.w900, letterSpacing: 0.3, color: Colors.white)),
+                  Flexible(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.center,
+                      child: Text(widget.label,
+                        maxLines: 1, softWrap: false,
+                        style: const TextStyle(fontSize: 16.5, fontWeight: FontWeight.w900, letterSpacing: 0.3, color: Colors.white)),
+                    ),
+                  ),
                 ]),
               ),
             ),

@@ -414,27 +414,37 @@ class _Header extends StatelessWidget {
           Expanded(
             child: Column(
               children: [
-                ShaderMask(
-                  shaderCallback: (b) => LinearGradient(colors: gradColors).createShader(b),
-                  child: Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                      letterSpacing: -0.5,
-                      height: 1,
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: ShaderMask(
+                    shaderCallback: (b) => LinearGradient(colors: gradColors).createShader(b),
+                    child: Text(
+                      title,
+                      maxLines: 1,
+                      softWrap: false,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        letterSpacing: -0.5,
+                        height: 1,
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white.withValues(alpha:0.4),
-                    letterSpacing: 3,
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    subtitle,
+                    maxLines: 1,
+                    softWrap: false,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white.withValues(alpha:0.4),
+                      letterSpacing: 3,
+                    ),
                   ),
                 ),
               ],
@@ -462,11 +472,27 @@ class _SectionTitle extends StatelessWidget {
       Row(children: [
         Icon(icon, size: 18, color: Colors.white.withValues(alpha:0.6)),
         const SizedBox(width: 8),
-        Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.3)),
+        Flexible(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              title,
+              maxLines: 1,
+              softWrap: false,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.3),
+            ),
+          ),
+        ),
       ]),
       if (subtitle.isNotEmpty) ...[
         const SizedBox(height: 4),
-        Text(subtitle, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white.withValues(alpha:0.4))),
+        Text(
+          subtitle,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white.withValues(alpha:0.4)),
+        ),
       ],
     ],
   );
@@ -488,11 +514,11 @@ class _KeyGrid extends StatelessWidget {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 4,
         crossAxisSpacing: 12, // web: gap-3
         mainAxisSpacing: 12,
-        mainAxisExtent: 56, // web: h-14
+        mainAxisExtent: 56 * MediaQuery.textScalerOf(context).scale(1), // web: h-14
       ),
       itemCount: keys.length,
       itemBuilder: (_, i) {
@@ -536,16 +562,19 @@ class _KeyCell extends StatelessWidget {
           boxShadow: null,
         ),
         child: Center(
-          child: NoteText(
-            note: noteKey,
-            style: TextStyle(
-              fontSize: 18, // web: text-lg
-              fontWeight: FontWeight.w900,
-              color: sel ? Colors.white : Colors.white.withValues(alpha:0.4),
-              letterSpacing: -0.5,
-              shadows: sel
-                  ? const [Shadow(color: Color(0x66000000), blurRadius: 4, offset: Offset(0, 1))]
-                  : null,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: NoteText(
+              note: noteKey,
+              style: TextStyle(
+                fontSize: 18, // web: text-lg
+                fontWeight: FontWeight.w900,
+                color: sel ? Colors.white : Colors.white.withValues(alpha:0.4),
+                letterSpacing: -0.5,
+                shadows: sel
+                    ? const [Shadow(color: Color(0x66000000), blurRadius: 4, offset: Offset(0, 1))]
+                    : null,
+              ),
             ),
           ),
         ),
@@ -580,32 +609,32 @@ class _SlidingPillRow extends StatelessWidget {
       final itemW = totalInner / opts.length;
 
       return Container(
-        height: 56, // web: h-14
         padding: const EdgeInsets.all(pad),
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha:0.05), // web: bg-white/5
           borderRadius: BorderRadius.circular(16), // rounded-2xl
         ),
-        child: Stack(children: [
-          // Sliding indicator (web: h-11 rounded-xl, activeColor @ 0.4, shadow-lg)
-          AnimatedPositioned(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOutCubic,
-            left: selIdx * itemW + 3,
-            top: 0,
-            bottom: 0,
-            width: itemW - 6,
-            child: Container(
-              decoration: BoxDecoration(
-                color: accentColor.withValues(alpha:0.4),
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(color: Colors.black.withValues(alpha:0.25), blurRadius: 12, offset: const Offset(0, 4)),
-                ],
+        child: IntrinsicHeight(
+          child: Stack(children: [
+            // Sliding indicator (web: h-11 rounded-xl, activeColor @ 0.4, shadow-lg)
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOutCubic,
+              left: selIdx * itemW + 3,
+              top: 0,
+              bottom: 0,
+              width: itemW - 6,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha:0.4),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withValues(alpha:0.25), blurRadius: 12, offset: const Offset(0, 4)),
+                  ],
+                ),
               ),
             ),
-          ),
-          // Labels (web: text-xs font-black uppercase tracking-widest)
+            // Labels (web: text-xs font-black uppercase tracking-widest)
           Row(
             children: opts.map((opt) {
               final active = opt == sel;
@@ -614,18 +643,26 @@ class _SlidingPillRow extends StatelessWidget {
                   onTap: () => onChange(opt),
                   behavior: HitTestBehavior.opaque,
                   child: Center(
-                    child: AnimatedDefaultTextStyle(
-                      duration: const Duration(milliseconds: 200),
-                      // Set the family explicitly — AnimatedDefaultTextStyle does
-                      // not inherit it, so it would otherwise fall back to Roboto.
-                      style: TextStyle(
-                        fontFamily: 'Lexend',
-                        fontSize: 12,
-                        fontWeight: FontWeight.w900,
-                        color: active ? Colors.white : Colors.white.withValues(alpha:0.4),
-                        letterSpacing: 1.5,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: AnimatedDefaultTextStyle(
+                        duration: const Duration(milliseconds: 200),
+                        // Set the family explicitly — AnimatedDefaultTextStyle does
+                        // not inherit it, so it would otherwise fall back to Roboto.
+                        style: TextStyle(
+                          fontFamily: 'Lexend',
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                          color: active ? Colors.white : Colors.white.withValues(alpha:0.4),
+                          letterSpacing: 1.5,
+                        ),
+                        child: Text(
+                          opt.toUpperCase(),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          softWrap: false,
+                        ),
                       ),
-                      child: Text(opt.toUpperCase(), textAlign: TextAlign.center),
                     ),
                   ),
                 ),
@@ -633,6 +670,7 @@ class _SlidingPillRow extends StatelessWidget {
             }).toList(),
           ),
         ]),
+        ),
       );
     });
   }
@@ -656,13 +694,18 @@ class _QuickBtn extends StatelessWidget {
         color: Colors.white.withValues(alpha:0.05),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w900,
-          color: Colors.white.withValues(alpha:0.4),
-          letterSpacing: 0.5,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          label,
+          maxLines: 1,
+          softWrap: false,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w900,
+            color: Colors.white.withValues(alpha:0.4),
+            letterSpacing: 0.5,
+          ),
         ),
       ),
     ),
@@ -722,13 +765,18 @@ class _QuestionBtn extends StatelessWidget {
         ),
         boxShadow: null,
       ),
-      child: Text(
-        label,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: 14, // text-sm
-          fontWeight: FontWeight.w900,
-          color: active ? accentColor : Colors.white.withValues(alpha:0.4),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          maxLines: 1,
+          softWrap: false,
+          style: TextStyle(
+            fontSize: 14, // text-sm
+            fontWeight: FontWeight.w900,
+            color: active ? accentColor : Colors.white.withValues(alpha:0.4),
+          ),
         ),
       ),
     ),
@@ -750,7 +798,7 @@ class _DegreeGrid extends StatelessWidget {
     final degrees = reverse ? kChromaticDegreesSplit : kChromaticDegrees;
     const cols = 4;
     const gap = 12.0; // web: gap-3
-    const cellH = 48.0; // web: h-12
+    final cellH = 48.0 * MediaQuery.textScalerOf(context).scale(1); // web: h-12
     final rows = (degrees.length / cols).ceil();
     return LayoutBuilder(
       builder: (ctx, constraints) {
@@ -819,15 +867,20 @@ class _DegreeCell extends StatelessWidget {
           boxShadow: null,
         ),
         child: Center(
-          child: Text(
-            deg,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: deg.length > 3 ? 11 : 14, // web: text-sm
-              fontWeight: FontWeight.w900,
-              color: a ? Colors.white : Colors.white.withValues(alpha:0.3),
-              letterSpacing: -0.2,
-              shadows: a ? const [Shadow(color: Color(0x66000000), blurRadius: 4, offset: Offset(0, 1))] : null,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              deg,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              softWrap: false,
+              style: TextStyle(
+                fontSize: deg.length > 3 ? 11 : 14, // web: text-sm
+                fontWeight: FontWeight.w900,
+                color: a ? Colors.white : Colors.white.withValues(alpha:0.3),
+                letterSpacing: -0.2,
+                shadows: a ? const [Shadow(color: Color(0x66000000), blurRadius: 4, offset: Offset(0, 1))] : null,
+              ),
             ),
           ),
         ),
@@ -856,7 +909,7 @@ class _StartBtnState extends State<_StartBtn> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(20, 12, 20, 20 + MediaQuery.of(context).padding.bottom),
+      padding: EdgeInsets.fromLTRB(20, 12, 20, 140 + MediaQuery.of(context).padding.bottom),
       child: GestureDetector(
         onTapDown: (_) => setState(() => _pressed = true),
         onTapUp: (_) { setState(() => _pressed = false); widget.onTap(); },
@@ -883,13 +936,20 @@ class _StartBtnState extends State<_StartBtn> {
               children: [
                 Icon(widget.icon, color: Colors.white, size: 22),
                 const SizedBox(width: 12), // web: gap-3
-                const Text(
-                  'START TRAINING',
-                  style: TextStyle(
-                    fontSize: 18, // web: text-lg
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 2, // tracking-widest
-                    color: Colors.white,
+                const Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      'START TRAINING',
+                      maxLines: 1,
+                      softWrap: false,
+                      style: TextStyle(
+                        fontSize: 18, // web: text-lg
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 2, // tracking-widest
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
               ],

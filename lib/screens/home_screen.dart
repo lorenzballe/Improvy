@@ -55,7 +55,7 @@ class _HomeMain extends StatelessWidget {
 
     return SafeArea(
       child: SingleChildScrollView(
-        padding: EdgeInsets.only(bottom: 100 + MediaQuery.of(context).padding.bottom),
+        padding: EdgeInsets.only(bottom: 140 + MediaQuery.of(context).padding.bottom),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -81,15 +81,21 @@ class _HomeMain extends StatelessWidget {
                           shaderCallback: (bounds) => const LinearGradient(
                             colors: [Color(0xFF22D3EE), Color(0xFF944DFF), Color(0xFFEF4444)],
                           ).createShader(bounds),
-                          child: Text(
-                            'IMPROVY',
-                            style: const TextStyle(
-                              fontFamily: 'Outfit',
-                              fontSize: 56,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: -1.12,
-                              color: Colors.white,
-                              height: 1,
+                          child: const FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.center,
+                            child: Text(
+                              'IMPROVY',
+                              maxLines: 1,
+                              softWrap: false,
+                              style: TextStyle(
+                                fontFamily: 'Outfit',
+                                fontSize: 56,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: -1.12,
+                                color: Colors.white,
+                                height: 1,
+                              ),
                             ),
                           ),
                         ),
@@ -233,7 +239,13 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(children: [
-      Text(text, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Color(0x99FFFFFF), letterSpacing: 2.2)),
+      Flexible(
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(text, maxLines: 1, softWrap: false, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Color(0x99FFFFFF), letterSpacing: 2.2)),
+        ),
+      ),
       const SizedBox(width: 12),
       Expanded(child: Container(
         height: 1,
@@ -450,27 +462,41 @@ class _ProgressCardState extends State<_ProgressCard> with SingleTickerProviderS
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('TOTAL PROGRESS',
-                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0x80FFFFFF), letterSpacing: 2)),
+                          const FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('TOTAL PROGRESS',
+                              maxLines: 1,
+                              softWrap: false,
+                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0x80FFFFFF), letterSpacing: 2)),
+                          ),
                           const SizedBox(height: 4),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ShaderMask(
-                                shaderCallback: (b) => const LinearGradient(
-                                  colors: [Color(0xFF22D3EE), Color(0xFF818CF8), Color(0xFFF472B6)],
-                                ).createShader(b),
-                                child: Text(
-                                  '${p.round()}',
-                                  style: const TextStyle(fontSize: 48, fontWeight: FontWeight.w900, letterSpacing: -2.4, color: Colors.white, height: 1),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ShaderMask(
+                                  shaderCallback: (b) => const LinearGradient(
+                                    colors: [Color(0xFF22D3EE), Color(0xFF818CF8), Color(0xFFF472B6)],
+                                  ).createShader(b),
+                                  child: Text(
+                                    '${p.round()}',
+                                    maxLines: 1,
+                                    softWrap: false,
+                                    style: const TextStyle(fontSize: 48, fontWeight: FontWeight.w900, letterSpacing: -2.4, color: Colors.white, height: 1),
+                                  ),
                                 ),
-                              ),
-                              const Padding(
-                                padding: EdgeInsets.only(top: 8),
-                                child: Text('%',
-                                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0x4DFFFFFF))),
-                              ),
-                            ],
+                                const Padding(
+                                  padding: EdgeInsets.only(top: 8),
+                                  child: Text('%',
+                                    maxLines: 1,
+                                    softWrap: false,
+                                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0x4DFFFFFF))),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -500,16 +526,26 @@ class _ProgressCardState extends State<_ProgressCard> with SingleTickerProviderS
                                     borderRadius: BorderRadius.circular(9999),
                                     border: Border.all(color: const Color(0xFF1A1625), width: 2),
                                   ),
-                                  child: Text('LVL ${a.level}',
-                                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Color(0xFF1A1625))),
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text('LVL ${a.level}',
+                                      maxLines: 1,
+                                      softWrap: false,
+                                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Color(0xFF1A1625))),
+                                  ),
                                 ),
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 6),
-                        Text(a.name.toUpperCase(),
-                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: a.color, letterSpacing: 1)),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(a.name.toUpperCase(),
+                            maxLines: 1,
+                            softWrap: false,
+                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: a.color, letterSpacing: 1)),
+                        ),
                       ],
                     ),
                   ],
@@ -519,10 +555,27 @@ class _ProgressCardState extends State<_ProgressCard> with SingleTickerProviderS
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('NEXT MILESTONE',
-                      style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Color(0x33FFFFFF), letterSpacing: 1.8)),
-                    Text(_nextMilestone(),
-                      style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Color(0x80FFFFFF), letterSpacing: 0.9)),
+                    const Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text('NEXT MILESTONE',
+                          maxLines: 1,
+                          softWrap: false,
+                          style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Color(0x33FFFFFF), letterSpacing: 1.8)),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerRight,
+                        child: Text(_nextMilestone(),
+                          maxLines: 1,
+                          softWrap: false,
+                          style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Color(0x80FFFFFF), letterSpacing: 0.9)),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -756,9 +809,13 @@ class _KeyCardState extends State<_KeyCard> {
                         height: 32,
                         child: Align(
                           alignment: Alignment.bottomLeft,
-                          child: NoteText(
-                            note: widget.keyData.key,
-                            style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w900, letterSpacing: -1.5, color: Colors.white, height: 1),
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.bottomLeft,
+                            child: NoteText(
+                              note: widget.keyData.key,
+                              style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w900, letterSpacing: -1.5, color: Colors.white, height: 1),
+                            ),
                           ),
                         ),
                       ),
@@ -766,7 +823,11 @@ class _KeyCardState extends State<_KeyCard> {
                         tween: Tween(begin: 0, end: progress.toDouble()),
                         duration: const Duration(milliseconds: 900),
                         curve: Curves.easeOutCubic,
-                        builder: (_, v, __) => Text('${v.round()}%', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: color)),
+                        builder: (_, v, __) => FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text('${v.round()}%', maxLines: 1, softWrap: false, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: color)),
+                        ),
                       ),
                       Container(
                         height: 8,
@@ -910,8 +971,16 @@ class _BigSpecialCardState extends State<_BigSpecialCard> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Row(children: [
-                            Text(widget.title,
-                              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: accent, letterSpacing: -0.6, height: 1)),
+                            Flexible(
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Text(widget.title,
+                                  maxLines: 1,
+                                  softWrap: false,
+                                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: accent, letterSpacing: -0.6, height: 1)),
+                              ),
+                            ),
                             if (locked) ...[
                               const SizedBox(width: 10),
                               Container(
@@ -923,6 +992,8 @@ class _BigSpecialCardState extends State<_BigSpecialCard> {
                           ]),
                           const SizedBox(height: 6),
                           Text(widget.subtitle,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(fontSize: 12, color: Colors.white.withAlpha(140), height: 1.4)),
                         ],
                       ),
@@ -1029,17 +1100,35 @@ class _WithSession extends StatelessWidget {
                   Container(width: 6, height: 6,
                     decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFF60A5FA))),
                   const SizedBox(width: 6),
-                  Text('LAST SESSION • ${_relativeTime(ts)}',
-                    style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Color(0xFF60A5FA), letterSpacing: 1.5)),
+                  Flexible(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text('LAST SESSION • ${_relativeTime(ts)}',
+                        maxLines: 1,
+                        softWrap: false,
+                        style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Color(0xFF60A5FA), letterSpacing: 1.5)),
+                    ),
+                  ),
                 ]),
                 const SizedBox(height: 8),
-                NoteText(
-                  note: '$key $modeLabel',
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white, height: 1),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: NoteText(
+                    note: '$key $modeLabel',
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white, height: 1),
+                  ),
                 ),
                 const SizedBox(height: 4),
-                Text(diff > 0 && diff <= 3 ? '${diffLabels[diff - 1]} Difficulty' : '',
-                  style: TextStyle(fontSize: 13, color: Colors.white.withAlpha(97))),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(diff > 0 && diff <= 3 ? '${diffLabels[diff - 1]} Difficulty' : '',
+                    maxLines: 1,
+                    softWrap: false,
+                    style: TextStyle(fontSize: 13, color: Colors.white.withAlpha(97))),
+                ),
               ]),
             ),
             Container(
@@ -1303,9 +1392,10 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text('Choose Mode',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.9)),
+                        const FittedBox(fit: BoxFit.scaleDown,
+                          child: Text('Choose Mode',
+                            maxLines: 1, softWrap: false,
+                            style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.9))),
                         const Text('Select how you want to train today',
                           textAlign: TextAlign.center,
                           style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF94A3B8))),
@@ -1319,10 +1409,8 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
             const SizedBox(height: 20),
 
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                child: Column(children: [
-                  Expanded(child: _BigModeCard(
+              child: LayoutBuilder(builder: (context, constraints) {
+                final diatonicCard = _BigModeCard(
                     keyName: keyName,
                     title: 'Diatonic',
                     description: 'Master the 7 notes of the scale. Perfect for mental calculation and keyboard visualization.',
@@ -1344,9 +1432,8 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                     modeLevel: _getModeLevel(kd.diatonicLevels),
                     isLocked: false,
                     onTap: () { HapticsService.impactMedium(); provider.startMode(TrainingMode.diatonic); },
-                  )),
-                  const SizedBox(height: 16),
-                  Expanded(child: _BigModeCard(
+                );
+                final chromaticCard = _BigModeCard(
                     keyName: keyName,
                     title: 'Chromatic',
                     description: 'Challenge yourself with all 12 semitones. Advanced mental mapping for absolute mastery.',
@@ -1378,9 +1465,28 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                       if (!isPro && keyName != 'C') { widget.onShowPaywall(); return; }
                       provider.startMode(TrainingMode.chromatic);
                     },
-                  )),
-                ]),
-              ),
+                );
+                // Both cards need ~300dp of content at the narrowest width. If
+                // they fit, fill the screen (the reference look); otherwise scroll
+                // so nothing is ever clipped on short / high-density screens.
+                const cardMinH = 300.0;
+                final fits = constraints.maxHeight >= cardMinH * 2 + 16;
+                final content = Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: fits
+                      ? Column(children: [
+                          Expanded(child: diatonicCard),
+                          const SizedBox(height: 16),
+                          Expanded(child: chromaticCard),
+                        ])
+                      : Column(children: [
+                          SizedBox(height: cardMinH, child: diatonicCard),
+                          const SizedBox(height: 16),
+                          SizedBox(height: cardMinH, child: chromaticCard),
+                        ]),
+                );
+                return fits ? content : SingleChildScrollView(child: content);
+              }),
             ),
           ]),
         ),
