@@ -1869,23 +1869,29 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
                     crossAxisAlignment: CrossAxisAlignment.baseline,
                     textBaseline: TextBaseline.alphabetic,
                     children: [
-                      Expanded(child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        textBaseline: TextBaseline.alphabetic,
-                        children: [
-                          NoteText(note: widget.keyName,
-                            style: const TextStyle(fontSize: 33, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.8)),
-                          const SizedBox(width: 7),
-                          Flexible(child: Text(widget.title,
-                            style: const TextStyle(fontSize: 33, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.8))),
-                        ],
+                      Expanded(child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
+                            NoteText(note: widget.keyName,
+                              style: const TextStyle(fontSize: 33, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.8)),
+                            const SizedBox(width: 7),
+                            Text(widget.title,
+                              style: const TextStyle(fontSize: 33, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.8)),
+                          ],
+                        ),
                       )),
+                      const SizedBox(width: 8),
                       Text('LEVEL ${widget.modeLevel}',
                         style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Colors.white38, letterSpacing: 1.2)),
                     ],
                   ),
                   const SizedBox(height: 10),
                   Text(widget.description,
+                    maxLines: 2, overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontSize: 14, color: Colors.white60, height: 1.5)),
                   if (widget.isLocked) ...[
                     const SizedBox(height: 10),

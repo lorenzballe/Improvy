@@ -518,11 +518,17 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
                       child: AnimatedOpacity(
                         opacity: _showFeedback ? 0.0 : 1.0,
                         duration: const Duration(milliseconds: 140),
-                        child: _QuestionDisplay(
-                          label: _degreeLabel,
-                          isReverse: _actualIsReverse,
-                          notation: widget.notation,
-                          streak: _streak,
+                        // Scale the whole question down if the screen is short
+                        // (e.g. the 15-button reverse grid on a small phone) so
+                        // the big note/number can never overlap the answer area.
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: _QuestionDisplay(
+                            label: _degreeLabel,
+                            isReverse: _actualIsReverse,
+                            notation: widget.notation,
+                            streak: _streak,
+                          ),
                         ),
                       ),
                     ),
