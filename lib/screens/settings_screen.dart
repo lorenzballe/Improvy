@@ -1,8 +1,11 @@
 import 'dart:ui';
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
+import '../services/purchase_service.dart';
+import 'legal_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   final void Function([String? reason]) onShowPaywall;
@@ -146,7 +149,16 @@ class SettingsScreen extends StatelessWidget {
                       ),
                     if (!provider.isPro) const SizedBox(height: 8),
                     GestureDetector(
-                      onTap: () {},
+                      onTap: () async {
+                        final ok = await PurchaseService.instance.restorePurchases();
+                        if (ok) provider.setIsPro(true);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(ok ? 'PRO restored' : 'No previous purchase found'),
+                            behavior: SnackBarBehavior.floating,
+                          ));
+                        }
+                      },
                       child: Container(
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(vertical: 12),
@@ -274,7 +286,7 @@ class SettingsScreen extends StatelessWidget {
                                       ],
                                     ),
                                   ),
-                                  _ToggleSwitch(value: provider.adaptiveDifficulty),
+                                  _ToggleSwitch(value: provider.adaptiveDifficulty, color: const Color(0xFF3B82F6)),
                                 ],
                               ),
                               const SizedBox(height: 16),
@@ -294,6 +306,9 @@ class SettingsScreen extends StatelessWidget {
                         ),
                       ),
                     ),
+                    const SizedBox(height: 20),
+
+                    _KeyboardFromTonicCard(provider: provider),
                     const SizedBox(height: 20),
 
                     Row(
@@ -478,7 +493,25 @@ class SettingsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // DEVELOPER DEBUG
+              // ACCOUNT — RevenueCat Customer Center (restore / manage / support).
+              _sectionLabel('ACCOUNT'),
+              const SizedBox(height: 12),
+              _tapRow(context, 'Customer Center', Icons.support_agent_rounded,
+                  () => PurchaseService.instance.presentCustomerCenter()),
+              const SizedBox(height: 16),
+
+              // LEGAL
+              _sectionLabel('LEGAL'),
+              const SizedBox(height: 12),
+              _legalRow(context, 'Privacy Policy', Icons.privacy_tip_rounded,
+                  const LegalScreen(title: 'Privacy Policy', body: kPrivacyPolicyBody)),
+              const SizedBox(height: 10),
+              _legalRow(context, 'Terms of Service', Icons.description_rounded,
+                  const LegalScreen(title: 'Terms of Service', body: kTermsBody)),
+              const SizedBox(height: 16),
+
+              // DEVELOPER DEBUG — visible only in debug builds, hidden in release.
+              if (kDebugMode) ...[
               _sectionLabel('DEVELOPER DEBUG'),
               const SizedBox(height: 12),
               _blurCard(
@@ -541,6 +574,7 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
+              ],
             ],
           ),
         ),
@@ -558,6 +592,48 @@ class SettingsScreen extends StatelessWidget {
         color: Colors.white.withAlpha(102),
         letterSpacing: 2,
       ),
+    ),
+  );
+
+  Widget _legalRow(BuildContext context, String title, IconData icon, Widget screen) => GestureDetector(
+    onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen)),
+    child: _blurCard(
+      child: Row(children: [
+        Container(
+          width: 32, height: 32,
+          decoration: BoxDecoration(
+            color: Colors.white.withAlpha(13),
+            border: Border.all(color: Colors.white.withAlpha(20)),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: Colors.white70, size: 16),
+        ),
+        const SizedBox(width: 12),
+        Expanded(child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: 0.4))),
+        Icon(Icons.chevron_right_rounded, color: Colors.white.withAlpha(51)),
+      ]),
+    ),
+  );
+
+  // Same look as [_legalRow] but runs an action (e.g. open the Customer Center)
+  // instead of pushing a screen.
+  Widget _tapRow(BuildContext context, String title, IconData icon, VoidCallback onTap) => GestureDetector(
+    onTap: onTap,
+    child: _blurCard(
+      child: Row(children: [
+        Container(
+          width: 32, height: 32,
+          decoration: BoxDecoration(
+            color: Colors.white.withAlpha(13),
+            border: Border.all(color: Colors.white.withAlpha(20)),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: Colors.white70, size: 16),
+        ),
+        const SizedBox(width: 12),
+        Expanded(child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: 0.4))),
+        Icon(Icons.chevron_right_rounded, color: Colors.white.withAlpha(51)),
+      ]),
     ),
   );
 
@@ -614,29 +690,132 @@ class SettingsScreen extends StatelessWidget {
   }
 }
 
+// Toggle card: make the in-game piano keyboard start on the current tonic.
+class _KeyboardFromTonicCard extends StatelessWidget {
+  final AppProvider provider;
+  const _KeyboardFromTonicCard({required this.provider});
+
+  @override
+  Widget build(BuildContext context) {
+    final on = provider.keyboardFromTonic;
+    const accent = Color(0xFF14B8A6); // teal
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => provider.setKeyboardFromTonic(!on),
+      child: AnimatedContainer(
+        duration: Duration.zero,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: on
+              ? const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0x4D14B8A6), Color(0x1414B8A6)],
+                )
+              : null,
+          color: on ? null : Colors.white.withAlpha(8),
+          border: Border.all(color: on ? const Color(0x6614B8A6) : Colors.white.withAlpha(13)),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: on ? [const BoxShadow(color: Color(0x2614B8A6), blurRadius: 30)] : null,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 48, height: 48,
+                  decoration: BoxDecoration(
+                    color: on ? accent : Colors.white.withAlpha(26),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: on ? [const BoxShadow(color: Color(0x6614B8A6), blurRadius: 25)] : null,
+                  ),
+                  child: Icon(Icons.piano_rounded,
+                      color: on ? Colors.white : Colors.white.withAlpha(102), size: 24),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text('Keyboard from Tonic',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w900,
+                                  color: on ? Colors.white : Colors.white.withAlpha(179),
+                                  letterSpacing: 0.4,
+                                )),
+                          ),
+                          if (on) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              width: 6, height: 6,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Color(0xFF2DD4BF),
+                                boxShadow: [BoxShadow(color: Color(0xCC2DD4BF), blurRadius: 8)],
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 3),
+                      Text('PIANO INPUT',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white.withAlpha(102),
+                            letterSpacing: 1.5,
+                          )),
+                    ],
+                  ),
+                ),
+                _ToggleSwitch(value: on, color: const Color(0xFF14B8A6)),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'When the on-screen piano is active, it starts on the current key’s tonic (or the white key just below it) instead of always running from C.',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: Colors.white.withAlpha(102),
+                height: 18 / 11,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _ToggleSwitch extends StatelessWidget {
   final bool value;
-  final ValueChanged<bool>? onChanged;
-  const _ToggleSwitch({required this.value, this.onChanged});
+  final Color color;
+  const _ToggleSwitch({required this.value, this.color = const Color(0xFF3B82F6)});
 
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
-      // The pill background fades in sync with the thumb slide.
-      duration: const Duration(milliseconds: 180),
-      curve: Curves.easeOutCubic,
+      // The pill background fades smoothly while the thumb springs across.
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOut,
       width: 56,
       height: 28,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: value ? const Color(0xFF3B82F6) : Colors.white.withAlpha(26),
-        border: Border.all(color: value ? const Color(0x8060A5FA) : Colors.white.withAlpha(26)),
+        color: value ? color : Colors.white.withAlpha(26),
+        border: Border.all(color: value ? color.withAlpha(128) : Colors.white.withAlpha(26)),
         borderRadius: BorderRadius.circular(9999),
       ),
       child: AnimatedAlign(
-        // The only animation that remains: a short, fluid thumb slide.
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOutCubic,
+        // Springy, native-feeling thumb slide (slight settle at the end).
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutBack,
         alignment: value ? Alignment.centerRight : Alignment.centerLeft,
         child: Container(
           width: 20, height: 20,
@@ -649,7 +828,7 @@ class _ToggleSwitch extends StatelessWidget {
           child: value
               ? Container(
                   width: 6, height: 6,
-                  decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFF3B82F6)),
+                  decoration: BoxDecoration(shape: BoxShape.circle, color: color),
                 )
               : null,
         ),

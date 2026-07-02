@@ -102,7 +102,7 @@ class _LevelUpModalState extends State<LevelUpModal>
                 // Backdrop: black/90 + blur-sm
                 BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-                  child: Container(color: Colors.black.withOpacity(0.9)),
+                  child: Container(color: Colors.black.withValues(alpha:0.9)),
                 ),
 
                 // Full-screen pulsing edge glow in the animal colour (the web's
@@ -129,7 +129,7 @@ class _LevelUpModalState extends State<LevelUpModal>
                                 gradient: LinearGradient(
                                   begin: edge,
                                   end: -edge,
-                                  colors: [color.withOpacity(0.45 * glowPulse), Colors.transparent],
+                                  colors: [color.withValues(alpha:0.45 * glowPulse), Colors.transparent],
                                 ),
                               ),
                             ),
@@ -153,8 +153,8 @@ class _LevelUpModalState extends State<LevelUpModal>
                           shape: BoxShape.circle,
                           gradient: RadialGradient(
                             colors: [
-                              color.withOpacity(0.33),
-                              color.withOpacity(0.067),
+                              color.withValues(alpha:0.33),
+                              color.withValues(alpha:0.067),
                               Colors.transparent,
                             ],
                             stops: const [0.0, 0.4, 0.7],
@@ -250,10 +250,10 @@ class _ModalCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1A1625),
         borderRadius: BorderRadius.circular(48),
-        border: Border.all(color: color.withOpacity(0.4), width: 1),
+        border: Border.all(color: color.withValues(alpha:0.4), width: 1),
         boxShadow: [
-          BoxShadow(color: color.withOpacity(0.133), blurRadius: 80),
-          BoxShadow(color: color.withOpacity(0.067), blurRadius: 20, spreadRadius: -5),
+          BoxShadow(color: color.withValues(alpha:0.133), blurRadius: 80),
+          BoxShadow(color: color.withValues(alpha:0.067), blurRadius: 20, spreadRadius: -5),
         ],
       ),
       child: Stack(
@@ -267,7 +267,7 @@ class _ModalCard extends StatelessWidget {
                 gradient: RadialGradient(
                   center: Alignment.topCenter,
                   radius: 1.0,
-                  colors: [color.withOpacity(0.2), Colors.transparent],
+                  colors: [color.withValues(alpha:0.2), Colors.transparent],
                   stops: const [0.0, 0.7],
                 ),
               ),
@@ -288,12 +288,12 @@ class _ModalCard extends StatelessWidget {
                       width: 96,
                       height: 96,
                       decoration: BoxDecoration(
-                        color: color.withOpacity(0.2),
+                        color: color.withValues(alpha:0.2),
                         borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: color.withOpacity(0.533), width: 1),
+                        border: Border.all(color: color.withValues(alpha:0.533), width: 1),
                         boxShadow: [
                           BoxShadow(
-                            color: color.withOpacity(0.4),
+                            color: color.withValues(alpha:0.4),
                             blurRadius: 40,
                           ),
                         ],
@@ -319,7 +319,7 @@ class _ModalCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w900,
-                            color: color.withOpacity(0.8),
+                            color: color.withValues(alpha:0.8),
                             letterSpacing: 4,
                           ),
                         ),
@@ -341,7 +341,7 @@ class _ModalCard extends StatelessWidget {
                                 alignment: PlaceholderAlignment.middle,
                                 child: ShaderMask(
                                   shaderCallback: (bounds) => LinearGradient(
-                                    colors: [color, color.withOpacity(0.67)],
+                                    colors: [color, color.withValues(alpha:0.67)],
                                   ).createShader(bounds),
                                   child: Text(
                                     animal.name,
@@ -365,7 +365,7 @@ class _ModalCard extends StatelessWidget {
                           animal.quote,
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.white.withOpacity(0.6),
+                            color: Colors.white.withValues(alpha:0.6),
                             fontStyle: FontStyle.italic,
                             height: 1.6,
                           ),
@@ -405,7 +405,7 @@ class _RaysPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = 3000.0; // Estendi i raggi all'infinito oltre i bordi dello schermo
     final paint = Paint()
-      ..color = color.withOpacity(0.17)
+      ..color = color.withValues(alpha:0.17)
       ..style = PaintingStyle.fill;
 
     for (int i = 0; i < 12; i++) {
@@ -453,12 +453,12 @@ class _AwesomeButtonState extends State<_AwesomeButton> {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [widget.color, widget.color.withOpacity(0.8)],
+              colors: [widget.color, widget.color.withValues(alpha:0.8)],
             ),
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: widget.color.withOpacity(0.267),
+                color: widget.color.withValues(alpha:0.267),
                 blurRadius: 24,
                 offset: const Offset(0, 8),
               ),

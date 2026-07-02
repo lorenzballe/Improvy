@@ -38,7 +38,7 @@ class SessionSummaryScreen extends StatelessWidget {
     final isCustom = mode == 'custom' || mode == 'note-to-number';
     final isDiat  = mode == 'diatonic';
 
-    final diffLabels = ['Apprentice', 'Virtuoso', 'Maestro'];
+    final diffLabels = ['Apprentice', 'Virtuoso', 'Master'];
     final modeLabel  = isDiat ? 'Diatonic' : (mode == 'chromatic' ? 'Chromatic' : mode);
 
     // Accent colour: gold > green > red
@@ -64,11 +64,11 @@ class SessionSummaryScreen extends StatelessWidget {
         // Background atmosphere
         Positioned(
           top: -120, left: -80,
-          child: _Blob(size: 320, color: accentColor.withOpacity(0.07)),
+          child: _Blob(size: 320, color: accentColor.withValues(alpha:0.07)),
         ),
         Positioned(
           bottom: -60, right: -60,
-          child: _Blob(size: 240, color: modeColor.withOpacity(0.06)),
+          child: _Blob(size: 240, color: modeColor.withValues(alpha:0.06)),
         ),
 
         SafeArea(
@@ -84,7 +84,7 @@ class SessionSummaryScreen extends StatelessWidget {
                       'SESSION COMPLETE',
                       style: TextStyle(
                         fontSize: 10, fontWeight: FontWeight.w900,
-                        color: Colors.white.withOpacity(0.35), letterSpacing: 3,
+                        color: Colors.white.withValues(alpha:0.35), letterSpacing: 3,
                       ),
                     ),
                     const SizedBox(height: 3),
@@ -93,11 +93,11 @@ class SessionSummaryScreen extends StatelessWidget {
                       children: [
                         NoteText(
                           note: key,
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Colors.white.withOpacity(0.7)),
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Colors.white.withValues(alpha:0.7)),
                         ),
                         Text(
                           ' · $modeLabel · ${diffLabels[(diff - 1).clamp(0, 2)]}',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white.withOpacity(0.4)),
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white.withValues(alpha:0.4)),
                         ),
                       ],
                     ),
@@ -145,7 +145,7 @@ class SessionSummaryScreen extends StatelessWidget {
                     'ACCURACY %',
                     style: TextStyle(
                       fontSize: 11, fontWeight: FontWeight.w900,
-                      color: Colors.white.withOpacity(0.3), letterSpacing: 3,
+                      color: Colors.white.withValues(alpha:0.3), letterSpacing: 3,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -154,10 +154,10 @@ class SessionSummaryScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                     decoration: BoxDecoration(
-                      color: accentColor.withOpacity(0.12),
+                      color: accentColor.withValues(alpha:0.12),
                       borderRadius: BorderRadius.circular(99),
-                      border: Border.all(color: accentColor.withOpacity(0.4), width: 1.5),
-                      boxShadow: [BoxShadow(color: accentColor.withOpacity(0.2), blurRadius: 20)],
+                      border: Border.all(color: accentColor.withValues(alpha:0.4), width: 1.5),
+                      boxShadow: [BoxShadow(color: accentColor.withValues(alpha:0.2), blurRadius: 20)],
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -208,7 +208,7 @@ class SessionSummaryScreen extends StatelessWidget {
                       label: 'TIME',
                       value: '$mins:$secs',
                       icon: Icons.timer_outlined,
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha:0.5),
                     )),
                   ]),
                   const SizedBox(height: 16),
@@ -283,9 +283,9 @@ class _BackBtn extends StatelessWidget {
         child: Container(
           width: 40, height: 40,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.07),
+            color: Colors.white.withValues(alpha:0.07),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
+            border: Border.all(color: Colors.white.withValues(alpha:0.1)),
           ),
           child: const Icon(Icons.arrow_back_rounded, color: Colors.white70, size: 20),
         ),
@@ -305,9 +305,9 @@ class _StatTile extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.04),
+          color: Colors.white.withValues(alpha:0.04),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withOpacity(0.07)),
+          border: Border.all(color: Colors.white.withValues(alpha:0.07)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -321,7 +321,7 @@ class _StatTile extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               label,
-              style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white.withOpacity(0.3), letterSpacing: 1.5),
+              style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white.withValues(alpha:0.3), letterSpacing: 1.5),
             ),
           ],
         ),
@@ -346,9 +346,9 @@ class _MasteryCard extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.04),
+          color: Colors.white.withValues(alpha:0.04),
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.white.withOpacity(0.07)),
+          border: Border.all(color: Colors.white.withValues(alpha:0.07)),
         ),
         child: Column(
           children: [
@@ -356,9 +356,9 @@ class _MasteryCard extends StatelessWidget {
               Container(
                 width: 48, height: 48,
                 decoration: BoxDecoration(
-                  color: animal.color.withOpacity(0.15),
+                  color: animal.color.withValues(alpha:0.15),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: animal.color.withOpacity(0.3)),
+                  border: Border.all(color: animal.color.withValues(alpha:0.3)),
                 ),
                 child: Center(child: AnimalIcon(name: animal.name, color: animal.color, size: 28)),
               ),
@@ -369,7 +369,7 @@ class _MasteryCard extends StatelessWidget {
                   children: [
                     Text(
                       'MODE MASTERY',
-                      style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white.withOpacity(0.3), letterSpacing: 2),
+                      style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white.withValues(alpha:0.3), letterSpacing: 2),
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -388,7 +388,7 @@ class _MasteryCard extends StatelessWidget {
             Container(
               height: 6,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.06),
+                color: Colors.white.withValues(alpha:0.06),
                 borderRadius: BorderRadius.circular(99),
               ),
               child: ClipRRect(
@@ -399,9 +399,9 @@ class _MasteryCard extends StatelessWidget {
                     widthFactor: (modeProgress / 100).clamp(0.0, 1.0),
                     child: Container(
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(colors: [animal.color, animal.color.withOpacity(0.6)]),
+                        gradient: LinearGradient(colors: [animal.color, animal.color.withValues(alpha:0.6)]),
                         borderRadius: BorderRadius.circular(99),
-                        boxShadow: [BoxShadow(color: animal.color.withOpacity(0.5), blurRadius: 6)],
+                        boxShadow: [BoxShadow(color: animal.color.withValues(alpha:0.5), blurRadius: 6)],
                       ),
                     ),
                   ),
@@ -443,8 +443,8 @@ class _BottomActions extends StatelessWidget {
             _PrimaryBtn(
               label: 'PLAY NEXT DIFFICULTY',
               icon: Icons.arrow_forward_rounded,
-              gradColors: [modeColor, modeColor.withOpacity(0.7)],
-              shadowColor: modeColor.withOpacity(0.4),
+              gradColors: [modeColor, modeColor.withValues(alpha:0.7)],
+              shadowColor: modeColor.withValues(alpha:0.4),
               onTap: () => onNextDifficulty(difficulty + 1),
             ),
             const SizedBox(height: 10),
@@ -529,18 +529,18 @@ class _SecondaryBtnState extends State<_SecondaryBtn> {
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 16),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.06),
+              color: Colors.white.withValues(alpha:0.06),
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: Colors.white.withOpacity(0.1)),
+              border: Border.all(color: Colors.white.withValues(alpha:0.1)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(widget.icon, color: Colors.white.withOpacity(0.5), size: 16),
+                Icon(widget.icon, color: Colors.white.withValues(alpha:0.5), size: 16),
                 const SizedBox(width: 8),
                 Text(
                   widget.label,
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 1.5, color: Colors.white.withOpacity(0.7)),
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 1.5, color: Colors.white.withValues(alpha:0.7)),
                 ),
               ],
             ),

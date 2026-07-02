@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'providers/app_provider.dart';
 import 'services/storage_service.dart';
+import 'services/purchase_service.dart';
+import 'services/analytics_service.dart';
 import 'screens/root_screen.dart';
 
 void main() async {
@@ -21,6 +23,13 @@ void main() async {
 
   final provider = AppProvider(storage);
   await provider.init();
+
+  // Production services. RevenueCat keeps provider.isPro in sync with the user's
+  // real entitlements (purchase / restore / remote updates); PostHog = analytics.
+  PurchaseService.instance.onProChanged = provider.setIsPro;
+  await PurchaseService.instance.init();
+  await AnalyticsService.instance.init();
+  AnalyticsService.instance.capture('app_open');
 
   runApp(
     ChangeNotifierProvider.value(

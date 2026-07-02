@@ -3,6 +3,7 @@ import '../models/key_progress.dart';
 import '../models/stats.dart';
 import '../models/training_mode.dart';
 import '../services/storage_service.dart';
+import '../services/analytics_service.dart';
 import '../constants/levels.dart';
 
 class AppProvider extends ChangeNotifier {
@@ -17,6 +18,10 @@ class AppProvider extends ChangeNotifier {
   bool adaptiveDifficulty = false;
   bool tutorialCompleted = false;
   String notation = 'CDE'; // 'CDE' or 'DoReMi'
+  // When true, the in-game piano keyboard starts from the current key's tonic
+  // (or the white key just below it, if the tonic is a black key) instead of
+  // always running C→C.
+  bool keyboardFromTonic = false;
 
   String? selectedKey;
   // True while a single-key analytics sub-screen (inside Stats) is open, so the
@@ -42,6 +47,7 @@ class AppProvider extends ChangeNotifier {
     adaptiveDifficulty = _storage.loadAdaptiveDifficulty();
     tutorialCompleted = _storage.loadTutorialCompleted();
     notation = _storage.loadNotation();
+    keyboardFromTonic = _storage.loadKeyboardFromTonic();
     lastSession = _storage.loadLastSession();
     notifyListeners();
   }
@@ -133,6 +139,12 @@ class AppProvider extends ChangeNotifier {
     };
     _storage.saveLastSession(lastSession!);
 
+    AnalyticsService.instance.capture('session_started', {
+      'mode': mode.storageKey,
+      'key': keyToUse,
+      'difficulty': diff,
+    });
+
     activeMode = mode;
     notifyListeners();
   }
@@ -157,6 +169,13 @@ class AppProvider extends ChangeNotifier {
       'timestamp': DateTime.now().millisecondsSinceEpoch,
     };
     _storage.saveLastSession(lastSession!);
+    AnalyticsService.instance.capture('session_started', {
+      'mode': TrainingMode.custom.storageKey,
+      'key': selectedKey,
+      'difficulty': difficulty,
+      'reverse': reverse,
+      'degrees': degrees.length,
+    });
     activeMode = TrainingMode.custom;
     notifyListeners();
   }
@@ -180,6 +199,12 @@ class AppProvider extends ChangeNotifier {
       'timestamp': DateTime.now().millisecondsSinceEpoch,
     };
     _storage.saveLastSession(lastSession!);
+    AnalyticsService.instance.capture('session_started', {
+      'mode': TrainingMode.noteToNumber.storageKey,
+      'key': selectedKey,
+      'difficulty': difficulty,
+      'degrees': degrees.length,
+    });
     activeMode = TrainingMode.noteToNumber;
     notifyListeners();
   }
@@ -325,12 +350,21 @@ class AppProvider extends ChangeNotifier {
   void setAdaptiveDifficulty(bool value) {
     adaptiveDifficulty = value;
     _storage.saveAdaptiveDifficulty(value);
+    AnalyticsService.instance.capture('setting_changed', {'setting': 'adaptive_difficulty', 'value': value});
     notifyListeners();
   }
 
   void setNotation(String value) {
     notation = value;
     _storage.saveNotation(value);
+    AnalyticsService.instance.capture('setting_changed', {'setting': 'notation', 'value': value});
+    notifyListeners();
+  }
+
+  void setKeyboardFromTonic(bool value) {
+    keyboardFromTonic = value;
+    _storage.saveKeyboardFromTonic(value);
+    AnalyticsService.instance.capture('setting_changed', {'setting': 'keyboard_from_tonic', 'value': value});
     notifyListeners();
   }
 

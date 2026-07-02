@@ -9,6 +9,29 @@ const List<String> kChromaticDegrees = [
   '1', '♭2', '2', '♭3/♯2', '3', '4', '♭5/♯4', '5', '♭6/♯5', '6', '♭7', '7'
 ];
 
+// Note→Number trains the DEGREE from a note, where a note's spelling implies a
+// specific degree (F = ♭3, but E♯ = ♯2). So in that direction each enharmonic
+// degree is split into its two spellings — distinct degrees with distinct
+// musical functions, tracked separately. (Degree→Note keeps the slash form,
+// since there a single degree maps to an enharmonic note button.)
+const List<String> kChromaticDegreesSplit = [
+  '1', '♭2', '2', '♯2', '♭3', '3', '4', '♯4', '♭5', '5', '♯5', '♭6', '6', '♭7', '7'
+];
+
+// Slash degree → its two split spellings (sharp-of-lower first, then flat-of-higher).
+const Map<String, List<String>> kDegreeSplitMap = {
+  '♭3/♯2': ['♯2', '♭3'],
+  '♭5/♯4': ['♯4', '♭5'],
+  '♭6/♯5': ['♯5', '♭6'],
+};
+
+// A split spelling → the slash degree it collapses back to (for the reverse switch).
+const Map<String, String> kDegreeCollapseMap = {
+  '♯2': '♭3/♯2', '♭3': '♭3/♯2',
+  '♯4': '♭5/♯4', '♭5': '♭5/♯4',
+  '♯5': '♭6/♯5', '♭6': '♭6/♯5',
+};
+
 const Map<String, int> kNoteToSemitone = {
   'C': 0, 'B#': 0, 'B♯': 0,
   'C#': 1, 'C♯': 1, 'Db': 1, 'D♭': 1,

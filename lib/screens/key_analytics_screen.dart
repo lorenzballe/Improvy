@@ -152,42 +152,46 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
     // Accuracy-over-time chart points (7 buckets, y in 0..200 where 0 = 100%)
     final chartY = _buildChart(history, tone, _last30 ? 30 : 14);
     _selPoint = _selPoint.clamp(0, 6);
+    // Accuracy at the scrubbed point — shown in a fixed spot in the header,
+    // updating as the dot moves (matches the Response Time chart).
+    final selAcc = (100 - chartY[_selPoint] / 200 * 100).round();
 
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(20, 16, 20, 40 + MediaQuery.of(context).padding.bottom),
+          padding: EdgeInsets.fromLTRB(20, 4, 20, 40 + MediaQuery.of(context).padding.bottom),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Header ──
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: widget.onBack,
-                    child: Container(
-                      width: 40, height: 40,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withAlpha(13),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: Colors.white.withAlpha(26), width: 0.8),
-                      ),
-                      child: const Icon(Icons.arrow_back_rounded, color: Colors.white70, size: 20),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Center(
-                child: Column(
+              // ── Header: back arrow (left) + KEY ANALYSIS badge centred on the
+              // SAME line, so there is no empty space above it.
+              SizedBox(
+                height: 40,
+                child: Stack(
+                  alignment: Alignment.center,
                   children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: GestureDetector(
+                        onTap: widget.onBack,
+                        child: Container(
+                          width: 40, height: 40,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withAlpha(13),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: Colors.white.withAlpha(26), width: 1.2),
+                          ),
+                          child: const Icon(Icons.arrow_back_rounded, color: Colors.white70, size: 20),
+                        ),
+                      ),
+                    ),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                       decoration: BoxDecoration(
                         color: Colors.white.withAlpha(13),
                         borderRadius: BorderRadius.circular(9999),
-                        border: Border.all(color: Colors.white.withAlpha(26), width: 0.8),
+                        border: Border.all(color: Colors.white.withAlpha(26), width: 1.2),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -199,12 +203,14 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    NoteText(
-                      note: tone,
-                      style: const TextStyle(fontSize: 84, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -3, height: 1),
-                    ),
                   ],
+                ),
+              ),
+              const SizedBox(height: 14),
+              Center(
+                child: NoteText(
+                  note: tone,
+                  style: const TextStyle(fontSize: 84, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -3, height: 1),
                 ),
               ),
               const SizedBox(height: 20),
@@ -237,7 +243,7 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                             decoration: BoxDecoration(
                               color: color.withAlpha(26),
                               borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: Colors.white.withAlpha(26), width: 0.8),
+                              border: Border.all(color: Colors.white.withAlpha(26), width: 1.2),
                             ),
                             child: Text(_last30 ? 'LAST 30 GAMES' : 'LAST 14 DAYS',
                               style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: color, letterSpacing: 1.5)),
@@ -245,7 +251,26 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 14),
+                    // Big accuracy value at the scrubbed point — stays here and
+                    // updates as the dot moves (no tooltip over the point).
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        Text('$selAcc',
+                          style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: color, height: 1, letterSpacing: -1.5)),
+                        Text('%',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: color.withAlpha(160), letterSpacing: -1)),
+                        const SizedBox(width: 10),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 3),
+                          child: Text('ACCURACY',
+                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white.withAlpha(90), letterSpacing: 1.5)),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
                     LayoutBuilder(
                       builder: (ctx, box) {
                         final w = box.maxWidth;
@@ -337,7 +362,7 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                         decoration: BoxDecoration(
                           color: Colors.white.withAlpha(5),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.white.withAlpha(13), width: 0.8),
+                          border: Border.all(color: Colors.white.withAlpha(13), width: 1.2),
                         ),
                         child: Column(
                           children: [
@@ -418,7 +443,7 @@ class _Card extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFF1A1625),
           borderRadius: BorderRadius.circular(28),
-          border: Border.all(color: Colors.white.withAlpha(13), width: 0.8),
+          border: Border.all(color: Colors.white.withAlpha(13), width: 1.2),
           boxShadow: [BoxShadow(color: Colors.black.withAlpha(77), blurRadius: 32, offset: const Offset(0, 8))],
         ),
         child: child,
@@ -459,7 +484,7 @@ class _StatCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFF1A1625),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withAlpha(13), width: 0.8),
+          border: Border.all(color: Colors.white.withAlpha(13), width: 1.2),
           boxShadow: [BoxShadow(color: Colors.black.withAlpha(40), blurRadius: 16, offset: const Offset(0, 8))],
         ),
         child: Column(
@@ -499,7 +524,7 @@ class _DegreeMasteryCell extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white.withAlpha(5),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withAlpha(13), width: 0.8),
+          border: Border.all(color: Colors.white.withAlpha(13), width: 1.2),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -513,7 +538,7 @@ class _DegreeMasteryCell extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: color.withAlpha(33),
                     borderRadius: BorderRadius.circular(9),
-                    border: Border.all(color: Colors.white.withAlpha(26), width: 0.8),
+                    border: Border.all(color: Colors.white.withAlpha(26), width: 1.2),
                   ),
                   child: Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white)),
                 ),
@@ -563,7 +588,7 @@ class _ConfusionRow extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white.withAlpha(5),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withAlpha(13), width: 0.8),
+          border: Border.all(color: Colors.white.withAlpha(13), width: 1.2),
         ),
         child: Column(
           children: [
@@ -595,7 +620,7 @@ class _ConfusionRow extends StatelessWidget {
         decoration: BoxDecoration(
           color: bg,
           borderRadius: BorderRadius.circular(9),
-          border: Border.all(color: border, width: 0.8),
+          border: Border.all(color: border, width: 1.2),
         ),
         child: Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: fg)),
       );
@@ -643,7 +668,7 @@ class _ChartPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final w = size.width;
-    final topPad = 28.0; // space for the tooltip above the line
+    const topPad = 14.0; // small top margin (no tooltip — value is in the header)
     final h = chartH;
 
     Offset pt(int i) => Offset(i / 6 * w, topPad + ys[i] / 200 * h);
@@ -695,30 +720,8 @@ class _ChartPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round);
 
-    // Selected point marker + tooltip
+    // Selected point marker — just the dot; the value lives in the header now.
     final sp = pt(selected);
-    final acc = (100 - ys[selected] / 200 * 100).round();
-
-    // Tooltip bubble
-    final tip = '$acc%';
-    final tpPainter = TextPainter(
-      text: TextSpan(text: tip, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w900)),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    final bubbleW = tpPainter.width + 20;
-    const bubbleH = 26.0;
-    var bx = sp.dx - bubbleW / 2;
-    bx = bx.clamp(0.0, w - bubbleW);
-    final by = sp.dy - bubbleH - 12;
-    final rrect = RRect.fromRectAndRadius(Rect.fromLTWH(bx, by, bubbleW, bubbleH), const Radius.circular(8));
-    canvas.drawRRect(rrect, Paint()..color = const Color(0xFF2A2438));
-    canvas.drawRRect(rrect, Paint()
-      ..color = Colors.white.withAlpha(26)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.8);
-    tpPainter.paint(canvas, Offset(bx + 10, by + (bubbleH - tpPainter.height) / 2));
-
-    // Dot
     canvas.drawCircle(sp, 9, Paint()..color = const Color(0xFF1A1625));
     canvas.drawCircle(sp, 9, Paint()
       ..color = color

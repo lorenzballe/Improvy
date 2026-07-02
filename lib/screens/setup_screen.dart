@@ -30,8 +30,8 @@ class _NoteToNumberSetupState extends State<NoteToNumberSetup> {
   int _diff = 1;
 
   static const _diffLabels = ['Apprentice', 'Virtuoso', 'Master'];
-  static const _accent = Color(0xFF2EE9B0);
-  static const _grad = [Color(0xFF2EE9B0), Color(0xFF2EE9B0)]; // monochrome green (START button)
+  static const _accent = Color(0xFF34D399);
+  static const _grad = [Color(0xFF34D399), Color(0xFF34D399)]; // monochrome green (START button)
 
   @override
   void initState() {
@@ -48,7 +48,7 @@ class _NoteToNumberSetupState extends State<NoteToNumberSetup> {
         backgroundColor: AppColors.background,
         body: Stack(
           children: [
-            _GlowBg(primary: _accent, secondary: const Color(0xFF00BFFF)),
+            _GlowBg(primary: _accent, secondary: const Color(0xFF10B981)),
             SafeArea(
               child: Column(
                 children: [
@@ -62,7 +62,7 @@ class _NoteToNumberSetupState extends State<NoteToNumberSetup> {
                             title: 'Note to Number',
                             subtitle: 'TRAINING SETUP',
                             // Monochrome title (solid green), not a gradient.
-                            gradColors: const [Color(0xFF2EE9B0), Color(0xFF2EE9B0)],
+                            gradColors: const [Color(0xFF34D399), Color(0xFF34D399)],
                             onBack: widget.onCancel,
                           ),
                           Padding(
@@ -119,10 +119,12 @@ class _NoteToNumberSetupState extends State<NoteToNumberSetup> {
                   ),
                   _StartBtn(
                     gradColors: _grad,
-                    shadowColor: _accent.withOpacity(0.4),
+                    shadowColor: _accent.withValues(alpha:0.4),
                     onTap: () {
+                      // Note→Number is reverse: use the split chromatic degrees
+                      // (♭3 and ♯2 are trained as distinct degrees).
                       final degrees = _chromatic
-                          ? kChromaticDegrees.toList()
+                          ? kChromaticDegreesSplit.toList()
                           : ['1', '2', '3', '4', '5', '6', '7'];
                       widget.onStart(_key, degrees, _diff);
                     },
@@ -173,8 +175,8 @@ class _CustomModeSetupState extends State<CustomModeSetup> {
 
   static const _diffLabels = ['Apprentice', 'Virtuoso', 'Master'];
   static const _questionOpts = ['15', '30', '50', '75', '100'];
-  static const _accent = Color(0xFFE040FB);
-  static const _grad = [Color(0xFFE040FB), Color(0xFFE040FB)]; // monochrome purple (START button)
+  static const _accent = Color(0xFFD857EC);
+  static const _grad = [Color(0xFFD857EC), Color(0xFFD857EC)]; // monochrome purple (START button)
 
   @override
   void initState() {
@@ -183,7 +185,23 @@ class _CustomModeSetupState extends State<CustomModeSetup> {
   }
 
   void _setDiatonic() => setState(() => _degs = {'1', '2', '3', '4', '5', '6', '7'});
-  void _setAll() => setState(() => _degs = Set.of(kChromaticDegrees));
+  void _setAll() => setState(() =>
+      _degs = Set.of(_isReverse ? kChromaticDegreesSplit : kChromaticDegrees));
+
+  // Note→Number splits enharmonic degrees (♭3/♯2 → ♭3 + ♯2); Degree→Note keeps
+  // the slash form. Convert the current selection when the direction flips so it
+  // stays valid for the grid being shown.
+  Set<String> _convertDegs(Set<String> degs, bool toReverse) {
+    final out = <String>{};
+    for (final d in degs) {
+      if (toReverse) {
+        out.addAll(kDegreeSplitMap[d] ?? [d]);
+      } else {
+        out.add(kDegreeCollapseMap[d] ?? d);
+      }
+    }
+    return out;
+  }
 
   void _toggleDeg(String deg) {
     setState(() {
@@ -204,7 +222,7 @@ class _CustomModeSetupState extends State<CustomModeSetup> {
         backgroundColor: AppColors.background,
         body: Stack(
           children: [
-            _GlowBg(primary: _accent, secondary: const Color(0xFF7C4DFF)),
+            _GlowBg(primary: _accent, secondary: const Color(0xFFA855F7)),
             SafeArea(
               child: Column(
                 children: [
@@ -218,7 +236,7 @@ class _CustomModeSetupState extends State<CustomModeSetup> {
                             title: 'Custom Mode',
                             subtitle: 'PERSONALIZED SESSION',
                             // Monochrome title (solid purple), not a gradient.
-                            gradColors: const [Color(0xFFE040FB), Color(0xFFE040FB)],
+                            gradColors: const [Color(0xFFD857EC), Color(0xFFD857EC)],
                             onBack: widget.onCancel,
                           ),
                           Padding(
@@ -250,7 +268,13 @@ class _CustomModeSetupState extends State<CustomModeSetup> {
                                   opts: const ['Degree → Note', 'Note → Degree'],
                                   sel: _isReverse ? 'Note → Degree' : 'Degree → Note',
                                   accentColor: _accent,
-                                  onChange: (v) => setState(() => _isReverse = v == 'Note → Degree'),
+                                  onChange: (v) => setState(() {
+                                    final rev = v == 'Note → Degree';
+                                    if (rev != _isReverse) {
+                                      _degs = _convertDegs(_degs, rev);
+                                      _isReverse = rev;
+                                    }
+                                  }),
                                 ),
                                 const SizedBox(height: 36),
 
@@ -272,6 +296,7 @@ class _CustomModeSetupState extends State<CustomModeSetup> {
                                 _DegreeGrid(
                                   selected: _degs,
                                   onToggle: _toggleDeg,
+                                  reverse: _isReverse,
                                 ),
                                 const SizedBox(height: 36),
 
@@ -311,7 +336,7 @@ class _CustomModeSetupState extends State<CustomModeSetup> {
                   ),
                   _StartBtn(
                     gradColors: _grad,
-                    shadowColor: _accent.withOpacity(0.4),
+                    shadowColor: _accent.withValues(alpha:0.4),
                     icon: Icons.bolt_rounded, // web: Zap
                     onTap: () => widget.onStart(
                       _key, _degs.toList(), _isReverse, _diff, _questions,
@@ -339,10 +364,10 @@ class _GlowBg extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Stack(children: [
-      Positioned(top: -80, right: -60, child: _blob(280, primary.withOpacity(0.13))),
-      Positioned(bottom: -60, left: -40, child: _blob(220, secondary.withOpacity(0.10))),
+      Positioned(top: -80, right: -60, child: _blob(280, primary.withValues(alpha:0.13))),
+      Positioned(bottom: -60, left: -40, child: _blob(220, secondary.withValues(alpha:0.10))),
       Positioned(top: MediaQuery.of(context).size.height * 0.4, left: -80,
-        child: _blob(200, primary.withOpacity(0.06))),
+        child: _blob(200, primary.withValues(alpha:0.06))),
     ]);
   }
 
@@ -380,7 +405,7 @@ class _Header extends StatelessWidget {
             child: Container(
               width: 48, height: 48,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha:0.05),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.chevron_left_rounded, color: Colors.white70, size: 26),
@@ -408,7 +433,7 @@ class _Header extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
-                    color: Colors.white.withOpacity(0.4),
+                    color: Colors.white.withValues(alpha:0.4),
                     letterSpacing: 3,
                   ),
                 ),
@@ -435,13 +460,13 @@ class _SectionTitle extends StatelessWidget {
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Row(children: [
-        Icon(icon, size: 18, color: Colors.white.withOpacity(0.6)),
+        Icon(icon, size: 18, color: Colors.white.withValues(alpha:0.6)),
         const SizedBox(width: 8),
         Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.3)),
       ]),
       if (subtitle.isNotEmpty) ...[
         const SizedBox(height: 4),
-        Text(subtitle, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white.withOpacity(0.4))),
+        Text(subtitle, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white.withValues(alpha:0.4))),
       ],
     ],
   );
@@ -458,6 +483,8 @@ class _KeyGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Keys in ascending semitone order: C, D♭, D, E♭, E, F, F♯, G, A♭, A, B♭, B.
+    final keys = [...kAllKeys]..sort((a, b) => (kNoteToSemitone[a] ?? 0).compareTo(kNoteToSemitone[b] ?? 0));
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -467,9 +494,9 @@ class _KeyGrid extends StatelessWidget {
         mainAxisSpacing: 12,
         mainAxisExtent: 56, // web: h-14
       ),
-      itemCount: kAllKeys.length,
+      itemCount: keys.length,
       itemBuilder: (_, i) {
-        final k = kAllKeys[i];
+        final k = keys[i];
         final sel = k == selected;
         final color = sel ? (AppColors.noteColors[k] ?? accentColor) : accentColor;
         return _KeyCell(noteKey: k, displayColor: color, selected: sel, onTap: () => onSelect(k));
@@ -497,7 +524,7 @@ class _KeyCell extends StatelessWidget {
         decoration: BoxDecoration(
           // web: selected = vivid note colour with a glossy sheen + neon glow;
           // unselected = bg-white/5.
-          color: sel ? null : Colors.white.withOpacity(0.05),
+          color: sel ? null : Colors.white.withValues(alpha:0.05),
           gradient: sel
               ? LinearGradient(
                   begin: Alignment.topCenter,
@@ -514,7 +541,7 @@ class _KeyCell extends StatelessWidget {
             style: TextStyle(
               fontSize: 18, // web: text-lg
               fontWeight: FontWeight.w900,
-              color: sel ? Colors.white : Colors.white.withOpacity(0.4),
+              color: sel ? Colors.white : Colors.white.withValues(alpha:0.4),
               letterSpacing: -0.5,
               shadows: sel
                   ? const [Shadow(color: Color(0x66000000), blurRadius: 4, offset: Offset(0, 1))]
@@ -556,7 +583,7 @@ class _SlidingPillRow extends StatelessWidget {
         height: 56, // web: h-14
         padding: const EdgeInsets.all(pad),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05), // web: bg-white/5
+          color: Colors.white.withValues(alpha:0.05), // web: bg-white/5
           borderRadius: BorderRadius.circular(16), // rounded-2xl
         ),
         child: Stack(children: [
@@ -570,10 +597,10 @@ class _SlidingPillRow extends StatelessWidget {
             width: itemW - 6,
             child: Container(
               decoration: BoxDecoration(
-                color: accentColor.withOpacity(0.4),
+                color: accentColor.withValues(alpha:0.4),
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
-                  BoxShadow(color: Colors.black.withOpacity(0.25), blurRadius: 12, offset: const Offset(0, 4)),
+                  BoxShadow(color: Colors.black.withValues(alpha:0.25), blurRadius: 12, offset: const Offset(0, 4)),
                 ],
               ),
             ),
@@ -595,7 +622,7 @@ class _SlidingPillRow extends StatelessWidget {
                         fontFamily: 'Lexend',
                         fontSize: 12,
                         fontWeight: FontWeight.w900,
-                        color: active ? Colors.white : Colors.white.withOpacity(0.4),
+                        color: active ? Colors.white : Colors.white.withValues(alpha:0.4),
                         letterSpacing: 1.5,
                       ),
                       child: Text(opt.toUpperCase(), textAlign: TextAlign.center),
@@ -626,7 +653,7 @@ class _QuickBtn extends StatelessWidget {
     child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha:0.05),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
@@ -634,7 +661,7 @@ class _QuickBtn extends StatelessWidget {
         style: TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.w900,
-          color: Colors.white.withOpacity(0.4),
+          color: Colors.white.withValues(alpha:0.4),
           letterSpacing: 0.5,
         ),
       ),
@@ -687,10 +714,10 @@ class _QuestionBtn extends StatelessWidget {
       duration: const Duration(milliseconds: 180),
       padding: const EdgeInsets.symmetric(vertical: 12), // py-3
       decoration: BoxDecoration(
-        color: active ? accentColor.withOpacity(0.2) : Colors.white.withOpacity(0.05),
+        color: active ? accentColor.withValues(alpha:0.2) : Colors.white.withValues(alpha:0.05),
         borderRadius: BorderRadius.circular(12), // rounded-xl
         border: Border.all(
-          color: active ? accentColor.withOpacity(0.5) : Colors.white.withOpacity(0.05),
+          color: active ? accentColor.withValues(alpha:0.5) : Colors.white.withValues(alpha:0.05),
           width: 1,
         ),
         boxShadow: null,
@@ -701,7 +728,7 @@ class _QuestionBtn extends StatelessWidget {
         style: TextStyle(
           fontSize: 14, // text-sm
           fontWeight: FontWeight.w900,
-          color: active ? accentColor : Colors.white.withOpacity(0.4),
+          color: active ? accentColor : Colors.white.withValues(alpha:0.4),
         ),
       ),
     ),
@@ -713,26 +740,48 @@ class _QuestionBtn extends StatelessWidget {
 class _DegreeGrid extends StatelessWidget {
   final Set<String> selected;
   final ValueChanged<String> onToggle;
+  final bool reverse;
 
-  const _DegreeGrid({required this.selected, required this.onToggle});
+  const _DegreeGrid({required this.selected, required this.onToggle, this.reverse = false});
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        crossAxisSpacing: 12, // web: gap-3
-        mainAxisSpacing: 12,
-        mainAxisExtent: 48, // web: h-12
-      ),
-      itemCount: kChromaticDegrees.length,
-      itemBuilder: (_, i) {
-        final deg = kChromaticDegrees[i];
-        final active = selected.contains(deg);
-        final color = AppColors.degreeColors[deg.split('/')[0]] ?? Colors.white;
-        return _DegreeCell(deg: deg, color: color, active: active, onTap: () => onToggle(deg));
+    // Note→Number shows each enharmonic degree as two distinct buttons.
+    final degrees = reverse ? kChromaticDegreesSplit : kChromaticDegrees;
+    const cols = 4;
+    const gap = 12.0; // web: gap-3
+    const cellH = 48.0; // web: h-12
+    final rows = (degrees.length / cols).ceil();
+    return LayoutBuilder(
+      builder: (ctx, constraints) {
+        final cw = (constraints.maxWidth - (cols - 1) * gap) / cols;
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (int r = 0; r < rows; r++) ...[
+              if (r > 0) const SizedBox(height: gap),
+              Row(
+                // The incomplete last row (e.g. the 3 leftover split degrees)
+                // is centered; full rows fill the width exactly.
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  for (int c = 0; c < cols && (r * cols + c) < degrees.length; c++) ...[
+                    if (c > 0) const SizedBox(width: gap),
+                    SizedBox(
+                      width: cw, height: cellH,
+                      child: Builder(builder: (_) {
+                        final deg = degrees[r * cols + c];
+                        final active = selected.contains(deg);
+                        final color = AppColors.degreeColors[deg.split('/')[0]] ?? Colors.white;
+                        return _DegreeCell(deg: deg, color: color, active: active, onTap: () => onToggle(deg));
+                      }),
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ],
+        );
       },
     );
   }
@@ -758,7 +807,7 @@ class _DegreeCell extends StatelessWidget {
         decoration: BoxDecoration(
           // web: selected = vivid degree colour with a glossy sheen + neon glow;
           // unselected = bg-white/5
-          color: a ? null : Colors.white.withOpacity(0.05),
+          color: a ? null : Colors.white.withValues(alpha:0.05),
           gradient: a
               ? LinearGradient(
                   begin: Alignment.topCenter,
@@ -776,7 +825,7 @@ class _DegreeCell extends StatelessWidget {
             style: TextStyle(
               fontSize: deg.length > 3 ? 11 : 14, // web: text-sm
               fontWeight: FontWeight.w900,
-              color: a ? Colors.white : Colors.white.withOpacity(0.3),
+              color: a ? Colors.white : Colors.white.withValues(alpha:0.3),
               letterSpacing: -0.2,
               shadows: a ? const [Shadow(color: Color(0x66000000), blurRadius: 4, offset: Offset(0, 1))] : null,
             ),

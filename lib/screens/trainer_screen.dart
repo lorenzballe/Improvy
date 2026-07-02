@@ -20,6 +20,7 @@ class TrainerScreen extends StatefulWidget {
   final bool adaptiveDifficulty;
   final List<dynamic> sessionHistory;
   final String notation;
+  final bool keyboardFromTonic;
   final VoidCallback onExit;
   final void Function(bool isCorrect, int responseTime, AnswerRecord details) onAnswer;
   final void Function(Map<String, dynamic> data) onFinish;
@@ -35,6 +36,7 @@ class TrainerScreen extends StatefulWidget {
     required this.adaptiveDifficulty,
     required this.sessionHistory,
     required this.notation,
+    this.keyboardFromTonic = false,
     required this.onExit,
     required this.onAnswer,
     required this.onFinish,
@@ -48,6 +50,7 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
   late String _currentKey;
   late List<String> _scale;
   String _degreeLabel = '1';
+  String _fullDegree = '1'; // logical degree incl. slash (for de-dup); shown label may be a single spelling
   String _correctAnswer = '';
   int _correct = 0;
   int _attempts = 0;
@@ -120,7 +123,7 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
     if (_actualIsReverse) {
       final degrees = widget.customDegrees?.isNotEmpty == true
           ? widget.customDegrees!
-          : kChromaticDegrees.toList();
+          : kChromaticDegreesSplit.toList();
       return degrees.map((d) => NoteItem(label: d, note: d)).toList();
     }
     if (widget.mode == TrainingMode.diatonic) {
@@ -148,9 +151,9 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
         ? ['1', '2', '3', '4', '5', '6', '7']
         : (widget.customDegrees?.isNotEmpty == true
             ? widget.customDegrees!
-            : kChromaticDegrees.toList());
+            : (_actualIsReverse ? kChromaticDegreesSplit : kChromaticDegrees).toList());
 
-    final currentDeg = _actualIsReverse ? _correctAnswer : _degreeLabel;
+    final currentDeg = _actualIsReverse ? _correctAnswer : _fullDegree;
     String next;
 
     if (widget.adaptiveDifficulty && _sessionAnswers.length >= 5) {
@@ -168,6 +171,7 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
       _showFeedback = false;
       _lastSelected = null;
       _remainingMs = _timeLimit;
+      _fullDegree = next; // logical degree (incl. slash) — used for de-dup
       if (_actualIsReverse) {
         _degreeLabel = getNoteFromChromaticDegree(next, _scale, _currentKey);
         _correctAnswer = next;
@@ -176,13 +180,34 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
         final idx = int.tryParse(next);
         _correctAnswer = idx != null && idx >= 1 && idx <= 7 ? _scale[idx - 1] : _scale[0];
       } else {
-        _degreeLabel = next;
+        // Chromatic forward: the QUESTION asks a single spelling — never the
+        // "♭3/♯2" slash form. The two enharmonic spellings split the degree's
+        // probability; the enharmonic note button still shows both names.
+        _degreeLabel = _singleSpelling(next);
         _correctAnswer = getNoteFromChromaticDegree(next, _scale, _currentKey);
       }
     });
 
     _questionStart = DateTime.now();
     _startTimers();
+  }
+
+  // Pick one enharmonic spelling (e.g. '♭3/♯2' → '♭3' or '♯2') so the asked
+  // degree never shows a slash; 50/50 between the two spellings.
+  String _singleSpelling(String deg) {
+    if (!deg.contains('/')) return deg;
+    final parts = deg.split('/');
+    return parts[Random().nextInt(parts.length)];
+  }
+
+  // Leftmost white-key semitone for the in-game keyboard. With the
+  // "keyboard from tonic" setting on it's the tonic's own white key — or the
+  // white key just below the tonic when the tonic is a black key. Otherwise C.
+  int get _keyboardStartSemitone {
+    if (!widget.keyboardFromTonic) return 0;
+    final tonic = kNoteToSemitone[_currentKey] ?? 0;
+    const whites = {0, 2, 4, 5, 7, 9, 11};
+    return whites.contains(tonic) ? tonic : tonic - 1;
   }
 
   String _pickAdaptiveDegree(List<String> possible, String currentDeg) {
@@ -328,7 +353,9 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
 
     // Schedule the next question FIRST so nothing below (feedback effects or
     // stats recording) can ever block advancing to the next degree.
-    _feedbackTimer = Timer(Duration(milliseconds: isCorrect ? 600 : 1800), () {
+    // Correct answers advance faster (shorter "CORRECT" flash) so the game
+    // feels snappier; wrong answers stay up long enough to read the solution.
+    _feedbackTimer = Timer(Duration(milliseconds: isCorrect ? 380 : 1800), () {
       if (_attempts >= _questionsPerKey) {
         _finishSession();
       } else {
@@ -511,6 +538,7 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
                       lastSelected: _lastSelected,
                       notation: widget.notation,
                       height: inputH - 32,
+                      startWhiteSemitone: _keyboardStartSemitone,
                       onSelect: _handleAnswer,
                     )
                   else
@@ -624,14 +652,14 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
           child: Container(
             padding: const EdgeInsets.fromLTRB(34, 26, 34, 28),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha:0.05),
               borderRadius: BorderRadius.circular(32),
               // Soft hairline border in the app's style; the accent lives in the
               // badge + glow rather than a hard coloured outline.
-              border: Border.all(color: Colors.white.withOpacity(0.12), width: 1),
+              border: Border.all(color: Colors.white.withValues(alpha:0.12), width: 1),
               boxShadow: [
-                BoxShadow(color: accent.withOpacity(0.18), blurRadius: 56, spreadRadius: -8),
-                BoxShadow(color: Colors.black.withOpacity(0.4), blurRadius: 30, offset: const Offset(0, 16)),
+                BoxShadow(color: accent.withValues(alpha:0.18), blurRadius: 56, spreadRadius: -8),
+                BoxShadow(color: Colors.black.withValues(alpha:0.4), blurRadius: 30, offset: const Offset(0, 16)),
               ],
             ),
             child: Column(
@@ -646,7 +674,7 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
                       center: const Alignment(-0.3, -0.4),
                       colors: [Color.lerp(accent, Colors.white, 0.35)!, accent],
                     ),
-                    boxShadow: [BoxShadow(color: accent.withOpacity(0.55), blurRadius: 24, spreadRadius: -2)],
+                    boxShadow: [BoxShadow(color: accent.withValues(alpha:0.55), blurRadius: 24, spreadRadius: -2)],
                   ),
                   child: Icon(correct ? Icons.check_rounded : Icons.close_rounded, color: Colors.white, size: 34),
                 ),
@@ -657,11 +685,11 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
                 ),
                 if (!correct) ...[
                   const SizedBox(height: 16),
-                  Container(height: 1, width: 64, color: Colors.white.withOpacity(0.1)),
+                  Container(height: 1, width: 64, color: Colors.white.withValues(alpha:0.1)),
                   const SizedBox(height: 16),
                   Text(
                     'CORRECT ANSWER',
-                    style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.white.withOpacity(0.45)),
+                    style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.white.withValues(alpha:0.45)),
                   ),
                   const SizedBox(height: 8),
                   NoteText(
@@ -729,12 +757,6 @@ class _TopBar extends StatelessWidget {
     required this.showFeedback,
   });
 
-  Color get _timerColor {
-    if (timerPct > 0.5) return const Color(0xFF388EF8);
-    if (timerPct > 0.25) return const Color(0xFFfacc15);
-    return const Color(0xFFF43F5E);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -750,7 +772,7 @@ class _TopBar extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.white10,
                     borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: Colors.white10, width: 0.8),
+                    border: Border.all(color: Colors.white10, width: 1.2),
                     boxShadow: const [BoxShadow(color: Color(0x40000000), blurRadius: 20)],
                   ),
                   child: const Icon(Icons.close_rounded, color: Colors.white70, size: 24),
@@ -773,7 +795,10 @@ class _TopBar extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: Colors.black.withAlpha(100),
                           borderRadius: BorderRadius.circular(3),
-                          border: Border.all(color: Colors.white.withAlpha(13), width: 0.5),
+                        ),
+                        foregroundDecoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(3),
+                          border: Border.all(color: Colors.white.withAlpha(13), width: 1.0),
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(3),
@@ -803,7 +828,7 @@ class _TopBar extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.white10,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white.withAlpha(51), width: 0.8),
+                  border: Border.all(color: Colors.white.withAlpha(51), width: 1.2),
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -824,7 +849,7 @@ class _TopBar extends StatelessWidget {
             decoration: BoxDecoration(
               color: const Color(0x1A1A1625),
               borderRadius: BorderRadius.circular(32),
-              border: Border.all(color: Colors.white10, width: 0.8),
+              border: Border.all(color: Colors.white10, width: 1.2),
             ),
             child: Row(
               children: [
@@ -1087,23 +1112,24 @@ class _AnswerGrid extends StatelessWidget {
               for (int r = 0; r < rowsCount; r++) ...[
                 if (r > 0) const SizedBox(height: cgap),
                 Row(
+                  // An incomplete last row (e.g. the 3 leftover degrees of the
+                  // 15-button reverse grid) is centered; full rows fill exactly.
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    for (int c = 0; c < cols; c++) ...[
+                    for (int c = 0; c < cols && (r * cols + c) < count; c++) ...[
                       if (c > 0) const SizedBox(width: cgap),
                       SizedBox(
                         width: bw,
                         height: bw,
-                        child: (r * cols + c) < count
-                            ? _NoteButton(
-                                item: visible[r * cols + c],
-                                isReverse: isReverse,
-                                showFeedback: showFeedback,
-                                correctAnswer: correctAnswer,
-                                isLastSelected: lastSelected == visible[r * cols + c].note,
-                                notation: notation,
-                                onTap: () => onSelect(visible[r * cols + c].note),
-                              )
-                            : const SizedBox.shrink(),
+                        child: _NoteButton(
+                          item: visible[r * cols + c],
+                          isReverse: isReverse,
+                          showFeedback: showFeedback,
+                          correctAnswer: correctAnswer,
+                          isLastSelected: lastSelected == visible[r * cols + c].note,
+                          notation: notation,
+                          onTap: () => onSelect(visible[r * cols + c].note),
+                        ),
                       ),
                     ],
                   ],
@@ -1188,7 +1214,6 @@ class _NoteButtonState extends State<_NoteButton> with SingleTickerProviderState
     final item = widget.item;
     final isReverse = widget.isReverse;
     final showFeedback = widget.showFeedback;
-    final correctAnswer = widget.correctAnswer;
     final isLastSelected = widget.isLastSelected;
     final notation = widget.notation;
     final noteColor = isReverse
@@ -1196,37 +1221,31 @@ class _NoteButtonState extends State<_NoteButton> with SingleTickerProviderState
         : (AppColors.noteColors[item.note] ?? Colors.white);
     final isActive = !showFeedback;
 
+    // The web buttons have NO border in any state (borderWidth 0); colour comes
+    // entirely from the fill. We mirror that exactly.
     Color textColor;
-    Color borderColor;
     Color? bgSolid;
     List<BoxShadow>? shadows;
 
     if (showFeedback && _isCorrectAnswer && isLastSelected) {
-      // User answered correctly — this button turns solid white (matches web)
+      // Correct answer: solid white fill, dark label, white glow.
       bgSolid = Colors.white;
-      borderColor = Colors.white;
       textColor = const Color(0xFF020617);
-      shadows = [BoxShadow(color: Colors.white.withAlpha(128), blurRadius: 50)];
+      shadows = [BoxShadow(color: Colors.white.withValues(alpha: 0.5), blurRadius: 50)];
     } else if (showFeedback && _isCorrectAnswer && !isLastSelected) {
-      // User answered wrong — reveal the correct answer. Keep the square (riquadro)
-      // clearly visible: subtle fill + green outline + green label, green glow, depth.
-      bgSolid = Colors.white.withAlpha(10);
-      borderColor = const Color(0xFF10B981);
-      textColor = const Color(0xFF10B981);
-      shadows = [
-        const BoxShadow(color: Color(0x40000000), blurRadius: 24, offset: Offset(0, 8)),
-        BoxShadow(color: const Color(0xFF10B981).withAlpha(90), blurRadius: 30),
-      ];
-    } else if (showFeedback && isLastSelected && !_isCorrectAnswer) {
-      // User selected a wrong button — solid red (matches web)
-      bgSolid = const Color(0xFFF43F5E);
-      borderColor = const Color(0xFFF43F5E);
+      // Reveal the correct answer after a wrong guess: a FULL green fill
+      // (web rgba(16,185,129,0.5)), white label, green glow — no outline.
+      bgSolid = const Color(0xFF10B981).withValues(alpha: 0.5);
       textColor = Colors.white;
-      shadows = [BoxShadow(color: const Color(0xFFF43F5E).withAlpha(178), blurRadius: 50)];
+      shadows = [BoxShadow(color: const Color(0xFF10B981).withValues(alpha: 0.6), blurRadius: 40)];
+    } else if (showFeedback && isLastSelected && !_isCorrectAnswer) {
+      // Wrong selection: solid red fill, white label, red glow.
+      bgSolid = const Color(0xFFF43F5E);
+      textColor = Colors.white;
+      shadows = [BoxShadow(color: const Color(0xFFF43F5E).withValues(alpha: 0.7), blurRadius: 50)];
     } else {
-      // Default state — subtle tinted background with visible boundary
-      bgSolid = Colors.white.withAlpha(10);
-      borderColor = Colors.white.withAlpha(22);
+      // Default: subtle white fill + a note-colour tint (below), no border.
+      bgSolid = Colors.white.withValues(alpha: 0.05);
       textColor = noteColor;
       shadows = const [BoxShadow(color: Color(0x40000000), blurRadius: 24, offset: Offset(0, 8))];
     }
@@ -1243,7 +1262,6 @@ class _NoteButtonState extends State<_NoteButton> with SingleTickerProviderState
         decoration: BoxDecoration(
           color: bgSolid,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: borderColor, width: 2),
           boxShadow: shadows,
         ),
         child: Stack(
@@ -1253,10 +1271,10 @@ class _NoteButtonState extends State<_NoteButton> with SingleTickerProviderState
               Positioned.fill(
                 child: Container(
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(22),
+                    borderRadius: BorderRadius.circular(24),
                     color: (isReverse
                         ? (AppColors.degreeColors[item.note.split('/')[0]] ?? Colors.white)
-                        : (AppColors.noteColors[item.note] ?? Colors.white)).withAlpha(36),
+                        : (AppColors.noteColors[item.note] ?? Colors.white)).withAlpha(26),
                   ),
                 ),
               ),
@@ -1349,6 +1367,7 @@ class _PianoKeyboard extends StatelessWidget {
   final String? lastSelected;
   final String notation;
   final double height;
+  final int startWhiteSemitone; // semitone of the leftmost white key (0 = C)
   final void Function(String) onSelect;
 
   const _PianoKeyboard({
@@ -1358,22 +1377,56 @@ class _PianoKeyboard extends StatelessWidget {
     required this.lastSelected,
     required this.notation,
     required this.height,
+    this.startWhiteSemitone = 0,
     required this.onSelect,
   });
 
-  static const List<_KeyDef> _whites = [
-    _KeyDef('C', 0, false), _KeyDef('D', 2, false), _KeyDef('E', 4, false),
-    _KeyDef('F', 5, false), _KeyDef('G', 7, false), _KeyDef('A', 9, false),
-    _KeyDef('B', 11, false),
-  ];
-  static const List<_KeyDef> _blacks = [
-    _KeyDef('C♯', 1, true, 1 / 7), _KeyDef('E♭', 3, true, 2 / 7),
-    _KeyDef('F♯', 6, true, 4 / 7), _KeyDef('A♭', 8, true, 5 / 7),
-    _KeyDef('B♭', 10, true, 6 / 7),
-  ];
+  // Build one octave of keys whose leftmost white key has semitone [startSemi].
+  // Yields 7 white keys + all applicable black keys (normally 5, or 6 if needed).
+  // When the starting white is not C, the rightmost black key (e.g., F♯ when
+  // starting from G) is rendered at the octave boundary without adding a duplicate white.
+  // scaleNames overrides the default flat names for black keys that are diatonic in
+  // the current key (e.g. semitone 8 → 'G♯' in A major instead of 'A♭').
+  static (List<_KeyDef>, List<_KeyDef>) _buildKeys(int startSemi, Map<int, String> scaleNames) {
+    const order = [
+      ('C', 0), ('D', 2), ('E', 4), ('F', 5), ('G', 7), ('A', 9), ('B', 11),
+    ];
+    const blackDefault = {1: 'C♯', 3: 'E♭', 6: 'F♯', 8: 'A♭', 10: 'B♭'};
+    var s = order.indexWhere((e) => e.$2 == startSemi);
+    if (s < 0) s = 0;
+    final whites = [
+      for (var k = 0; k < 7; k++)
+        _KeyDef(order[(s + k) % 7].$1, order[(s + k) % 7].$2, false),
+    ];
+    final blacks = <_KeyDef>[];
+    for (var k = 0; k < 6; k++) {
+      final cur = whites[k].semitone, nxt = whites[k + 1].semitone;
+      if ((nxt - cur + 12) % 12 == 2) {
+        final bs = (cur + 1) % 12;
+        final name = scaleNames[bs] ?? blackDefault[bs]!;
+        blacks.add(_KeyDef(name, bs, true, (k + 1) / 7));
+      }
+    }
+    // Check if there's a black key between the last white key and the first white of the next octave.
+    // E.g., when starting from G, the last white is F(5), and the next octave's first white is G(7) —
+    // F♯(6) should be included. Render it to the right of F, properly positioned.
+    final last = whites.last.semitone;
+    final nextOctaveFirst = (whites.first.semitone + 12) % 12;
+    if ((nextOctaveFirst - last + 12) % 12 == 2) {
+      final bs = (last + 1) % 12;
+      final name = scaleNames[bs] ?? blackDefault[bs]!;
+      blacks.add(_KeyDef(name, bs, true, 6.75 / 7));
+    }
+    return (whites, blacks);
+  }
 
   @override
   Widget build(BuildContext context) {
+    final scaleNames = <int, String>{
+      for (final n in notes)
+        if (kNoteToSemitone[n.note] != null) kNoteToSemitone[n.note]!: n.note,
+    };
+    final (whites, blacks) = _buildKeys(startWhiteSemitone, scaleNames);
     // Which semitones are valid answer options right now
     final active = <int>{};
     for (final n in notes) {
@@ -1418,24 +1471,24 @@ class _PianoKeyboard extends StatelessWidget {
                       return Stack(
                         children: [
                           // White keys (bottom layer) — positioned so each fills full height
-                          for (int i = 0; i < _whites.length; i++)
+                          for (int i = 0; i < whites.length; i++)
                             Positioned(
                               left: i * whiteW,
                               top: 0,
                               width: whiteW,
                               height: h,
                               child: _PianoKey(
-                                def: _whites[i],
-                                active: active.contains(_whites[i].semitone),
-                                isCorrect: correctSemi == _whites[i].semitone,
-                                isSelected: selectedSemi == _whites[i].semitone,
+                                def: whites[i],
+                                active: active.contains(whites[i].semitone),
+                                isCorrect: correctSemi == whites[i].semitone,
+                                isSelected: selectedSemi == whites[i].semitone,
                                 showFeedback: showFeedback,
                                 notation: notation,
-                                onTap: () => onSelect(_whites[i].name),
+                                onTap: () => onSelect(whites[i].name),
                               ),
                             ),
                           // Thin separators between adjacent white keys (real-piano look)
-                          for (int i = 1; i < _whites.length; i++)
+                          for (int i = 1; i < whites.length; i++)
                             Positioned(
                               left: i * whiteW - 0.5,
                               top: 0,
@@ -1444,7 +1497,7 @@ class _PianoKeyboard extends StatelessWidget {
                               child: const ColoredBox(color: Color(0xFFCBD5E1)),
                             ),
                           // Black keys (top layer)
-                          for (final k in _blacks)
+                          for (final k in blacks)
                             Positioned(
                               left: k.frac * w - blackW / 2,
                               top: 0,

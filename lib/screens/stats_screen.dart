@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../models/stats.dart';
 import '../constants/app_colors.dart';
-import '../constants/levels.dart';
 import '../widgets/note_text.dart';
 import '../widgets/animal_icon.dart';
 import 'key_analytics_screen.dart';
@@ -114,6 +113,37 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
     final displayRt = _rtRange == '7' ? monthlyRt.sublist(23) : monthlyRt;
     final validRt = displayRt.where((t) => t > 0);
     final avgRt = validRt.isEmpty ? 0 : validRt.reduce((a, b) => a + b) ~/ validRt.length;
+
+    // ── Per-key rank (web parity): rank by total average response time across
+    // diatonic + chromatic; keys with no data are unranked (rank 0 → faded). ──
+    final modeTimes = <String, List<int>>{}; // key -> [dCount, dTime, cCount, cTime]
+    for (final s in stats.sessionHistory) {
+      for (final a in s.answers) {
+        final mi = a.mode == 'diatonic' ? 0 : (a.mode == 'chromatic' ? 2 : -1);
+        if (mi < 0) continue;
+        final m = modeTimes.putIfAbsent(a.tonality, () => [0, 0, 0, 0]);
+        m[mi] += 1;
+        m[mi + 1] += a.responseTime;
+      }
+    }
+    double rankScore(String key) {
+      final m = modeTimes[key];
+      if (m == null) return 200000;
+      final dAvg = m[0] > 0 ? m[1] / m[0] : 100000.0;
+      final cAvg = m[2] > 0 ? m[3] / m[2] : 100000.0;
+      return dAvg + cAvg;
+    }
+    final rankedKeys = provider.progressData.map((k) => k.key).toList()
+      ..sort((a, b) {
+        final sa = rankScore(a), sb = rankScore(b);
+        return sa == sb ? a.compareTo(b) : sa.compareTo(sb);
+      });
+    final keyRanks = <String, int>{
+      for (final k in provider.progressData)
+        k.key: (modeTimes[k.key] != null && (modeTimes[k.key]![0] > 0 || modeTimes[k.key]![2] > 0))
+            ? rankedKeys.indexOf(k.key) + 1
+            : 0,
+    };
 
     // Sessions per day (last 7d)
     final weeklySessions = List.generate(7, (i) {
@@ -266,7 +296,7 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
                         provider.setViewingKeyStats(true);
                         setState(() => _analyticsKey = e.value.key);
                       },
-                      child: _SkillRow(keyData: e.value, color: color, index: e.key),
+                      child: _SkillRow(keyData: e.value, color: color, index: e.key, rank: keyRanks[e.value.key] ?? 0),
                     );
                   }),
                 ]),
@@ -426,18 +456,11 @@ class _MiniCard extends StatelessWidget {
             ]),
           )
         else
-          ShaderMask(
-            shaderCallback: (bounds) => LinearGradient(
-              colors: [glowColor.withOpacity(0.9), glowColor.withOpacity(0.4)],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ).createShader(bounds),
-            child: Row(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
-              Text(value, style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: Colors.white, height: 1, letterSpacing: -1.5)),
-              if (valueSuffix != null) Text(valueSuffix!,
-                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white.withAlpha(102))),
-            ]),
-          ),
+          Row(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
+            Text(value, style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: glowColor, height: 1, letterSpacing: -1.5)),
+            if (valueSuffix != null) Text(valueSuffix!,
+              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: glowColor.withAlpha(178))),
+          ]),
         if (trend != null)
           Padding(
             padding: const EdgeInsets.only(top: 4),
@@ -639,7 +662,9 @@ class _RangeBtn extends StatelessWidget {
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900,
-        color: active ? const Color(0xFF60A5FA) : Colors.white.withAlpha(77))),
+        // Active text follows the toggle's theme colour (blue for Response Time,
+        // red/pink for the Keyboard Heatmap) — not a hard-coded blue.
+        color: active ? Color.lerp(activeColor, Colors.white, 0.3)! : Colors.white.withAlpha(77))),
     ),
   );
 }
@@ -709,23 +734,16 @@ class _LineChartPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
     canvas.drawPath(linePath, linePaint);
 
-    // Draw vertical guide line if active
-    if (showGuideLine && selectedIndex >= 0 && selectedIndex < pts.length) {
-      final targetPt = pts[selectedIndex];
-      final guidePaint = Paint()
-        ..color = Colors.white.withAlpha(51)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5;
-      canvas.drawLine(Offset(targetPt.dx, 0), Offset(targetPt.dx, size.height), guidePaint);
-    }
+    // Draw vertical guide line if active (removed as per user request)
 
     // Draw dot at selected index
     if (selectedIndex >= 0 && selectedIndex < pts.length) {
       final targetPt = pts[selectedIndex];
       final dotBgPaint = Paint()..color = const Color(0xFF1A1625)..style = PaintingStyle.fill;
       final dotBorderPaint = Paint()..color = const Color(0xFF60A5FA)..style = PaintingStyle.stroke..strokeWidth = 4;
-      canvas.drawCircle(targetPt, 6, dotBgPaint);
-      canvas.drawCircle(targetPt, 6, dotBorderPaint);
+      // radius 9 — same as the single-tonality Accuracy chart dot
+      canvas.drawCircle(targetPt, 9, dotBgPaint);
+      canvas.drawCircle(targetPt, 9, dotBorderPaint);
     }
   }
 
@@ -831,7 +849,10 @@ class _DegreeRow extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.black.withAlpha(100),
             borderRadius: BorderRadius.circular(9999),
-            border: Border.all(color: Colors.white.withAlpha(13), width: 0.5),
+          ),
+          foregroundDecoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(9999),
+            border: Border.all(color: Colors.white.withAlpha(13), width: 1.0),
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(9999),
@@ -866,7 +887,6 @@ class _GamesPlayedCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final maxVal = sessions.fold<int>(1, (m, v) => v > m ? v : m);
-    final totalWeek = sessions.fold<int>(0, (s, v) => s + v);
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(32),
@@ -1050,8 +1070,8 @@ class _KeyboardHeatmapCardState extends State<_KeyboardHeatmapCard> {
                 LayoutBuilder(builder: (ctx, box) {
                   final wkW = box.maxWidth / 7;
                   final bkW = wkW * 0.62;
-                  const wkH = 110.0;
-                  const bkH = 70.0;
+                  const wkH = 130.0; // slightly longer keys
+                  const bkH = 82.0;
 
                   return SizedBox(
                     height: wkH,
@@ -1072,7 +1092,7 @@ class _KeyboardHeatmapCardState extends State<_KeyboardHeatmapCard> {
                             child: Container(
                               margin: const EdgeInsets.symmetric(horizontal: 1.5),
                               decoration: BoxDecoration(color: c, borderRadius: br,
-                                border: Border.all(color: Colors.black.withAlpha(26), width: 0.5)),
+                                border: Border.all(color: Colors.black.withAlpha(26), width: 1.2)),
                               alignment: Alignment.bottomCenter,
                               padding: const EdgeInsets.only(bottom: 8),
                               child: Text(whites[i],
@@ -1094,7 +1114,7 @@ class _KeyboardHeatmapCardState extends State<_KeyboardHeatmapCard> {
                             decoration: BoxDecoration(
                               color: noData ? const Color(0xFF0D0B17) : c,
                               borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
-                              border: Border.all(color: Colors.white.withAlpha(51), width: 0.5),
+                              border: Border.all(color: Colors.white.withAlpha(51), width: 1.2),
                               boxShadow: [BoxShadow(color: Colors.black.withAlpha(120), blurRadius: 8, offset: const Offset(0, 4))],
                             ),
                             alignment: Alignment.bottomCenter,
@@ -1137,7 +1157,8 @@ class _SkillRow extends StatelessWidget {
   final dynamic keyData;
   final Color color;
   final int index;
-  const _SkillRow({required this.keyData, required this.color, required this.index});
+  final int rank; // 1-12 by response time; 0 = no data yet
+  const _SkillRow({required this.keyData, required this.color, required this.index, required this.rank});
 
   @override
   Widget build(BuildContext context) {
@@ -1177,13 +1198,14 @@ class _SkillRow extends StatelessWidget {
                   Expanded(child: Text(keySig,
                     style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900,
                       color: Colors.white.withAlpha(102), letterSpacing: 1))),
-                  if (mastery > 90) Icon(Icons.verified_rounded, color: color, size: 14),
+                  // Verified tick next to any non-zero mastery (per request).
+                  if (mastery > 0) Icon(Icons.verified_rounded, color: color, size: 14),
                   const SizedBox(width: 4),
-                  // accuracy: fontSize 14, color, + % in 10px opacity 0.6
-                  RichText(text: TextSpan(children: [
-                    TextSpan(text: '$mastery', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: color)),
-                    TextSpan(text: '%', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900,
-                      color: color.withAlpha(153))),
+                  // Mastery % — Text.rich + explicit Lexend so it doesn't fall
+                  // back to Roboto (which looked hard/robotic).
+                  Text.rich(TextSpan(children: [
+                    TextSpan(text: '$mastery', style: TextStyle(fontFamily: 'Lexend', fontSize: 15, fontWeight: FontWeight.w800, color: color, letterSpacing: -0.3)),
+                    TextSpan(text: '%', style: TextStyle(fontFamily: 'Lexend', fontSize: 10, fontWeight: FontWeight.w800, color: color.withAlpha(153))),
                   ])),
                 ]),
                 const SizedBox(height: 8),
@@ -1193,7 +1215,10 @@ class _SkillRow extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.black.withAlpha(100),
                     borderRadius: BorderRadius.circular(9999),
-                    border: Border.all(color: Colors.white.withAlpha(13), width: 0.5),
+                  ),
+                  foregroundDecoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(9999),
+                    border: Border.all(color: Colors.white.withAlpha(13), width: 1.0),
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(9999),
@@ -1209,18 +1234,37 @@ class _SkillRow extends StatelessWidget {
                 ),
               ])),
               const SizedBox(width: 16),
-              // Rank
-              Container(
-                width: 44,
-                padding: const EdgeInsets.only(left: 16),
-                decoration: BoxDecoration(border: Border(left: BorderSide(color: Colors.white.withAlpha(13)))),
-                child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Text('RANK', style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900,
-                    color: Colors.white.withAlpha(77), letterSpacing: 0.8)),
-                  Text('—', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900,
-                    letterSpacing: -1.2, color: Colors.white.withAlpha(25))),
-                ]),
-              ),
+              // Rank — medal colours for the top 3 (web parity).
+              Builder(builder: (_) {
+                Color rankColor;
+                List<Shadow>? rankShadow;
+                if (rank == 0) {
+                  rankColor = Colors.white.withAlpha(25);
+                } else if (rank == 1) {
+                  rankColor = const Color(0xFFFACC15); // gold
+                  rankShadow = const [Shadow(color: Color(0x99FACC15), blurRadius: 8)];
+                } else if (rank == 2) {
+                  rankColor = const Color(0xFFCBD5E1); // silver
+                  rankShadow = const [Shadow(color: Color(0x99CBD5E1), blurRadius: 8)];
+                } else if (rank == 3) {
+                  rankColor = const Color(0xFFF59E0B); // bronze
+                  rankShadow = const [Shadow(color: Color(0x99F59E0B), blurRadius: 8)];
+                } else {
+                  rankColor = Colors.white.withAlpha(77);
+                }
+                return Container(
+                  width: 44,
+                  padding: const EdgeInsets.only(left: 16),
+                  decoration: BoxDecoration(border: Border(left: BorderSide(color: Colors.white.withAlpha(13)))),
+                  child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    Text('RANK', style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900,
+                      color: Colors.white.withAlpha(77), letterSpacing: 0.8)),
+                    // Unranked keys show "0" (faded) — matches the web original.
+                    Text('$rank', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900,
+                      letterSpacing: -1.2, color: rankColor, shadows: rankShadow)),
+                  ]),
+                );
+              }),
             ]),
           ),
         ),

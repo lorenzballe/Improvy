@@ -392,6 +392,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.8"
+  posthog_flutter:
+    dependency: "direct main"
+    description:
+      name: posthog_flutter
+      sha256: "9037f9292e591510b6de55c462dfa53a017429c602bd17204472805c36e4267a"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.28.0"
   provider:
     dependency: "direct main"
     description:
@@ -408,6 +416,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.0"
+  purchases_flutter:
+    dependency: "direct main"
+    description:
+      name: purchases_flutter
+      sha256: "7e849e3a94011109c4b91e1be65871bdb0f6aa3d577aee0764fbdb69b3eb6181"
+      url: "https://pub.dev"
+    source: hosted
+    version: "10.3.0"
+  purchases_ui_flutter:
+    dependency: "direct main"
+    description:
+      name: purchases_ui_flutter
+      sha256: "7ec221d1511e57941fc56a34f13026fd973f3d755d29b962c99f3c551760ac74"
+      url: "https://pub.dev"
+    source: hosted
+    version: "10.3.0"
   record_use:
     dependency: transitive
     description:

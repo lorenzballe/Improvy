@@ -143,8 +143,8 @@ class _HomeMain extends StatelessWidget {
                   title: 'Note to Number',
                   subtitle: 'Given a note name, identify its numerical degree.',
                   icon: Icons.swap_horiz_rounded,
-                  accentColor: const Color(0xFF10B981),
-                  borderColor: const Color(0xFF10B981).withAlpha(100),
+                  accentColor: const Color(0xFF34D399),
+                  borderColor: const Color(0xFF34D399).withAlpha(110),
                   isLocked: !provider.isPro,
                   onTap: () {
                     if (!provider.isPro) { onShowPaywall(); return; }
@@ -157,8 +157,8 @@ class _HomeMain extends StatelessWidget {
                   title: 'Custom Mode',
                   subtitle: 'Choose your key, direction, and specific degrees to train on.',
                   icon: Icons.tune_rounded,
-                  accentColor: const Color(0xFFD946EF),
-                  borderColor: const Color(0xFFD946EF).withAlpha(100),
+                  accentColor: const Color(0xFFD857EC),
+                  borderColor: const Color(0xFFD857EC).withAlpha(110),
                   isLocked: !provider.isPro,
                   onTap: () {
                     if (!provider.isPro) { onShowPaywall(); return; }
@@ -413,7 +413,7 @@ class _ProgressCardState extends State<_ProgressCard> with SingleTickerProviderS
               Color(0xFFEC4899), Color(0xFFEF4444),
             ],
           ),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.6), blurRadius: 60, offset: const Offset(0, 20))],
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha:0.6), blurRadius: 60, offset: const Offset(0, 20))],
         ),
         child: child,
       ),
@@ -532,7 +532,10 @@ class _ProgressCardState extends State<_ProgressCard> with SingleTickerProviderS
                   decoration: BoxDecoration(
                     color: Colors.black.withAlpha(153),
                     borderRadius: BorderRadius.circular(9999),
-                    border: Border.all(color: Colors.white.withAlpha(13), width: 0.5),
+                  ),
+                  foregroundDecoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(9999),
+                    border: Border.all(color: Colors.white.withAlpha(13), width: 1.0),
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(9999),
@@ -600,8 +603,21 @@ class _KeyGrid extends StatefulWidget {
   State<_KeyGrid> createState() => _KeyGridState();
 }
 
-class _KeyGridState extends State<_KeyGrid> {
+class _KeyGridState extends State<_KeyGrid> with SingleTickerProviderStateMixin {
   int _page = 0;
+  late final AnimationController _stagger;
+
+  @override
+  void initState() {
+    super.initState();
+    _stagger = AnimationController(vsync: this, duration: const Duration(milliseconds: 750))..forward();
+  }
+
+  @override
+  void dispose() {
+    _stagger.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -641,7 +657,17 @@ class _KeyGridState extends State<_KeyGrid> {
                   final kd = keys[i];
                   final globalIdx = pi * 6 + i;
                   final color = AppColors.keyColor(globalIdx);
-                  return _KeyCard(keyData: kd, color: color, onTap: () => widget.onKeySelect(kd.key));
+                  // Staggered fade + slide-up entrance.
+                  final anim = CurvedAnimation(parent: _stagger,
+                    curve: Interval((i * 0.09).clamp(0.0, 0.5), (i * 0.09 + 0.5).clamp(0.0, 1.0), curve: Curves.easeOutCubic));
+                  return AnimatedBuilder(
+                    animation: anim,
+                    builder: (_, child) => Opacity(
+                      opacity: anim.value.clamp(0.0, 1.0),
+                      child: Transform.translate(offset: Offset(0, (1 - anim.value) * 22), child: child),
+                    ),
+                    child: _KeyCard(keyData: kd, color: color, onTap: () => widget.onKeySelect(kd.key)),
+                  );
                 },
               ),
             );
@@ -698,7 +724,7 @@ class _KeyCardState extends State<_KeyCard> {
         decoration: BoxDecoration(
           color: const Color(0xE62A2438),
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: color.withOpacity(0.145), width: 0.8),
+          border: Border.all(color: color.withValues(alpha:0.145), width: 1.2),
           boxShadow: [
             BoxShadow(color: Colors.black.withAlpha(77), blurRadius: 20, offset: const Offset(0, 8)),
           ],
@@ -736,20 +762,31 @@ class _KeyCardState extends State<_KeyCard> {
                           ),
                         ),
                       ),
-                      Text('$progress%', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: color)),
+                      TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0, end: progress.toDouble()),
+                        duration: const Duration(milliseconds: 900),
+                        curve: Curves.easeOutCubic,
+                        builder: (_, v, __) => Text('${v.round()}%', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: color)),
+                      ),
                       Container(
                         height: 8,
                         decoration: BoxDecoration(
                           color: Colors.black.withAlpha(102),
                           borderRadius: BorderRadius.circular(9999),
-                          border: Border.all(color: Colors.white.withAlpha(13), width: 0.5),
+                        ),
+                        foregroundDecoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(9999),
+                          border: Border.all(color: Colors.white.withAlpha(13), width: 1.0),
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(9999),
                           child: Align(
                             alignment: Alignment.centerLeft,
-                            child: FractionallySizedBox(
-                              widthFactor: (progress / 100).clamp(0.0, 1.0),
+                            child: TweenAnimationBuilder<double>(
+                              tween: Tween(begin: 0, end: (progress / 100).clamp(0.0, 1.0)),
+                              duration: const Duration(milliseconds: 1000),
+                              curve: Curves.easeOutCubic,
+                              builder: (_, v, child) => FractionallySizedBox(widthFactor: v, child: child),
                               child: Container(
                                 decoration: BoxDecoration(
                                   color: color,
@@ -797,6 +834,8 @@ class _BigSpecialCardState extends State<_BigSpecialCard> {
 
   @override
   Widget build(BuildContext context) {
+    final locked = widget.isLocked;
+    final accent = widget.accentColor;
     return GestureDetector(
       onTapDown: (_) => setState(() => _pressed = true),
       onTapUp: (_) { setState(() => _pressed = false); widget.onTap(); },
@@ -805,80 +844,88 @@ class _BigSpecialCardState extends State<_BigSpecialCard> {
         scale: _pressed ? 0.97 : 1.0,
         duration: const Duration(milliseconds: 100),
         child: Opacity(
-          opacity: widget.isLocked ? 0.5 : 1.0,
+          opacity: locked ? 0.5 : 1.0,
           child: Container(
-            constraints: const BoxConstraints(minHeight: 172),
+            height: 180, // web: h-[180px] — both special cards are identical size
             decoration: BoxDecoration(
-              color: const Color(0xFF1A1625),
               borderRadius: BorderRadius.circular(32),
-              border: Border.all(color: widget.isLocked ? Colors.white.withOpacity(0.05) : widget.borderColor, width: 1.5),
               boxShadow: [
                 BoxShadow(color: Colors.black.withAlpha(77), blurRadius: 40, offset: const Offset(0, 20)),
               ],
             ),
+            foregroundDecoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(32),
+              border: Border.all(color: locked ? Colors.white.withValues(alpha:0.05) : widget.borderColor, width: 1.2),
+            ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(32),
               child: Stack(children: [
+                // Frosted glass surface (lighter than a flat dark fill).
+                Positioned.fill(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                    child: Container(color: Colors.white.withValues(alpha:0.06)),
+                  ),
+                ),
+                // Soft, blurred magical glow from the corners (not a hard dot).
                 Positioned(
-                  top: -40, right: -40,
-                  child: Container(
-                    width: 180, height: 180,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [widget.accentColor.withAlpha(102), Colors.transparent],
-                      ),
+                  top: -55, right: -55,
+                  child: ImageFiltered(
+                    imageFilter: ImageFilter.blur(sigmaX: 34, sigmaY: 34, tileMode: TileMode.decal),
+                    child: Container(
+                      width: 170, height: 170,
+                      decoration: BoxDecoration(shape: BoxShape.circle, color: accent.withValues(alpha:0.32)),
                     ),
                   ),
                 ),
                 Positioned(
-                  bottom: -30, left: -30,
-                  child: Container(
-                    width: 120, height: 120,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [widget.accentColor.withAlpha(38), Colors.transparent],
-                      ),
+                  bottom: -45, left: -45,
+                  child: ImageFiltered(
+                    imageFilter: ImageFilter.blur(sigmaX: 30, sigmaY: 30, tileMode: TileMode.decal),
+                    child: Container(
+                      width: 120, height: 120,
+                      decoration: BoxDecoration(shape: BoxShape.circle, color: accent.withValues(alpha:0.12)),
                     ),
                   ),
                 ),
+                // Content — icon pinned top, title + subtitle pinned bottom.
                 Padding(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(22),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Container(
-                        width: 40, height: 40,
+                        width: 44, height: 44,
                         decoration: BoxDecoration(
-                          color: widget.accentColor,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: widget.accentColor.withAlpha(128)),
+                          color: accent,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: accent.withAlpha(140)),
+                          boxShadow: [BoxShadow(color: accent.withValues(alpha:0.35), blurRadius: 16, offset: const Offset(0, 6))],
                         ),
-                        child: Icon(widget.icon, color: Colors.white, size: 22),
+                        child: Icon(widget.icon, color: Colors.white, size: 24),
                       ),
-                      const SizedBox(height: 40),
-                      Row(children: [
-                        // Monochrome accent title (green for Note to Number,
-                        // purple for Custom Mode) — matches the setup header.
-                        Text(widget.title,
-                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: widget.accentColor, letterSpacing: -0.6, height: 1)),
-                        if (widget.isLocked) ...[
-                          const SizedBox(width: 10),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: Colors.white12,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Text('PRO', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white38, letterSpacing: 1)),
-                          ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(children: [
+                            Text(widget.title,
+                              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: accent, letterSpacing: -0.6, height: 1)),
+                            if (locked) ...[
+                              const SizedBox(width: 10),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(color: Colors.white12, borderRadius: BorderRadius.circular(8)),
+                                child: const Text('PRO', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white38, letterSpacing: 1)),
+                              ),
+                            ],
+                          ]),
+                          const SizedBox(height: 6),
+                          Text(widget.subtitle,
+                            style: TextStyle(fontSize: 12, color: Colors.white.withAlpha(140), height: 1.4)),
                         ],
-                      ]),
-                      const SizedBox(height: 6),
-                      Text(widget.subtitle,
-                        style: TextStyle(fontSize: 12, color: Colors.white.withAlpha(128), height: 1.4)),
+                      ),
                     ],
                   ),
                 ),
@@ -904,8 +951,11 @@ class _LastSessionCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1A1625),
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: Colors.white.withAlpha(13), width: 0.8),
         boxShadow: [BoxShadow(color: Colors.black.withAlpha(77), blurRadius: 40, offset: const Offset(0, 20))],
+      ),
+      foregroundDecoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: Colors.white.withAlpha(13), width: 1.2),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(32),
@@ -965,7 +1015,7 @@ class _WithSession extends StatelessWidget {
     final mode = session['mode'] as String? ?? '';
     final diff = session['difficulty'] as int? ?? 1;
     final ts = session['timestamp'] as int? ?? 0;
-    final diffLabels = ['Apprentice', 'Virtuoso', 'Maestro'];
+    final diffLabels = ['Apprentice', 'Virtuoso', 'Master'];
     final modeLabel = mode.isEmpty ? '' : mode[0].toUpperCase() + mode.substring(1);
 
     return Column(
@@ -1086,7 +1136,7 @@ class _MiniStatCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1A1625),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withAlpha(13), width: 0.8),
+        border: Border.all(color: Colors.white.withAlpha(13), width: 1.2),
         boxShadow: [BoxShadow(color: Colors.black.withAlpha(51), blurRadius: 16, offset: const Offset(0, 8))],
       ),
       clipBehavior: Clip.antiAlias,
@@ -1277,13 +1327,13 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                     title: 'Diatonic',
                     description: 'Master the 7 notes of the scale. Perfect for mental calculation and keyboard visualization.',
                     iconWidget: Container(
-                      width: 44, height: 44,
+                      width: 54, height: 54,
                       decoration: BoxDecoration(
                         color: const Color(0xFF388EF8),
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: const Color(0xFF7BB8FB).withAlpha(120)),
                       ),
-                      child: const Icon(Icons.music_note_rounded, color: Colors.white, size: 24),
+                      child: const Icon(Icons.music_note_rounded, color: Colors.white, size: 32),
                     ),
                     accentColor: const Color(0xFF3B82F6),
                     borderColor: const Color(0xFF3B82F6).withAlpha(80),
@@ -1301,17 +1351,17 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                     title: 'Chromatic',
                     description: 'Challenge yourself with all 12 semitones. Advanced mental mapping for absolute mastery.',
                     iconWidget: Container(
-                      width: 44, height: 44,
+                      width: 54, height: 54,
                       decoration: BoxDecoration(
                         color: const Color(0xFFFF0084),
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: const Color(0xFFFF69B4).withAlpha(120)),
                       ),
                       child: const Center(child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text('♯', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Colors.white, height: 1)),
-                          Text('♭', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white, height: 1)),
+                          Text('♯', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white, height: 1)),
+                          Text('♭', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white, height: 1)),
                         ],
                       )),
                     ),
@@ -1381,11 +1431,14 @@ class _LockedSheet extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFF12101E),
           borderRadius: BorderRadius.circular(36),
-          border: Border.all(color: accentColor.withOpacity(0.25), width: 1.5),
           boxShadow: [
-            BoxShadow(color: accentColor.withOpacity(0.18), blurRadius: 60, spreadRadius: -10),
-            BoxShadow(color: Colors.black.withOpacity(0.7), blurRadius: 40),
+            BoxShadow(color: accentColor.withValues(alpha:0.18), blurRadius: 60, spreadRadius: -10),
+            BoxShadow(color: Colors.black.withValues(alpha:0.7), blurRadius: 40),
           ],
+        ),
+        foregroundDecoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(36),
+          border: Border.all(color: accentColor.withValues(alpha:0.25), width: 1.5),
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(36),
@@ -1398,7 +1451,7 @@ class _LockedSheet extends StatelessWidget {
                   width: 200, height: 200,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: RadialGradient(colors: [accentColor.withOpacity(0.15), Colors.transparent]),
+                    gradient: RadialGradient(colors: [accentColor.withValues(alpha:0.15), Colors.transparent]),
                   ),
                 ),
               ),
@@ -1412,10 +1465,10 @@ class _LockedSheet extends StatelessWidget {
                   Container(
                     width: 64, height: 64,
                     decoration: BoxDecoration(
-                      color: accentColor.withOpacity(0.12),
+                      color: accentColor.withValues(alpha:0.12),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: accentColor.withOpacity(0.35), width: 1.5),
-                      boxShadow: [BoxShadow(color: accentColor.withOpacity(0.25), blurRadius: 24)],
+                      border: Border.all(color: accentColor.withValues(alpha:0.35), width: 1.5),
+                      boxShadow: [BoxShadow(color: accentColor.withValues(alpha:0.25), blurRadius: 24)],
                     ),
                     child: Icon(Icons.lock_rounded, color: accentColor, size: 28),
                   ),
@@ -1440,7 +1493,7 @@ class _LockedSheet extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha:0.5),
                       height: 1.55,
                     ),
                   ),
@@ -1450,9 +1503,9 @@ class _LockedSheet extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.04),
+                      color: Colors.white.withValues(alpha:0.04),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white.withOpacity(0.07)),
+                      border: Border.all(color: Colors.white.withValues(alpha:0.07)),
                     ),
                     child: Column(
                       children: [
@@ -1464,27 +1517,29 @@ class _LockedSheet extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w900,
-                                color: Colors.white.withOpacity(0.35),
+                                color: Colors.white.withValues(alpha:0.35),
                                 letterSpacing: 2,
                               ),
                             ),
-                            RichText(
-                              text: TextSpan(
+                            Text.rich(
+                              TextSpan(
                                 children: [
                                   TextSpan(
                                     text: '$currentScore',
                                     style: TextStyle(
+                                      fontFamily: 'Lexend',
                                       fontSize: 16,
-                                      fontWeight: FontWeight.w900,
+                                      fontWeight: FontWeight.w800,
                                       color: accentColor,
                                     ),
                                   ),
                                   TextSpan(
                                     text: ' / $neededScore',
                                     style: TextStyle(
+                                      fontFamily: 'Lexend',
                                       fontSize: 13,
                                       fontWeight: FontWeight.w700,
-                                      color: Colors.white.withOpacity(0.3),
+                                      color: Colors.white.withValues(alpha:0.3),
                                     ),
                                   ),
                                 ],
@@ -1496,7 +1551,7 @@ class _LockedSheet extends StatelessWidget {
                         Container(
                           height: 8,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.06),
+                            color: Colors.white.withValues(alpha:0.06),
                             borderRadius: BorderRadius.circular(99),
                           ),
                           child: ClipRRect(
@@ -1508,10 +1563,10 @@ class _LockedSheet extends StatelessWidget {
                                 child: Container(
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
-                                      colors: [accentColor, accentColor.withOpacity(0.6)],
+                                      colors: [accentColor, accentColor.withValues(alpha:0.6)],
                                     ),
                                     borderRadius: BorderRadius.circular(99),
-                                    boxShadow: [BoxShadow(color: accentColor.withOpacity(0.5), blurRadius: 8)],
+                                    boxShadow: [BoxShadow(color: accentColor.withValues(alpha:0.5), blurRadius: 8)],
                                   ),
                                 ),
                               ),
@@ -1523,7 +1578,7 @@ class _LockedSheet extends StatelessWidget {
                           '$remaining more points needed',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.white.withOpacity(0.35),
+                            color: Colors.white.withValues(alpha:0.35),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -1540,13 +1595,13 @@ class _LockedSheet extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 18),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [accentColor, accentColor.withOpacity(0.75)],
+                          colors: [accentColor, accentColor.withValues(alpha:0.75)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         borderRadius: BorderRadius.circular(18),
                         boxShadow: [
-                          BoxShadow(color: accentColor.withOpacity(0.35), blurRadius: 24, offset: const Offset(0, 8)),
+                          BoxShadow(color: accentColor.withValues(alpha:0.35), blurRadius: 24, offset: const Offset(0, 8)),
                         ],
                       ),
                       child: const Text(
@@ -1646,12 +1701,12 @@ class _StartButtonState extends State<_StartButton> {
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [widget.accentColor, widget.accentColor.withOpacity(0.75)],
+              colors: [widget.accentColor, widget.accentColor.withValues(alpha:0.75)],
               begin: Alignment.topLeft, end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
-              BoxShadow(color: widget.accentColor.withOpacity(0.38), blurRadius: 28, offset: const Offset(0, 8)),
+              BoxShadow(color: widget.accentColor.withValues(alpha:0.38), blurRadius: 28, offset: const Offset(0, 8)),
             ],
           ),
           child: const Row(
@@ -1671,7 +1726,6 @@ class _StartButtonState extends State<_StartButton> {
 class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderStateMixin {
   late final AnimationController _pulseCtrl;
   late final Animation<double> _scaleAnim;
-  late final Animation<double> _glowAnim;
 
   @override
   void initState() {
@@ -1679,8 +1733,6 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
     _pulseCtrl = AnimationController(vsync: this, duration: const Duration(seconds: 2))
       ..repeat(reverse: true);
     _scaleAnim = Tween<double>(begin: 1.0, end: 1.2)
-        .animate(CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut));
-    _glowAnim = Tween<double>(begin: 0.15, end: 0.55)
         .animate(CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut));
   }
 
@@ -1693,7 +1745,7 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
   void _showLockedMessage(BuildContext context, int d) {
     final currentScore = widget.levels[d - 2];
     final needed = d == 2 ? 27 : 37;
-    final levelName = d == 2 ? 'Virtuoso' : 'Maestro';
+    final levelName = d == 2 ? 'Virtuoso' : 'Master';
     final prevName = d == 2 ? 'Apprentice' : 'Virtuoso';
     showModalBottomSheet(
       context: context,
@@ -1713,7 +1765,7 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
   Widget build(BuildContext context) {
     final caps = [30, 40, 50];
     final diffColors = [const Color(0xFF3B82F6), const Color(0xFFA855F7), const Color(0xFFF43F5E)];
-    final diffLabels = ['Apprentice', 'Virtuoso', 'Maestro'];
+    final diffLabels = ['Apprentice', 'Virtuoso', 'Master'];
     final isLvl2Unlocked = widget.levels[0] >= 27;
     final isLvl3Unlocked = widget.levels[1] >= 37;
 
@@ -1723,7 +1775,7 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
         decoration: BoxDecoration(
           color: const Color(0xF21A1625),
           borderRadius: BorderRadius.circular(40),
-          border: Border.all(color: widget.isLocked ? Colors.white10 : widget.borderColor, width: 0.8),
+          border: Border.all(color: widget.isLocked ? Colors.white10 : widget.borderColor, width: 1.2),
           boxShadow: [BoxShadow(color: widget.isLocked ? Colors.transparent : widget.shadowColor, blurRadius: 40)],
         ),
         clipBehavior: Clip.antiAlias,
@@ -1755,20 +1807,22 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
                           Row(children: List.generate(3, (i) {
                             final d = i + 1;
                             final isCurrent = d == widget.currentDifficulty;
-                            final isAbove = d > widget.currentDifficulty;
                             final canSelect = d == 1 || (d == 2 && isLvl2Unlocked) || (d == 3 && isLvl3Unlocked);
                             final isPerfect = widget.levels[i] >= caps[i];
-                            final glowColor = isPerfect ? const Color(0xFFfacc15) : diffColors[i];
-                            final noteColor = isPerfect
-                                ? const Color(0xFFfacc15)
-                                : (isAbove ? Colors.white : diffColors[i]);
+                            final played = widget.levels[i] > 0; // attempted this level
+                            final selColor = isPerfect ? const Color(0xFFfacc15) : diffColors[i];
 
-                            Widget noteWidget = Container(
-                              width: 50, height: 50,
-                              alignment: Alignment.center,
-                              child: Opacity(
-                                opacity: isAbove ? 0.25 : 1.0,
-                                child: Icon(Icons.music_note_rounded, color: noteColor, size: 26),
+                            // A note stays coloured once the level has been played
+                            // (or perfected); it is dimmed only if never attempted.
+                            // The selected one is brighter and larger (below).
+                            Widget noteWidget = SizedBox(
+                              width: 54, height: 54,
+                              child: Center(
+                                child: Icon(Icons.music_note_rounded,
+                                  color: isPerfect
+                                      ? const Color(0xFFfacc15)
+                                      : (played ? diffColors[i] : Colors.white.withValues(alpha:0.22)),
+                                  size: 32),
                               ),
                             );
 
@@ -1777,19 +1831,11 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
                                 animation: _pulseCtrl,
                                 builder: (context, _) => Transform.scale(
                                   scale: _scaleAnim.value,
-                                  child: Container(
-                                    width: 50, height: 50,
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                      color: glowColor.withAlpha(30),
-                                      borderRadius: BorderRadius.circular(14),
-                                      boxShadow: [BoxShadow(
-                                        color: glowColor.withAlpha((_glowAnim.value * 255).round()),
-                                        blurRadius: 16,
-                                        spreadRadius: 1,
-                                      )],
+                                  child: SizedBox(
+                                    width: 54, height: 54,
+                                    child: Center(
+                                      child: Icon(Icons.music_note_rounded, color: selColor, size: 44),
                                     ),
-                                    child: Icon(Icons.music_note_rounded, color: noteColor, size: 34),
                                   ),
                                 ),
                               );

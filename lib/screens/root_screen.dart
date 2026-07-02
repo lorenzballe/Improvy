@@ -15,6 +15,8 @@ import 'setup_screen.dart';
 import '../widgets/paywall_modal.dart';
 import '../widgets/level_up_modal.dart';
 import '../constants/app_colors.dart';
+import '../services/purchase_service.dart';
+import '../services/analytics_service.dart';
 
 class RootScreen extends StatefulWidget {
   const RootScreen({super.key});
@@ -38,8 +40,10 @@ class _RootScreenState extends State<RootScreen> {
   AnimalLevel? _prevLevel;
   AnimalLevel? _levelUpLevel; // set when level-up detected
 
-  // Confetti
+  // Confetti — kept separate from _levelUpLevel so the burst keeps falling in
+  // the animal colour even after the modal is dismissed ("Awesome").
   late final ConfettiController _confettiCtrl;
+  Color? _confettiColor;
 
   // Swipeable tabs — Home / Stats / Settings. State (incl. scroll position) is
   // preserved by keep-alive pages, so returning to a tab resumes where you left.
@@ -54,9 +58,17 @@ class _RootScreenState extends State<RootScreen> {
     _confettiCtrl = ConfettiController(duration: const Duration(seconds: 3));
   }
 
+  static const _tabNames = ['home', 'stats', 'settings'];
+  void _trackTab(int i) {
+    if (i >= 0 && i < _tabNames.length) {
+      AnalyticsService.instance.capture('screen_view', {'name': _tabNames[i]});
+    }
+  }
+
   void _switchTab(int i) {
     if (i == _currentTab) return;
     setState(() => _currentTab = i);
+    _trackTab(i);
     _pageController.animateToPage(
       i,
       duration: const Duration(milliseconds: 300),
@@ -82,7 +94,8 @@ class _RootScreenState extends State<RootScreen> {
     if (provider.activeMode == null && _finishedSession == null) {
       final current = provider.animalLevel;
       if (_prevLevel != null && current.level > _prevLevel!.level) {
-        setState(() => _levelUpLevel = current);
+        setState(() { _levelUpLevel = current; _confettiColor = current.color; });
+        AnalyticsService.instance.capture('level_up', {'level': current.level, 'animal': current.name});
         // Emit after the rebuild so the confetti overlay already has the new
         // animal colour (otherwise the first burst comes out white).
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -102,10 +115,12 @@ class _RootScreenState extends State<RootScreen> {
   }
 
   void _showPaywallSheet([String? reason]) {
+    AnalyticsService.instance.capture('paywall_shown', {?'reason': reason});
     setState(() => _showPaywall = true);
   }
 
   void _openSetup(TrainingMode mode) {
+    AnalyticsService.instance.capture('setup_opened', {'mode': mode.storageKey});
     setState(() => _pendingSetup = mode);
   }
 
@@ -113,11 +128,13 @@ class _RootScreenState extends State<RootScreen> {
     // Detect level-up
     final newLevel = provider.animalLevel;
     if (_prevLevel != null && newLevel.level > _prevLevel!.level) {
-      setState(() => _levelUpLevel = newLevel);
+      setState(() { _levelUpLevel = newLevel; _confettiColor = newLevel.color; });
+      AnalyticsService.instance.capture('level_up', {'level': newLevel.level, 'animal': newLevel.name});
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _confettiCtrl.play();
       });
     }
+    AnalyticsService.instance.capture('session_finished');
     // Update _prevLevel now so the provider listener won't double-trigger
     // when exitTrainer() fires after the user leaves the summary screen.
     _prevLevel = newLevel;
@@ -141,6 +158,7 @@ class _RootScreenState extends State<RootScreen> {
         // the nav index to match so the indicator and the page can't desync
         // (e.g. Training shown while the bar still highlights Settings).
         _currentTab = 0;
+        AnalyticsService.instance.capture('onboarding_completed');
         provider.completeTutorial();
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted && _pageController.hasClients) _pageController.jumpToPage(0);
@@ -235,6 +253,7 @@ class _RootScreenState extends State<RootScreen> {
         adaptiveDifficulty: provider.adaptiveDifficulty,
         sessionHistory: provider.stats.sessionHistory,
         notation: provider.notation,
+        keyboardFromTonic: provider.keyboardFromTonic,
         onExit: () {
           final mode = provider.activeMode;
           final isSpecial = mode == TrainingMode.noteToNumber || mode == TrainingMode.custom;
@@ -264,7 +283,7 @@ class _RootScreenState extends State<RootScreen> {
                 ? const ClampingScrollPhysics()
                 : const NeverScrollableScrollPhysics(),
             onPageChanged: (i) {
-              if (i != _currentTab) setState(() => _currentTab = i);
+              if (i != _currentTab) { setState(() => _currentTab = i); _trackTab(i); }
             },
             children: [
               _KeepAlivePage(child: HomeScreen(onShowPaywall: _showPaywallSheet, onOpenSetup: _openSetup)),
@@ -273,12 +292,15 @@ class _RootScreenState extends State<RootScreen> {
             ],
           ),
           if (_showPaywall)
-            PaywallModal(
-              onClose: () => setState(() => _showPaywall = false),
-              onPurchase: () {
-                provider.setIsPro(true);
-                setState(() => _showPaywall = false);
-              },
+            Positioned.fill(
+              child: PaywallModal(
+                onClose: () => setState(() => _showPaywall = false),
+                onPurchase: () async {
+                  final ok = await PurchaseService.instance.purchasePro();
+                  if (ok && mounted) provider.setIsPro(true);
+                  if (mounted) setState(() => _showPaywall = false);
+                },
+              ),
             ),
           if (provider.selectedKey == null && !provider.viewingKeyStats && !_showPaywall)
             Positioned(
@@ -300,7 +322,7 @@ class _RootScreenState extends State<RootScreen> {
             ),
           _ConfettiOverlay(
             controller: _confettiCtrl,
-            color: _levelUpLevel?.color ?? Colors.white,
+            color: _confettiColor ?? Colors.white,
           ),
         ],
       ),
@@ -356,79 +378,6 @@ class _ConfettiOverlay extends StatelessWidget {
           color,
           Colors.white,
         ],
-      ),
-    );
-  }
-}
-
-// ── Global nebula background (mirrors web's fixed z-0 + z-[1] layers) ────────
-
-class _NebulaBackground extends StatelessWidget {
-  const _NebulaBackground();
-
-  @override
-  Widget build(BuildContext context) {
-    final sw = MediaQuery.of(context).size.width;
-    final sh = MediaQuery.of(context).size.height;
-    const sigma = 60.0;
-    const pad = sigma * 2.0;
-
-    final small = (sw * 0.6).clamp(0.0, 400.0);
-    final large = (sw * 0.8).clamp(0.0, 512.0);
-
-    return Stack(
-      children: [
-        // Corner radial gradients — slate TL, indigo TR, violet BR
-        Positioned.fill(child: Container(decoration: const BoxDecoration(
-          gradient: RadialGradient(center: Alignment.topLeft, radius: 1.5,
-            colors: [Color(0xFF1e293b), Colors.transparent]),
-        ))),
-        Positioned.fill(child: Container(decoration: const BoxDecoration(
-          gradient: RadialGradient(center: Alignment.topRight, radius: 1.5,
-            colors: [Color(0xFF312e81), Colors.transparent]),
-        ))),
-        Positioned.fill(child: Container(decoration: const BoxDecoration(
-          gradient: RadialGradient(center: Alignment.bottomRight, radius: 1.5,
-            colors: [Color(0xFF4c1d95), Colors.transparent]),
-        ))),
-        // Pink glow — top-[20%] -right-[10%], pink-500/15, blur-80px
-        Positioned(
-          top: sh * 0.2 - pad,
-          right: -(sw * 0.1 + pad),
-          child: _glow(small, const Color(0x26EC4899)),
-        ),
-        // Teal glow — bottom-[20%] -left-[10%], teal-500/15, blur-80px
-        Positioned(
-          bottom: sh * 0.2 - pad,
-          left: -(sw * 0.1 + pad),
-          child: _glow(small, const Color(0x2614B8A6)),
-        ),
-        // Blue glow — centered, blue-500/10, blur-100px
-        Positioned(
-          top: sh / 2 - large / 2 - pad,
-          left: sw / 2 - large / 2 - pad,
-          child: _glow(large, const Color(0x1A3B82F6)),
-        ),
-      ],
-    );
-  }
-
-  Widget _glow(double size, Color color) {
-    const sigma = 60.0;
-    const pad = sigma * 2.0;
-    final total = size + pad * 2;
-    return SizedBox(
-      width: total,
-      height: total,
-      child: ImageFiltered(
-        imageFilter: ImageFilter.blur(sigmaX: sigma, sigmaY: sigma),
-        child: Center(
-          child: Container(
-            width: size,
-            height: size,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-          ),
-        ),
       ),
     );
   }

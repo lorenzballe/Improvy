@@ -1,9 +1,10 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'legal_screen.dart';
 
-/// First-launch introduction — three themed slides with floating musical
-/// symbols, a segmented progress bar and gradient titles (matches the web
-/// OnboardingTutorial).
+/// First-launch welcome — a single, premium screen with one call to action.
+/// (If you ever want a full-bleed lifestyle photo instead of the chord hero,
+/// drop an image into [_ChordHero].)
 class OnboardingScreen extends StatefulWidget {
   final VoidCallback onComplete;
 
@@ -13,326 +14,160 @@ class OnboardingScreen extends StatefulWidget {
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _Slide {
-  final String kicker;
-  final String title;
-  final String desc;
-  final IconData icon;
-  final Color accent;
-  final Color bgTint;
-  const _Slide(this.kicker, this.title, this.desc, this.icon, this.accent, this.bgTint);
-}
-
-const _slides = [
-  _Slide(
-    'THE CORE CONCEPT',
-    'Mental Mapping',
-    'Stop relying on shapes and patterns. Train your brain to instantly visualize notes, intervals, and scales across your instrument.',
-    Icons.psychology_rounded,
-    Color(0xFF22D3EE),
-    Color(0xFF083344),
-  ),
-  _Slide(
-    'YOUR JOURNEY',
-    'Diatonic to Chromatic',
-    "Start by mastering the 7 notes of the major scale. Once you're ready, unlock all 12 semitones for absolute musical freedom.",
-    Icons.layers_rounded,
-    Color(0xFFC084FC),
-    Color(0xFF3B0764),
-  ),
-  _Slide(
-    'TRACK PROGRESS',
-    'Evolve Your Skills',
-    'Build your daily streak, achieve perfect scores, and watch your rank evolve from a humble Snail to a lightning-fast Cheetah.',
-    Icons.trending_up_rounded,
-    Color(0xFFFBBF24),
-    Color(0xFF451A03),
-  ),
-];
-
 class _OnboardingScreenState extends State<OnboardingScreen>
-    with SingleTickerProviderStateMixin {
-  final PageController _pageController = PageController();
+    with TickerProviderStateMixin {
+  late final AnimationController _enter;
   late final AnimationController _float;
-  int _currentPage = 0;
 
   @override
   void initState() {
     super.initState();
-    _float = AnimationController(vsync: this, duration: const Duration(seconds: 12))..repeat();
-  }
-
-  void _next() {
-    if (_currentPage < _slides.length - 1) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 450),
-        curve: Curves.easeOutCubic,
-      );
-    } else {
-      widget.onComplete();
-    }
+    _enter = AnimationController(vsync: this, duration: const Duration(milliseconds: 1150))..forward();
+    _float = AnimationController(vsync: this, duration: const Duration(seconds: 16))..repeat();
   }
 
   @override
   void dispose() {
-    _pageController.dispose();
+    _enter.dispose();
     _float.dispose();
     super.dispose();
   }
 
+  // Fade + slide-up over an interval of the entrance controller (stagger).
+  Widget _in(double start, double end, {double dy = 26, required Widget child}) {
+    final anim = CurvedAnimation(parent: _enter, curve: Interval(start, end, curve: Curves.easeOutCubic));
+    return AnimatedBuilder(
+      animation: anim,
+      builder: (_, c) => Opacity(
+        opacity: anim.value.clamp(0.0, 1.0),
+        child: Transform.translate(offset: Offset(0, (1 - anim.value) * dy), child: c),
+      ),
+      child: child,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final slide = _slides[_currentPage];
-    final last = _currentPage == _slides.length - 1;
-
     return Scaffold(
       backgroundColor: const Color(0xFF0F0A1A),
-      body: Stack(
-        children: [
-          // Per-slide tinted gradient background.
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 700),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color.lerp(slide.bgTint, const Color(0xFF0F0A1A), 0.4)!,
-                  const Color(0xFF0F0A1A),
-                  const Color(0xFF0F0A1A),
-                ],
-              ),
-            ),
+      body: Stack(children: [
+        // Rich layered background.
+        Positioned.fill(child: Container(decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft, end: Alignment.bottomRight,
+            colors: [Color(0xFF1C1338), Color(0xFF0F0A1A), Color(0xFF0F0A1A)],
           ),
+        ))),
+        Positioned(top: -90, right: -70, child: _glow(300, const Color(0x33A855F7))),
+        Positioned(bottom: -110, left: -90, child: _glow(320, const Color(0x2622D3EE))),
+        _FloatingSymbols(controller: _float),
 
-          // Floating musical symbols.
-          _FloatingSymbols(controller: _float),
-
-          SafeArea(
-            child: Column(
-              children: [
-                const SizedBox(height: 24),
-                // Segmented progress bar.
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Row(
-                    children: [
-                      for (int i = 0; i < _slides.length; i++) ...[
-                        if (i > 0) const SizedBox(width: 8),
-                        Expanded(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(2),
-                            child: Container(
-                              height: 4,
-                              color: Colors.white.withOpacity(0.1),
-                              child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: AnimatedFractionallySizedBox(
-                                  duration: const Duration(milliseconds: 500),
-                                  curve: Curves.easeInOut,
-                                  widthFactor: i <= _currentPage ? 1.0 : 0.0,
-                                  child: Container(color: Colors.white),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-
-                // Slides.
-                Expanded(
-                  child: PageView.builder(
-                    controller: _pageController,
-                    itemCount: _slides.length,
-                    onPageChanged: (i) => setState(() => _currentPage = i),
-                    itemBuilder: (_, i) => _SlideContent(slide: _slides[i]),
-                  ),
-                ),
-
-                // CTA + skip.
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-                  child: Column(
-                    children: [
-                      _ContinueButton(label: last ? 'START TRAINING' : 'CONTINUE', showChevron: !last, onTap: _next),
-                      SizedBox(
-                        height: 40,
-                        child: Center(
-                          child: last
-                              ? null
-                              : GestureDetector(
-                                  onTap: widget.onComplete,
-                                  behavior: HitTestBehavior.opaque,
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                    child: Text(
-                                      'SKIP INTRODUCTION',
-                                      style: TextStyle(
-                                        fontSize: 10, fontWeight: FontWeight.w800,
-                                        color: Colors.white.withOpacity(0.3), letterSpacing: 1.6,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+        SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(28, 12, 28, 20),
+            child: Column(children: [
+              const Spacer(flex: 3),
+              _in(0.0, 0.55, dy: 38, child: const _ChordHero()),
+              const Spacer(flex: 2),
+              _in(0.18, 0.7, child: ShaderMask(
+                shaderCallback: (b) => const LinearGradient(
+                  colors: [Color(0xFF60A5FA), Color(0xFFA855F7), Color(0xFFEC4899)],
+                ).createShader(b),
+                child: const Text('Improvy',
+                  style: TextStyle(fontSize: 54, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -2, height: 1)),
+              )),
+              const SizedBox(height: 16),
+              _in(0.3, 0.82, child: Text(
+                'Train your ear to recognize\nevery note and degree, instantly.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, height: 1.5, color: Colors.white.withValues(alpha: 0.55)),
+              )),
+              const Spacer(flex: 3),
+              _in(0.45, 1.0, dy: 18, child: _GetStartedButton(onTap: widget.onComplete)),
+              const SizedBox(height: 16),
+              _in(0.6, 1.0, dy: 8, child: _legalLinks(context)),
+              const SizedBox(height: 4),
+            ]),
           ),
-        ],
-      ),
+        ),
+      ]),
     );
   }
+
+  Widget _legalLinks(BuildContext context) {
+    TextStyle s(bool link) => TextStyle(
+      fontSize: 11, fontWeight: FontWeight.w600,
+      color: Colors.white.withValues(alpha: link ? 0.5 : 0.22));
+    void open(String t, String b) => Navigator.of(context)
+        .push(MaterialPageRoute(builder: (_) => LegalScreen(title: t, body: b)));
+    return Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+      GestureDetector(onTap: () => open('Privacy Policy', kPrivacyPolicyBody), child: Text('Privacy Policy', style: s(true))),
+      Text('   •   ', style: s(false)),
+      GestureDetector(onTap: () => open('Terms of Service', kTermsBody), child: Text('Terms of Service', style: s(true))),
+    ]);
+  }
+
+  Widget _glow(double size, Color color) => Container(
+    width: size, height: size,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      gradient: RadialGradient(colors: [color, Colors.transparent], stops: const [0.0, 0.7]),
+    ),
+  );
 }
 
-// ── One slide: glassmorphism icon, kicker, gradient title, description ─────────
+// ── Hero: a fanned C–E–G major triad in the app's note colours ────────────────
 
-class _SlideContent extends StatelessWidget {
-  final _Slide slide;
-  const _SlideContent({required this.slide});
+class _ChordHero extends StatelessWidget {
+  const _ChordHero();
+
+  Widget _tile(String note, Color color, double angle, Offset offset) => Transform.translate(
+    offset: offset,
+    child: Transform.rotate(
+      angle: angle,
+      child: Container(
+        width: 108, height: 108,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(30),
+          gradient: LinearGradient(
+            begin: Alignment.topCenter, end: Alignment.bottomCenter,
+            colors: [Color.lerp(color, Colors.white, 0.20)!, color],
+          ),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.15), width: 1),
+          boxShadow: [BoxShadow(color: color.withValues(alpha: 0.55), blurRadius: 30, offset: const Offset(0, 12), spreadRadius: -4)],
+        ),
+        alignment: Alignment.center,
+        child: Text(note,
+          style: const TextStyle(fontSize: 46, fontWeight: FontWeight.w900, color: Colors.white,
+            shadows: [Shadow(color: Color(0x66000000), blurRadius: 8, offset: Offset(0, 2))])),
+      ),
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Icon in a glass tile, with a soft accent glow behind it.
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Positioned(
-                left: -10, top: -10,
-                child: Container(
-                  width: 100, height: 100,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(colors: [slide.accent.withOpacity(0.4), Colors.transparent]),
-                  ),
-                ),
-              ),
-              Container(
-                width: 80, height: 80,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
-                  color: Colors.white.withOpacity(0.1),
-                  border: Border.all(color: Colors.white.withOpacity(0.1)),
-                ),
-                child: Icon(slide.icon, color: slide.accent, size: 40),
-              ),
-            ],
-          ),
-          const SizedBox(height: 40),
-
-          Text(
-            slide.kicker,
-            style: TextStyle(
-              fontSize: 10, fontWeight: FontWeight.w900,
-              color: Colors.white.withOpacity(0.5), letterSpacing: 3,
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Title — subtle white→white/60 gradient.
-          ShaderMask(
-            shaderCallback: (b) => LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Colors.white, Colors.white.withOpacity(0.6)],
-            ).createShader(b),
-            child: Text(
-              slide.title,
-              style: const TextStyle(
-                fontSize: 38, fontWeight: FontWeight.w900,
-                color: Colors.white, letterSpacing: -1.2, height: 1.05,
-              ),
-            ),
-          ),
-          const SizedBox(height: 18),
-
-          Text(
-            slide.desc,
-            style: TextStyle(
-              fontSize: 16, fontWeight: FontWeight.w500,
-              color: Colors.white.withOpacity(0.5), height: 1.5,
-            ),
-          ),
-        ],
-      ),
+    return SizedBox(
+      height: 180, width: 280,
+      child: Stack(alignment: Alignment.center, children: [
+        _tile('C', const Color(0xFFFF4D4D), -0.22, const Offset(-82, 16)),
+        _tile('G', const Color(0xFF4D6DFF), 0.22, const Offset(82, 16)),
+        _tile('E', const Color(0xFF34D399), 0.0, const Offset(0, -10)), // front
+      ]),
     );
   }
 }
 
-// ── Floating musical symbols (ambient background motion) ──────────────────────
+// ── Single premium CTA ────────────────────────────────────────────────────────
 
-class _FloatingSymbols extends StatelessWidget {
-  final AnimationController controller;
-  const _FloatingSymbols({required this.controller});
-
-  static const _symbols = [
-    (0.10, 0.15, 64.0, 0.0),
-    (0.80, 0.40, 76.0, 1.0),
-    (0.15, 0.68, 92.0, 2.0),
-    (0.72, 0.80, 56.0, 3.0),
-    (0.55, 0.25, 48.0, 1.5),
-  ];
-  static const _glyphs = ['♪', '♫', '𝄞', '♩', '𝄢'];
-
-  @override
-  Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    return IgnorePointer(
-      child: AnimatedBuilder(
-        animation: controller,
-        builder: (_, __) {
-          return Stack(
-            children: [
-              for (int i = 0; i < _symbols.length; i++)
-                Positioned(
-                  left: _symbols[i].$1 * size.width,
-                  top: _symbols[i].$2 * size.height +
-                      math.sin((controller.value * 2 * math.pi) + _symbols[i].$4) * 16,
-                  child: Transform.rotate(
-                    angle: math.sin((controller.value * 2 * math.pi) + _symbols[i].$4) * 0.15,
-                    child: Text(
-                      _glyphs[i],
-                      style: TextStyle(
-                        fontSize: _symbols[i].$3,
-                        color: Colors.white.withOpacity(0.07),
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-}
-
-// ── Continue / Start button (white, dark label) ───────────────────────────────
-
-class _ContinueButton extends StatefulWidget {
-  final String label;
-  final bool showChevron;
+class _GetStartedButton extends StatefulWidget {
   final VoidCallback onTap;
-  const _ContinueButton({required this.label, required this.showChevron, required this.onTap});
+  const _GetStartedButton({required this.onTap});
 
   @override
-  State<_ContinueButton> createState() => _ContinueButtonState();
+  State<_GetStartedButton> createState() => _GetStartedButtonState();
 }
 
-class _ContinueButtonState extends State<_ContinueButton> {
+class _GetStartedButtonState extends State<_GetStartedButton> {
   bool _pressed = false;
 
   @override
@@ -341,33 +176,62 @@ class _ContinueButtonState extends State<_ContinueButton> {
     onTapUp: (_) { setState(() => _pressed = false); widget.onTap(); },
     onTapCancel: () => setState(() => _pressed = false),
     child: AnimatedScale(
-      scale: _pressed ? 0.98 : 1.0,
-      duration: const Duration(milliseconds: 100),
+      scale: _pressed ? 0.97 : 1.0,
+      duration: const Duration(milliseconds: 120),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 18),
+        padding: const EdgeInsets.symmetric(vertical: 19),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
-          boxShadow: [BoxShadow(color: Colors.white.withOpacity(0.15), blurRadius: 40, offset: const Offset(0, 10))],
+          boxShadow: [BoxShadow(color: Colors.white.withValues(alpha: 0.18), blurRadius: 40, offset: const Offset(0, 12))],
         ),
-        child: Row(
+        child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              widget.label,
-              style: const TextStyle(
-                fontSize: 14, fontWeight: FontWeight.w900,
-                color: Color(0xFF0F0A1A), letterSpacing: 2,
-              ),
-            ),
-            if (widget.showChevron) ...[
-              const SizedBox(width: 6),
-              const Icon(Icons.chevron_right_rounded, color: Color(0xFF0F0A1A), size: 20),
-            ],
+            Text('GET STARTED', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Color(0xFF0F0A1A), letterSpacing: 2)),
+            SizedBox(width: 8),
+            Icon(Icons.arrow_forward_rounded, color: Color(0xFF0F0A1A), size: 20),
           ],
         ),
       ),
     ),
   );
+}
+
+// ── Subtle floating musical symbols ───────────────────────────────────────────
+
+class _FloatingSymbols extends StatelessWidget {
+  final AnimationController controller;
+  const _FloatingSymbols({required this.controller});
+
+  static const _items = [
+    (0.12, 0.18, 60.0, 0.0),
+    (0.82, 0.30, 70.0, 1.4),
+    (0.18, 0.74, 84.0, 2.6),
+    (0.74, 0.82, 52.0, 3.6),
+  ];
+  static const _glyphs = ['♪', '♫', '𝄞', '♩'];
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    return IgnorePointer(
+      child: AnimatedBuilder(
+        animation: controller,
+        builder: (_, __) => Stack(children: [
+          for (int i = 0; i < _items.length; i++)
+            Positioned(
+              left: _items[i].$1 * size.width,
+              top: _items[i].$2 * size.height + math.sin(controller.value * 2 * math.pi + _items[i].$4) * 14,
+              child: Transform.rotate(
+                angle: math.sin(controller.value * 2 * math.pi + _items[i].$4) * 0.12,
+                child: Text(_glyphs[i],
+                  style: TextStyle(fontSize: _items[i].$3, color: Colors.white.withValues(alpha: 0.05))),
+              ),
+            ),
+        ]),
+      ),
+    );
+  }
 }
