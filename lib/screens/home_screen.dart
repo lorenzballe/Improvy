@@ -72,7 +72,7 @@ class _HomeMain extends StatelessWidget {
                         maxWidth: double.infinity,
                         maxHeight: double.infinity,
                         alignment: Alignment.center,
-                        child: const _LogoGlow(),
+                        child: const RepaintBoundary(child: _LogoGlow()),
                       ),
                     ),
                     Column(
@@ -115,7 +115,7 @@ class _HomeMain extends StatelessWidget {
             // ── Progress card ──
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
-              child: _ProgressCard(animalLevel: animalLevel, totalProgress: totalProgress),
+              child: RepaintBoundary(child: _ProgressCard(animalLevel: animalLevel, totalProgress: totalProgress)),
             ),
 
             // ── All Keys Mastery ──
@@ -124,10 +124,10 @@ class _HomeMain extends StatelessWidget {
               child: _SectionHeader('ALL KEYS MASTERY'),
             ),
             const SizedBox(height: 12),
-            _KeyGrid(progressData: provider.progressData, onKeySelect: (key) {
+            RepaintBoundary(child: _KeyGrid(progressData: provider.progressData, onKeySelect: (key) {
               HapticsService.impactMedium();
               provider.selectKey(key);
-            }),
+            })),
             const SizedBox(height: 28),
 
             // ── Special Modes ──

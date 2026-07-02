@@ -115,8 +115,52 @@ class _RootScreenState extends State<RootScreen> {
   }
 
   void _showPaywallSheet([String? reason]) {
-    AnalyticsService.instance.capture('paywall_shown', {?'reason': reason});
+    AnalyticsService.instance.capture('paywall_shown', {'reason': ?reason});
     setState(() => _showPaywall = true);
+  }
+
+  void _showPurchaseError(PurchaseOutcome outcome) {
+    final detail = PurchaseService.instance.lastPurchaseError;
+    final (title, message) = switch (outcome) {
+      PurchaseOutcome.noProducts => (
+        'Store not ready',
+        'No product is available for purchase right now. Please try again in a '
+            'few minutes.',
+      ),
+      PurchaseOutcome.noEntitlement => (
+        'Almost there',
+        'Your payment went through but PRO could not be activated automatically. '
+            'Use "Restore" in a moment — you will not be charged twice.',
+      ),
+      PurchaseOutcome.notConfigured => (
+        'Billing unavailable',
+        'In-app purchases are not available on this device.',
+      ),
+      _ => (
+        'Purchase failed',
+        'Something went wrong while contacting the store. Please try again.',
+      ),
+    };
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1625),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(title,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 18)),
+        content: Text(
+          detail == null ? message : '$message\n\nDetails: $detail',
+          style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 13.5, height: 1.45),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('OK',
+                style: TextStyle(color: Color(0xFFFBBF24), fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
   }
 
   void _openSetup(TrainingMode mode) {
@@ -296,9 +340,16 @@ class _RootScreenState extends State<RootScreen> {
               child: PaywallModal(
                 onClose: () => setState(() => _showPaywall = false),
                 onPurchase: () async {
-                  final ok = await PurchaseService.instance.purchasePro();
-                  if (ok && mounted) provider.setIsPro(true);
-                  if (mounted) setState(() => _showPaywall = false);
+                  final outcome = await PurchaseService.instance.purchasePro();
+                  if (!mounted) return;
+                  if (outcome == PurchaseOutcome.success) {
+                    provider.setIsPro(true);
+                    setState(() => _showPaywall = false);
+                  } else if (outcome != PurchaseOutcome.cancelled) {
+                    // Keep the paywall open and tell the user what went wrong —
+                    // a silent dead button is the worst possible outcome.
+                    _showPurchaseError(outcome);
+                  }
                 },
               ),
             ),

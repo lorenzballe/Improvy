@@ -16,6 +16,10 @@ import 'analytics_service.dart';
 /// await PurchaseService.instance.init();
 /// ```
 ///
+/// Outcome of a purchase attempt — lets the UI explain failures instead of
+/// silently doing nothing.
+enum PurchaseOutcome { success, cancelled, noProducts, noEntitlement, error, notConfigured }
+
 /// What you still configure outside the app (RevenueCat dashboard + stores):
 ///   • An **Entitlement** (its identifier is [entitlementId]).
 ///   • A **Product** `improvy_pro_lifetime` (Non-Consumable / lifetime) created in
@@ -88,17 +92,30 @@ class PurchaseService {
     }
   }
 
+  /// Human-readable detail of the last purchase failure (for error dialogs).
+  String? lastPurchaseError;
+
   /// Launches the native purchase flow for the lifetime PRO package.
-  /// Returns true when PRO is active afterwards; false on cancel / no product.
-  Future<bool> purchasePro() async {
-    if (!_configured) return false;
+  /// Returns the outcome so the UI can tell the user WHY nothing happened
+  /// (an offering misconfigured in RevenueCat, a store error, a cancel…)
+  /// instead of failing silently.
+  Future<PurchaseOutcome> purchasePro() async {
+    lastPurchaseError = null;
+    if (!_configured) {
+      lastPurchaseError = 'Billing is not available on this device.';
+      return PurchaseOutcome.notConfigured;
+    }
     AnalyticsService.instance.capture('pro_purchase_start');
     try {
       final offerings = await Purchases.getOfferings();
       final current = offerings.current;
       if (current == null || current.availablePackages.isEmpty) {
         if (kDebugMode) debugPrint('[PurchaseService] no packages in current offering');
-        return false;
+        lastPurchaseError =
+            'The store returned no purchasable product. (RevenueCat: the current '
+            'Offering has no package linked to the Play product.)';
+        AnalyticsService.instance.capture('pro_purchase_no_offering');
+        return PurchaseOutcome.noProducts;
       }
       // Prefer the lifetime package; fall back to whatever the offering exposes.
       final package = current.lifetime ?? current.availablePackages.first;
@@ -108,17 +125,28 @@ class PurchaseService {
       final code = PurchasesErrorHelper.getErrorCode(e);
       if (code == PurchasesErrorCode.purchaseCancelledError) {
         if (kDebugMode) debugPrint('[PurchaseService] purchase cancelled by user');
-      } else {
-        if (kDebugMode) debugPrint('[PurchaseService] purchase error: $code');
+        return PurchaseOutcome.cancelled;
       }
-      return false;
+      if (kDebugMode) debugPrint('[PurchaseService] purchase error: $code');
+      lastPurchaseError = '${code.name}: ${e.message ?? 'unknown store error'}';
+      AnalyticsService.instance.capture('pro_purchase_error', {'code': code.name});
+      return PurchaseOutcome.error;
     } catch (e) {
       if (kDebugMode) debugPrint('[PurchaseService] purchase failed: $e');
-      return false;
+      lastPurchaseError = e.toString();
+      return PurchaseOutcome.error;
     }
     await _refresh(force: true);
-    if (_isPro) AnalyticsService.instance.capture('pro_purchase_success');
-    return _isPro;
+    if (_isPro) {
+      AnalyticsService.instance.capture('pro_purchase_success');
+      return PurchaseOutcome.success;
+    }
+    // Purchase went through but no entitlement came back: the product is not
+    // attached to an entitlement in the RevenueCat dashboard.
+    lastPurchaseError =
+        'Purchase completed but no entitlement was granted. (RevenueCat: attach '
+        'the product to the "pro" entitlement.)';
+    return PurchaseOutcome.noEntitlement;
   }
 
   /// Restores a previous purchase (uses the signed-in App Store / Play account —
