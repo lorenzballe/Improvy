@@ -142,7 +142,7 @@ class _HomeMain extends StatelessWidget {
               child: _SectionHeader('SPECIAL MODES'),
             ),
             const SizedBox(height: 12),
-            Padding(
+            RepaintBoundary(child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(children: [
                 _BigSpecialCard(
@@ -173,7 +173,7 @@ class _HomeMain extends StatelessWidget {
                   },
                 ),
               ]),
-            ),
+            )),
             const SizedBox(height: 28),
 
             // ── Pick Up Where You Left Off ──
@@ -921,12 +921,11 @@ class _BigSpecialCardState extends State<_BigSpecialCard> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(32),
               child: Stack(children: [
-                // Frosted glass surface (lighter than a flat dark fill).
+                // Subtle translucent surface. No BackdropFilter: the real-time
+                // blur was invisible over the dark background but re-sampled
+                // every frame, stuttering the scroll.
                 Positioned.fill(
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                    child: Container(color: Colors.white.withValues(alpha:0.06)),
-                  ),
+                  child: Container(color: Colors.white.withValues(alpha:0.055)),
                 ),
                 // Soft, blurred magical glow from the corners (not a hard dot).
                 Positioned(

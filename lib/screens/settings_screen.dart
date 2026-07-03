@@ -669,32 +669,34 @@ class SettingsScreen extends StatelessWidget {
     ),
   );
 
-  Widget _card({required Widget child, List<BoxShadow>? shadow}) => Container(
-    width: double.infinity,
-    padding: const EdgeInsets.all(20),
-    decoration: BoxDecoration(
-      color: const Color(0xFF1A1625),
-      border: Border.all(color: Colors.white.withAlpha(13)),
-      borderRadius: BorderRadius.circular(32),
-      boxShadow: shadow,
+  Widget _card({required Widget child, List<BoxShadow>? shadow}) => RepaintBoundary(
+    child: Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1625),
+        border: Border.all(color: Colors.white.withAlpha(13)),
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: shadow,
+      ),
+      child: child,
     ),
-    child: child,
   );
 
-  Widget _blurCard({required Widget child}) => ClipRRect(
-    borderRadius: BorderRadius.circular(32),
-    child: BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: const Color(0xCC1A1625),
-          border: Border.all(color: Colors.white.withAlpha(13)),
-          borderRadius: BorderRadius.circular(32),
-        ),
-        child: child,
+  // No BackdropFilter: a real-time backdrop blur can't be cached and re-samples
+  // the content behind it every frame, which stuttered the scroll. Over the dark
+  // background the blur was barely visible anyway — a slightly more opaque fill
+  // looks the same and lets the whole card cache into one layer for smooth scroll.
+  Widget _blurCard({required Widget child}) => RepaintBoundary(
+    child: Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xF01B1729),
+        border: Border.all(color: Colors.white.withAlpha(13)),
+        borderRadius: BorderRadius.circular(32),
       ),
+      child: child,
     ),
   );
 
