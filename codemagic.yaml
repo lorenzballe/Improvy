@@ -1,0 +1,62 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Improvy — iOS build & TestFlight upload on Codemagic (no Mac required).
+# Signing is fully automatic via an App Store Connect API key (no manual certs).
+#
+# BEFORE the first run you must:
+#   1. Enrol in the Apple Developer Program.
+#   2. In App Store Connect, register the bundle id  com.improvy.app  and create
+#      the app (note its numeric "Apple ID" → put it in APP_STORE_APPLE_ID below).
+#   3. Create an App Store Connect API key (Users & Access → Integrations),
+#      download the .p8, and add it to Codemagic
+#      (Team settings → Integrations → App Store Connect) with a name.
+#   4. Put that exact name in `integrations.app_store_connect` below.
+# ─────────────────────────────────────────────────────────────────────────────
+workflows:
+  ios-testflight:
+    name: iOS · TestFlight
+    instance_type: mac_mini_m2        # macOS build machine (free tier eligible)
+    max_build_duration: 60
+    integrations:
+      # ⬇️ MUST match the name you gave the App Store Connect key in Codemagic.
+      app_store_connect: Improvy ASC Key
+    environment:
+      ios_signing:
+        distribution_type: app_store  # automatic managed signing for the App Store
+        bundle_identifier: com.improvy.app
+      vars:
+        # ⬇️ Numeric Apple ID of the app (App Store Connect → App → App Information → Apple ID)
+        APP_STORE_APPLE_ID: 0000000000
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    cache:
+      cache_paths:
+        - $HOME/.pub-cache
+        - $HOME/Library/Caches/CocoaPods
+    scripts:
+      - name: Get Flutter packages
+        script: flutter pub get
+      - name: Apply automatic code signing to the Xcode project
+        script: xcode-project use-profiles
+      - name: Install CocoaPods dependencies
+        script: find . -name "Podfile" -execdir pod install \;
+      - name: Build signed IPA (build number = latest TestFlight + 1)
+        script: |
+          LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID" 2>/dev/null || echo "0")
+          flutter build ipa --release \
+            --build-number=$(($LATEST + 1)) \
+            --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - flutter_drive.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true    # push to TestFlight when processing finishes
+      email:
+        recipients:
+          - lorenzo.ballestrazzi07@gmail.com
+        notify:
+          success: true
+          failure: true
