@@ -1,7 +1,9 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../constants/app_colors.dart';
 import '../constants/music_constants.dart';
+import '../providers/app_provider.dart';
 import '../widgets/note_text.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -570,7 +572,8 @@ class _KeyCell extends StatelessWidget {
           child: FittedBox(
             fit: BoxFit.scaleDown,
             child: NoteText(
-              note: noteKey,
+              note: formatNoteForDisplay(noteKey,
+                  context.select<AppProvider, String>((p) => p.notation)),
               style: TextStyle(
                 fontSize: 18, // web: text-lg
                 fontWeight: FontWeight.w900,

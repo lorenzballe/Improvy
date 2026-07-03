@@ -240,10 +240,10 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
           ),
         ),
         Container(
-          width: 92, height: 92,
+          width: 104, height: 104,
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(21),
+            borderRadius: BorderRadius.circular(24),
             border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
             boxShadow: [
               BoxShadow(color: const Color(0xFF7C3AED).withValues(alpha: 0.48),

@@ -813,7 +813,8 @@ class _KeyCardState extends State<_KeyCard> {
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.bottomLeft,
                             child: NoteText(
-                              note: widget.keyData.key,
+                              note: formatNoteForDisplay(widget.keyData.key,
+                                  context.select<AppProvider, String>((p) => p.notation)),
                               style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w900, letterSpacing: -1.5, color: Colors.white, height: 1),
                             ),
                           ),
@@ -1115,7 +1116,7 @@ class _WithSession extends StatelessWidget {
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerLeft,
                   child: NoteText(
-                    note: '$key $modeLabel',
+                    note: '${formatNoteForDisplay(key, context.select<AppProvider, String>((p) => p.notation))} $modeLabel',
                     style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white, height: 1),
                   ),
                 ),
@@ -1981,7 +1982,9 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
                           crossAxisAlignment: CrossAxisAlignment.baseline,
                           textBaseline: TextBaseline.alphabetic,
                           children: [
-                            NoteText(note: widget.keyName,
+                            NoteText(
+                              note: formatNoteForDisplay(widget.keyName,
+                                  context.select<AppProvider, String>((p) => p.notation)),
                               style: const TextStyle(fontSize: 33, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.8)),
                             const SizedBox(width: 7),
                             Text(widget.title,

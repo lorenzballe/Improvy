@@ -235,7 +235,7 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                       ),
                     ),
                     NoteText(
-                      note: tone,
+                      note: formatNoteForDisplay(tone, provider.notation),
                       style: TextStyle(
                         fontSize: 84, fontWeight: FontWeight.w900,
                         color: Colors.white, letterSpacing: -3, height: 1,

@@ -1,6 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/key_progress.dart';
+import '../providers/app_provider.dart';
 import '../constants/app_colors.dart';
 import '../constants/levels.dart';
 import '../widgets/note_text.dart';
@@ -92,7 +94,8 @@ class SessionSummaryScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         NoteText(
-                          note: key,
+                          note: formatNoteForDisplay(key,
+                              context.select<AppProvider, String>((p) => p.notation)),
                           style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Colors.white.withValues(alpha:0.7)),
                         ),
                         Text(

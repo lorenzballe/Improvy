@@ -513,13 +513,6 @@ class SettingsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // ACCOUNT — RevenueCat Customer Center (restore / manage / support).
-              _sectionLabel('ACCOUNT'),
-              const SizedBox(height: 12),
-              _tapRow(context, 'Customer Center', Icons.support_agent_rounded,
-                  () => PurchaseService.instance.presentCustomerCenter()),
-              const SizedBox(height: 16),
-
               // LEGAL
               _sectionLabel('LEGAL'),
               const SizedBox(height: 12),
@@ -530,8 +523,10 @@ class SettingsScreen extends StatelessWidget {
                   const LegalScreen(title: 'Terms of Service', body: kTermsBody)),
               const SizedBox(height: 16),
 
-              // DEVELOPER DEBUG — visible only in debug builds, hidden in release.
-              if (kDebugMode) ...[
+              // DEVELOPER DEBUG — TEMPORARILY exposed in release builds too, so
+              // PRO features can be tested on-device without a real purchase.
+              // TODO: restore the kDebugMode gate before the public launch build.
+              if (kDebugMode || true) ...[ // ignore: dead_code
               _sectionLabel('DEVELOPER DEBUG'),
               const SizedBox(height: 12),
               _blurCard(
@@ -617,34 +612,6 @@ class SettingsScreen extends StatelessWidget {
 
   Widget _legalRow(BuildContext context, String title, IconData icon, Widget screen) => GestureDetector(
     onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen)),
-    child: _blurCard(
-      child: Row(children: [
-        Container(
-          width: 32, height: 32,
-          decoration: BoxDecoration(
-            color: Colors.white.withAlpha(13),
-            border: Border.all(color: Colors.white.withAlpha(20)),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(icon, color: Colors.white70, size: 16),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(title, maxLines: 1, softWrap: false, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: 0.4)),
-          ),
-        ),
-        Icon(Icons.chevron_right_rounded, color: Colors.white.withAlpha(51)),
-      ]),
-    ),
-  );
-
-  // Same look as [_legalRow] but runs an action (e.g. open the Customer Center)
-  // instead of pushing a screen.
-  Widget _tapRow(BuildContext context, String title, IconData icon, VoidCallback onTap) => GestureDetector(
-    onTap: onTap,
     child: _blurCard(
       child: Row(children: [
         Container(

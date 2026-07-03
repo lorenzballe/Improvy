@@ -869,7 +869,7 @@ class _TopBar extends StatelessWidget {
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       child: NoteText(
-                        note: currentKey,
+                        note: formatNoteForDisplay(currentKey, notation),
                         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white, height: 1.1),
                       ),
                     ),

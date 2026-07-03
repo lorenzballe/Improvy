@@ -1068,6 +1068,9 @@ class _KeyboardHeatmapCardState extends State<_KeyboardHeatmapCard> {
     final vals = map.values;
     final lo = vals.isEmpty ? 0 : vals.reduce(math.min);
     final hi = vals.isEmpty ? 0 : vals.reduce(math.max);
+    // Read once here — context.select is not allowed inside the layout
+    // closures below.
+    final notation = context.select<AppProvider, String>((p) => p.notation);
 
     const whites = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
     const blacks = [('C#', 1), ('Eb', 2), ('F#', 4), ('Ab', 5), ('Bb', 6)];
@@ -1143,8 +1146,10 @@ class _KeyboardHeatmapCardState extends State<_KeyboardHeatmapCard> {
                                 border: Border.all(color: Colors.black.withAlpha(26), width: 1.2)),
                               alignment: Alignment.bottomCenter,
                               padding: const EdgeInsets.only(bottom: 8),
-                              child: Text(whites[i],
-                                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white70, letterSpacing: -0.5)),
+                              child: Text(
+                                formatNoteForDisplay(whites[i], notation),
+                                maxLines: 1, softWrap: false,
+                                style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white70, letterSpacing: -0.5)),
                             ),
                           );
                         }),
@@ -1167,8 +1172,10 @@ class _KeyboardHeatmapCardState extends State<_KeyboardHeatmapCard> {
                             ),
                             alignment: Alignment.bottomCenter,
                             padding: const EdgeInsets.only(bottom: 6),
-                            child: Text(bk.$1,
-                              style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.white60)),
+                            child: Text(
+                              formatNoteForDisplay(bk.$1, notation),
+                              maxLines: 1, softWrap: false,
+                              style: const TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.white60)),
                           ),
                         );
                       }),
@@ -1236,7 +1243,9 @@ class _SkillRow extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: Colors.white.withAlpha(26)),
                 ),
-                child: Center(child: NoteText(note: keyData.key,
+                child: Center(child: NoteText(
+                  note: formatNoteForDisplay(keyData.key,
+                      context.select<AppProvider, String>((p) => p.notation)),
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: color))),
               ),
               const SizedBox(width: 16),
