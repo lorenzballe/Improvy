@@ -1,3 +1,4 @@
+import 'dart:math' show max;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -48,19 +49,7 @@ class ImprovyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Improvy',
       debugShowCheckedModeBanner: false,
-      // The design is tight, so we let the phone's font-size setting through
-      // but only within a modest range — the app adapts a little (like a good
-      // native app) instead of either ignoring the setting or breaking under
-      // extreme accessibility sizes. The screens themselves handle the layout.
-      builder: (context, child) {
-        final mq = MediaQuery.of(context);
-        return MediaQuery(
-          data: mq.copyWith(
-            textScaler: mq.textScaler.clamp(minScaleFactor: 0.9, maxScaleFactor: 1.1),
-          ),
-          child: child ?? const SizedBox.shrink(),
-        );
-      },
+      builder: (context, child) => _StableInsets(child: child ?? const SizedBox.shrink()),
       theme: ThemeData(
         colorScheme: const ColorScheme.dark(surface: Color(0xFF0F0A1A)),
         scaffoldBackgroundColor: const Color(0xFF0F0A1A),
@@ -69,6 +58,52 @@ class ImprovyApp extends StatelessWidget {
         textTheme: ThemeData.dark().textTheme.apply(fontFamily: 'Lexend'),
       ),
       home: const RootScreen(),
+    );
+  }
+}
+
+/// Neutralises two device quirks app-wide:
+///  • clamps the system font-scale to a modest range (the design is tight, so
+///    the layout adapts a little instead of breaking under huge accessibility
+///    sizes — the screens handle the rest);
+///  • latches the LARGEST system-bar insets seen. On some phones the gesture /
+///    navigation bar inset flickers between its real height and 0 in edge-to-edge
+///    mode, which made SafeArea content (and the bottom bar) oscillate up and
+///    down. The app is portrait-locked, so the max is always the real height;
+///    we keep feeding that stable value so nothing jumps. The soft keyboard
+///    (viewInsets) is left untouched so it can still resize the view normally.
+class _StableInsets extends StatefulWidget {
+  final Widget child;
+  const _StableInsets({required this.child});
+
+  @override
+  State<_StableInsets> createState() => _StableInsetsState();
+}
+
+class _StableInsetsState extends State<_StableInsets> {
+  double _bottom = 0;
+  double _top = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final mq = MediaQuery.of(context);
+    final keyboardOpen = mq.viewInsets.bottom > 0;
+    // Only grow the latch while the keyboard is closed (otherwise viewPadding
+    // already reflects real system bars, not a transient flicker).
+    if (!keyboardOpen) _bottom = max(_bottom, mq.viewPadding.bottom);
+    _top = max(_top, mq.viewPadding.top);
+
+    final stableBottom = keyboardOpen ? mq.padding.bottom : _bottom;
+    return MediaQuery(
+      data: mq.copyWith(
+        textScaler: mq.textScaler.clamp(minScaleFactor: 0.9, maxScaleFactor: 1.1),
+        padding: mq.padding.copyWith(top: _top, bottom: stableBottom),
+        viewPadding: mq.viewPadding.copyWith(
+          top: _top,
+          bottom: keyboardOpen ? mq.viewPadding.bottom : _bottom,
+        ),
+      ),
+      child: widget.child,
     );
   }
 }
