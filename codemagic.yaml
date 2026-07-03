@@ -17,15 +17,15 @@ workflows:
     instance_type: mac_mini_m2        # macOS build machine (free tier eligible)
     max_build_duration: 60
     integrations:
-      # ⬇️ MUST match the name you gave the App Store Connect key in Codemagic.
-      app_store_connect: Improvy ASC Key
+      # Name of the App Store Connect key added in Codemagic.
+      app_store_connect: chiaveapipercodemagic
     environment:
       ios_signing:
         distribution_type: app_store  # automatic managed signing for the App Store
         bundle_identifier: com.improvy.app
       vars:
-        # ⬇️ Numeric Apple ID of the app (App Store Connect → App → App Information → Apple ID)
-        APP_STORE_APPLE_ID: 0000000000
+        # Numeric Apple ID of the app (App Store Connect → App → App Information → Apple ID)
+        APP_STORE_APPLE_ID: 6775236759
       flutter: stable
       xcode: latest
       cocoapods: default
