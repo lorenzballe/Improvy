@@ -20,12 +20,10 @@ workflows:
       # Name of the App Store Connect key added in Codemagic.
       app_store_connect: chiaveapipercodemagic
     environment:
-      ios_signing:
-        distribution_type: app_store   # use the App Store distribution certificate + profile
-        bundle_identifier: com.improvy.app
       vars:
         # Numeric Apple ID of the app (App Store Connect → App → App Information → Apple ID)
         APP_STORE_APPLE_ID: 6775236759
+        BUNDLE_ID: "com.improvy.app"
       flutter: stable
       xcode: latest
       cocoapods: default
@@ -36,8 +34,14 @@ workflows:
     scripts:
       - name: Get Flutter packages
         script: flutter pub get
-      - name: Apply code signing (uses your Codemagic certificate + auto-creates the profile)
-        script: xcode-project use-profiles
+      - name: Set up code signing (fetch certificate + create the App Store profile)
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create
+          keychain add-certificates
+          xcode-project use-profiles
       - name: Install CocoaPods dependencies
         script: find . -name "Podfile" -execdir pod install \;
       - name: Build signed IPA (build number = latest TestFlight + 1)
