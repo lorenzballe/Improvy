@@ -30,11 +30,11 @@ workflows:
       - name: Get Flutter packages
         script: flutter pub get
 
-      - name: Reset signing — delete stale certs, mint a fresh one we own
+      - name: Reset signing — create a certificate we own + App Store profile
         script: |
           set -e
           keychain initialize
-          echo "Removing any existing distribution certificates (we don't hold their private keys)..."
+          echo "Removing existing distribution certificates (we don't hold their private keys)..."
           for T in IOS_DISTRIBUTION DISTRIBUTION; do
             app-store-connect certificates list --type "$T" --json 2>/dev/null | jq -r '.[].id' 2>/dev/null || true
           done | sort -u | while read -r cid; do
@@ -43,8 +43,13 @@ workflows:
               app-store-connect certificates delete "$cid" || true
             fi
           done
-          echo "Creating a fresh distribution certificate + App Store provisioning profile..."
-          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
+          echo "Generating our OWN private key, then the certificate + App Store profile..."
+          # fetch-signing-files needs a private key to create the certificate — give it a fresh one.
+          openssl genrsa -out /tmp/cert_key.pem 2048
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --certificate-key=@file:/tmp/cert_key.pem \
+            --create
           keychain add-certificates
           xcode-project use-profiles
 
