@@ -1,17 +1,19 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
+import '../constants/app_colors.dart';
 import '../screens/legal_screen.dart';
 import '../services/purchase_service.dart';
 
-/// Full-screen, premium "Improvy PRO" paywall.
+/// Full-screen "Improvy Pro" paywall — cinematic dark, membership-card feel.
 ///
-/// Shares the welcome screen's design language — layered gradient background,
-/// soft glows, drifting musical glyphs and a staggered entrance — themed gold
-/// for PRO. Content scrolls; the call-to-action stays pinned at the bottom.
+/// One static screen (no scrolling; Spacers absorb device height). The visual
+/// core is a glass "what's included" card with a gradient hairline border and
+/// a top-edge sheen, under a hero logo with dual colored glows. One gold CTA
+/// carries the price. Design language: hairlines at 8% white, radius 16–22,
+/// a single accent (gold), quiet ambient glows, nothing animated after entry.
 class PaywallModal extends StatefulWidget {
   final VoidCallback onClose;
-  final VoidCallback onPurchase;
+  final Future<void> Function() onPurchase;
 
   const PaywallModal({super.key, required this.onClose, required this.onPurchase});
 
@@ -19,36 +21,37 @@ class PaywallModal extends StatefulWidget {
   State<PaywallModal> createState() => _PaywallModalState();
 }
 
-class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMixin {
-  late final AnimationController _enter; // staggered entrance
-  late final AnimationController _float; // drifting glyphs + breathing glow
+class _PaywallModalState extends State<PaywallModal> with SingleTickerProviderStateMixin {
+  late final AnimationController _enter;
 
+  bool _purchasing = false;
   bool _restoring = false;
 
-  static const _amber = Color(0xFFFBBF24);
-  static const _amberSoft = Color(0xFFFCD34D);
-  static const _orange = Color(0xFFF97316);
+  static const _gold = Color(0xFFFBBF24);
+  static const _goldSoft = Color(0xFFFCD34D);
+  static const _goldDeep = Color(0xFFF59E0B);
   static const _fallbackPrice = '€16,99';
+  String? _livePrice;
 
   @override
   void initState() {
     super.initState();
-    _enter = AnimationController(vsync: this, duration: const Duration(milliseconds: 1250))..forward();
-    _float = AnimationController(vsync: this, duration: const Duration(seconds: 14))..repeat();
-    // Price is shown statically as [_fallbackPrice] (€16,99) for now. Once the
-    // real store product price is configured, swap back to the live, auto-
-    // localized price via PurchaseService.instance.proPriceString().
+    _enter = AnimationController(vsync: this, duration: const Duration(milliseconds: 700))..forward();
+    // Live, store-localized price. Falls back to the static price until
+    // (or unless) RevenueCat returns the real product.
+    PurchaseService.instance.proPriceString().then((p) {
+      if (mounted && p != null) setState(() => _livePrice = p);
+    });
   }
 
   @override
   void dispose() {
     _enter.dispose();
-    _float.dispose();
     super.dispose();
   }
 
   // Fade + slide-up over an interval of the entrance controller (stagger).
-  Widget _in(double start, double end, {double dy = 24, required Widget child}) {
+  Widget _in(double start, double end, {double dy = 16, required Widget child}) {
     final anim = CurvedAnimation(parent: _enter, curve: Interval(start, end, curve: Curves.easeOutCubic));
     return AnimatedBuilder(
       animation: anim,
@@ -60,7 +63,15 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
     );
   }
 
+  Future<void> _buy() async {
+    if (_purchasing) return;
+    setState(() => _purchasing = true);
+    await widget.onPurchase();
+    if (mounted) setState(() => _purchasing = false);
+  }
+
   Future<void> _restore() async {
+    if (_restoring) return;
     setState(() => _restoring = true);
     final ok = await PurchaseService.instance.restorePurchases();
     if (!mounted) return;
@@ -78,64 +89,95 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
   void _openLegal(String title, String body) => Navigator.of(context)
       .push(MaterialPageRoute(builder: (_) => LegalScreen(title: title, body: body)));
 
+  static const _features = <String>[
+    'Chromatic Mode',
+    'Note to Number',
+    'Custom Mode',
+    'Adaptive Difficulty',
+    'Deep Analytics',
+  ];
+
   @override
   Widget build(BuildContext context) {
-    // Gentle overall fade so the screen doesn't pop in.
-    final reveal = CurvedAnimation(parent: _enter, curve: const Interval(0.0, 0.25));
+    final reveal = CurvedAnimation(parent: _enter, curve: const Interval(0.0, 0.3));
     return AnimatedBuilder(
       animation: reveal,
       builder: (_, child) => Opacity(opacity: reveal.value.clamp(0.0, 1.0), child: child),
       child: Material(
-        color: const Color(0xFF0F0A1A),
+        color: AppColors.background,
         child: Stack(children: [
-          // ── Layered background ─────────────────────────────────────────────
+          // ── Cinematic base: vertical gradient + two still ambient glows ────
           const Positioned.fill(child: DecoratedBox(decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter, end: Alignment.bottomCenter,
-              colors: [Color(0xFF231A3F), Color(0xFF0F0A1A), Color(0xFF0F0A1A)],
+              stops: [0.0, 0.45, 1.0],
+              colors: [Color(0xFF1D1434), Color(0xFF110C1E), Color(0xFF0C0814)],
             ),
           ))),
-          Positioned(top: -110, right: -90, child: _glow(340, _amber.withValues(alpha: 0.18))),
-          Positioned(top: 140, left: -120, child: _glow(300, const Color(0x33A855F7))),
-          Positioned(bottom: -130, right: -70, child: _glow(320, const Color(0x2622D3EE))),
-          _FloatingSymbols(controller: _float),
+          Positioned(
+            top: -140, right: -80,
+            child: IgnorePointer(child: Container(
+              width: 380, height: 380,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [_goldDeep.withValues(alpha: 0.11), Colors.transparent],
+                  stops: const [0.0, 0.7],
+                ),
+              ),
+            )),
+          ),
+          Positioned(
+            bottom: -160, left: -110,
+            child: IgnorePointer(child: Container(
+              width: 420, height: 420,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [const Color(0xFF7C3AED).withValues(alpha: 0.10), Colors.transparent],
+                  stops: const [0.0, 0.7],
+                ),
+              ),
+            )),
+          ),
 
           SafeArea(
             child: Stack(children: [
-              Column(children: [
-              // ── Scrollable content (rises to the very top of the screen) ──
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(26, 6, 26, 6),
-                  child: Column(children: [
-                    _in(0.0, 0.5, dy: 36, child: _ProEmblem(float: _float)),
-                    const SizedBox(height: 16),
-                    _in(0.12, 0.6, child: _wordmark()),
-                    const SizedBox(height: 10),
-                    _in(0.2, 0.68, child: Text(
-                      'Unlock every mode and master\nall 12 keys — forever.',
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, height: 1.45,
-                        color: Colors.white.withValues(alpha: 0.55)),
-                    )),
-                    const SizedBox(height: 26),
-                    for (int i = 0; i < _features.length; i++)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 11),
-                        child: _in(0.3 + i * 0.07, 0.78 + i * 0.05, dy: 16,
-                          child: _FeatureRow(icon: _features[i].$1, title: _features[i].$2, desc: _features[i].$3)),
-                      ),
-                  ]),
-                ),
-              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(children: [
+                  const Spacer(flex: 3),
 
-              // ── Pinned CTA ───────────────────────────────────────────────
-              _in(0.62, 1.0, dy: 18, child: _bottomBar(context)),
-            ]),
-              // ── Close (X): floats over the top-right corner ──────────────
-              Positioned(top: 2, right: 12, child: _CloseButton(onTap: widget.onClose)),
+                  _in(0.0, 0.45, child: _hero()),
+
+                  const Spacer(flex: 3),
+
+                  _in(0.14, 0.62, child: _membershipCard()),
+
+                  const Spacer(flex: 3),
+
+                  _in(0.32, 0.85, child: _BuyButton(
+                    title: 'Unlock Lifetime Access',
+                    subtitle: '${_livePrice ?? _fallbackPrice} · one-time payment',
+                    busy: _purchasing,
+                    onTap: _buy,
+                  )),
+                  const SizedBox(height: 14),
+                  _in(0.42, 0.95, child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(mainAxisSize: MainAxisSize.min, children: [
+                      _miniLink(_restoring ? 'Restoring…' : 'Restore Purchase', _restoring ? null : _restore),
+                      _dot(),
+                      _miniLink('Terms', () => _openLegal('Terms of Service', kTermsBody)),
+                      _dot(),
+                      _miniLink('Privacy', () => _openLegal('Privacy Policy', kPrivacyPolicyBody)),
+                    ]),
+                  )),
+
+                  const SizedBox(height: 10),
+                ]),
+              ),
+              Positioned(top: 6, right: 16, child: _CloseButton(onTap: widget.onClose)),
             ]),
           ),
         ]),
@@ -143,197 +185,161 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
     );
   }
 
-  Widget _wordmark() => FittedBox(
-    fit: BoxFit.scaleDown,
-    alignment: Alignment.center,
-    child: Row(
+  // ── Hero: logo with dual colored glow, wordmark, promise ───────────────────
+
+  Widget _hero() => Column(children: [
+    Container(
+      width: 92, height: 92,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(21),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+        boxShadow: [
+          BoxShadow(color: const Color(0xFF7C3AED).withValues(alpha: 0.48),
+            blurRadius: 44, offset: const Offset(-11, 16), spreadRadius: -6),
+          BoxShadow(color: _goldDeep.withValues(alpha: 0.38),
+            blurRadius: 44, offset: const Offset(11, 18), spreadRadius: -8),
+        ],
+      ),
+      child: Image.asset('assets/images/improvy_logo.png', fit: BoxFit.cover, filterQuality: FilterQuality.high),
+    ),
+    const SizedBox(height: 24),
+    Row(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.baseline,
       textBaseline: TextBaseline.alphabetic,
       children: [
+        const Text('Improvy',
+          maxLines: 1, softWrap: false,
+          style: TextStyle(fontSize: 37, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -1.1, height: 1)),
         ShaderMask(
-          shaderCallback: (b) => const LinearGradient(
-            colors: [Color(0xFF60A5FA), Color(0xFFA855F7), Color(0xFFEC4899)],
-          ).createShader(b),
-          child: const Text('Improvy ',
+          shaderCallback: (b) => const LinearGradient(colors: [_goldSoft, _goldDeep]).createShader(b),
+          child: const Text(' Pro',
             maxLines: 1, softWrap: false,
-            style: TextStyle(fontSize: 42, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -1.4, height: 1)),
-        ),
-        ShaderMask(
-          shaderCallback: (b) => const LinearGradient(colors: [_amberSoft, _orange]).createShader(b),
-          child: const Text('PRO',
-            maxLines: 1, softWrap: false,
-            style: TextStyle(fontSize: 42, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -1.4, height: 1)),
+            style: TextStyle(fontSize: 37, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -1.1, height: 1)),
         ),
       ],
     ),
-  );
+    const SizedBox(height: 12),
+    Text('Every key. Every mode. Forever.',
+      textAlign: TextAlign.center,
+      maxLines: 1, overflow: TextOverflow.ellipsis,
+      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, height: 1.4,
+        color: Colors.white.withValues(alpha: 0.58))),
+  ]);
 
-  Widget _bottomBar(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 6, 24, 10),
-      child: Column(mainAxisSize: MainAxisSize.min, children: [
-        _BuyButton(label: 'Unlock $_fallbackPrice', onTap: widget.onPurchase),
-        const SizedBox(height: 12),
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          alignment: Alignment.center,
-          child: Text('One-time purchase  ·  lifetime access',
-            maxLines: 1, softWrap: false,
-            style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: Colors.white.withValues(alpha: 0.5))),
+  // ── Glass membership card: gradient hairline border + sheen + check rows ───
+
+  Widget _membershipCard() {
+    return Container(
+      // Gradient hairline border: gold at the top corners fading out below.
+      padding: const EdgeInsets.all(1),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter, end: Alignment.bottomCenter,
+          colors: [
+            _gold.withValues(alpha: 0.45),
+            Colors.white.withValues(alpha: 0.09),
+            Colors.white.withValues(alpha: 0.07),
+          ],
+          stops: const [0.0, 0.35, 1.0],
         ),
-        const SizedBox(height: 14),
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          alignment: Alignment.center,
-          child: Row(mainAxisSize: MainAxisSize.min, mainAxisAlignment: MainAxisAlignment.center, children: [
-            _miniLink(_restoring ? 'Restoring…' : 'Restore', _restoring ? null : _restore),
-            _dot(),
-            _miniLink('Terms', () => _openLegal('Terms of Service', kTermsBody)),
-            _dot(),
-            _miniLink('Privacy', () => _openLegal('Privacy Policy', kPrivacyPolicyBody)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.35), blurRadius: 30, offset: const Offset(0, 14)),
+          BoxShadow(color: _goldDeep.withValues(alpha: 0.07), blurRadius: 44, offset: const Offset(0, 6)),
+        ],
+      ),
+      child: Container(
+        clipBehavior: Clip.antiAlias,
+        // Opaque base so the border gradient stays a hairline and cannot
+        // bleed through the glass fill.
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(21),
+          color: const Color(0xFF181022),
+        ),
+        // Glass sheen: lighter at the top edge.
+        foregroundDecoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(21),
+          gradient: LinearGradient(
+            begin: Alignment.topCenter, end: Alignment.bottomCenter,
+            colors: [
+              Colors.white.withValues(alpha: 0.07),
+              Colors.white.withValues(alpha: 0.015),
+              Colors.white.withValues(alpha: 0.03),
+            ],
+            stops: const [0.0, 0.3, 1.0],
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 21, 24, 12),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            // Header: label + LIFETIME tag
+            Row(children: [
+              Text('WHAT\'S INCLUDED',
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.7,
+                  color: Colors.white.withValues(alpha: 0.42))),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: _gold.withValues(alpha: 0.12),
+                  border: Border.all(color: _gold.withValues(alpha: 0.30)),
+                ),
+                child: const Text('LIFETIME',
+                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1.4,
+                    color: _goldSoft)),
+              ),
+            ]),
+            const SizedBox(height: 8),
+            for (int i = 0; i < _features.length; i++) ...[
+              if (i > 0) Container(height: 1, color: Colors.white.withValues(alpha: 0.055)),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 15),
+                child: Row(children: [
+                  Container(
+                    width: 25, height: 25,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft, end: Alignment.bottomRight,
+                        colors: [_goldSoft, _goldDeep],
+                      ),
+                    ),
+                    child: const Icon(Icons.check_rounded, size: 17, color: Color(0xFF2A1B04)),
+                  ),
+                  const SizedBox(width: 15),
+                  Expanded(child: Text(_features[i],
+                    maxLines: 1, overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, height: 1.2,
+                      letterSpacing: 0.1, color: Colors.white.withValues(alpha: 0.93)))),
+                ]),
+              ),
+            ],
           ]),
         ),
-        const SizedBox(height: 2),
-      ]),
+      ),
     );
   }
 
   Widget _miniLink(String text, VoidCallback? onTap) => GestureDetector(
     onTap: onTap,
-    child: Text(text, style: TextStyle(
-      fontSize: 12, fontWeight: FontWeight.w600,
-      color: Colors.white.withValues(alpha: onTap == null ? 0.3 : 0.5))),
+    behavior: HitTestBehavior.opaque,
+    child: Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Text(text, style: TextStyle(
+        fontSize: 12, fontWeight: FontWeight.w600,
+        color: Colors.white.withValues(alpha: onTap == null ? 0.3 : 0.45))),
+    ),
   );
 
   Widget _dot() => Text('   ·   ',
-    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white.withValues(alpha: 0.22)));
-
-  Widget _glow(double size, Color color) => Container(
-    width: size, height: size,
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      gradient: RadialGradient(colors: [color, Colors.transparent], stops: const [0.0, 0.7]),
-    ),
-  );
+    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white.withValues(alpha: 0.2)));
 }
 
-// ── Hero: a glowing gold PRO emblem with twinkling sparkles ───────────────────
-
-class _ProEmblem extends StatelessWidget {
-  final AnimationController float;
-  const _ProEmblem({required this.float});
-
-  static const _amberSoft = Color(0xFFFCD34D);
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: float,
-      builder: (_, _) {
-        final t = float.value * 2 * math.pi;
-        final breathe = (math.sin(t) + 1) / 2; // 0..1
-        return SizedBox(
-          width: 200, height: 176,
-          child: Stack(clipBehavior: Clip.none, alignment: Alignment.center, children: [
-            // Soft breathing glow — purple, echoing the brand gradient.
-            Container(
-              width: 172 + 20 * breathe, height: 172 + 20 * breathe,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [const Color(0xFFA855F7).withValues(alpha: 0.16 + 0.10 * breathe), Colors.transparent],
-                  stops: const [0.0, 0.72],
-                ),
-              ),
-            ),
-            // The official app logo with a colourful drop shadow so it lifts off.
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(31),
-                boxShadow: [
-                  BoxShadow(color: const Color(0xFF7C3AED).withValues(alpha: 0.42), blurRadius: 42, offset: const Offset(-9, 15), spreadRadius: -8),
-                  BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: 0.34), blurRadius: 42, offset: const Offset(11, 17), spreadRadius: -10),
-                ],
-              ),
-              child: const _AppLogo(size: 134),
-            ),
-            // Twinkling gold sparkles for a touch of magic.
-            _sparkle(const Offset(76, -58), 25, breathe),
-            _sparkle(const Offset(-78, 40), 19, (math.sin(t + 2.4) + 1) / 2),
-          ]),
-        );
-      },
-    );
-  }
-
-  Widget _sparkle(Offset offset, double size, double p) => Transform.translate(
-    offset: offset,
-    child: Opacity(
-      opacity: 0.35 + 0.55 * p,
-      child: Transform.scale(
-        scale: 0.7 + 0.4 * p,
-        child: Icon(Icons.auto_awesome, color: _amberSoft, size: size),
-      ),
-    ),
-  );
-}
-
-// ── The official Improvy app icon (real PNG asset) ────────────────────────────
-
-class _AppLogo extends StatelessWidget {
-  final double size;
-  const _AppLogo({required this.size});
-
-  @override
-  Widget build(BuildContext context) => Image.asset(
-    'assets/images/improvy_logo.png',
-    width: size, height: size,
-    fit: BoxFit.contain,
-    filterQuality: FilterQuality.high,
-  );
-}
-
-// ── Drifting musical glyphs (very subtle, gold-tinted) ────────────────────────
-
-class _FloatingSymbols extends StatelessWidget {
-  final AnimationController controller;
-  const _FloatingSymbols({required this.controller});
-
-  // (x, y, size, phase, gold?)
-  static const _items = [
-    (0.14, 0.20, 58.0, 0.0, true),
-    (0.84, 0.26, 66.0, 1.4, false),
-    (0.20, 0.66, 80.0, 2.6, false),
-    (0.80, 0.72, 50.0, 3.6, true),
-  ];
-  static const _glyphs = ['♪', '♫', '𝄞', '♩'];
-
-  @override
-  Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    return IgnorePointer(
-      child: AnimatedBuilder(
-        animation: controller,
-        builder: (_, _) => Stack(children: [
-          for (int i = 0; i < _items.length; i++)
-            Positioned(
-              left: _items[i].$1 * size.width,
-              top: _items[i].$2 * size.height + math.sin(controller.value * 2 * math.pi + _items[i].$4) * 14,
-              child: Transform.rotate(
-                angle: math.sin(controller.value * 2 * math.pi + _items[i].$4) * 0.12,
-                child: Text(_glyphs[i], style: TextStyle(
-                  fontSize: _items[i].$3,
-                  color: (_items[i].$5 ? const Color(0xFFFBBF24) : Colors.white).withValues(alpha: 0.05),
-                )),
-              ),
-            ),
-        ]),
-      ),
-    );
-  }
-}
+// ── Close button ──────────────────────────────────────────────────────────────
 
 class _CloseButton extends StatelessWidget {
   final VoidCallback onTap;
@@ -342,147 +348,93 @@ class _CloseButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => GestureDetector(
     onTap: onTap,
+    behavior: HitTestBehavior.opaque,
     child: Container(
-      width: 42, height: 42,
+      width: 38, height: 38,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.white.withValues(alpha: 0.06),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
+        color: Colors.white.withValues(alpha: 0.07),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
       ),
-      child: Icon(Icons.close_rounded, color: Colors.white.withValues(alpha: 0.55), size: 22),
+      child: Icon(Icons.close_rounded, color: Colors.white.withValues(alpha: 0.65), size: 20),
     ),
   );
 }
 
-// (icon, title, description)
-const _features = [
-  (Icons.piano_rounded,        'Chromatic Mode',      'Master all 12 chromatic keys'),
-  (Icons.swap_horiz_rounded,   'Note to Number',      'Identify degrees from notes instantly'),
-  (Icons.psychology_rounded,   'Adaptive Difficulty', 'Training that adapts to your level'),
-  (Icons.analytics_rounded,    'Deep Analytics',      'Track every key and every degree'),
-];
-
-class _FeatureRow extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String desc;
-  const _FeatureRow({required this.icon, required this.title, required this.desc});
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-    decoration: BoxDecoration(
-      color: Colors.white.withValues(alpha: 0.045),
-      borderRadius: BorderRadius.circular(20),
-      border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-    ),
-    child: Row(children: [
-      Container(
-        width: 52, height: 52,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          color: const Color(0xFFFBBF24).withValues(alpha: 0.13),
-          border: Border.all(color: const Color(0xFFFBBF24).withValues(alpha: 0.22)),
-        ),
-        child: Icon(icon, color: const Color(0xFFFBBF24), size: 26),
-      ),
-      const SizedBox(width: 15),
-      Expanded(child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title,
-            maxLines: 1, overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 17.5, fontWeight: FontWeight.w800, color: Colors.white, height: 1.1)),
-          const SizedBox(height: 4),
-          Text(desc,
-            maxLines: 1, overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 13.5, color: Colors.white.withValues(alpha: 0.5), height: 1.2)),
-        ],
-      )),
-    ]),
-  );
-}
+// ── CTA: gold, top-edge highlight, dark accessible ink, price inside ─────────
 
 class _BuyButton extends StatefulWidget {
-  final String label;
+  final String title;
+  final String subtitle;
+  final bool busy;
   final VoidCallback onTap;
-  const _BuyButton({required this.label, required this.onTap});
+  const _BuyButton({required this.title, required this.subtitle, required this.busy, required this.onTap});
 
   @override
   State<_BuyButton> createState() => _BuyButtonState();
 }
 
-class _BuyButtonState extends State<_BuyButton> with SingleTickerProviderStateMixin {
+class _BuyButtonState extends State<_BuyButton> {
   bool _pressed = false;
-  late final AnimationController _shim;
 
-  @override
-  void initState() {
-    super.initState();
-    _shim = AnimationController(vsync: this, duration: const Duration(seconds: 3))..repeat();
-  }
-
-  @override
-  void dispose() {
-    _shim.dispose();
-    super.dispose();
-  }
+  static const _ink = Color(0xFF2A1B04); // near-black brown on gold: 10:1+ contrast
 
   @override
   Widget build(BuildContext context) => GestureDetector(
-    onTapDown: (_) => setState(() => _pressed = true),
-    onTapUp: (_) { setState(() => _pressed = false); widget.onTap(); },
+    onTapDown: widget.busy ? null : (_) => setState(() => _pressed = true),
+    onTapUp: widget.busy ? null : (_) { setState(() => _pressed = false); widget.onTap(); },
     onTapCancel: () => setState(() => _pressed = false),
     child: AnimatedScale(
       scale: _pressed ? 0.97 : 1.0,
       duration: const Duration(milliseconds: 110),
-      child: AnimatedBuilder(
-        animation: _shim,
-        builder: (ctx, _) => Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(22),
-            gradient: const LinearGradient(
-              colors: [Color(0xFFFCD34D), Color(0xFFF59E0B), Color(0xFFEA580C)],
-              begin: Alignment.centerLeft, end: Alignment.centerRight,
-            ),
-            boxShadow: const [BoxShadow(color: Color(0x59F59E0B), blurRadius: 38, offset: Offset(0, 16))],
+      child: Container(
+        width: double.infinity,
+        height: 68,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          gradient: const LinearGradient(
+            begin: Alignment.topCenter, end: Alignment.bottomCenter,
+            colors: [Color(0xFFFDDB6E), Color(0xFFFBBF24), Color(0xFFF59E0B)],
+            stops: [0.0, 0.45, 1.0],
           ),
-          child: Stack(children: [
-            // Sweeping shimmer
-            Positioned.fill(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(22),
-                child: ShaderMask(
-                  shaderCallback: (b) => LinearGradient(
-                    begin: Alignment(-3 + _shim.value * 6, 0),
-                    end: Alignment(-2 + _shim.value * 6, 0),
-                    colors: [Colors.transparent, Colors.white.withValues(alpha: 0.28), Colors.transparent],
-                  ).createShader(b),
-                  child: Container(color: Colors.white),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 19),
-              child: Center(
-                child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  const Icon(Icons.lock_open_rounded, color: Colors.white, size: 20),
-                  const SizedBox(width: 10),
-                  Flexible(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.center,
-                      child: Text(widget.label,
-                        maxLines: 1, softWrap: false,
-                        style: const TextStyle(fontSize: 16.5, fontWeight: FontWeight.w900, letterSpacing: 0.3, color: Colors.white)),
-                    ),
-                  ),
-                ]),
-              ),
-            ),
-          ]),
+          boxShadow: [
+            BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: widget.busy ? 0.18 : 0.38),
+              blurRadius: 30, offset: const Offset(0, 12), spreadRadius: -4),
+          ],
         ),
+        child: Stack(children: [
+          // Top-edge highlight — the "pressed metal" sheen.
+          Positioned(
+            top: 0, left: 14, right: 14,
+            child: Container(height: 1.4, color: Colors.white.withValues(alpha: 0.55)),
+          ),
+          Center(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 180),
+              child: widget.busy
+                ? const SizedBox(
+                    key: ValueKey('spinner'),
+                    width: 22, height: 22,
+                    child: CircularProgressIndicator(strokeWidth: 2.6, color: _ink))
+                : Column(
+                    key: const ValueKey('label'),
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(widget.title,
+                        maxLines: 1, softWrap: false, overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 17.5, fontWeight: FontWeight.w800,
+                          letterSpacing: 0.1, color: _ink, height: 1.1)),
+                      const SizedBox(height: 4),
+                      Text(widget.subtitle,
+                        maxLines: 1, softWrap: false, overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
+                          color: _ink.withValues(alpha: 0.72), height: 1.1)),
+                    ],
+                  ),
+            ),
+          ),
+        ]),
       ),
     ),
   );

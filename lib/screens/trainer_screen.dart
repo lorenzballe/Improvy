@@ -1333,8 +1333,8 @@ class _NoteButtonState extends State<_NoteButton> with SingleTickerProviderState
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   child: isReverse
-                      ? Text(item.label,
-                          maxLines: 1,
+                      ? NoteText(
+                          note: item.label,
                           style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: textColor))
                       : NoteText(
                           note: formatNoteForDisplay(item.label, notation),

@@ -148,9 +148,31 @@ class _RootScreenState extends State<RootScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(title,
             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 18)),
-        content: Text(
-          detail == null ? message : '$message\n\nDetails: $detail',
-          style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 13.5, height: 1.45),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(message,
+                style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.75), fontSize: 14, height: 1.5)),
+            if (detail != null) ...[
+              const SizedBox(height: 14),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.04),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+                ),
+                child: Text(detail,
+                    style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.4),
+                        fontSize: 11.5,
+                        height: 1.4)),
+              ),
+            ],
+          ],
         ),
         actions: [
           TextButton(

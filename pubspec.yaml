@@ -35,6 +35,9 @@ flutter:
     - assets/images/
 
   fonts:
+    - family: NotoMusic
+      fonts:
+        - asset: assets/fonts/NotoMusic-Regular.ttf
     - family: Lexend
       fonts:
         - asset: assets/fonts/Lexend-Light.ttf
