@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../constants/app_colors.dart';
@@ -21,8 +23,9 @@ class PaywallModal extends StatefulWidget {
   State<PaywallModal> createState() => _PaywallModalState();
 }
 
-class _PaywallModalState extends State<PaywallModal> with SingleTickerProviderStateMixin {
+class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMixin {
   late final AnimationController _enter;
+  late final AnimationController _border; // slow rainbow sweep on the card
 
   bool _purchasing = false;
   bool _restoring = false;
@@ -37,6 +40,7 @@ class _PaywallModalState extends State<PaywallModal> with SingleTickerProviderSt
   void initState() {
     super.initState();
     _enter = AnimationController(vsync: this, duration: const Duration(milliseconds: 700))..forward();
+    _border = AnimationController(vsync: this, duration: const Duration(seconds: 8))..repeat();
     // Live, store-localized price. Falls back to the static price until
     // (or unless) RevenueCat returns the real product.
     PurchaseService.instance.proPriceString().then((p) {
@@ -47,6 +51,7 @@ class _PaywallModalState extends State<PaywallModal> with SingleTickerProviderSt
   @override
   void dispose() {
     _enter.dispose();
+    _border.dispose();
     super.dispose();
   }
 
@@ -232,24 +237,28 @@ class _PaywallModalState extends State<PaywallModal> with SingleTickerProviderSt
   // ── Glass membership card: gradient hairline border + sheen + check rows ───
 
   Widget _membershipCard() {
-    return Container(
-      // Gradient hairline border: gold at the top corners fading out below.
-      padding: const EdgeInsets.all(1),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(22),
-        gradient: LinearGradient(
-          begin: Alignment.topCenter, end: Alignment.bottomCenter,
-          colors: [
-            _gold.withValues(alpha: 0.45),
-            Colors.white.withValues(alpha: 0.09),
-            Colors.white.withValues(alpha: 0.07),
+    return AnimatedBuilder(
+      animation: _border,
+      builder: (_, child) => Container(
+        // Animated rainbow hairline — the same slow 8s sweep as the home
+        // progress card, so the paywall shares the app's "magic" signature.
+        padding: const EdgeInsets.all(1.4),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(22),
+          gradient: SweepGradient(
+            transform: GradientRotation(_border.value * 2 * math.pi),
+            colors: const [
+              Color(0xFFEF4444), Color(0xFFF97316), Color(0xFFEAB308),
+              Color(0xFF22C55E), Color(0xFF3B82F6), Color(0xFFA855F7),
+              Color(0xFFEC4899), Color(0xFFEF4444),
+            ],
+          ),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withValues(alpha: 0.35), blurRadius: 30, offset: const Offset(0, 14)),
+            BoxShadow(color: _goldDeep.withValues(alpha: 0.07), blurRadius: 44, offset: const Offset(0, 6)),
           ],
-          stops: const [0.0, 0.35, 1.0],
         ),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.35), blurRadius: 30, offset: const Offset(0, 14)),
-          BoxShadow(color: _goldDeep.withValues(alpha: 0.07), blurRadius: 44, offset: const Offset(0, 6)),
-        ],
+        child: child,
       ),
       child: Container(
         clipBehavior: Clip.antiAlias,

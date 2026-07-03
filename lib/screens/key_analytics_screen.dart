@@ -160,7 +160,7 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(20, 4, 20, 140 + MediaQuery.of(context).padding.bottom),
+          padding: EdgeInsets.fromLTRB(20, 4, 20, 28 + MediaQuery.of(context).padding.bottom),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -207,10 +207,34 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                 ),
               ),
               const SizedBox(height: 14),
+              // Hero tone letter: tinted in its note colour over a soft glow,
+              // so it belongs to the key instead of floating bare in the dark.
               Center(
-                child: NoteText(
-                  note: tone,
-                  style: const TextStyle(fontSize: 84, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -3, height: 1),
+                child: Stack(
+                  alignment: Alignment.center,
+                  clipBehavior: Clip.none,
+                  children: [
+                    IgnorePointer(
+                      child: Container(
+                        width: 190, height: 190,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: RadialGradient(
+                            colors: [color.withValues(alpha: 0.22), Colors.transparent],
+                            stops: const [0.0, 0.7],
+                          ),
+                        ),
+                      ),
+                    ),
+                    NoteText(
+                      note: tone,
+                      style: TextStyle(
+                        fontSize: 84, fontWeight: FontWeight.w900,
+                        color: Colors.white, letterSpacing: -3, height: 1,
+                        shadows: [Shadow(color: color.withValues(alpha: 0.55), blurRadius: 28)],
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 20),
@@ -538,11 +562,10 @@ class _DegreeMasteryCell extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: color.withAlpha(33),
                     borderRadius: BorderRadius.circular(9),
-                    border: Border.all(color: Colors.white.withAlpha(26), width: 1.2),
                   ),
-                  child: Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white)),
+                  child: Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: color)),
                 ),
-                Text('$accuracy%', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: color)),
+                Text('$accuracy%', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: color)),
               ],
             ),
             const SizedBox(height: 10),

@@ -652,7 +652,10 @@ class _SlidingPillRow extends StatelessWidget {
                 child: GestureDetector(
                   onTap: () => onChange(opt),
                   behavior: HitTestBehavior.opaque,
-                  child: Center(
+                  child: Padding(
+                    // Comfortable ≥48dp touch target — the pills were too thin.
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Center(
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
                       child: AnimatedDefaultTextStyle(
@@ -674,6 +677,7 @@ class _SlidingPillRow extends StatelessWidget {
                         ),
                       ),
                     ),
+                  ),
                   ),
                 ),
               );
