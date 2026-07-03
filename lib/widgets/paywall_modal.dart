@@ -25,7 +25,8 @@ class PaywallModal extends StatefulWidget {
 
 class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMixin {
   late final AnimationController _enter;
-  late final AnimationController _border; // slow rainbow sweep on the card
+  late final AnimationController _border;  // slow rainbow sweep on the card
+  late final AnimationController _breathe; // ambient drift + logo halo pulse
 
   bool _purchasing = false;
   bool _restoring = false;
@@ -41,6 +42,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
     super.initState();
     _enter = AnimationController(vsync: this, duration: const Duration(milliseconds: 700))..forward();
     _border = AnimationController(vsync: this, duration: const Duration(seconds: 8))..repeat();
+    _breathe = AnimationController(vsync: this, duration: const Duration(seconds: 5))..repeat(reverse: true);
     // Live, store-localized price. Falls back to the static price until
     // (or unless) RevenueCat returns the real product.
     PurchaseService.instance.proPriceString().then((p) {
@@ -52,6 +54,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
   void dispose() {
     _enter.dispose();
     _border.dispose();
+    _breathe.dispose();
     super.dispose();
   }
 
@@ -119,31 +122,40 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
               colors: [Color(0xFF1D1434), Color(0xFF110C1E), Color(0xFF0C0814)],
             ),
           ))),
-          Positioned(
-            top: -140, right: -80,
-            child: IgnorePointer(child: Container(
-              width: 380, height: 380,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [_goldDeep.withValues(alpha: 0.11), Colors.transparent],
-                  stops: const [0.0, 0.7],
+          // Ambient glows breathe and drift very slowly — alive, not busy.
+          AnimatedBuilder(
+            animation: _breathe,
+            builder: (_, __) {
+              final t = Curves.easeInOut.transform(_breathe.value);
+              return Stack(children: [
+                Positioned(
+                  top: -140 + 14 * t, right: -80 - 10 * t,
+                  child: IgnorePointer(child: Container(
+                    width: 380, height: 380,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [_goldDeep.withValues(alpha: 0.09 + 0.05 * t), Colors.transparent],
+                        stops: const [0.0, 0.7],
+                      ),
+                    ),
+                  )),
                 ),
-              ),
-            )),
-          ),
-          Positioned(
-            bottom: -160, left: -110,
-            child: IgnorePointer(child: Container(
-              width: 420, height: 420,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [const Color(0xFF7C3AED).withValues(alpha: 0.10), Colors.transparent],
-                  stops: const [0.0, 0.7],
+                Positioned(
+                  bottom: -160 + 12 * (1 - t), left: -110 - 8 * (1 - t),
+                  child: IgnorePointer(child: Container(
+                    width: 420, height: 420,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [const Color(0xFF7C3AED).withValues(alpha: 0.08 + 0.05 * (1 - t)), Colors.transparent],
+                        stops: const [0.0, 0.7],
+                      ),
+                    ),
+                  )),
                 ),
-              ),
-            )),
+              ]);
+            },
           ),
 
           SafeArea(
@@ -193,20 +205,56 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
   // ── Hero: logo with dual colored glow, wordmark, promise ───────────────────
 
   Widget _hero() => Column(children: [
-    Container(
-      width: 92, height: 92,
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(21),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-        boxShadow: [
-          BoxShadow(color: const Color(0xFF7C3AED).withValues(alpha: 0.48),
-            blurRadius: 44, offset: const Offset(-11, 16), spreadRadius: -6),
-          BoxShadow(color: _goldDeep.withValues(alpha: 0.38),
-            blurRadius: 44, offset: const Offset(11, 18), spreadRadius: -8),
-        ],
-      ),
-      child: Image.asset('assets/images/improvy_logo.png', fit: BoxFit.cover, filterQuality: FilterQuality.high),
+    Stack(
+      alignment: Alignment.center,
+      clipBehavior: Clip.none,
+      children: [
+        // Breathing halo behind the logo — painted out of layout.
+        Positioned.fill(
+          child: IgnorePointer(
+            child: OverflowBox(
+              maxWidth: double.infinity,
+              maxHeight: double.infinity,
+              alignment: Alignment.center,
+              child: AnimatedBuilder(
+                animation: _breathe,
+                builder: (_, __) {
+                  final t = Curves.easeInOut.transform(_breathe.value);
+                  return Container(
+                    width: 210 + 26 * t, height: 210 + 26 * t,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          Color.lerp(const Color(0xFF7C3AED), _goldDeep, t)!
+                              .withValues(alpha: 0.10 + 0.07 * t),
+                          Colors.transparent,
+                        ],
+                        stops: const [0.0, 0.7],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+        Container(
+          width: 92, height: 92,
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(21),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+            boxShadow: [
+              BoxShadow(color: const Color(0xFF7C3AED).withValues(alpha: 0.48),
+                blurRadius: 44, offset: const Offset(-11, 16), spreadRadius: -6),
+              BoxShadow(color: _goldDeep.withValues(alpha: 0.38),
+                blurRadius: 44, offset: const Offset(11, 18), spreadRadius: -8),
+            ],
+          ),
+          child: Image.asset('assets/images/improvy_logo.png', fit: BoxFit.cover, filterQuality: FilterQuality.high),
+        ),
+      ],
     ),
     const SizedBox(height: 24),
     Row(
@@ -383,10 +431,25 @@ class _BuyButton extends StatefulWidget {
   State<_BuyButton> createState() => _BuyButtonState();
 }
 
-class _BuyButtonState extends State<_BuyButton> {
+class _BuyButtonState extends State<_BuyButton> with SingleTickerProviderStateMixin {
   bool _pressed = false;
+  late final AnimationController _shim;
 
   static const _ink = Color(0xFF2A1B04); // near-black brown on gold: 10:1+ contrast
+
+  @override
+  void initState() {
+    super.initState();
+    // One light sweep, then a pause — the sweep lives in the first 35% of
+    // each 4.5s cycle.
+    _shim = AnimationController(vsync: this, duration: const Duration(milliseconds: 4500))..repeat();
+  }
+
+  @override
+  void dispose() {
+    _shim.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) => GestureDetector(
@@ -418,6 +481,31 @@ class _BuyButtonState extends State<_BuyButton> {
             top: 0, left: 14, right: 14,
             child: Container(height: 1.4, color: Colors.white.withValues(alpha: 0.55)),
           ),
+          // Light blade sweeping across the gold — then resting.
+          if (!widget.busy)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: AnimatedBuilder(
+                  animation: _shim,
+                  builder: (_, __) {
+                    final p = Curves.easeInOut.transform((_shim.value / 0.35).clamp(0.0, 1.0));
+                    if (p >= 1) return const SizedBox.shrink();
+                    return ShaderMask(
+                      shaderCallback: (b) => LinearGradient(
+                        begin: Alignment(-2.8 + p * 5.6, -0.4),
+                        end: Alignment(-2.0 + p * 5.6, 0.4),
+                        colors: [
+                          Colors.transparent,
+                          Colors.white.withValues(alpha: 0.32),
+                          Colors.transparent,
+                        ],
+                      ).createShader(b),
+                      child: Container(color: Colors.white),
+                    );
+                  },
+                ),
+              ),
+            ),
           Center(
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 180),
