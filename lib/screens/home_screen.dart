@@ -349,7 +349,7 @@ class _LogoGlowState extends State<_LogoGlow> with TickerProviderStateMixin {
             colors: [Color(0x4D6366F1), Colors.transparent, Color(0x4DE11D48)],
           ),
           minScale: 0.8, maxScale: 1.2,
-          minOpacity: 0.3, maxOpacity: 0.5,
+          minOpacity: 0.18, maxOpacity: 0.30,
         ),
         // L1 — inner pulsing glow: text + 24px on every side
         _halo(
@@ -359,7 +359,7 @@ class _LogoGlowState extends State<_LogoGlow> with TickerProviderStateMixin {
             colors: [Color(0x6606B6D4), Color(0x669333EA), Color(0x66DC2626)],
           ),
           minScale: 1.0, maxScale: 1.1,
-          minOpacity: 0.5, maxOpacity: 0.8,
+          minOpacity: 0.32, maxOpacity: 0.52,
         ),
       ],
     );
@@ -934,7 +934,7 @@ class _BigSpecialCardState extends State<_BigSpecialCard> {
                     imageFilter: ImageFilter.blur(sigmaX: 34, sigmaY: 34, tileMode: TileMode.decal),
                     child: Container(
                       width: 170, height: 170,
-                      decoration: BoxDecoration(shape: BoxShape.circle, color: accent.withValues(alpha:0.32)),
+                      decoration: BoxDecoration(shape: BoxShape.circle, color: accent.withValues(alpha:0.24)),
                     ),
                   ),
                 ),
@@ -1412,7 +1412,7 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                 final diatonicCard = _BigModeCard(
                     keyName: keyName,
                     title: 'Diatonic',
-                    description: 'Master the 7 notes of the scale. Perfect for mental calculation and keyboard visualization.',
+                    description: 'Master the 7 notes of the scale.',
                     iconWidget: Container(
                       width: 54, height: 54,
                       decoration: BoxDecoration(
@@ -1435,7 +1435,7 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                 final chromaticCard = _BigModeCard(
                     keyName: keyName,
                     title: 'Chromatic',
-                    description: 'Challenge yourself with all 12 semitones. Advanced mental mapping for absolute mastery.',
+                    description: 'Challenge yourself with all 12 semitones.',
                     iconWidget: Container(
                       width: 54, height: 54,
                       decoration: BoxDecoration(

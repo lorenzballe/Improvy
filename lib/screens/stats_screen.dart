@@ -685,6 +685,25 @@ class _LineChartPainter extends CustomPainter {
   
   _LineChartPainter({required this.values, required this.selectedIndex, required this.showGuideLine});
 
+  static const _blue = Color(0xFF60A5FA);
+  static const _cyan = Color(0xFF22D3EE);
+
+  double _xAt(int i, Size size) =>
+      values.length == 1 ? size.width / 2 : i / (values.length - 1) * size.width;
+  double _yAt(int v, int maxVal, Size size) =>
+      size.height * 0.85 - (v / maxVal) * size.height * 0.75;
+
+  // Smooth path through a run of consecutive points.
+  Path _runPath(List<Offset> pts) {
+    final p = Path()..moveTo(pts.first.dx, pts.first.dy);
+    for (int i = 1; i < pts.length; i++) {
+      final cp1 = Offset((pts[i - 1].dx + pts[i].dx) / 2, pts[i - 1].dy);
+      final cp2 = Offset((pts[i - 1].dx + pts[i].dx) / 2, pts[i].dy);
+      p.cubicTo(cp1.dx, cp1.dy, cp2.dx, cp2.dy, pts[i].dx, pts[i].dy);
+    }
+    return p;
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
     if (values.isEmpty) return;
@@ -698,61 +717,81 @@ class _LineChartPainter extends CustomPainter {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
     }
 
-    final pts = <Offset>[];
+    // Days without sessions are GAPS, not dips: split data into runs of
+    // consecutive non-zero values and draw each run on its own.
+    final runs = <List<Offset>>[];
+    var current = <Offset>[];
     for (int i = 0; i < values.length; i++) {
-      final x = values.length == 1 ? size.width / 2 : i / (values.length - 1) * size.width;
-      final y = values[i] == 0 ? size.height * 0.8 : size.height * 0.85 - (values[i] / maxVal) * size.height * 0.75;
-      pts.add(Offset(x, y));
+      if (values[i] == 0) {
+        if (current.isNotEmpty) { runs.add(current); current = []; }
+      } else {
+        current.add(Offset(_xAt(i, size), _yAt(values[i], maxVal, size)));
+      }
+    }
+    if (current.isNotEmpty) runs.add(current);
+    if (runs.isEmpty) return;
+
+    // Dashed average line (average of active days only) — quiet reference.
+    final active = values.where((v) => v > 0).toList();
+    final avg = active.reduce((a, b) => a + b) / active.length;
+    final avgY = _yAt(avg.round(), maxVal, size);
+    final dashPaint = Paint()..color = Colors.white.withAlpha(31)..strokeWidth = 1;
+    for (double x = 0; x < size.width; x += 10) {
+      canvas.drawLine(Offset(x, avgY), Offset(x + 5, avgY), dashPaint);
     }
 
-    // Fill path
-    final fillPath = Path();
-    fillPath.moveTo(pts.first.dx, pts.first.dy);
-    for (int i = 1; i < pts.length; i++) {
-      final cp1 = Offset((pts[i - 1].dx + pts[i].dx) / 2, pts[i - 1].dy);
-      final cp2 = Offset((pts[i - 1].dx + pts[i].dx) / 2, pts[i].dy);
-      fillPath.cubicTo(cp1.dx, cp1.dy, cp2.dx, cp2.dy, pts[i].dx, pts[i].dy);
+    final lineShader = const LinearGradient(colors: [_blue, _cyan])
+        .createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+    final glowShader = LinearGradient(colors: [_blue.withAlpha(105), _cyan.withAlpha(105)])
+        .createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+
+    for (final run in runs) {
+      if (run.length == 1) {
+        // Isolated day: a small solid mark instead of a floating line.
+        canvas.drawCircle(run.first, 3.5, Paint()..color = _blue);
+        continue;
+      }
+      final path = _runPath(run);
+
+      // Area fill under the run.
+      final fill = Path.from(path)
+        ..lineTo(run.last.dx, size.height)
+        ..lineTo(run.first.dx, size.height)
+        ..close();
+      canvas.drawPath(fill, Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter, end: Alignment.bottomCenter,
+          colors: [_blue.withAlpha(56), _blue.withAlpha(0)],
+        ).createShader(Rect.fromLTWH(0, 0, size.width, size.height)));
+
+      // Soft glow pass under the crisp line.
+      canvas.drawPath(path, Paint()
+        ..shader = glowShader
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 6
+        ..strokeCap = StrokeCap.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5));
+
+      // Crisp line.
+      canvas.drawPath(path, Paint()
+        ..shader = lineShader
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.6
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round);
     }
-    fillPath.lineTo(size.width, size.height);
-    fillPath.lineTo(0, size.height);
-    fillPath.close();
 
-    final fillPaint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [const Color(0xFF3B82F6).withAlpha(77), Colors.transparent],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
-    canvas.drawPath(fillPath, fillPaint);
-
-    // Line
-    final linePath = Path();
-    linePath.moveTo(pts.first.dx, pts.first.dy);
-    for (int i = 1; i < pts.length; i++) {
-      final cp1 = Offset((pts[i - 1].dx + pts[i].dx) / 2, pts[i - 1].dy);
-      final cp2 = Offset((pts[i - 1].dx + pts[i].dx) / 2, pts[i].dy);
-      linePath.cubicTo(cp1.dx, cp1.dy, cp2.dx, cp2.dy, pts[i].dx, pts[i].dy);
-    }
-
-    final linePaint = Paint()
-      ..shader = const LinearGradient(
-        colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6), Color(0xFFEC4899)],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3
-      ..strokeCap = StrokeCap.round;
-    canvas.drawPath(linePath, linePaint);
-
-    // Draw vertical guide line if active (removed as per user request)
-
-    // Draw dot at selected index
-    if (selectedIndex >= 0 && selectedIndex < pts.length) {
-      final targetPt = pts[selectedIndex];
-      final dotBgPaint = Paint()..color = const Color(0xFF1A1625)..style = PaintingStyle.fill;
-      final dotBorderPaint = Paint()..color = const Color(0xFF60A5FA)..style = PaintingStyle.stroke..strokeWidth = 4;
-      // radius 9 — same as the single-tonality Accuracy chart dot
-      canvas.drawCircle(targetPt, 9, dotBgPaint);
-      canvas.drawCircle(targetPt, 9, dotBorderPaint);
+    // Marker on the selected (or latest) day — only when it has data.
+    if (selectedIndex >= 0 && selectedIndex < values.length && values[selectedIndex] > 0) {
+      final pt = Offset(_xAt(selectedIndex, size), _yAt(values[selectedIndex], maxVal, size));
+      canvas.drawCircle(pt, 10, Paint()
+        ..color = _blue.withAlpha(64)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6));
+      canvas.drawCircle(pt, 5.5, Paint()..color = const Color(0xFF1A1625));
+      canvas.drawCircle(pt, 5.5, Paint()
+        ..color = _blue
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3);
     }
   }
 

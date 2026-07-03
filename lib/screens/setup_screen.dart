@@ -548,9 +548,9 @@ class _KeyCell extends StatelessWidget {
       // No press/illuminate animation — the key colours instantly on tap.
       child: Container(
         decoration: BoxDecoration(
-          // web: selected = vivid note colour with a glossy sheen + neon glow;
-          // unselected = bg-white/5.
-          color: sel ? null : Colors.white.withValues(alpha:0.05),
+          // Selected: vivid note colour with a glossy sheen + soft neon glow.
+          // Unselected: quiet glass tile with a hairline border.
+          color: sel ? null : Colors.white.withValues(alpha:0.045),
           gradient: sel
               ? LinearGradient(
                   begin: Alignment.topCenter,
@@ -559,7 +559,12 @@ class _KeyCell extends StatelessWidget {
                 )
               : null,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: null,
+          border: Border.all(
+            color: sel ? Colors.white.withValues(alpha:0.20) : Colors.white.withValues(alpha:0.07),
+          ),
+          boxShadow: sel
+              ? [BoxShadow(color: c.withValues(alpha:0.40), blurRadius: 18, offset: const Offset(0, 6), spreadRadius: -4)]
+              : null,
         ),
         child: Center(
           child: FittedBox(
@@ -569,7 +574,7 @@ class _KeyCell extends StatelessWidget {
               style: TextStyle(
                 fontSize: 18, // web: text-lg
                 fontWeight: FontWeight.w900,
-                color: sel ? Colors.white : Colors.white.withValues(alpha:0.4),
+                color: sel ? Colors.white : Colors.white.withValues(alpha:0.5),
                 letterSpacing: -0.5,
                 shadows: sel
                     ? const [Shadow(color: Color(0x66000000), blurRadius: 4, offset: Offset(0, 1))]
@@ -613,10 +618,11 @@ class _SlidingPillRow extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha:0.05), // web: bg-white/5
           borderRadius: BorderRadius.circular(16), // rounded-2xl
+          border: Border.all(color: Colors.white.withValues(alpha:0.06)),
         ),
         child: IntrinsicHeight(
           child: Stack(children: [
-            // Sliding indicator (web: h-11 rounded-xl, activeColor @ 0.4, shadow-lg)
+            // Sliding indicator — solid accent with a soft matching glow.
             AnimatedPositioned(
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeOutCubic,
@@ -626,10 +632,14 @@ class _SlidingPillRow extends StatelessWidget {
               width: itemW - 6,
               child: Container(
                 decoration: BoxDecoration(
-                  color: accentColor.withValues(alpha:0.4),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color.lerp(accentColor, Colors.white, 0.15)!, accentColor],
+                  ),
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
-                    BoxShadow(color: Colors.black.withValues(alpha:0.25), blurRadius: 12, offset: const Offset(0, 4)),
+                    BoxShadow(color: accentColor.withValues(alpha:0.35), blurRadius: 14, offset: const Offset(0, 4), spreadRadius: -3),
                   ],
                 ),
               ),
@@ -653,7 +663,7 @@ class _SlidingPillRow extends StatelessWidget {
                           fontFamily: 'Lexend',
                           fontSize: 12,
                           fontWeight: FontWeight.w900,
-                          color: active ? Colors.white : Colors.white.withValues(alpha:0.4),
+                          color: active ? const Color(0xE6000000) : Colors.white.withValues(alpha:0.45),
                           letterSpacing: 1.5,
                         ),
                         child: Text(
@@ -853,9 +863,8 @@ class _DegreeCell extends StatelessWidget {
       // No press/illuminate animation — the degree colours instantly on tap.
       child: Container(
         decoration: BoxDecoration(
-          // web: selected = vivid degree colour with a glossy sheen + neon glow;
-          // unselected = bg-white/5
-          color: a ? null : Colors.white.withValues(alpha:0.05),
+          // Selected: vivid degree colour + soft glow; unselected: glass tile.
+          color: a ? null : Colors.white.withValues(alpha:0.045),
           gradient: a
               ? LinearGradient(
                   begin: Alignment.topCenter,
@@ -864,7 +873,12 @@ class _DegreeCell extends StatelessWidget {
                 )
               : null,
           borderRadius: BorderRadius.circular(12), // rounded-xl
-          boxShadow: null,
+          border: Border.all(
+            color: a ? Colors.white.withValues(alpha:0.18) : Colors.white.withValues(alpha:0.07),
+          ),
+          boxShadow: a
+              ? [BoxShadow(color: c.withValues(alpha:0.35), blurRadius: 14, offset: const Offset(0, 4), spreadRadius: -3)]
+              : null,
         ),
         child: Center(
           child: FittedBox(
@@ -897,7 +911,7 @@ class _StartBtn extends StatefulWidget {
   final VoidCallback onTap;
   final IconData icon;
 
-  const _StartBtn({required this.gradColors, required this.shadowColor, required this.onTap, this.icon = Icons.auto_awesome_rounded});
+  const _StartBtn({required this.gradColors, required this.shadowColor, required this.onTap, this.icon = Icons.play_arrow_rounded});
 
   @override
   State<_StartBtn> createState() => _StartBtnState();
@@ -906,10 +920,15 @@ class _StartBtn extends StatefulWidget {
 class _StartBtnState extends State<_StartBtn> {
   bool _pressed = false;
 
+  // Near-black ink on a bright accent: readable on any of the setup accents.
+  static const _ink = Color(0xE6000000);
+
   @override
   Widget build(BuildContext context) {
+    final base = widget.gradColors.last;
+    final light = Color.lerp(base, Colors.white, 0.22)!;
     return Padding(
-      padding: EdgeInsets.fromLTRB(20, 12, 20, 140 + MediaQuery.of(context).padding.bottom),
+      padding: EdgeInsets.fromLTRB(20, 12, 20, 20 + MediaQuery.of(context).padding.bottom),
       child: GestureDetector(
         onTapDown: (_) => setState(() => _pressed = true),
         onTapUp: (_) { setState(() => _pressed = false); widget.onTap(); },
@@ -919,41 +938,51 @@ class _StartBtnState extends State<_StartBtn> {
           duration: const Duration(milliseconds: 100),
           child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 20), // web: py-5
+            height: 60,
+            clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: widget.gradColors,
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
+                colors: [light, base],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
               ),
-              borderRadius: BorderRadius.circular(16), // web: rounded-2xl
+              borderRadius: BorderRadius.circular(17),
               boxShadow: [
-                BoxShadow(color: widget.shadowColor, blurRadius: 30, offset: const Offset(0, 10)),
+                BoxShadow(color: widget.shadowColor, blurRadius: 28, offset: const Offset(0, 10), spreadRadius: -4),
               ],
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(widget.icon, color: Colors.white, size: 22),
-                const SizedBox(width: 12), // web: gap-3
-                const Flexible(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      'START TRAINING',
-                      maxLines: 1,
-                      softWrap: false,
-                      style: TextStyle(
-                        fontSize: 18, // web: text-lg
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 2, // tracking-widest
-                        color: Colors.white,
+            child: Stack(children: [
+              // Top-edge highlight, same language as the paywall CTA.
+              Positioned(
+                top: 0, left: 14, right: 14,
+                child: Container(height: 1.3, color: Colors.white.withValues(alpha: 0.5)),
+              ),
+              Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(widget.icon, color: _ink, size: 24),
+                    const SizedBox(width: 10),
+                    const Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'START TRAINING',
+                          maxLines: 1,
+                          softWrap: false,
+                          style: TextStyle(
+                            fontSize: 16.5,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.6,
+                            color: _ink,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ]),
           ),
         ),
       ),
