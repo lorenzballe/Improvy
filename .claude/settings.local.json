@@ -11,7 +11,10 @@
       "Bash(adb install *)",
       "PowerShell(& \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\" install -r \"C:\\\\Users\\\\loren\\\\Downloads\\\\improvy_flutter\\\\build\\\\app\\\\outputs\\\\flutter-apk\\\\app-debug.apk\")",
       "Bash(/c/Users/loren/AppData/Local/Android/Sdk/platform-tools/adb.exe shell *)",
-      "Bash(/c/Users/loren/AppData/Local/Android/Sdk/platform-tools/adb.exe exec-out *)"
+      "Bash(/c/Users/loren/AppData/Local/Android/Sdk/platform-tools/adb.exe exec-out *)",
+      "PowerShell(cd 'C:\\\\Users\\\\loren\\\\Downloads\\\\improvy_flutter'; flutter build apk --debug 2>&1 | Select-Object -Last 4 | Out-String; $adb = \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\"; & $adb install -r \"build\\\\app\\\\outputs\\\\flutter-apk\\\\app-debug.apk\" 2>&1 | Select-Object -Last 1; & $adb shell am force-stop com.improvy.improvy; & $adb shell monkey -p com.improvy.improvy -c android.intent.category.LAUNCHER 1 | Out-Null; Start-Sleep -Seconds 8; & $adb shell input swipe 540 1700 540 600 400; Start-Sleep -Milliseconds 600; & $adb shell screencap -p /sdcard/s.png; & $adb pull /sdcard/s.png \"C:\\\\Users\\\\loren\\\\Downloads\\\\improvy_flutter\\\\_sm.png\" | Out-Null; Write-Output ok)",
+      "PowerShell($adb = \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\"; Start-Sleep -Seconds 3; & $adb shell input swipe 540 1700 540 600 400; Start-Sleep -Milliseconds 700; & $adb shell screencap -p /sdcard/s.png; & $adb pull /sdcard/s.png \"C:\\\\Users\\\\loren\\\\Downloads\\\\improvy_flutter\\\\_sm2.png\" | Out-Null; Write-Output ok)",
+      "PowerShell(cd 'C:\\\\Users\\\\loren\\\\Downloads\\\\improvy_flutter'; $adb = \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\"; & $adb install -r \"build\\\\app\\\\outputs\\\\flutter-apk\\\\app-debug.apk\" 2>&1 | Select-Object -Last 1; & $adb shell am force-stop com.improvy.improvy; & $adb shell monkey -p com.improvy.improvy -c android.intent.category.LAUNCHER 1 | Out-Null; Write-Output \"---REMOTE---\"; git remote -v; Write-Output \"---BRANCH---\"; git branch --show-current)"
     ]
   }
 }
