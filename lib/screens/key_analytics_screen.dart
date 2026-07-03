@@ -206,22 +206,30 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 14),
-              // Hero tone letter: tinted in its note colour over a soft glow,
-              // so it belongs to the key instead of floating bare in the dark.
+              const SizedBox(height: 10),
+              // Hero tone letter on a soft glow in its note colour. The glow is
+              // painted via OverflowBox so it does NOT inflate the layout — the
+              // hero only takes the height of the letter itself.
               Center(
                 child: Stack(
                   alignment: Alignment.center,
                   clipBehavior: Clip.none,
                   children: [
-                    IgnorePointer(
-                      child: Container(
-                        width: 190, height: 190,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: RadialGradient(
-                            colors: [color.withValues(alpha: 0.22), Colors.transparent],
-                            stops: const [0.0, 0.7],
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: OverflowBox(
+                          maxWidth: double.infinity,
+                          maxHeight: double.infinity,
+                          alignment: Alignment.center,
+                          child: Container(
+                            width: 170, height: 170,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: RadialGradient(
+                                colors: [color.withValues(alpha: 0.20), Colors.transparent],
+                                stops: const [0.0, 0.7],
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -237,7 +245,7 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 18),
 
               // ── 3 stat cards ──
               Row(
@@ -298,7 +306,7 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                     LayoutBuilder(
                       builder: (ctx, box) {
                         final w = box.maxWidth;
-                        const h = 150.0;
+                        const h = 108.0;
                         return GestureDetector(
                           onTapDown: (d) => _updateSel(d.localPosition.dx, w),
                           onHorizontalDragUpdate: (d) => _updateSel(d.localPosition.dx, w),
@@ -714,7 +722,14 @@ class _ChartPainter extends CustomPainter {
       prevC2 = c2;
     }
 
-    // Gradient fill under the line
+    // Dashed average reference line — same quiet detail as the stats chart.
+    final avgY = topPad + (ys.reduce((a, b) => a + b) / ys.length) / 200 * h;
+    final dash = Paint()..color = Colors.white.withAlpha(31)..strokeWidth = 1;
+    for (double x = 0; x < w; x += 10) {
+      canvas.drawLine(Offset(x, avgY), Offset(x + 5, avgY), dash);
+    }
+
+    // Gradient fill under the line (kept light, like the stats chart).
     final fill = Path.from(path)
       ..lineTo(w, topPad + h)
       ..lineTo(0, topPad + h)
@@ -725,31 +740,40 @@ class _ChartPainter extends CustomPainter {
         ..shader = LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [color.withAlpha(110), color.withAlpha(0)],
+          colors: [color.withAlpha(56), color.withAlpha(0)],
         ).createShader(Rect.fromLTWH(0, topPad, w, h)),
     );
 
-    // Line stroke + glow
+    // Soft glow pass under a crisp thin line — the stats-chart language.
+    final lineShader = LinearGradient(
+      colors: [color, Color.lerp(color, Colors.white, 0.30)!],
+    ).createShader(Rect.fromLTWH(0, topPad, w, h));
+    final glowShader = LinearGradient(
+      colors: [color.withAlpha(105), Color.lerp(color, Colors.white, 0.30)!.withAlpha(105)],
+    ).createShader(Rect.fromLTWH(0, topPad, w, h));
     canvas.drawPath(path, Paint()
-      ..color = color.withAlpha(60)
+      ..shader = glowShader
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 8
+      ..strokeWidth = 6
       ..strokeCap = StrokeCap.round
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6));
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5));
     canvas.drawPath(path, Paint()
-      ..color = color
+      ..shader = lineShader
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 4
+      ..strokeWidth = 2.6
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round);
 
-    // Selected point marker — just the dot; the value lives in the header now.
+    // Selected point marker — refined ring with a soft halo.
     final sp = pt(selected);
-    canvas.drawCircle(sp, 9, Paint()..color = const Color(0xFF1A1625));
-    canvas.drawCircle(sp, 9, Paint()
+    canvas.drawCircle(sp, 10, Paint()
+      ..color = color.withAlpha(64)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6));
+    canvas.drawCircle(sp, 5.5, Paint()..color = const Color(0xFF1A1625));
+    canvas.drawCircle(sp, 5.5, Paint()
       ..color = color
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 4);
+      ..strokeWidth = 3);
   }
 
   @override
