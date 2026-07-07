@@ -2047,73 +2047,41 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
 // (Lexend has no music glyphs), which rendered them thin, small and mismatched.
 // Painting them by hand guarantees a bold, identical mark on every device.
 
+/// The ♯♭ mark on the Chromatic card — a faithful copy of the web original:
+/// the SAME system text glyphs, sharp smaller and raised, flat larger and
+/// lowered. Browsers give fallback glyphs a synthetic bold that Flutter
+/// doesn't, so the chunky weight is recreated with a stroked underlay —
+/// identical shapes, identical heft.
 class _SharpFlatGlyph extends StatelessWidget {
   const _SharpFlatGlyph();
 
-  @override
-  Widget build(BuildContext context) {
-    return const SizedBox(
-      width: 32, height: 30,
-      child: CustomPaint(painter: _SharpFlatPainter()),
+  Widget _boldGlyph(String glyph, double size, double dy) {
+    return Transform.translate(
+      offset: Offset(0, dy),
+      child: Stack(children: [
+        Text(glyph, style: TextStyle(
+          fontSize: size, height: 1,
+          foreground: Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = size * 0.085
+            ..strokeJoin = StrokeJoin.round
+            ..strokeCap = StrokeCap.round
+            ..color = Colors.white,
+        )),
+        Text(glyph, style: TextStyle(fontSize: size, height: 1, color: Colors.white)),
+      ]),
     );
   }
-}
-
-class _SharpFlatPainter extends CustomPainter {
-  const _SharpFlatPainter();
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width, h = size.height;
-    // Matches the web original: the ♯ sits SMALLER and RAISED, the ♭ LARGER
-    // and LOWERED — a staggered diagonal pair, not two glyphs on a baseline.
-    _drawSharp(canvas, Rect.fromLTWH(0, 0, w * 0.47, h * 0.64));
-    _drawFlat(canvas, Rect.fromLTWH(w * 0.58, h * 0.22, w * 0.36, h * 0.78));
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        _boldGlyph('♯', 26, -5),
+        _boldGlyph('♭', 32, 5),
+      ],
+    );
   }
-
-  // Engraved accidentals live on weight CONTRAST: thin uprights, thick
-  // slanted beams, solid bowl. Uniform strokes read as hand-drawn.
-  void _drawSharp(Canvas canvas, Rect r) {
-    final thin = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = r.height * 0.11
-      ..strokeCap = StrokeCap.round;
-    final beam = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = r.height * 0.20
-      ..strokeCap = StrokeCap.butt;
-    final x1 = r.left + r.width * 0.36, x2 = r.left + r.width * 0.64;
-    canvas.drawLine(Offset(x1, r.top + r.height * 0.12), Offset(x1, r.top + r.height * 0.99), thin);
-    canvas.drawLine(Offset(x2, r.top + r.height * 0.01), Offset(x2, r.top + r.height * 0.88), thin);
-    canvas.drawLine(Offset(r.left + r.width * 0.02, r.top + r.height * 0.40),
-        Offset(r.left + r.width * 0.98, r.top + r.height * 0.28), beam);
-    canvas.drawLine(Offset(r.left + r.width * 0.02, r.top + r.height * 0.74),
-        Offset(r.left + r.width * 0.98, r.top + r.height * 0.62), beam);
-  }
-
-  void _drawFlat(Canvas canvas, Rect r) {
-    final thin = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = r.height * 0.09
-      ..strokeCap = StrokeCap.round;
-    final fill = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.fill;
-    final stemX = r.left + r.width * 0.12;
-    canvas.drawLine(Offset(stemX, r.top + r.height * 0.02), Offset(stemX, r.top + r.height * 0.98), thin);
-    final edge = stemX - thin.strokeWidth / 2;
-    final bowl = Path()
-      ..moveTo(edge, r.top + r.height * 0.46)
-      ..cubicTo(r.left + r.width * 0.98, r.top + r.height * 0.36,
-          r.left + r.width * 0.95, r.top + r.height * 0.72,
-          edge, r.top + r.height * 0.98)
-      ..close();
-    canvas.drawPath(bowl, fill);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
