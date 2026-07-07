@@ -598,27 +598,33 @@ class _ProgressCardState extends State<_ProgressCard> with SingleTickerProviderS
                     child: LayoutBuilder(
                       builder: (ctx, c) {
                         final fullW = c.maxWidth;
-                        final fillW = fullW * (p / 100).clamp(0.0, 1.0);
-                        return Align(
-                          alignment: Alignment.centerLeft,
-                          child: SizedBox(
-                            width: fillW,
-                            height: 12,
-                            child: ClipRect(
-                              child: OverflowBox(
-                                alignment: Alignment.centerLeft,
-                                minWidth: fullW,
-                                maxWidth: fullW,
-                                minHeight: 12,
-                                maxHeight: 12,
-                                child: Container(
-                                  width: fullW,
-                                  decoration: const BoxDecoration(
-                                    gradient: LinearGradient(colors: [
-                                      Color(0xFFEF4444), Color(0xFFF97316), Color(0xFFEAB308),
-                                      Color(0xFF22C55E), Color(0xFF3B82F6), Color(0xFFA855F7),
-                                      Color(0xFFEC4899),
-                                    ]),
+                        // The fill eases from 0 to its value on first build (and
+                        // between values), so the card feels alive on open.
+                        return TweenAnimationBuilder<double>(
+                          tween: Tween(begin: 0, end: (p / 100).clamp(0.0, 1.0)),
+                          duration: const Duration(milliseconds: 900),
+                          curve: Curves.easeOutCubic,
+                          builder: (ctx, frac, _) => Align(
+                            alignment: Alignment.centerLeft,
+                            child: SizedBox(
+                              width: fullW * frac,
+                              height: 12,
+                              child: ClipRect(
+                                child: OverflowBox(
+                                  alignment: Alignment.centerLeft,
+                                  minWidth: fullW,
+                                  maxWidth: fullW,
+                                  minHeight: 12,
+                                  maxHeight: 12,
+                                  child: Container(
+                                    width: fullW,
+                                    decoration: const BoxDecoration(
+                                      gradient: LinearGradient(colors: [
+                                        Color(0xFFEF4444), Color(0xFFF97316), Color(0xFFEAB308),
+                                        Color(0xFF22C55E), Color(0xFF3B82F6), Color(0xFFA855F7),
+                                        Color(0xFFEC4899),
+                                      ]),
+                                    ),
                                   ),
                                 ),
                               ),
@@ -632,8 +638,8 @@ class _ProgressCardState extends State<_ProgressCard> with SingleTickerProviderS
                 const SizedBox(height: 12),
 
                 Center(
-                  child: Text('"${a.quote}"',
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Color(0x80FFFFFF))),
+                  child: Text('“${a.quote}”',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, fontStyle: FontStyle.italic, color: Color(0x80FFFFFF))),
                 ),
               ],
               ),
@@ -905,7 +911,11 @@ class _BigSpecialCardState extends State<_BigSpecialCard> {
       child: AnimatedScale(
         scale: _pressed ? 0.97 : 1.0,
         duration: const Duration(milliseconds: 100),
-        child: Container(
+        child: Opacity(
+          // Locked: softly dimmed — clearly not available, but still rich and
+          // readable (the old 0.5 was muddy; full brightness read as unlocked).
+          opacity: locked ? 0.7 : 1.0,
+          child: Container(
             height: 180, // web: h-[180px] — both special cards are identical size
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(32),
@@ -1018,6 +1028,7 @@ class _BigSpecialCardState extends State<_BigSpecialCard> {
                 ),
               ]),
             ),
+          ),
         ),
       ),
     );
@@ -1102,7 +1113,13 @@ class _WithSession extends StatelessWidget {
     final diff = session['difficulty'] as int? ?? 1;
     final ts = session['timestamp'] as int? ?? 0;
     final diffLabels = ['Apprentice', 'Virtuoso', 'Master'];
-    final modeLabel = mode.isEmpty ? '' : mode[0].toUpperCase() + mode.substring(1);
+    final modeLabel = switch (mode) {
+      'diatonic' => 'Diatonic',
+      'chromatic' => 'Chromatic',
+      'note-to-number' => 'Note to Number',
+      'custom' => 'Custom',
+      _ => mode.isEmpty ? '' : mode[0].toUpperCase() + mode.substring(1),
+    };
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1158,7 +1175,7 @@ class _WithSession extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-        Text('"${_quoteFor(diff)}"',
+        Text('“${_quoteFor(diff)}”',
           style: TextStyle(
             fontSize: 13, fontStyle: FontStyle.italic, fontWeight: FontWeight.w500,
             color: Colors.white.withAlpha(102), height: 1.6,

@@ -6,7 +6,7 @@ const List<String> kAllKeys = ['C', 'G', 'D', 'A', 'E', 'B', 'F♯', 'D♭', 'A�
 // enharmonic spellings (e.g. '♭3/♯2') so the question and the note buttons
 // stay mutually consistent — matching the web app's CHROMATIC_DEGREES constant.
 const List<String> kChromaticDegrees = [
-  '1', '♭2', '2', '♭3/♯2', '3', '4', '♭5/♯4', '5', '♭6/♯5', '6', '♭7', '7'
+  '1', '♭2', '2', '♭3/♯2', '3', '4', '♯4/♭5', '5', '♭6/♯5', '6', '♭7', '7'
 ];
 
 // Note→Number trains the DEGREE from a note, where a note's spelling implies a
@@ -21,14 +21,14 @@ const List<String> kChromaticDegreesSplit = [
 // Slash degree → its two split spellings (sharp-of-lower first, then flat-of-higher).
 const Map<String, List<String>> kDegreeSplitMap = {
   '♭3/♯2': ['♯2', '♭3'],
-  '♭5/♯4': ['♯4', '♭5'],
+  '♯4/♭5': ['♯4', '♭5'],
   '♭6/♯5': ['♯5', '♭6'],
 };
 
 // A split spelling → the slash degree it collapses back to (for the reverse switch).
 const Map<String, String> kDegreeCollapseMap = {
   '♯2': '♭3/♯2', '♭3': '♭3/♯2',
-  '♯4': '♭5/♯4', '♭5': '♭5/♯4',
+  '♯4': '♯4/♭5', '♭5': '♯4/♭5',
   '♯5': '♭6/♯5', '♭6': '♭6/♯5',
 };
 

@@ -120,9 +120,20 @@ class NoteItem {
 }
 
 List<NoteItem> getChromaticButtons(List<String> scale, String key) {
-  const notes  = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-  const labels = ['C', 'C#/D♭', 'D', 'D#/E♭', 'E', 'F', 'F#/G♭', 'G', 'G#/A♭', 'A', 'A#/B♭', 'B'];
-  return List.generate(12, (i) => NoteItem(label: labels[i], rawLabel: labels[i], note: notes[i]));
+  const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+  // Button names come from the RELATIVE degree of each semitone in the current
+  // key — 1 ♭2 2 ♭3/♯2 3 4 ♯4/♭5 5 ♭6/♯5 6 ♭7 7 — with slash pairs spelled in
+  // exactly that order. In C: E♭/D♯, F♯/G♭, A♭/G♯; in G the 7 reads F♯; etc.
+  const degs = ['1', '♭2', '2', '♭3/♯2', '3', '4', '♯4/♭5', '5', '♭6/♯5', '6', '♭7', '7'];
+  final tonic = kNoteToSemitone[key] ?? 0;
+  return List.generate(12, (i) {
+    final offset = (i - tonic + 12) % 12;
+    final label = degs[offset]
+        .split('/')
+        .map((d) => getNoteFromChromaticDegree(d, scale, key))
+        .join('/');
+    return NoteItem(label: label, rawLabel: label, note: notes[i]);
+  });
 }
 
 String formatNoteText(String note) {

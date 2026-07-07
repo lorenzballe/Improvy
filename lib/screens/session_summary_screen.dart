@@ -41,7 +41,13 @@ class SessionSummaryScreen extends StatelessWidget {
     final isDiat  = mode == 'diatonic';
 
     final diffLabels = ['Apprentice', 'Virtuoso', 'Master'];
-    final modeLabel  = isDiat ? 'Diatonic' : (mode == 'chromatic' ? 'Chromatic' : mode);
+    final modeLabel = switch (mode) {
+      'diatonic' => 'Diatonic',
+      'chromatic' => 'Chromatic',
+      'note-to-number' => 'Note to Number',
+      'custom' => 'Custom',
+      _ => mode,
+    };
 
     // Accent colour: gold > green > red
     final accentColor = perfect

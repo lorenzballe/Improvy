@@ -368,7 +368,7 @@ class _ModalCard extends StatelessWidget {
                         const SizedBox(height: 12),
                         // Quote
                         Text(
-                          animal.quote,
+                          '“${animal.quote}”',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.white.withValues(alpha:0.6),

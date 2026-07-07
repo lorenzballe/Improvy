@@ -924,7 +924,11 @@ class _StatItem extends StatelessWidget {
       const SizedBox(height: 2),
       FittedBox(
         fit: BoxFit.scaleDown,
-        child: Text(value, maxLines: 1, softWrap: false, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: valueColor)),
+        // Tabular figures: digits share one width, so 0/30 → 1/30 doesn't
+        // make the value wobble sideways on every answer.
+        child: Text(value, maxLines: 1, softWrap: false,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: valueColor,
+                fontFeatures: const [FontFeature.tabularFigures()])),
       ),
     ],
   );
