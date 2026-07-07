@@ -905,9 +905,7 @@ class _BigSpecialCardState extends State<_BigSpecialCard> {
       child: AnimatedScale(
         scale: _pressed ? 0.97 : 1.0,
         duration: const Duration(milliseconds: 100),
-        child: Opacity(
-          opacity: locked ? 0.5 : 1.0,
-          child: Container(
+        child: Container(
             height: 180, // web: h-[180px] — both special cards are identical size
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(32),
@@ -917,7 +915,9 @@ class _BigSpecialCardState extends State<_BigSpecialCard> {
             ),
             foregroundDecoration: BoxDecoration(
               borderRadius: BorderRadius.circular(32),
-              border: Border.all(color: locked ? Colors.white.withValues(alpha:0.05) : widget.borderColor, width: 1.2),
+              // Locked keeps a whisper of the accent on the border — the card
+              // stays rich and inviting; the gold PRO chip signals the lock.
+              border: Border.all(color: locked ? accent.withValues(alpha: 0.30) : widget.borderColor, width: 1.2),
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(32),
@@ -935,7 +935,7 @@ class _BigSpecialCardState extends State<_BigSpecialCard> {
                     imageFilter: ImageFilter.blur(sigmaX: 34, sigmaY: 34, tileMode: TileMode.decal),
                     child: Container(
                       width: 170, height: 170,
-                      decoration: BoxDecoration(shape: BoxShape.circle, color: accent.withValues(alpha:0.24)),
+                      decoration: BoxDecoration(shape: BoxShape.circle, color: accent.withValues(alpha: locked ? 0.16 : 0.24)),
                     ),
                   ),
                 ),
@@ -945,7 +945,7 @@ class _BigSpecialCardState extends State<_BigSpecialCard> {
                     imageFilter: ImageFilter.blur(sigmaX: 30, sigmaY: 30, tileMode: TileMode.decal),
                     child: Container(
                       width: 120, height: 120,
-                      decoration: BoxDecoration(shape: BoxShape.circle, color: accent.withValues(alpha:0.12)),
+                      decoration: BoxDecoration(shape: BoxShape.circle, color: accent.withValues(alpha: locked ? 0.07 : 0.12)),
                     ),
                   ),
                 ),
@@ -983,10 +983,26 @@ class _BigSpecialCardState extends State<_BigSpecialCard> {
                             ),
                             if (locked) ...[
                               const SizedBox(width: 10),
+                              // Gold PRO chip (matches the paywall CTA) — premium,
+                              // not "disabled grey".
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(color: Colors.white12, borderRadius: BorderRadius.circular(8)),
-                                child: const Text('PRO', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white38, letterSpacing: 1)),
+                                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    begin: Alignment.topLeft, end: Alignment.bottomRight,
+                                    colors: [Color(0xFFFDE68A), Color(0xFFF59E0B)],
+                                  ),
+                                  borderRadius: BorderRadius.circular(9),
+                                  boxShadow: [BoxShadow(
+                                    color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
+                                    blurRadius: 10, offset: const Offset(0, 3),
+                                  )],
+                                ),
+                                child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                                  Icon(Icons.lock_rounded, size: 10, color: Color(0xFF78350F)),
+                                  SizedBox(width: 3),
+                                  Text('PRO', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Color(0xFF78350F), letterSpacing: 1)),
+                                ]),
                               ),
                             ],
                           ]),
@@ -1002,7 +1018,6 @@ class _BigSpecialCardState extends State<_BigSpecialCard> {
                 ),
               ]),
             ),
-          ),
         ),
       ),
     );
