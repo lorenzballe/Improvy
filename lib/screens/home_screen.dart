@@ -1444,13 +1444,7 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: const Color(0xFFFF69B4).withAlpha(120)),
                       ),
-                      child: const Center(child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text('♯', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white, height: 1)),
-                          Text('♭', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white, height: 1)),
-                        ],
-                      )),
+                      child: const Center(child: _SharpFlatGlyph()),
                     ),
                     accentColor: const Color(0xFFA855F7),
                     borderColor: const Color(0xFFA855F7).withAlpha(80),
@@ -2026,4 +2020,57 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
         ),
     );
   }
+}
+
+// ─── SHARP+FLAT GLYPH (Chromatic card icon) ──────────────────────────────────
+// The ♯ and ♭ text glyphs come from a system fallback font on real phones
+// (Lexend has no music glyphs), which rendered them thin, small and mismatched.
+// Painting them by hand guarantees a bold, identical mark on every device.
+
+class _SharpFlatGlyph extends StatelessWidget {
+  const _SharpFlatGlyph();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox(
+      width: 33, height: 26,
+      child: CustomPaint(painter: _SharpFlatPainter()),
+    );
+  }
+}
+
+class _SharpFlatPainter extends CustomPainter {
+  const _SharpFlatPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final h = size.height;
+    final paint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = h * 0.125
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    // ── Sharp: two verticals (offset like engraved sharps) + two slanted bars.
+    final sw = size.width * 0.52;
+    final x1 = sw * 0.34, x2 = sw * 0.66;
+    canvas.drawLine(Offset(x1, h * 0.14), Offset(x1, h * 0.96), paint);
+    canvas.drawLine(Offset(x2, h * 0.04), Offset(x2, h * 0.86), paint);
+    canvas.drawLine(Offset(sw * 0.06, h * 0.42), Offset(sw * 0.94, h * 0.26), paint);
+    canvas.drawLine(Offset(sw * 0.06, h * 0.78), Offset(sw * 0.94, h * 0.62), paint);
+
+    // ── Flat: full-height stem + rounded bowl bulging to the right.
+    final fl = size.width * 0.68;
+    final fw = size.width - fl;
+    final stemX = fl + fw * 0.12;
+    canvas.drawLine(Offset(stemX, h * 0.02), Offset(stemX, h * 0.96), paint);
+    final bowl = Path()
+      ..moveTo(stemX, h * 0.52)
+      ..cubicTo(fl + fw * 0.98, h * 0.42, fl + fw * 0.92, h * 0.80, stemX, h * 0.95);
+    canvas.drawPath(bowl, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
