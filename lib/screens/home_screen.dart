@@ -2053,7 +2053,7 @@ class _SharpFlatGlyph extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const SizedBox(
-      width: 33, height: 26,
+      width: 32, height: 30,
       child: CustomPaint(painter: _SharpFlatPainter()),
     );
   }
@@ -2064,44 +2064,52 @@ class _SharpFlatPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final h = size.height;
+    final w = size.width, h = size.height;
+    // Matches the web original: the ♯ sits SMALLER and RAISED, the ♭ LARGER
+    // and LOWERED — a staggered diagonal pair, not two glyphs on a baseline.
+    _drawSharp(canvas, Rect.fromLTWH(0, 0, w * 0.47, h * 0.64));
+    _drawFlat(canvas, Rect.fromLTWH(w * 0.58, h * 0.22, w * 0.36, h * 0.78));
+  }
 
-    // Real engraved accidentals live on weight CONTRAST: thin uprights,
-    // thick slanted beams, and a solid bowl on the flat. Uniform strokes
-    // are what made the first attempt look hand-drawn.
+  // Engraved accidentals live on weight CONTRAST: thin uprights, thick
+  // slanted beams, solid bowl. Uniform strokes read as hand-drawn.
+  void _drawSharp(Canvas canvas, Rect r) {
     final thin = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.stroke
-      ..strokeWidth = h * 0.09
+      ..strokeWidth = r.height * 0.11
       ..strokeCap = StrokeCap.round;
     final beam = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.stroke
-      ..strokeWidth = h * 0.18
+      ..strokeWidth = r.height * 0.20
       ..strokeCap = StrokeCap.butt;
+    final x1 = r.left + r.width * 0.36, x2 = r.left + r.width * 0.64;
+    canvas.drawLine(Offset(x1, r.top + r.height * 0.12), Offset(x1, r.top + r.height * 0.99), thin);
+    canvas.drawLine(Offset(x2, r.top + r.height * 0.01), Offset(x2, r.top + r.height * 0.88), thin);
+    canvas.drawLine(Offset(r.left + r.width * 0.02, r.top + r.height * 0.40),
+        Offset(r.left + r.width * 0.98, r.top + r.height * 0.28), beam);
+    canvas.drawLine(Offset(r.left + r.width * 0.02, r.top + r.height * 0.74),
+        Offset(r.left + r.width * 0.98, r.top + r.height * 0.62), beam);
+  }
+
+  void _drawFlat(Canvas canvas, Rect r) {
+    final thin = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = r.height * 0.09
+      ..strokeCap = StrokeCap.round;
     final fill = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.fill;
-
-    // ── Sharp: thin verticals (right one raised, left one lowered) crossed
-    //    by two thick beams rising to the right.
-    final sw = size.width * 0.54;
-    final x1 = sw * 0.36, x2 = sw * 0.64;
-    canvas.drawLine(Offset(x1, h * 0.12), Offset(x1, h * 0.99), thin);
-    canvas.drawLine(Offset(x2, h * 0.01), Offset(x2, h * 0.88), thin);
-    canvas.drawLine(Offset(sw * 0.04, h * 0.40), Offset(sw * 0.96, h * 0.28), beam);
-    canvas.drawLine(Offset(sw * 0.04, h * 0.74), Offset(sw * 0.96, h * 0.62), beam);
-
-    // ── Flat: thin full-height stem + solid teardrop bowl that swells right
-    //    and tapers back into the stem's foot.
-    final fl = size.width * 0.70;
-    final fw = size.width - fl;
-    final stemX = fl + fw * 0.10;
-    canvas.drawLine(Offset(stemX, h * 0.02), Offset(stemX, h * 0.98), thin);
+    final stemX = r.left + r.width * 0.12;
+    canvas.drawLine(Offset(stemX, r.top + r.height * 0.02), Offset(stemX, r.top + r.height * 0.98), thin);
     final edge = stemX - thin.strokeWidth / 2;
     final bowl = Path()
-      ..moveTo(edge, h * 0.44)
-      ..cubicTo(fl + fw * 0.98, h * 0.34, fl + fw * 0.95, h * 0.72, edge, h * 0.98)
+      ..moveTo(edge, r.top + r.height * 0.46)
+      ..cubicTo(r.left + r.width * 0.98, r.top + r.height * 0.36,
+          r.left + r.width * 0.95, r.top + r.height * 0.72,
+          edge, r.top + r.height * 0.98)
       ..close();
     canvas.drawPath(bowl, fill);
   }
