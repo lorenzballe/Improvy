@@ -2079,8 +2079,8 @@ class _SharpFlatGlyph extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        _boldGlyph('♯', 26, -5),
-        _boldGlyph('♭', 32, 5),
+        _boldGlyph('♯', 30, -6),
+        _boldGlyph('♭', 38, 6),
       ],
     );
   }
