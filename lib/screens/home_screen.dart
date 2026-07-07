@@ -912,9 +912,9 @@ class _BigSpecialCardState extends State<_BigSpecialCard> {
         scale: _pressed ? 0.97 : 1.0,
         duration: const Duration(milliseconds: 100),
         child: Opacity(
-          // Locked: softly dimmed — clearly not available, but still rich and
-          // readable (the old 0.5 was muddy; full brightness read as unlocked).
-          opacity: locked ? 0.7 : 1.0,
+          // Locked: dimmed — clearly not available, but still readable
+          // (0.5 was muddy, 0.7 read as unlocked; 0.6 is the sweet spot).
+          opacity: locked ? 0.6 : 1.0,
           child: Container(
             height: 180, // web: h-[180px] — both special cards are identical size
             decoration: BoxDecoration(
@@ -993,25 +993,13 @@ class _BigSpecialCardState extends State<_BigSpecialCard> {
                             ),
                             if (locked) ...[
                               const SizedBox(width: 10),
-                              // Gold PRO chip (matches the paywall CTA) — premium,
-                              // not "disabled grey".
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    begin: Alignment.topLeft, end: Alignment.bottomRight,
-                                    colors: [Color(0xFFFDE68A), Color(0xFFF59E0B)],
-                                  ),
-                                  borderRadius: BorderRadius.circular(9),
-                                  boxShadow: [BoxShadow(
-                                    color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
-                                    blurRadius: 10, offset: const Offset(0, 3),
-                                  )],
-                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(color: Colors.white12, borderRadius: BorderRadius.circular(8)),
                                 child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                                  Icon(Icons.lock_rounded, size: 10, color: Color(0xFF78350F)),
+                                  Icon(Icons.lock_rounded, size: 10, color: Colors.white38),
                                   SizedBox(width: 3),
-                                  Text('PRO', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Color(0xFF78350F), letterSpacing: 1)),
+                                  Text('PRO', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white38, letterSpacing: 1)),
                                 ]),
                               ),
                             ],
@@ -2077,30 +2065,45 @@ class _SharpFlatPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final h = size.height;
-    final paint = Paint()
+
+    // Real engraved accidentals live on weight CONTRAST: thin uprights,
+    // thick slanted beams, and a solid bowl on the flat. Uniform strokes
+    // are what made the first attempt look hand-drawn.
+    final thin = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.stroke
-      ..strokeWidth = h * 0.125
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
+      ..strokeWidth = h * 0.09
+      ..strokeCap = StrokeCap.round;
+    final beam = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = h * 0.18
+      ..strokeCap = StrokeCap.butt;
+    final fill = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
 
-    // ── Sharp: two verticals (offset like engraved sharps) + two slanted bars.
-    final sw = size.width * 0.52;
-    final x1 = sw * 0.34, x2 = sw * 0.66;
-    canvas.drawLine(Offset(x1, h * 0.14), Offset(x1, h * 0.96), paint);
-    canvas.drawLine(Offset(x2, h * 0.04), Offset(x2, h * 0.86), paint);
-    canvas.drawLine(Offset(sw * 0.06, h * 0.42), Offset(sw * 0.94, h * 0.26), paint);
-    canvas.drawLine(Offset(sw * 0.06, h * 0.78), Offset(sw * 0.94, h * 0.62), paint);
+    // ── Sharp: thin verticals (right one raised, left one lowered) crossed
+    //    by two thick beams rising to the right.
+    final sw = size.width * 0.54;
+    final x1 = sw * 0.36, x2 = sw * 0.64;
+    canvas.drawLine(Offset(x1, h * 0.12), Offset(x1, h * 0.99), thin);
+    canvas.drawLine(Offset(x2, h * 0.01), Offset(x2, h * 0.88), thin);
+    canvas.drawLine(Offset(sw * 0.04, h * 0.40), Offset(sw * 0.96, h * 0.28), beam);
+    canvas.drawLine(Offset(sw * 0.04, h * 0.74), Offset(sw * 0.96, h * 0.62), beam);
 
-    // ── Flat: full-height stem + rounded bowl bulging to the right.
-    final fl = size.width * 0.68;
+    // ── Flat: thin full-height stem + solid teardrop bowl that swells right
+    //    and tapers back into the stem's foot.
+    final fl = size.width * 0.70;
     final fw = size.width - fl;
-    final stemX = fl + fw * 0.12;
-    canvas.drawLine(Offset(stemX, h * 0.02), Offset(stemX, h * 0.96), paint);
+    final stemX = fl + fw * 0.10;
+    canvas.drawLine(Offset(stemX, h * 0.02), Offset(stemX, h * 0.98), thin);
+    final edge = stemX - thin.strokeWidth / 2;
     final bowl = Path()
-      ..moveTo(stemX, h * 0.52)
-      ..cubicTo(fl + fw * 0.98, h * 0.42, fl + fw * 0.92, h * 0.80, stemX, h * 0.95);
-    canvas.drawPath(bowl, paint);
+      ..moveTo(edge, h * 0.44)
+      ..cubicTo(fl + fw * 0.98, h * 0.34, fl + fw * 0.95, h * 0.72, edge, h * 0.98)
+      ..close();
+    canvas.drawPath(bowl, fill);
   }
 
   @override
