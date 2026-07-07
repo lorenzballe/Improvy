@@ -545,6 +545,8 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
                       notation: widget.notation,
                       height: inputH - 32,
                       startWhiteSemitone: _keyboardStartSemitone,
+                      chromaticTonic:
+                          widget.mode == TrainingMode.chromatic ? _currentKey : null,
                       onSelect: _handleAnswer,
                     )
                   else
@@ -1414,6 +1416,9 @@ class _PianoKeyboard extends StatelessWidget {
   final String notation;
   final double height;
   final int startWhiteSemitone; // semitone of the leftmost white key (0 = C)
+  // Non-null in CHROMATIC mode: key labels are then spelled by relative degree
+  // (1 ♭2 2 ♭3 3 4 ♯4 5 ♭6 6 ♭7 7 of this tonic) instead of the button names.
+  final String? chromaticTonic;
   final void Function(String) onSelect;
 
   const _PianoKeyboard({
@@ -1424,6 +1429,7 @@ class _PianoKeyboard extends StatelessWidget {
     required this.notation,
     required this.height,
     this.startWhiteSemitone = 0,
+    this.chromaticTonic,
     required this.onSelect,
   });
 
@@ -1468,10 +1474,14 @@ class _PianoKeyboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scaleNames = <int, String>{
-      for (final n in notes)
-        if (kNoteToSemitone[n.note] != null) kNoteToSemitone[n.note]!: n.note,
-    };
+    // Chromatic mode spells keys by relative degree of the tonic; other modes
+    // take the names straight from the answer buttons (diatonic spelling).
+    final scaleNames = chromaticTonic != null
+        ? chromaticKeyboardNoteNames(chromaticTonic!)
+        : <int, String>{
+            for (final n in notes)
+              if (kNoteToSemitone[n.note] != null) kNoteToSemitone[n.note]!: n.note,
+          };
     final (whites, blacks) = _buildKeys(startWhiteSemitone, scaleNames);
     // Which semitones are valid answer options right now
     final active = <int>{};

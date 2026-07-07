@@ -87,6 +87,21 @@ String getNoteFromChromaticDegree(String degree, List<String> scale, String key)
   return _getSemitoneNoteName(targetSemitone);
 }
 
+/// Note names for the on-screen piano in CHROMATIC mode: every semitone is
+/// spelled by its degree relative to [key] — 1 ♭2 2 ♭3 3 4 ♯4 5 ♭6 6 ♭7 7.
+/// So in C the black keys read D♭ E♭ F♯ A♭ B♭ (A♭, not G♯), while in D the
+/// tritone makes G♯ (♯4). Returns semitone → spelled note name.
+Map<int, String> chromaticKeyboardNoteNames(String key) {
+  const degs = ['1', '♭2', '2', '♭3', '3', '4', '♯4', '5', '♭6', '6', '♭7', '7'];
+  final names = <int, String>{};
+  for (final d in degs) {
+    final note = getNoteFromChromaticDegree(d, const [], key);
+    final s = kNoteToSemitone[note];
+    if (s != null) names[s] = note;
+  }
+  return names;
+}
+
 String _getSemitoneNoteName(int semitone) {
   const names = {
     0: 'C', 1: 'D♭', 2: 'D', 3: 'E♭', 4: 'E',

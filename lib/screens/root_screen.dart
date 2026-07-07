@@ -45,6 +45,10 @@ class _RootScreenState extends State<RootScreen> {
   late final ConfettiController _confettiCtrl;
   Color? _confettiColor;
 
+  // Rainbow rain for a PERFECT session (correct == total) — like the web app:
+  // an initial centre burst plus confetti raining from the top for 3 seconds.
+  late final ConfettiController _perfectCtrl;
+
   // Swipeable tabs — Home / Stats / Settings. State (incl. scroll position) is
   // preserved by keep-alive pages, so returning to a tab resumes where you left.
   final PageController _pageController = PageController();
@@ -56,6 +60,7 @@ class _RootScreenState extends State<RootScreen> {
   void initState() {
     super.initState();
     _confettiCtrl = ConfettiController(duration: const Duration(seconds: 3));
+    _perfectCtrl = ConfettiController(duration: const Duration(seconds: 3));
   }
 
   static const _tabNames = ['home', 'stats', 'settings'];
@@ -111,6 +116,7 @@ class _RootScreenState extends State<RootScreen> {
     _observedProvider?.removeListener(_onProviderUpdate);
     _pageController.dispose();
     _confettiCtrl.dispose();
+    _perfectCtrl.dispose();
     super.dispose();
   }
 
@@ -207,6 +213,16 @@ class _RootScreenState extends State<RootScreen> {
 
     provider.finishSession();
     setState(() => _finishedSession = data);
+
+    // Perfect session → rainbow confetti rain over the summary (web parity).
+    final correct = (data['correct'] as num?)?.toInt() ?? 0;
+    final total = (data['total'] as num?)?.toInt() ?? 0;
+    if (total > 0 && correct == total) {
+      AnalyticsService.instance.capture('perfect_session', {'mode': data['mode'], 'key': data['key']});
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _perfectCtrl.play();
+      });
+    }
   }
 
   @override
@@ -291,6 +307,7 @@ class _RootScreenState extends State<RootScreen> {
                 }
               },
             ),
+            _PerfectRainOverlay(controller: _perfectCtrl),
             if (_levelUpLevel != null)
               Positioned.fill(
                 child: LevelUpModal(
@@ -421,6 +438,67 @@ class _KeepAlivePageState extends State<_KeepAlivePage> with AutomaticKeepAliveC
   Widget build(BuildContext context) {
     super.build(context);
     return widget.child;
+  }
+}
+
+/// Perfect-session celebration, mirroring the web app: one big centre burst
+/// plus confetti raining down from the top on both sides for ~3 seconds,
+/// in rainbow colours.
+class _PerfectRainOverlay extends StatelessWidget {
+  final ConfettiController controller;
+  const _PerfectRainOverlay({required this.controller});
+
+  // Web palette: brand burst colours + canvas-confetti rainbow defaults.
+  static const _rainbow = [
+    Color(0xFFEF4444), // red
+    Color(0xFFF97316), // orange
+    Color(0xFFFACC15), // yellow
+    Color(0xFF22C55E), // green
+    Color(0xFF388EF8), // blue
+    Color(0xFFA855F7), // purple
+    Color(0xFFFF0084), // pink
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    Widget emitter({
+      required Alignment alignment,
+      required double frequency,
+      required int particles,
+      required double maxForce,
+      required double minForce,
+      required double gravity,
+    }) {
+      return IgnorePointer(
+        child: Align(
+          alignment: alignment,
+          child: ConfettiWidget(
+            confettiController: controller,
+            blastDirectionality: BlastDirectionality.explosive,
+            emissionFrequency: frequency,
+            numberOfParticles: particles,
+            maxBlastForce: maxForce,
+            minBlastForce: minForce,
+            gravity: gravity,
+            shouldLoop: false,
+            colors: _rainbow,
+          ),
+        ),
+      );
+    }
+
+    return Positioned.fill(
+      child: Stack(children: [
+        // Initial big burst from the centre (web: particleCount 150, y 0.6).
+        emitter(alignment: const Alignment(0, 0.2), frequency: 0.02,
+            particles: 40, maxForce: 40, minForce: 15, gravity: 0.3),
+        // Continuous rain from the two top corners (web: interval bursts).
+        emitter(alignment: const Alignment(-0.6, -1.05), frequency: 0.55,
+            particles: 7, maxForce: 22, minForce: 7, gravity: 0.25),
+        emitter(alignment: const Alignment(0.6, -1.05), frequency: 0.55,
+            particles: 7, maxForce: 22, minForce: 7, gravity: 0.25),
+      ]),
+    );
   }
 }
 
