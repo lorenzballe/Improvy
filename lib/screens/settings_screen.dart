@@ -433,6 +433,61 @@ class SettingsScreen extends StatelessWidget {
                   ],
                 ),
               ),
+              const SizedBox(height: 10),
+              _card(
+                shadow: const [BoxShadow(color: Color(0x4D000000), blurRadius: 32, offset: Offset(0, 8))],
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 48, height: 48,
+                      decoration: BoxDecoration(
+                        color: const Color(0x3306B6D4),
+                        border: Border.all(color: const Color(0x3306B6D4)),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Icon(Icons.auto_graph_rounded, color: Color(0xFF22D3EE), size: 26),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Scales Visualization Coming Soon!',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'A stunning new way to see every scale light up across the keyboard — watch patterns, intervals and shapes come alive as you play.',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.white.withAlpha(128),
+                              height: 18 / 11,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Container(
+                            height: 96,
+                            clipBehavior: Clip.antiAlias,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0x3306B6D4), Color(0x334F46E5), Color(0x33D946EF)],
+                                stops: [0.0, 0.5, 1.0],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              border: Border.all(color: Colors.white.withAlpha(26)),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const _ScalesComingSoonPreview(),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               const SizedBox(height: 16),
 
               // SUPPORT
@@ -916,6 +971,130 @@ class _ComingSoonPreviewState extends State<_ComingSoonPreview> with SingleTicke
           child: Icon(Icons.music_note_rounded, size: 16, color: Colors.white.withAlpha(102)),
         ),
       ),
+    );
+  }
+}
+
+// "Scales Coming Soon" preview: seven ascending bars (scale degrees) that
+// light up in a rising wave, with a glowing dot gliding along their tops —
+// like a scale run climbing the keyboard.
+class _ScalesComingSoonPreview extends StatefulWidget {
+  const _ScalesComingSoonPreview();
+
+  @override
+  State<_ScalesComingSoonPreview> createState() => _ScalesComingSoonPreviewState();
+}
+
+class _ScalesComingSoonPreviewState extends State<_ScalesComingSoonPreview> with SingleTickerProviderStateMixin {
+  late final AnimationController _c;
+
+  static const _barColors = [
+    Color(0xFF22D3EE), Color(0xFF38BDF8), Color(0xFF818CF8),
+    Color(0xFFA78BFA), Color(0xFFC084FC), Color(0xFFE879F9), Color(0xFFF472B6),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 2800))..repeat();
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _c,
+      builder: (_, __) {
+        final t = _c.value; // 0..1
+        return Stack(
+          children: [
+            // Soft sweep of light following the run
+            Positioned.fill(
+              child: IgnorePointer(
+                child: Opacity(
+                  opacity: 0.5,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        center: Alignment(-1.0 + 2.0 * t, 0.2),
+                        radius: 0.6,
+                        colors: const [Color(0x26FFFFFF), Colors.transparent],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  for (int i = 0; i < 7; i++) ...[
+                    if (i > 0) const SizedBox(width: 7),
+                    _bar(i, t),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Each bar glows when the "run" passes over it. Bars ascend in height like
+  // a scale; the pulse travels left→right and fades behind itself.
+  Widget _bar(int i, double t) {
+    final pos = t * 8.4; // travelling pulse position, with dwell past the last bar
+    final dist = (pos - i).abs();
+    final glow = (1 - dist / 1.6).clamp(0.0, 1.0);
+
+    final baseH = 18.0 + i * 5.5; // ascending staircase
+    final h = baseH + glow * 10;
+    final color = _barColors[i];
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Glowing dot hovering on the active bar
+        Opacity(
+          opacity: glow,
+          child: Container(
+            width: 6, height: 6,
+            margin: const EdgeInsets.only(bottom: 3),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white,
+              boxShadow: [BoxShadow(color: color.withAlpha(220), blurRadius: 10, spreadRadius: 1)],
+            ),
+          ),
+        ),
+        Container(
+          width: 14,
+          height: h,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(5),
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color.lerp(color.withAlpha(70), color, glow)!,
+                color.withAlpha(30 + (glow * 60).round()),
+              ],
+            ),
+            border: Border.all(color: color.withAlpha(40 + (glow * 120).round())),
+            boxShadow: glow > 0.05
+                ? [BoxShadow(color: color.withAlpha((glow * 140).round()), blurRadius: 14)]
+                : null,
+          ),
+        ),
+      ],
     );
   }
 }
