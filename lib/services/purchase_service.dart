@@ -35,8 +35,7 @@ class PurchaseService {
   /// app binary (they are not the secret key), so hard-coding them here is safe.
   /// Each platform uses its own key from RevenueCat → Project settings → API keys.
   static const String _androidApiKey = 'goog_DzefZojgkijVyeXxsKjLunDbctO';
-  // TODO: replace with your iOS key (starts with `appl_`) when you set up iOS.
-  static const String _iosApiKey = 'appl_REPLACE_WITH_YOUR_IOS_KEY';
+  static const String _iosApiKey = 'appl_CwBbHyNHXRjopilnZBmBWBmMEeO';
 
   static String get _apiKey =>
       defaultTargetPlatform == TargetPlatform.iOS ? _iosApiKey : _androidApiKey;

@@ -1464,7 +1464,13 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: const Color(0xFFFF69B4).withAlpha(120)),
                       ),
-                      child: const Center(child: _SharpFlatGlyph()),
+                      child: const Center(child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('♯', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white, height: 1)),
+                          Text('♭', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white, height: 1)),
+                        ],
+                      )),
                     ),
                     accentColor: const Color(0xFFA855F7),
                     borderColor: const Color(0xFFA855F7).withAlpha(80),
@@ -2038,50 +2044,6 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
             ),
           ]),
         ),
-    );
-  }
-}
-
-// ─── SHARP+FLAT GLYPH (Chromatic card icon) ──────────────────────────────────
-// The ♯ and ♭ text glyphs come from a system fallback font on real phones
-// (Lexend has no music glyphs), which rendered them thin, small and mismatched.
-// Painting them by hand guarantees a bold, identical mark on every device.
-
-/// The ♯♭ mark on the Chromatic card — a faithful copy of the web original:
-/// the SAME system text glyphs, sharp smaller and raised, flat larger and
-/// lowered. Browsers give fallback glyphs a synthetic bold that Flutter
-/// doesn't, so the chunky weight is recreated with a stroked underlay —
-/// identical shapes, identical heft.
-class _SharpFlatGlyph extends StatelessWidget {
-  const _SharpFlatGlyph();
-
-  Widget _boldGlyph(String glyph, double size, double dy) {
-    return Transform.translate(
-      offset: Offset(0, dy),
-      child: Stack(children: [
-        Text(glyph, style: TextStyle(
-          fontSize: size, height: 1,
-          foreground: Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = size * 0.085
-            ..strokeJoin = StrokeJoin.round
-            ..strokeCap = StrokeCap.round
-            ..color = Colors.white,
-        )),
-        Text(glyph, style: TextStyle(fontSize: size, height: 1, color: Colors.white)),
-      ]),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        _boldGlyph('♯', 30, -6),
-        _boldGlyph('♭', 38, 6),
-      ],
     );
   }
 }
