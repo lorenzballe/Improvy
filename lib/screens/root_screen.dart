@@ -225,15 +225,21 @@ class _RootScreenState extends State<RootScreen> {
     final total = (data['total'] as num?)?.toInt() ?? 0;
     if (total > 0 && correct == total) {
       AnalyticsService.instance.capture('perfect_session', {'mode': data['mode'], 'key': data['key']});
-      setState(() => _perfectGlow = true);
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _perfectCtrl.play();
-      });
-      // Hold the glow for one full 3s spectrum cycle, then fade it out.
-      Future.delayed(const Duration(milliseconds: 3200), () {
-        if (mounted) setState(() => _perfectGlow = false);
-      });
+      _triggerPerfectCelebration();
     }
+  }
+
+  /// Fires the rainbow frame-glow + confetti burst. Shared by real perfect
+  /// sessions and the debug "simulate" button, so both look identical.
+  void _triggerPerfectCelebration() {
+    setState(() => _perfectGlow = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _perfectCtrl.play();
+    });
+    // Hold the glow for one full 3s spectrum cycle, then fade it out.
+    Future.delayed(const Duration(milliseconds: 3200), () {
+      if (mounted) setState(() => _perfectGlow = false);
+    });
   }
 
   @override
@@ -383,7 +389,7 @@ class _RootScreenState extends State<RootScreen> {
             children: [
               _KeepAlivePage(child: HomeScreen(onShowPaywall: _showPaywallSheet, onOpenSetup: _openSetup)),
               const _KeepAlivePage(child: StatsScreen()),
-              _KeepAlivePage(child: SettingsScreen(onShowPaywall: _showPaywallSheet)),
+              _KeepAlivePage(child: SettingsScreen(onShowPaywall: _showPaywallSheet, onSimulatePerfect: _triggerPerfectCelebration)),
             ],
           ),
           if (_showPaywall)
@@ -422,6 +428,10 @@ class _RootScreenState extends State<RootScreen> {
                 onClose: () => setState(() => _levelUpLevel = null),
               ),
             ),
+          // Perfect-session celebration also renders here so it can fire from the
+          // home/settings tabs (real perfect runs show it on the summary screen).
+          _RainbowGlowOverlay(visible: _perfectGlow),
+          _PerfectRainOverlay(controller: _perfectCtrl),
           _ConfettiOverlay(
             controller: _confettiCtrl,
             color: _confettiColor ?? Colors.white,
@@ -501,19 +511,20 @@ class _PerfectRainOverlay extends StatelessWidget {
 
     return Positioned.fill(
       child: Stack(children: [
-        // Initial big burst from the centre (web: particleCount 150, y 0.6).
-        emitter(alignment: const Alignment(0, 0.2), frequency: 0.03,
-            particles: 60, maxForce: 45, minForce: 15, gravity: 0.3),
-        // Continuous rain from the two top corners (web: interval bursts).
-        emitter(alignment: const Alignment(-0.7, -1.05), frequency: 0.6,
-            particles: 12, maxForce: 24, minForce: 8, gravity: 0.25),
-        emitter(alignment: const Alignment(0.7, -1.05), frequency: 0.6,
-            particles: 12, maxForce: 24, minForce: 8, gravity: 0.25),
-        // Streams pouring in from the left & right edges (web parity).
-        emitter(alignment: const Alignment(-1.05, -0.3), frequency: 0.6,
-            particles: 8, maxForce: 26, minForce: 8, gravity: 0.28),
-        emitter(alignment: const Alignment(1.05, -0.3), frequency: 0.6,
-            particles: 8, maxForce: 26, minForce: 8, gravity: 0.28),
+        // One modest centre burst — the frame-glow carries the celebration now,
+        // so the confetti stays light instead of burying the screen.
+        emitter(alignment: const Alignment(0, 0.2), frequency: 0.02,
+            particles: 16, maxForce: 42, minForce: 14, gravity: 0.3),
+        // Light rain from the two top corners.
+        emitter(alignment: const Alignment(-0.7, -1.05), frequency: 0.3,
+            particles: 4, maxForce: 22, minForce: 7, gravity: 0.25),
+        emitter(alignment: const Alignment(0.7, -1.05), frequency: 0.3,
+            particles: 4, maxForce: 22, minForce: 7, gravity: 0.25),
+        // A few streamers from the left & right edges.
+        emitter(alignment: const Alignment(-1.05, -0.3), frequency: 0.25,
+            particles: 3, maxForce: 24, minForce: 7, gravity: 0.28),
+        emitter(alignment: const Alignment(1.05, -0.3), frequency: 0.25,
+            particles: 3, maxForce: 24, minForce: 7, gravity: 0.28),
       ]),
     );
   }

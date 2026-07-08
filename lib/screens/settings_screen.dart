@@ -9,7 +9,8 @@ import 'legal_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   final void Function([String? reason]) onShowPaywall;
-  const SettingsScreen({super.key, required this.onShowPaywall});
+  final VoidCallback onSimulatePerfect;
+  const SettingsScreen({super.key, required this.onShowPaywall, required this.onSimulatePerfect});
 
   @override
   Widget build(BuildContext context) {
@@ -616,6 +617,15 @@ class SettingsScreen extends StatelessWidget {
                       bgColor: const Color(0x333B82F6),
                       borderColor: const Color(0x4D3B82F6),
                       onTap: () => provider.debugNextAnimalLevel(),
+                    ),
+                    const SizedBox(height: 8),
+                    _DebugButton(
+                      icon: Icons.celebration_rounded,
+                      label: 'SIMULATE PERFECT SESSION',
+                      color: const Color(0xFFF472B6),
+                      bgColor: const Color(0x33EC4899),
+                      borderColor: const Color(0x4DEC4899),
+                      onTap: onSimulatePerfect,
                     ),
                   ],
                 ),
