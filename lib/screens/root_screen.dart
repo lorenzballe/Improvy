@@ -31,6 +31,10 @@ class _RootScreenState extends State<RootScreen> {
   bool _showPaywall = false;
   TrainingMode? _pendingSetup; // which setup screen to show
 
+  // Rainbow frame-glow flag: true for one 3s colour cycle after a PERFECT
+  // session, driving the [_RainbowGlowOverlay] that haloes the screen edges.
+  bool _perfectGlow = false;
+
   // Stable bottom inset: on some devices/emulators the system gesture bar
   // toggles, making MediaQuery.padding.bottom oscillate and the floating nav
   // jump. We latch the largest value seen so the nav stays put.
@@ -214,13 +218,20 @@ class _RootScreenState extends State<RootScreen> {
     provider.finishSession();
     setState(() => _finishedSession = data);
 
-    // Perfect session → rainbow confetti rain over the summary (web parity).
+    // Perfect session → rainbow confetti rain + frame-glow over the summary
+    // (web parity). Fires on EVERY zero-error session, regardless of whether the
+    // level had already been mastered before — it only looks at this run.
     final correct = (data['correct'] as num?)?.toInt() ?? 0;
     final total = (data['total'] as num?)?.toInt() ?? 0;
     if (total > 0 && correct == total) {
       AnalyticsService.instance.capture('perfect_session', {'mode': data['mode'], 'key': data['key']});
+      setState(() => _perfectGlow = true);
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _perfectCtrl.play();
+      });
+      // Hold the glow for one full 3s spectrum cycle, then fade it out.
+      Future.delayed(const Duration(milliseconds: 3200), () {
+        if (mounted) setState(() => _perfectGlow = false);
       });
     }
   }
@@ -289,16 +300,16 @@ class _RootScreenState extends State<RootScreen> {
             SessionSummaryScreen(
               sessionData: _finishedSession!,
               progressData: provider.progressData,
-              onRetry: () => setState(() => _finishedSession = null),
+              onRetry: () => setState(() { _finishedSession = null; _perfectGlow = false; }),
               onBack: () {
                 final mode = provider.activeMode;
                 final isSpecial = mode == TrainingMode.noteToNumber || mode == TrainingMode.custom;
-                setState(() => _finishedSession = null);
+                setState(() { _finishedSession = null; _perfectGlow = false; });
                 if (isSpecial) provider.deselectKey();
                 provider.exitTrainer();
               },
               onNextDifficulty: (newDiff) {
-                setState(() => _finishedSession = null);
+                setState(() { _finishedSession = null; _perfectGlow = false; });
                 final mode = provider.activeMode!;
                 if (mode == TrainingMode.diatonic) {
                   provider.setDiatonicDifficulty(newDiff);
@@ -307,6 +318,7 @@ class _RootScreenState extends State<RootScreen> {
                 }
               },
             ),
+            _RainbowGlowOverlay(visible: _perfectGlow),
             _PerfectRainOverlay(controller: _perfectCtrl),
             if (_levelUpLevel != null)
               Positioned.fill(
@@ -490,16 +502,122 @@ class _PerfectRainOverlay extends StatelessWidget {
     return Positioned.fill(
       child: Stack(children: [
         // Initial big burst from the centre (web: particleCount 150, y 0.6).
-        emitter(alignment: const Alignment(0, 0.2), frequency: 0.02,
-            particles: 40, maxForce: 40, minForce: 15, gravity: 0.3),
+        emitter(alignment: const Alignment(0, 0.2), frequency: 0.03,
+            particles: 60, maxForce: 45, minForce: 15, gravity: 0.3),
         // Continuous rain from the two top corners (web: interval bursts).
-        emitter(alignment: const Alignment(-0.6, -1.05), frequency: 0.55,
-            particles: 7, maxForce: 22, minForce: 7, gravity: 0.25),
-        emitter(alignment: const Alignment(0.6, -1.05), frequency: 0.55,
-            particles: 7, maxForce: 22, minForce: 7, gravity: 0.25),
+        emitter(alignment: const Alignment(-0.7, -1.05), frequency: 0.6,
+            particles: 12, maxForce: 24, minForce: 8, gravity: 0.25),
+        emitter(alignment: const Alignment(0.7, -1.05), frequency: 0.6,
+            particles: 12, maxForce: 24, minForce: 8, gravity: 0.25),
+        // Streams pouring in from the left & right edges (web parity).
+        emitter(alignment: const Alignment(-1.05, -0.3), frequency: 0.6,
+            particles: 8, maxForce: 26, minForce: 8, gravity: 0.28),
+        emitter(alignment: const Alignment(1.05, -0.3), frequency: 0.6,
+            particles: 8, maxForce: 26, minForce: 8, gravity: 0.28),
       ]),
     );
   }
+}
+
+/// Rainbow frame-glow for a PERFECT session — a fixed overlay that haloes the
+/// screen edges with a doubled inset glow (strong inner + soft outer band),
+/// cycling through the full spectrum every 3 seconds. Hand-rolled with edge
+/// gradients (no native inset-shadow support needed), so it stays cheap and
+/// composites in a single layer. Mirrors the old web app's animated box-shadow.
+class _RainbowGlowOverlay extends StatefulWidget {
+  final bool visible;
+  const _RainbowGlowOverlay({required this.visible});
+
+  @override
+  State<_RainbowGlowOverlay> createState() => _RainbowGlowOverlayState();
+}
+
+class _RainbowGlowOverlayState extends State<_RainbowGlowOverlay>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c;
+
+  // Inner (strong, 50%) spectrum — one full loop back to the start.
+  static const _inner = [
+    Color(0x80FF0000), Color(0x80FFFF00), Color(0x8000FF00), Color(0x800000FF),
+    Color(0x804B0082), Color(0x809400D3), Color(0x80FF0000),
+  ];
+  // Outer (soft, 30%) spectrum, offset a step for a two-tone frame.
+  static const _outer = [
+    Color(0x4DFF7F00), Color(0x4D00FF00), Color(0x4D00FFFF), Color(0x4D4B0082),
+    Color(0x4D9400D3), Color(0x4DFF0080), Color(0x4DFF7F00),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _c = AnimationController(vsync: this, duration: const Duration(seconds: 3));
+    if (widget.visible) _c.repeat();
+  }
+
+  @override
+  void didUpdateWidget(_RainbowGlowOverlay old) {
+    super.didUpdateWidget(old);
+    if (widget.visible && !_c.isAnimating) {
+      _c.repeat();
+    } else if (!widget.visible && _c.isAnimating) {
+      _c.stop();
+    }
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  static Color _lerp(List<Color> colors, double t) {
+    final segs = colors.length - 1;
+    final scaled = t * segs;
+    final i = scaled.floor().clamp(0, segs - 1);
+    return Color.lerp(colors[i], colors[i + 1], scaled - i)!;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.visible) return const SizedBox.shrink();
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: AnimatedBuilder(
+          animation: _c,
+          builder: (context, _) {
+            final inner = _lerp(_inner, _c.value);
+            final outer = _lerp(_outer, _c.value);
+            return Stack(children: [
+              // Soft outer band first (wider, atmospheric)…
+              ..._frame(outer, 96),
+              // …then the strong inner band on top (narrower, vivid).
+              ..._frame(inner, 52),
+            ]);
+          },
+        ),
+      ),
+    );
+  }
+
+  // Four edge gradients (top/bottom/left/right) fading inward to transparent,
+  // together reading as an inset glow that frames the whole screen.
+  List<Widget> _frame(Color color, double thickness) => [
+        Positioned(top: 0, left: 0, right: 0, height: thickness,
+          child: _grad(color, Alignment.topCenter, Alignment.bottomCenter)),
+        Positioned(bottom: 0, left: 0, right: 0, height: thickness,
+          child: _grad(color, Alignment.bottomCenter, Alignment.topCenter)),
+        Positioned(top: 0, bottom: 0, left: 0, width: thickness,
+          child: _grad(color, Alignment.centerLeft, Alignment.centerRight)),
+        Positioned(top: 0, bottom: 0, right: 0, width: thickness,
+          child: _grad(color, Alignment.centerRight, Alignment.centerLeft)),
+      ];
+
+  Widget _grad(Color color, Alignment begin, Alignment end) => DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(begin: begin, end: end,
+              colors: [color, color.withValues(alpha: 0)]),
+        ),
+      );
 }
 
 class _ConfettiOverlay extends StatelessWidget {
