@@ -1,0 +1,222 @@
+{
+  "app": {
+    "name": "improvy_flutter",
+    "type": "flutter_mobile",
+    "version": "1.0.18+24",
+    "repo": "https://github.com/lorenzobdev/improvy_flutter",
+    "description": "Music theory learning app with AI-powered ear training"
+  },
+  "server": {
+    "port": 5002,
+    "host": "127.0.0.1",
+    "ssl": false,
+    "timeout_ms": 30000
+  },
+  "memory": {
+    "backend": "agentdb",
+    "persist": true,
+    "sync_interval_ms": 5000,
+    "max_size_mb": 512,
+    "vector_dimension": 768,
+    "similarity_backend": "hnsw",
+    "hnsw_M": 16,
+    "hnsw_ef_construction": 200,
+    "hnsw_ef_search": 100
+  },
+  "learning": {
+    "enabled": true,
+    "self_optimize": true,
+    "pattern_detection": true,
+    "trajectory_storage": "all",
+    "memory_decay_days": 90,
+    "success_weight": 0.4,
+    "uptime_weight": 0.2,
+    "threat_weight": 0.2,
+    "integrity_weight": 0.2
+  },
+  "agents": {
+    "auto_spawn": true,
+    "concurrency": 4,
+    "timeout_ms": 300000,
+    "memory_per_agent_mb": 256,
+    "default_agents": [
+      "CodeReviewer",
+      "TestGenerator",
+      "SecurityAuditor",
+      "DocWriter",
+      "ArchitectureAnalyzer"
+    ],
+    "specializations": {
+      "flutter": "FlutterAgent",
+      "ios": "iOSAgent",
+      "android": "AndroidAgent",
+      "backend": "BackendAgent",
+      "security": "SecurityAuditor"
+    }
+  },
+  "background_workers": {
+    "audit": true,
+    "testgen": true,
+    "docs": true,
+    "optimize": true,
+    "security_scan": true,
+    "performance_profile": true,
+    "schedule": "interval",
+    "interval_minutes": 15,
+    "run_on_commit": true,
+    "run_on_schedule": true
+  },
+  "hooks": {
+    "enabled": true,
+    "auto_route": true,
+    "events": [
+      "code.change",
+      "test.run",
+      "commit.push",
+      "build.start",
+      "build.complete"
+    ],
+    "custom_rules": {
+      "on_flutter_file_change": "spawn FlutterAgent + TestGenerator",
+      "on_ios_file_change": "spawn iOSAgent + SecurityAuditor",
+      "on_test_failure": "spawn DebugAgent + TestGenerator + CodeReviewer",
+      "on_commit_push": "spawn CodeReviewer + SecurityAuditor + DocWriter"
+    }
+  },
+  "federation": {
+    "enabled": false,
+    "peer_discovery": false,
+    "trust_mode": "local",
+    "mTLS": false,
+    "pii_stripping": true,
+    "audit_all_messages": false,
+    "allowed_peers": []
+  },
+  "security": {
+    "aidefence": true,
+    "aidefence_model": "claude-haiku-4.5",
+    "prompt_injection_blocking": true,
+    "jailbreak_detection": true,
+    "pii_detection": true,
+    "pii_types": [
+      "email",
+      "phone",
+      "ssn",
+      "credit_card",
+      "api_key",
+      "aws_key",
+      "github_token",
+      "private_key",
+      "password",
+      "ipv4",
+      "ipv6",
+      "mac_address",
+      "home_address",
+      "bank_account"
+    ],
+    "pii_policy": "redact",
+    "pii_redact_char": "*",
+    "cve_scanning": true,
+    "cve_db": "nvd",
+    "path_validation": true,
+    "path_whitelist": [
+      "./lib",
+      "./ios",
+      "./android",
+      "./web",
+      "./test",
+      "./.claude"
+    ],
+    "path_blacklist": [
+      "./node_modules",
+      "./build",
+      "./.dart_tool",
+      "./pubspec.lock"
+    ]
+  },
+  "compliance": {
+    "mode": "standard",
+    "audit_log": true,
+    "audit_log_retention_days": 90,
+    "consent_required": false,
+    "gdpr_mode": false,
+    "hipaa_mode": false,
+    "soc2_mode": false,
+    "pci_dss_mode": false
+  },
+  "observability": {
+    "logging": "standard",
+    "log_level": "info",
+    "log_format": "json",
+    "metrics": true,
+    "metrics_backend": "local",
+    "traces": false,
+    "debug": false,
+    "structured_logs": true,
+    "log_retention_days": 30
+  },
+  "cost_tracking": {
+    "enabled": true,
+    "backend": "local",
+    "budget_monthly_usd": 50,
+    "budget_weekly_usd": 12,
+    "alert_threshold_percent": 80,
+    "alert_critical_percent": 95,
+    "track_by_agent": true,
+    "track_by_provider": true,
+    "track_by_model": true
+  },
+  "plugins": {
+    "enabled": [
+      "ruflo-core",
+      "ruflo-swarm",
+      "ruflo-rag-memory",
+      "ruflo-intelligence",
+      "ruflo-testgen",
+      "ruflo-security-audit",
+      "ruflo-docs",
+      "ruflo-jujutsu",
+      "ruflo-observability",
+      "ruflo-cost-tracker"
+    ],
+    "disabled": [
+      "ruflo-federation",
+      "ruflo-neural-trader",
+      "ruflo-iot-cognitum"
+    ]
+  },
+  "flutter_specific": {
+    "watch_paths": [
+      "lib/**/*.dart",
+      "ios/**",
+      "android/**",
+      "pubspec.yaml"
+    ],
+    "auto_analysis": true,
+    "auto_format": false,
+    "auto_test_on_change": false,
+    "lint_rules": "all",
+    "performance_profile": true,
+    "memory_profiling": true
+  },
+  "providers": {
+    "primary": {
+      "name": "claude",
+      "model": "claude-opus-4.5",
+      "api_endpoint": "https://api.anthropic.com/v1",
+      "fallback_order": 1
+    },
+    "fallback_1": {
+      "name": "claude",
+      "model": "claude-sonnet-4.5",
+      "api_endpoint": "https://api.anthropic.com/v1",
+      "fallback_order": 2
+    },
+    "fallback_2": {
+      "name": "claude",
+      "model": "claude-haiku-4.5",
+      "api_endpoint": "https://api.anthropic.com/v1",
+      "fallback_order": 3
+    }
+  }
+}
