@@ -1,0 +1,54 @@
+{
+  "name": "9Router - FREE AI Models Setup",
+  "description": "Configura Claude Code per usare 9Router e risparmiare token",
+  "provider": "custom",
+  "endpoint": "http://localhost:20128/v1",
+  "apiKey": "[COPIA DA: 9Router Dashboard → API Keys → Copy]",
+  "models": {
+    "default": "kr/claude-sonnet-4.5",
+    "free_options": [
+      "kr/claude-sonnet-4.5",
+      "kr/claude-opus-4.5",
+      "kr/claude-haiku-4.5"
+    ],
+    "paid_tier_2": [
+      "glm-4-plus",
+      "minimax-text-01"
+    ],
+    "paid_tier_1": [
+      "claude-opus-4.5",
+      "gpt-4o"
+    ]
+  },
+  "settings": {
+    "tokenSaver": {
+      "rtk_compression": "enabled (saves 20-40% tokens automatically)",
+      "compress_tool_results": true,
+      "compress_git_diff": true,
+      "compress_grep_output": true
+    },
+    "fallback": {
+      "automatic": true,
+      "tier_1": "subscription_based",
+      "tier_2": "cheap_models",
+      "tier_3": "free_unlimited"
+    }
+  },
+  "how_to_get_api_key": {
+    "step_1": "Apri: http://localhost:20128/dashboard",
+    "step_2": "Vai a 'Providers' e connetti un provider gratuito (Kiro AI, OpenCode Free, ecc)",
+    "step_3": "Vai a 'API Keys' e copia la chiave principale",
+    "step_4": "Incolla la chiave nel campo 'apiKey' sopra"
+  },
+  "usage": {
+    "claude_code": "Incolla questo oggetto in: ~/.claude/settings.local.json",
+    "cursor": "Cursor Settings → Models → Custom Provider → incolla endpoint e API key",
+    "cline": "Cline Extension Settings → API Provider → Custom OpenAI Compatible",
+    "other_tools": "Qualsiasi tool che supporta endpoint OpenAI-compatible funziona"
+  },
+  "support": {
+    "dashboard": "http://localhost:20128/dashboard",
+    "github": "https://github.com/decolua/9router",
+    "docs": "https://9router.com"
+  }
+}
