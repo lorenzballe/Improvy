@@ -255,37 +255,14 @@ class SettingsScreen extends StatelessWidget {
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Row(
-                                          children: [
-                                            Flexible(
-                                              child: FittedBox(
-                                                fit: BoxFit.scaleDown,
-                                                alignment: Alignment.centerLeft,
-                                                child: Text(
-                                                  'Adaptive Difficulty',
-                                                  maxLines: 1,
-                                                  softWrap: false,
-                                                  style: TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w900,
-                                                    color: provider.adaptiveDifficulty ? Colors.white : Colors.white.withAlpha(179),
-                                                    letterSpacing: 0.4,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            if (provider.adaptiveDifficulty) ...[
-                                              const SizedBox(width: 8),
-                                              Container(
-                                                width: 6, height: 6,
-                                                decoration: const BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  color: Color(0xFF60A5FA),
-                                                  boxShadow: [BoxShadow(color: Color(0xCC60A5FA), blurRadius: 8)],
-                                                ),
-                                              ),
-                                            ],
-                                          ],
+                                        Text(
+                                          'Adaptive Difficulty',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w900,
+                                            color: provider.adaptiveDifficulty ? Colors.white : Colors.white.withAlpha(179),
+                                            letterSpacing: 0.4,
+                                          ),
                                         ),
                                         const SizedBox(height: 3),
                                         Text(
@@ -739,36 +716,13 @@ class _KeyboardFromTonicCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Flexible(
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              alignment: Alignment.centerLeft,
-                              child: Text('Keyboard from Tonic',
-                                  maxLines: 1,
-                                  softWrap: false,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w900,
-                                    color: on ? Colors.white : Colors.white.withAlpha(179),
-                                    letterSpacing: 0.4,
-                                  )),
-                            ),
-                          ),
-                          if (on) ...[
-                            const SizedBox(width: 8),
-                            Container(
-                              width: 6, height: 6,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Color(0xFF2DD4BF),
-                                boxShadow: [BoxShadow(color: Color(0xCC2DD4BF), blurRadius: 8)],
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
+                      Text('Keyboard from Tonic',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w900,
+                            color: on ? Colors.white : Colors.white.withAlpha(179),
+                            letterSpacing: 0.4,
+                          )),
                       const SizedBox(height: 3),
                       Text('PIANO INPUT',
                           style: TextStyle(
