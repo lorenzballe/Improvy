@@ -288,21 +288,23 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _SectionTitle(icon: Icons.timeline_rounded, color: color, title: 'Accuracy Over Time'),
-                        GestureDetector(
-                          onTap: () => setState(() { _last30 = !_last30; _selPoint = 6; }),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: color.withAlpha(26),
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: Colors.white.withAlpha(26), width: 1.2),
-                            ),
-                            child: Text(_last30 ? 'LAST 30 GAMES' : 'LAST 14 DAYS',
-                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: color, letterSpacing: 1.5)),
-                          ),
+                        Expanded(child: _SectionTitle(icon: Icons.timeline_rounded, color: color, title: 'Accuracy Over Time')),
+                        // Accuracy growth badge sits in the space freed by the
+                        // compact range switch (green up / red down).
+                        if (accuracyDelta != null) ...[
+                          Icon(accuracyDelta >= 0 ? Icons.trending_up_rounded : Icons.trending_down_rounded,
+                            color: accuracyDelta >= 0 ? const Color(0xFF10B981) : const Color(0xFFFB7185), size: 16),
+                          const SizedBox(width: 3),
+                          Text('${accuracyDelta >= 0 ? "+" : ""}${accuracyDelta.toStringAsFixed(1)}%',
+                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: -0.3,
+                              color: accuracyDelta >= 0 ? const Color(0xFF10B981) : const Color(0xFFFB7185))),
+                          const SizedBox(width: 12),
+                        ],
+                        _RangeSwitch(
+                          last30: _last30,
+                          color: color,
+                          onToggle: () => setState(() { _last30 = !_last30; _selPoint = 6; }),
                         ),
                       ],
                     ),
@@ -323,20 +325,6 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                           child: Text('ACCURACY',
                             style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white.withAlpha(90), letterSpacing: 1.5)),
                         ),
-                        if (accuracyDelta != null) ...[
-                          const Spacer(),
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 3),
-                            child: Row(mainAxisSize: MainAxisSize.min, children: [
-                              Icon(accuracyDelta >= 0 ? Icons.trending_up_rounded : Icons.trending_down_rounded,
-                                color: accuracyDelta >= 0 ? const Color(0xFF10B981) : const Color(0xFFFB7185), size: 15),
-                              const SizedBox(width: 3),
-                              Text('${accuracyDelta >= 0 ? "+" : ""}${accuracyDelta.toStringAsFixed(1)}%',
-                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: -0.3,
-                                  color: accuracyDelta >= 0 ? const Color(0xFF10B981) : const Color(0xFFFB7185))),
-                            ]),
-                          ),
-                        ],
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -534,7 +522,8 @@ class _SectionTitle extends StatelessWidget {
             child: Icon(icon, size: 18, color: color),
           ),
           const SizedBox(width: 12),
-          Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: 0.2)),
+          Flexible(child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: 0.2))),
         ],
       );
 }
@@ -823,5 +812,59 @@ class _ChartPainter extends CustomPainter {
       if (a[i] != b[i]) return false;
     }
     return true;
+  }
+}
+
+// Compact range toggle for the Accuracy Over Time chart: a small sliding
+// switch (same feel as the settings toggle) flanked by "30G" / "14D" labels,
+// the active side lit. Left = last 30 games, right = last 14 days.
+class _RangeSwitch extends StatelessWidget {
+  final bool last30;
+  final Color color;
+  final VoidCallback onToggle;
+  const _RangeSwitch({required this.last30, required this.color, required this.onToggle});
+
+  Widget _label(String t, bool active) => Text(t,
+      style: TextStyle(
+        fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.8,
+        color: active ? color : Colors.white.withAlpha(70),
+      ));
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onToggle,
+      behavior: HitTestBehavior.opaque,
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        _label('30G', last30),
+        const SizedBox(width: 6),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOut,
+          width: 40, height: 22,
+          padding: const EdgeInsets.all(3),
+          decoration: BoxDecoration(
+            color: color.withAlpha(56),
+            border: Border.all(color: color.withAlpha(120)),
+            borderRadius: BorderRadius.circular(9999),
+          ),
+          child: AnimatedAlign(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOutBack,
+            alignment: last30 ? Alignment.centerLeft : Alignment.centerRight,
+            child: Container(
+              width: 16, height: 16,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [BoxShadow(color: Color(0x66000000), blurRadius: 6, offset: Offset(0, 2))],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 6),
+        _label('14D', !last30),
+      ]),
+    );
   }
 }
