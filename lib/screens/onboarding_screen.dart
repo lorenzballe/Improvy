@@ -74,7 +74,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   colors: [Color(0xFF60A5FA), Color(0xFFA855F7), Color(0xFFEC4899)],
                 ).createShader(b),
                 child: const Text('Improvy',
-                  style: TextStyle(fontSize: 54, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -2, height: 1)),
+                  style: TextStyle(fontSize: 54, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -2)),
               )),
               const SizedBox(height: 16),
               _in(0.3, 0.82, child: Text(
