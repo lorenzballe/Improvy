@@ -546,6 +546,8 @@ class _RainbowGlowOverlay extends StatefulWidget {
 class _RainbowGlowOverlayState extends State<_RainbowGlowOverlay>
     with SingleTickerProviderStateMixin {
   late final AnimationController _c;
+  bool _render = false; // whether the overlay is mounted at all
+  double _opacity = 0; // AnimatedOpacity target — fades in on show, out on hide
 
   // Inner (strong, 50%) spectrum — one full loop back to the start.
   static const _inner = [
@@ -562,16 +564,29 @@ class _RainbowGlowOverlayState extends State<_RainbowGlowOverlay>
   void initState() {
     super.initState();
     _c = AnimationController(vsync: this, duration: const Duration(seconds: 3));
-    if (widget.visible) _c.repeat();
+    if (widget.visible) _show();
+  }
+
+  void _show() {
+    _c
+      ..reset()
+      ..repeat();
+    _render = true;
+    _opacity = 0;
+    // Fade in on the next frame so AnimatedOpacity animates 0 → 1.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && widget.visible) setState(() => _opacity = 1);
+    });
   }
 
   @override
   void didUpdateWidget(_RainbowGlowOverlay old) {
     super.didUpdateWidget(old);
-    if (widget.visible && !_c.isAnimating) {
-      _c.repeat();
-    } else if (!widget.visible && _c.isAnimating) {
-      _c.stop();
+    if (widget.visible && !old.visible) {
+      setState(_show);
+    } else if (!widget.visible && old.visible) {
+      // Fade out smoothly; the colour cycle keeps running until the fade ends.
+      setState(() => _opacity = 0);
     }
   }
 
@@ -590,21 +605,34 @@ class _RainbowGlowOverlayState extends State<_RainbowGlowOverlay>
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.visible) return const SizedBox.shrink();
+    if (!_render) return const SizedBox.shrink();
     return Positioned.fill(
       child: IgnorePointer(
-        child: AnimatedBuilder(
-          animation: _c,
-          builder: (context, _) {
-            final inner = _lerp(_inner, _c.value);
-            final outer = _lerp(_outer, _c.value);
-            return Stack(children: [
-              // Soft outer band first (wider, atmospheric)…
-              ..._frame(outer, 96),
-              // …then the strong inner band on top (narrower, vivid).
-              ..._frame(inner, 52),
-            ]);
+        child: AnimatedOpacity(
+          opacity: _opacity,
+          // Quick fade-in, slower graceful fade-out (no abrupt cut).
+          duration: Duration(milliseconds: _opacity == 1 ? 350 : 750),
+          curve: Curves.easeOut,
+          onEnd: () {
+            // Once the fade-out completes, unmount and stop the colour cycle.
+            if (_opacity == 0 && mounted) {
+              _c.stop();
+              setState(() => _render = false);
+            }
           },
+          child: AnimatedBuilder(
+            animation: _c,
+            builder: (context, _) {
+              final inner = _lerp(_inner, _c.value);
+              final outer = _lerp(_outer, _c.value);
+              return Stack(children: [
+                // Soft outer band first (wider, atmospheric)…
+                ..._frame(outer, 96),
+                // …then the strong inner band on top (narrower, vivid).
+                ..._frame(inner, 52),
+              ]);
+            },
+          ),
         ),
       ),
     );
