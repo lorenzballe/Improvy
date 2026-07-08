@@ -1467,8 +1467,8 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                       child: const Center(child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text('♯', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white, height: 1)),
-                          Text('♭', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white, height: 1)),
+                          _ThickGlyph('♯', 22),
+                          _ThickGlyph('♭', 28),
                         ],
                       )),
                     ),
@@ -2044,6 +2044,34 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
             ),
           ]),
         ),
+    );
+  }
+}
+
+/// A single glyph drawn slightly heavier than the max font weight (w900).
+/// A thin same-colour stroke is layered under the fill (faux-bold) so the
+/// chromatic ♯/♭ symbols read a touch thicker without changing their shape.
+class _ThickGlyph extends StatelessWidget {
+  final String glyph;
+  final double size;
+  const _ThickGlyph(this.glyph, this.size);
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Text(glyph, style: TextStyle(
+          fontSize: size, fontWeight: FontWeight.w900, height: 1,
+          foreground: Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.1
+            ..strokeJoin = StrokeJoin.round
+            ..color = Colors.white,
+        )),
+        Text(glyph, style: TextStyle(
+          fontSize: size, fontWeight: FontWeight.w900, height: 1, color: Colors.white,
+        )),
+      ],
     );
   }
 }
