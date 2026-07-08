@@ -1076,7 +1076,7 @@ class _WithSession extends StatelessWidget {
   String _quoteFor(int diff) {
     const quotes = [
       "Every master was once a beginner. Let's visualize those first notes!",
-      'Halfway to mastery — your inner ear is sharpening. Keep pushing!',
+      'Halfway to mastery — your instincts are sharpening. Keep pushing!',
       'True mastery lives in the details. Trust your instincts and play!',
     ];
     return quotes[(diff - 1).clamp(0, quotes.length - 1)];
