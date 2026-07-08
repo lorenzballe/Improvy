@@ -301,10 +301,10 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                               color: accuracyDelta >= 0 ? const Color(0xFF10B981) : const Color(0xFFFB7185))),
                           const SizedBox(width: 12),
                         ],
-                        _RangeSwitch(
+                        _RangeToggle(
                           last30: _last30,
                           color: color,
-                          onToggle: () => setState(() { _last30 = !_last30; _selPoint = 6; }),
+                          onSelect: (v) => setState(() { _last30 = v; _selPoint = 6; }),
                         ),
                       ],
                     ),
@@ -815,56 +815,46 @@ class _ChartPainter extends CustomPainter {
   }
 }
 
-// Compact range toggle for the Accuracy Over Time chart: a small sliding
-// switch (same feel as the settings toggle) flanked by "30G" / "14D" labels,
-// the active side lit. Left = last 30 games, right = last 14 days.
-class _RangeSwitch extends StatelessWidget {
+// Range toggle for the Accuracy Over Time chart — the SAME segmented pill used
+// by the general stats' Response Time chart (no sliding dot): two tappable
+// labels, the active one lit in the tone's colour on a soft filled chip.
+// Left = last 30 games, right = last 14 days.
+class _RangeToggle extends StatelessWidget {
   final bool last30;
   final Color color;
-  final VoidCallback onToggle;
-  const _RangeSwitch({required this.last30, required this.color, required this.onToggle});
-
-  Widget _label(String t, bool active) => Text(t,
-      style: TextStyle(
-        fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.8,
-        color: active ? color : Colors.white.withAlpha(70),
-      ));
+  final ValueChanged<bool> onSelect;
+  const _RangeToggle({required this.last30, required this.color, required this.onSelect});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onToggle,
-      behavior: HitTestBehavior.opaque,
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: Colors.white.withAlpha(13),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.white.withAlpha(13)),
+      ),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
-        _label('30G', last30),
-        const SizedBox(width: 6),
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 220),
-          curve: Curves.easeOut,
-          width: 40, height: 22,
-          padding: const EdgeInsets.all(3),
-          decoration: BoxDecoration(
-            color: color.withAlpha(56),
-            border: Border.all(color: color.withAlpha(120)),
-            borderRadius: BorderRadius.circular(9999),
-          ),
-          child: AnimatedAlign(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOutBack,
-            alignment: last30 ? Alignment.centerLeft : Alignment.centerRight,
-            child: Container(
-              width: 16, height: 16,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [BoxShadow(color: Color(0x66000000), blurRadius: 6, offset: Offset(0, 2))],
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 6),
-        _label('14D', !last30),
+        _seg('30G', last30, () => onSelect(true)),
+        _seg('14D', !last30, () => onSelect(false)),
       ]),
     );
   }
+
+  Widget _seg(String label, bool active, VoidCallback onTap) => GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: active ? color.withAlpha(50) : Colors.transparent,
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Text(label,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w900,
+                color: active ? Color.lerp(color, Colors.white, 0.3)! : Colors.white.withAlpha(77),
+              )),
+        ),
+      );
 }
