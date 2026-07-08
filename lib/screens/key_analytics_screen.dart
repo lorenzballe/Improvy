@@ -156,6 +156,29 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
     // updating as the dot moves (matches the Response Time chart).
     final selAcc = (100 - chartY[_selPoint] / 200 * 100).round();
 
+    // Accuracy growth vs the previous equal-length period (same tone), shown
+    // next to the value like the general ACCURACY stat: green up / red down.
+    double? accuracyDelta;
+    {
+      final toneSessions = history.where((s) =>
+          (s.answers as List).any((a) => a.tonality == tone)).toList(); // newest-first
+      double accOf(Iterable sessions) {
+        int c = 0, t = 0;
+        for (final s in sessions) {
+          for (final a in (s.answers as List)) {
+            if (a.tonality == tone) { t++; if (a.isCorrect) c++; }
+          }
+        }
+        return t > 0 ? c / t : 0;
+      }
+      final window = _last30 ? 30 : 14;
+      if (toneSessions.length > window) {
+        final cur = accOf(toneSessions.take(window));
+        final prev = accOf(toneSessions.skip(window).take(window));
+        if (prev > 0) accuracyDelta = (cur - prev) / prev * 100;
+      }
+    }
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -300,6 +323,20 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                           child: Text('ACCURACY',
                             style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white.withAlpha(90), letterSpacing: 1.5)),
                         ),
+                        if (accuracyDelta != null) ...[
+                          const Spacer(),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 3),
+                            child: Row(mainAxisSize: MainAxisSize.min, children: [
+                              Icon(accuracyDelta >= 0 ? Icons.trending_up_rounded : Icons.trending_down_rounded,
+                                color: accuracyDelta >= 0 ? const Color(0xFF10B981) : const Color(0xFFFB7185), size: 15),
+                              const SizedBox(width: 3),
+                              Text('${accuracyDelta >= 0 ? "+" : ""}${accuracyDelta.toStringAsFixed(1)}%',
+                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: -0.3,
+                                  color: accuracyDelta >= 0 ? const Color(0xFF10B981) : const Color(0xFFFB7185))),
+                            ]),
+                          ),
+                        ],
                       ],
                     ),
                     const SizedBox(height: 16),
