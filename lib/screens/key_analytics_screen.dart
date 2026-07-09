@@ -294,7 +294,7 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                       children: [
                         Expanded(child: _SectionTitle(icon: Icons.timeline_rounded, color: color, title: 'Accuracy Over Time')),
                         // Accuracy growth badge sits in the space freed by the
-                        // compact range switch (green up / red down).
+                        // compact range toggle (green up / red down).
                         if (accuracyDelta != null) ...[
                           Icon(accuracyDelta >= 0 ? Icons.trending_up_rounded : Icons.trending_down_rounded,
                             color: accuracyDelta >= 0 ? const Color(0xFF10B981) : const Color(0xFFFB7185), size: 16),
@@ -304,10 +304,21 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                               color: accuracyDelta >= 0 ? const Color(0xFF10B981) : const Color(0xFFFB7185))),
                           const SizedBox(width: 12),
                         ],
-                        _RangeSwitch(
-                          last30: _last30,
-                          color: color,
-                          onToggle: () => setState(() { _last30 = !_last30; _selPoint = 6; }),
+                        // Segmented range toggle — same style as the Response Time
+                        // toggle in the general stats, tinted with the tonality colour.
+                        Container(
+                          padding: const EdgeInsets.all(3),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withAlpha(13),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.white.withAlpha(13)),
+                          ),
+                          child: Row(mainAxisSize: MainAxisSize.min, children: [
+                            _RangeBtn(label: '30G', active: _last30, activeColor: color,
+                              onTap: () => setState(() { _last30 = true; _selPoint = 6; })),
+                            _RangeBtn(label: '14G', active: !_last30, activeColor: color,
+                              onTap: () => setState(() { _last30 = false; _selPoint = 6; })),
+                          ]),
                         ),
                       ],
                     ),
@@ -818,56 +829,27 @@ class _ChartPainter extends CustomPainter {
   }
 }
 
-// Compact range toggle for the Accuracy Over Time chart: a small sliding
-// switch (same feel as the settings toggle) flanked by "30G" / "14D" labels,
-// the active side lit. Left = last 30 games, right = last 14 days.
-class _RangeSwitch extends StatelessWidget {
-  final bool last30;
-  final Color color;
-  final VoidCallback onToggle;
-  const _RangeSwitch({required this.last30, required this.color, required this.onToggle});
-
-  Widget _label(String t, bool active) => Text(t,
-      style: TextStyle(
-        fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.8,
-        color: active ? color : Colors.white.withAlpha(70),
-      ));
+// Segmented range button for the Accuracy Over Time chart — same style as the
+// Response Time toggle in the general stats (a pill that lights up when active),
+// tinted with the tonality colour. '30G' = last 30 games, '14G' = last 14 games.
+class _RangeBtn extends StatelessWidget {
+  final String label;
+  final bool active;
+  final VoidCallback onTap;
+  final Color activeColor;
+  const _RangeBtn({required this.label, required this.active, required this.onTap, this.activeColor = const Color(0xFF3B82F6)});
 
   @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onToggle,
-      behavior: HitTestBehavior.opaque,
-      child: Row(mainAxisSize: MainAxisSize.min, children: [
-        _label('30G', last30),
-        const SizedBox(width: 6),
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 220),
-          curve: Curves.easeOut,
-          width: 40, height: 22,
-          padding: const EdgeInsets.all(3),
-          decoration: BoxDecoration(
-            color: color.withAlpha(56),
-            border: Border.all(color: color.withAlpha(120)),
-            borderRadius: BorderRadius.circular(9999),
-          ),
-          child: AnimatedAlign(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOutBack,
-            alignment: last30 ? Alignment.centerLeft : Alignment.centerRight,
-            child: Container(
-              width: 16, height: 16,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [BoxShadow(color: Color(0x66000000), blurRadius: 6, offset: Offset(0, 2))],
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 6),
-        _label('14D', !last30),
-      ]),
-    );
-  }
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: active ? activeColor.withAlpha(50) : Colors.transparent,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900,
+        color: active ? Color.lerp(activeColor, Colors.white, 0.3)! : Colors.white.withAlpha(77))),
+    ),
+  );
 }
