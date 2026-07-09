@@ -1432,13 +1432,16 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                     ],
                   ),
                   const SizedBox(height: 2),
-                  const Text('Select how you want to train today',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF94A3B8))),
+                  Transform.translate(
+                    offset: const Offset(0, -3),
+                    child: const Text('Select how you want to train today',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF94A3B8))),
+                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 5),
 
             Expanded(
               child: LayoutBuilder(builder: (context, constraints) {
