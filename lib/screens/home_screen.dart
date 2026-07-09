@@ -1392,7 +1392,9 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
         SafeArea(
           child: Column(children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+              // Match the game screen's _TopBar padding exactly (16,16,16,0) so
+              // the back arrow lands in the identical spot to that screen's X.
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
               child: Column(
                 children: [
                   // Header row: back arrow uses the SAME 48px circle as the game
