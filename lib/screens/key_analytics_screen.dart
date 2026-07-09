@@ -61,7 +61,10 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
     final tone = widget.keyName;
     final keyIndex = provider.progressData.indexWhere((k) => k.key == tone);
     final keyData = keyIndex >= 0 ? provider.progressData[keyIndex] : KeyProgress(key: tone);
-    final color = AppColors.noteColors[tone] ?? AppColors.keyColor(keyIndex.clamp(0, 11));
+    // Match the tonality's colour to its row in the Skill Mastery list
+    // (positional rainbow keyed by its index in progressData), not the
+    // fixed per-note colour — so the two screens agree.
+    final color = AppColors.keyColor(keyIndex.clamp(0, 11));
 
     final mastery = keyData.totalProgress;
     final diatonic = keyData.diatonicProgress;
