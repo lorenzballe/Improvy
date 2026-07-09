@@ -265,7 +265,7 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
                   Container(height: 1, margin: const EdgeInsets.symmetric(horizontal: 24),
                     decoration: const BoxDecoration(gradient: LinearGradient(colors: [Colors.transparent, Colors.white10, Colors.transparent]))),
                   const SizedBox(height: 12),
-                  Text('YOUR STATISTICS',
+                  Text('STATISTICS BASED ON THE LAST 30 GAMES',
                     style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white.withAlpha(77), letterSpacing: 1.8)),
                 ]),
               ),
