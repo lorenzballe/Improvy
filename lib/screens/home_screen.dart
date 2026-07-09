@@ -1467,8 +1467,8 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                       child: const Center(child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          _ThickGlyph('♯', 22),
-                          _ThickGlyph('♭', 28),
+                          _ThickGlyph('♯', 26),
+                          _ThickGlyph('♭', 32),
                         ],
                       )),
                     ),
