@@ -1500,11 +1500,14 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                       // the cards back to `Expanded(child: …)` (or revert the
                       // dedicated commit that introduced this).
                       ? Column(children: [
+                          // Smaller top gap + larger bottom gap nudges the pair
+                          // upward (first card sits a touch higher); the wider
+                          // middle SizedBox spaces the two cards further apart.
                           const Spacer(flex: 1),
                           Expanded(flex: 11, child: diatonicCard),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 30),
                           Expanded(flex: 11, child: chromaticCard),
-                          const Spacer(flex: 1),
+                          const Spacer(flex: 2),
                         ])
                       : Column(children: [
                           SizedBox(height: cardMinH, child: diatonicCard),
