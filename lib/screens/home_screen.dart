@@ -1441,7 +1441,7 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                 ],
               ),
             ),
-            const SizedBox(height: 5),
+            const SizedBox(height: 2),
 
             Expanded(
               child: LayoutBuilder(builder: (context, constraints) {
