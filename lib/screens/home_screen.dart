@@ -1396,16 +1396,20 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  GestureDetector(
-                    onTap: () { HapticsService.impactLight(); provider.deselectKey(); },
-                    child: Container(
-                      width: 40, height: 40,
-                      decoration: BoxDecoration(
-                        color: const Color(0x08FFFFFF),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.white10),
+                  // Nudge just the back arrow up a hair (does not move the title).
+                  Transform.translate(
+                    offset: const Offset(0, -4),
+                    child: GestureDetector(
+                      onTap: () { HapticsService.impactLight(); provider.deselectKey(); },
+                      child: Container(
+                        width: 40, height: 40,
+                        decoration: BoxDecoration(
+                          color: const Color(0x08FFFFFF),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.white10),
+                        ),
+                        child: const Icon(Icons.arrow_back_rounded, color: Colors.white60, size: 20),
                       ),
-                      child: const Icon(Icons.arrow_back_rounded, color: Colors.white60, size: 20),
                     ),
                   ),
                   Expanded(
