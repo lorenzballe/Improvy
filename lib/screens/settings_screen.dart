@@ -556,10 +556,9 @@ class SettingsScreen extends StatelessWidget {
                   const LegalScreen(title: 'Terms of Service', body: kTermsBody)),
               const SizedBox(height: 16),
 
-              // DEVELOPER DEBUG — TEMPORARILY exposed in release builds too, so
-              // PRO features can be tested on-device without a real purchase.
-              // TODO: restore the kDebugMode gate before the public launch build.
-              if (kDebugMode || true) ...[ // ignore: dead_code
+              // DEVELOPER DEBUG — debug builds only. This section includes an
+              // "Enable PRO" shortcut, so it must NEVER ship in a release build.
+              if (kDebugMode) ...[
               _sectionLabel('DEVELOPER DEBUG'),
               const SizedBox(height: 12),
               _blurCard(
