@@ -1393,40 +1393,41 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
           child: Column(children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
+              child: Column(
                 children: [
-                  // Nudge just the back arrow up a hair (does not move the title).
-                  Transform.translate(
-                    offset: const Offset(0, -4),
-                    child: GestureDetector(
-                      onTap: () { HapticsService.impactLight(); provider.deselectKey(); },
-                      child: Container(
-                        width: 40, height: 40,
-                        decoration: BoxDecoration(
-                          color: const Color(0x08FFFFFF),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.white10),
+                  // Header row: back arrow uses the SAME 48px circle as the game
+                  // screen's X button (same size/border/shadow, arrow glyph) and
+                  // sits on the same centred line as the title, so the two are
+                  // always vertically aligned. Subtitle sits just below.
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: () { HapticsService.impactLight(); provider.deselectKey(); },
+                        child: Container(
+                          width: 48, height: 48,
+                          decoration: BoxDecoration(
+                            color: Colors.white10,
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(color: Colors.white10, width: 1.2),
+                            boxShadow: const [BoxShadow(color: Color(0x40000000), blurRadius: 20)],
+                          ),
+                          child: const Icon(Icons.arrow_back_rounded, color: Colors.white70, size: 24),
                         ),
-                        child: const Icon(Icons.arrow_back_rounded, color: Colors.white60, size: 20),
                       ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const FittedBox(fit: BoxFit.scaleDown,
+                      const Expanded(
+                        child: FittedBox(fit: BoxFit.scaleDown,
                           child: Text('Choose Mode',
                             maxLines: 1, softWrap: false,
                             style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.9))),
-                        const Text('Select how you want to train today',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF94A3B8))),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: 48),
+                    ],
                   ),
-                  const SizedBox(width: 40),
+                  const SizedBox(height: 2),
+                  const Text('Select how you want to train today',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF94A3B8))),
                 ],
               ),
             ),
