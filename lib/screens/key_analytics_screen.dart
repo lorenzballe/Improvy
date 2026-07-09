@@ -204,11 +204,11 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                         child: Container(
                           width: 40, height: 40,
                           decoration: BoxDecoration(
-                            color: Colors.white.withAlpha(13),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: Colors.white.withAlpha(26), width: 1.2),
+                            color: const Color(0x08FFFFFF),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: Colors.white10),
                           ),
-                          child: const Icon(Icons.arrow_back_rounded, color: Colors.white70, size: 20),
+                          child: const Icon(Icons.arrow_back_rounded, color: Colors.white60, size: 20),
                         ),
                       ),
                     ),
