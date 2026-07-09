@@ -1895,6 +1895,22 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
     final isLvl2Unlocked = widget.levels[0] >= 27;
     final isLvl3Unlocked = widget.levels[1] >= 37;
 
+    // Best score for the selected difficulty, shown where the level badge was.
+    // The cap (max questions) changes per difficulty, so we also show a % —
+    // coloured by how strong the record is (grey when never played).
+    final bestScore = widget.levels[widget.currentDifficulty - 1];
+    final bestCap = caps[widget.currentDifficulty - 1];
+    final bestPct = bestCap > 0 ? (bestScore / bestCap * 100).round() : 0;
+    final bestColor = bestScore <= 0
+        ? Colors.white.withAlpha(80)
+        : bestScore >= bestCap
+            ? const Color(0xFFfacc15) // perfect → gold
+            : bestPct >= 80
+                ? const Color(0xFF10B981) // green
+                : bestPct >= 50
+                    ? const Color(0xFFF59E0B) // amber
+                    : const Color(0xFFFB7185); // red/pink
+
     return Opacity(
       opacity: widget.isLocked ? 0.5 : 1.0,
       child: Container(
@@ -1992,8 +2008,7 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
                   ),
                   const Spacer(flex: 2),
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    textBaseline: TextBaseline.alphabetic,
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Expanded(child: FittedBox(
                         fit: BoxFit.scaleDown,
@@ -2012,6 +2027,21 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
                           ],
                         ),
                       )),
+                      const SizedBox(width: 10),
+                      // Best-score badge (replaces the old LEVEL badge): the
+                      // record of correct answers for this mode & difficulty,
+                      // with a colour-coded percentage.
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text('$bestPct%',
+                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, height: 1, letterSpacing: -0.5, color: bestColor)),
+                          const SizedBox(height: 3),
+                          Text('$bestScore/$bestCap BEST',
+                            style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 1, color: Colors.white.withAlpha(90))),
+                        ],
+                      ),
                     ],
                   ),
                   const SizedBox(height: 10),
