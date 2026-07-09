@@ -388,7 +388,7 @@ class _RootScreenState extends State<RootScreen> {
             },
             children: [
               _KeepAlivePage(child: HomeScreen(onShowPaywall: _showPaywallSheet, onOpenSetup: _openSetup)),
-              const _KeepAlivePage(child: StatsScreen()),
+              _KeepAlivePage(child: StatsScreen(onShowPaywall: _showPaywallSheet)),
               _KeepAlivePage(child: SettingsScreen(onShowPaywall: _showPaywallSheet, onSimulatePerfect: _triggerPerfectCelebration)),
             ],
           ),

@@ -38,7 +38,8 @@ const _keySignatures = {
 // ─── MAIN SCREEN ─────────────────────────────────────────────────────────────
 
 class StatsScreen extends StatefulWidget {
-  const StatsScreen({super.key});
+  final void Function([String? reason])? onShowPaywall;
+  const StatsScreen({super.key, this.onShowPaywall});
   @override
   State<StatsScreen> createState() => _StatsScreenState();
 }
@@ -297,12 +298,15 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
                   const SizedBox(height: 16),
                   ...provider.progressData.asMap().entries.map((e) {
                     final color = AppColors.keyColor(e.key);
+                    // Per-tonality analytics are Pro — except C, which is free.
+                    final locked = !provider.isPro && e.value.key != 'C';
                     return GestureDetector(
                       onTap: () {
+                        if (locked) { widget.onShowPaywall?.call('key_stats'); return; }
                         provider.setViewingKeyStats(true);
                         setState(() => _analyticsKey = e.value.key);
                       },
-                      child: _SkillRow(keyData: e.value, color: color, index: e.key, rank: keyRanks[e.value.key] ?? 0),
+                      child: _SkillRow(keyData: e.value, color: color, index: e.key, rank: keyRanks[e.value.key] ?? 0, locked: locked),
                     );
                   }),
                 ]),
@@ -1229,14 +1233,17 @@ class _SkillRow extends StatelessWidget {
   final Color color;
   final int index;
   final int rank; // 1-12 by response time; 0 = no data yet
-  const _SkillRow({required this.keyData, required this.color, required this.index, required this.rank});
+  final bool locked; // Pro-gated (non-C key, not subscribed)
+  const _SkillRow({required this.keyData, required this.color, required this.index, required this.rank, this.locked = false});
 
   @override
   Widget build(BuildContext context) {
     final mastery = (keyData.totalProgress as int).clamp(0, 100);
     final keySig = _keySignatures[keyData.key] ?? '';
 
-    return Container(
+    return Opacity(
+      opacity: locked ? 0.55 : 1.0,
+      child: Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(32),
@@ -1309,6 +1316,19 @@ class _SkillRow extends StatelessWidget {
               const SizedBox(width: 16),
               // Rank — medal colours for the top 3 (web parity).
               Builder(builder: (_) {
+                if (locked) {
+                  return Container(
+                    width: 44,
+                    padding: const EdgeInsets.only(left: 16),
+                    decoration: BoxDecoration(border: Border(left: BorderSide(color: Colors.white.withAlpha(13)))),
+                    child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                      Icon(Icons.lock_rounded, size: 20, color: Colors.white.withAlpha(120)),
+                      const SizedBox(height: 4),
+                      Text('PRO', style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900,
+                        color: Colors.white.withAlpha(120), letterSpacing: 1)),
+                    ]),
+                  );
+                }
                 Color rankColor;
                 List<Shadow>? rankShadow;
                 if (rank == 0) {
@@ -1341,6 +1361,7 @@ class _SkillRow extends StatelessWidget {
             ]),
           ),
         ),
+      ),
       ),
     );
   }
