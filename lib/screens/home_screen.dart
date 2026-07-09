@@ -1419,7 +1419,7 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                         child: FittedBox(fit: BoxFit.scaleDown,
                           child: Text('Choose Mode',
                             maxLines: 1, softWrap: false,
-                            style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.9))),
+                            style: TextStyle(fontSize: 38, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.9))),
                       ),
                       const SizedBox(width: 48),
                     ],
@@ -1431,7 +1431,7 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 14),
 
             Expanded(
               child: LayoutBuilder(builder: (context, constraints) {
