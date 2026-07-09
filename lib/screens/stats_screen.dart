@@ -45,7 +45,7 @@ class StatsScreen extends StatefulWidget {
 
 class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStateMixin {
   String? _analyticsKey;
-  String _rtRange = '7';
+  String _rtRange = '14'; // response-time chart range in GAMES: '14' or '30'
   late AnimationController _progressCtrl;
   late Animation<double> _progressAnim;
 
@@ -101,16 +101,22 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
       if (prev > 0) accuracyChange = (cur - prev) / prev * 100;
     }
 
-    // Response time per day (last 30d)
+    // Response time per GAME session (last 30 games), oldest → newest. One point
+    // per session = its average answer response time.
     final now = DateTime.now();
-    final monthlyRt = List.generate(30, (i) {
-      final d = now.subtract(Duration(days: 29 - i));
-      final k = '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-      final ds = stats.dailyHistory[k];
-      if (ds == null || ds.attempts == 0) return 0;
-      return (ds.responseTime / ds.attempts).round();
-    });
-    final displayRt = _rtRange == '7' ? monthlyRt.sublist(23) : monthlyRt;
+    final rtSessions = stats.sessionHistory
+        .where((s) => s.answers.isNotEmpty)
+        .take(30)
+        .toList()
+        .reversed
+        .toList();
+    final monthlyRt = rtSessions.map((s) {
+      final times = s.answers.map((a) => a.responseTime).where((t) => t > 0).toList();
+      return times.isEmpty ? 0 : (times.reduce((a, b) => a + b) / times.length).round();
+    }).toList();
+    final displayRt = _rtRange == '14'
+        ? monthlyRt.sublist(monthlyRt.length > 14 ? monthlyRt.length - 14 : 0)
+        : monthlyRt;
     final validRt = displayRt.where((t) => t > 0);
     final avgRt = validRt.isEmpty ? 0 : validRt.reduce((a, b) => a + b) ~/ validRt.length;
 
@@ -530,14 +536,11 @@ class _ResponseTimeCardState extends State<_ResponseTimeCard> {
     }
   }
 
-  String _formatDate(int index, String range) {
-    final now = DateTime.now();
-    final daysAgo = (range == '7' ? 6 : 29) - index;
-    if (daysAgo == 0) return 'TODAY';
-    if (daysAgo == 1) return 'YESTERDAY';
-    final d = now.subtract(Duration(days: daysAgo));
-    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-    return '${months[d.month - 1]} ${d.day}';
+  String _formatGamesAgo(int index) {
+    final gamesAgo = (widget.displayTimes.length - 1) - index;
+    if (gamesAgo <= 0) return 'LATEST GAME';
+    if (gamesAgo == 1) return '1 GAME AGO';
+    return '$gamesAgo GAMES AGO';
   }
 
   void _handleDrag(double localX, double width) {
@@ -565,11 +568,11 @@ class _ResponseTimeCardState extends State<_ResponseTimeCard> {
     
     String labelToShow;
     if (showDragValue) {
-      final dateStr = _formatDate(_selectedIndex!, widget.range);
+      final whenStr = _formatGamesAgo(_selectedIndex!);
       if (valueToShow == 0) {
-        labelToShow = 'No sessions • $dateStr';
+        labelToShow = 'No data • $whenStr';
       } else {
-        labelToShow = 'Response Time • $dateStr';
+        labelToShow = 'Response Time • $whenStr';
       }
     } else {
       labelToShow = 'Response Time';
@@ -611,8 +614,8 @@ class _ResponseTimeCardState extends State<_ResponseTimeCard> {
                   border: Border.all(color: Colors.white.withAlpha(13)),
                 ),
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  _RangeBtn(label: '7D', active: widget.range == '7', onTap: () => widget.onRange('7')),
-                  _RangeBtn(label: '30D', active: widget.range == '30', onTap: () => widget.onRange('30')),
+                  _RangeBtn(label: '30G', active: widget.range == '30', onTap: () => widget.onRange('30')),
+                  _RangeBtn(label: '14G', active: widget.range == '14', onTap: () => widget.onRange('14')),
                 ]),
               ),
             ]),
@@ -658,9 +661,9 @@ class _ResponseTimeCardState extends State<_ResponseTimeCard> {
             ),
             const SizedBox(height: 10),
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Text('${widget.range == '7' ? '7' : '30'} DAYS AGO',
+              Text('${widget.range} GAMES AGO',
                 style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white.withAlpha(77))),
-              Text('TODAY',
+              Text('LATEST',
                 style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white.withAlpha(77))),
             ]),
           ]),
