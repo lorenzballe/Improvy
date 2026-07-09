@@ -1417,11 +1417,16 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                           child: const Icon(Icons.arrow_back_rounded, color: Colors.white70, size: 24),
                         ),
                       ),
-                      const Expanded(
-                        child: FittedBox(fit: BoxFit.scaleDown,
-                          child: Text('Choose Mode',
-                            maxLines: 1, softWrap: false,
-                            style: TextStyle(fontSize: 38, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.9))),
+                      Expanded(
+                        // Nudge just the title up a hair so it optically aligns
+                        // with the arrow's centre (does not move the arrow).
+                        child: Transform.translate(
+                          offset: const Offset(0, -3),
+                          child: const FittedBox(fit: BoxFit.scaleDown,
+                            child: Text('Choose Mode',
+                              maxLines: 1, softWrap: false,
+                              style: TextStyle(fontSize: 38, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.9))),
+                        ),
                       ),
                       const SizedBox(width: 48),
                     ],
