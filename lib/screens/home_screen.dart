@@ -1494,10 +1494,17 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                 final content = Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   child: fits
+                      // Slight top/bottom breathing room so both cards sit a
+                      // touch shorter than full height. To restore the original
+                      // fill-the-screen look, remove the two Spacers and change
+                      // the cards back to `Expanded(child: …)` (or revert the
+                      // dedicated commit that introduced this).
                       ? Column(children: [
-                          Expanded(child: diatonicCard),
+                          const Spacer(flex: 1),
+                          Expanded(flex: 11, child: diatonicCard),
                           const SizedBox(height: 16),
-                          Expanded(child: chromaticCard),
+                          Expanded(flex: 11, child: chromaticCard),
+                          const Spacer(flex: 1),
                         ])
                       : Column(children: [
                           SizedBox(height: cardMinH, child: diatonicCard),
