@@ -41,11 +41,20 @@ int? _noteSemi(String note) {
   return kNoteToSemitone[n];
 }
 
+// Luminance grayscale — turns the locked per-tonality preview black & white.
+const List<double> _kGrayscale = <double>[
+  0.2126, 0.7152, 0.0722, 0, 0,
+  0.2126, 0.7152, 0.0722, 0, 0,
+  0.2126, 0.7152, 0.0722, 0, 0,
+  0,      0,      0,      1, 0,
+];
+
 class KeyAnalyticsScreen extends StatefulWidget {
   final String keyName;
   final VoidCallback onBack;
+  final void Function([String? reason])? onShowPaywall;
 
-  const KeyAnalyticsScreen({super.key, required this.keyName, required this.onBack});
+  const KeyAnalyticsScreen({super.key, required this.keyName, required this.onBack, this.onShowPaywall});
 
   @override
   State<KeyAnalyticsScreen> createState() => _KeyAnalyticsScreenState();
@@ -182,10 +191,11 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
       }
     }
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
+    // Per-tonality analytics are Pro — except C. Locked keys are shown as a
+    // greyed-out, faded teaser; any touch opens the paywall.
+    final locked = !provider.isPro && widget.keyName != 'C';
+
+    final content = SingleChildScrollView(
           padding: EdgeInsets.fromLTRB(20, 4, 20, 28 + MediaQuery.of(context).padding.bottom),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -197,7 +207,7 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    Align(
+                    if (!locked) Align(
                       alignment: Alignment.centerLeft,
                       child: GestureDetector(
                         onTap: widget.onBack,
@@ -454,7 +464,41 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
               ),
             ],
           ),
-        ),
+        );
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: locked
+            ? Stack(children: [
+                // Greyed, faded, non-interactive preview; a tap anywhere opens
+                // the paywall.
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => widget.onShowPaywall?.call('key_stats'),
+                  child: ColorFiltered(
+                    colorFilter: const ColorFilter.matrix(_kGrayscale),
+                    child: Opacity(opacity: 0.72, child: AbsorbPointer(child: content)),
+                  ),
+                ),
+                // Back arrow stays live and in colour — same button as Choose Mode.
+                Positioned(
+                  top: 4, left: 20,
+                  child: GestureDetector(
+                    onTap: widget.onBack,
+                    child: Container(
+                      width: 40, height: 40,
+                      decoration: BoxDecoration(
+                        color: const Color(0x08FFFFFF),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.white10),
+                      ),
+                      child: const Icon(Icons.arrow_back_rounded, color: Colors.white60, size: 20),
+                    ),
+                  ),
+                ),
+              ])
+            : content,
       ),
     );
   }
