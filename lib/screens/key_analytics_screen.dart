@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../models/key_progress.dart';
+import '../models/stats.dart';
 import '../constants/app_colors.dart';
 import '../constants/music_constants.dart';
 import '../widgets/note_text.dart';
@@ -68,8 +69,14 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
   Widget build(BuildContext context) {
     final provider = context.watch<AppProvider>();
     final tone = widget.keyName;
+
+    // Per-tonality analytics are Pro — except C. Locked keys render as a
+    // greyed-out teaser with all displayed stats blanked to zero. The real
+    // data stays stored untouched, so it appears the moment Pro is unlocked.
+    final locked = !provider.isPro && tone != 'C';
+
     final keyIndex = provider.progressData.indexWhere((k) => k.key == tone);
-    final keyData = keyIndex >= 0 ? provider.progressData[keyIndex] : KeyProgress(key: tone);
+    final keyData = (keyIndex >= 0 && !locked) ? provider.progressData[keyIndex] : KeyProgress(key: tone);
     // Match the tonality's colour to its row in the Skill Mastery list
     // (positional rainbow keyed by its index in progressData), not the
     // fixed per-note colour — so the two screens agree.
@@ -79,7 +86,9 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
     final diatonic = keyData.diatonicProgress;
     final chromatic = keyData.chromaticProgress;
 
-    final history = provider.stats.sessionHistory;
+    // Locked: feed empty history into every chart/stat below (display only —
+    // the stored session history is not modified).
+    final history = locked ? <SessionRecord>[] : provider.stats.sessionHistory;
 
     // ── Aggregate stats across all tones (for ranking) and for this tone ──
     final tonalityStats = <String, (int correct, int total, int rt)>{};
@@ -191,19 +200,17 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
       }
     }
 
-    // Per-tonality analytics are Pro — except C. Locked keys are shown as a
-    // greyed-out, faded teaser; any touch opens the paywall.
-    final locked = !provider.isPro && widget.keyName != 'C';
-
     final content = SingleChildScrollView(
           padding: EdgeInsets.fromLTRB(20, 4, 20, 28 + MediaQuery.of(context).padding.bottom),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ── Header: back arrow (left) + KEY ANALYSIS badge centred on the
-              // SAME line, so there is no empty space above it.
+              // SAME line, so there is no empty space above it. Full width so
+              // the badge stays centred even when the arrow is hidden (locked).
               SizedBox(
                 height: 40,
+                width: double.infinity,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
