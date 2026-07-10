@@ -373,7 +373,7 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(_last30 ? '30 GAMES AGO' : '2 WEEKS AGO',
+                        Text(_last30 ? '30 GAMES AGO' : '14 GAMES AGO',
                           style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900,
                             color: _selPoint == 0 ? Colors.white70 : Colors.white.withAlpha(77), letterSpacing: 1.5)),
                         Text('TODAY',
