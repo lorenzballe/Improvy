@@ -42,12 +42,14 @@ int? _noteSemi(String note) {
   return kNoteToSemitone[n];
 }
 
-// Luminance grayscale — turns the locked per-tonality preview black & white.
-const List<double> _kGrayscale = <double>[
-  0.2126, 0.7152, 0.0722, 0, 0,
-  0.2126, 0.7152, 0.0722, 0, 0,
-  0.2126, 0.7152, 0.0722, 0, 0,
-  0,      0,      0,      1, 0,
+// Partial desaturation (saturation ≈ 0.2) — the locked per-tonality preview
+// is mostly grey but keeps just a hint of colour. s=0.2 → each channel is
+// lerp(luminance, itself, 0.2).
+const List<double> _kDesaturated = <double>[
+  0.37008, 0.57216, 0.05776, 0, 0,
+  0.17008, 0.77216, 0.05776, 0, 0,
+  0.17008, 0.57216, 0.25776, 0, 0,
+  0,       0,       0,       1, 0,
 ];
 
 class KeyAnalyticsScreen extends StatefulWidget {
@@ -484,7 +486,7 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                   behavior: HitTestBehavior.opaque,
                   onTap: () => widget.onShowPaywall?.call('key_stats'),
                   child: ColorFiltered(
-                    colorFilter: const ColorFilter.matrix(_kGrayscale),
+                    colorFilter: const ColorFilter.matrix(_kDesaturated),
                     child: Opacity(opacity: 0.72, child: AbsorbPointer(child: content)),
                   ),
                 ),
