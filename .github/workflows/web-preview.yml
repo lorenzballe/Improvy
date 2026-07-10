@@ -6,7 +6,7 @@ on:
   push:
     branches:
       - main
-      - claude/github-mobile-editing-rvr8qr
+      - claude/response-time-per-game-ge4ez5
   workflow_dispatch:
 
 permissions:
