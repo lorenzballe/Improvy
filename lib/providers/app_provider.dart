@@ -88,8 +88,9 @@ class AppProvider extends ChangeNotifier {
   }
 
   int get overallAccuracy {
-    final thirtyDaysAgo = DateTime.now().subtract(const Duration(days: 30)).millisecondsSinceEpoch;
-    final recent = stats.sessionHistory.where((s) => s.timestamp >= thirtyDaysAgo).toList();
+    // Last 30 games (sessionHistory is newest-first), not last 30 days —
+    // the whole stats screen is game-based.
+    final recent = stats.sessionHistory.take(30).toList();
     final total = recent.fold<int>(0, (acc, s) => acc + s.total);
     final correct = recent.fold<int>(0, (acc, s) => acc + s.correct);
     if (total == 0) return 0;

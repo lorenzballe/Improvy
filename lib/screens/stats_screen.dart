@@ -163,9 +163,8 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
       return days[d.weekday % 7];
     });
 
-    // Degree stats from last 30d sessions
-    final thirtyAgo = now.subtract(const Duration(days: 30)).millisecondsSinceEpoch;
-    final recentSessions = stats.sessionHistory.where((s) => s.timestamp >= thirtyAgo).toList();
+    // Degree stats from the last 30 games (sessionHistory is newest-first)
+    final recentSessions = stats.sessionHistory.take(30).toList();
     final Map<String, ({int correct, int total})> degreeStats = {};
     for (final session in recentSessions) {
       for (final ans in session.answers) {
@@ -578,9 +577,6 @@ class _ResponseTimeCardState extends State<_ResponseTimeCard> {
       labelToShow = 'Response Time';
     }
 
-    final String valueText = valueToShow == 0 ? '—' : '$valueToShow';
-    final String suffixText = valueToShow == 0 ? '' : 'ms';
-
     return ClipRRect(
       borderRadius: BorderRadius.circular(32),
       child: BackdropFilter(
@@ -620,15 +616,18 @@ class _ResponseTimeCardState extends State<_ResponseTimeCard> {
               ),
             ]),
             const SizedBox(height: 16),
-            // Avg time — gradient text
-            ShaderMask(
-              shaderCallback: (b) => const LinearGradient(colors: [Color(0xFF60A5FA), Color(0xFF22D3EE)]).createShader(b),
-              child: Row(crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
-                Text(valueText, style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: Colors.white, height: 1, letterSpacing: -1.5)),
-                if (suffixText.isNotEmpty)
-                  Text(suffixText, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white.withAlpha(102), letterSpacing: -1.5)),
-              ]),
-            ),
+            // Avg time — gradient text. Before any game is recorded there is
+            // nothing to show; the SizedBox keeps the card height stable.
+            if (valueToShow == 0)
+              const SizedBox(height: 30)
+            else
+              ShaderMask(
+                shaderCallback: (b) => const LinearGradient(colors: [Color(0xFF60A5FA), Color(0xFF22D3EE)]).createShader(b),
+                child: Row(crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
+                  Text('$valueToShow', style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: Colors.white, height: 1, letterSpacing: -1.5)),
+                  Text('ms', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white.withAlpha(102), letterSpacing: -1.5)),
+                ]),
+              ),
             const SizedBox(height: 20),
             // Line chart — fits the container width to allow touch scrubbing
             SizedBox(
@@ -1057,11 +1056,10 @@ class _KeyboardHeatmapCardState extends State<_KeyboardHeatmapCard> {
   }
 
   Map<String, int> _buildHeatmap() {
-    final cutoff = DateTime.now().millisecondsSinceEpoch -
-        (_range == '7' ? 7 : 30) * 86400000;
+    // sessionHistory is newest-first, so take(N) = the last N games.
+    final recent = widget.sessionHistory.take(_range == '7' ? 7 : 30);
     final Map<String, ({int sum, int n})> acc = {};
-    for (final session in widget.sessionHistory) {
-      if (session.timestamp < cutoff) continue;
+    for (final session in recent) {
       for (final ans in session.answers) {
         final k = _canon(ans.note);
         if (k.isEmpty) continue;
@@ -1117,8 +1115,8 @@ class _KeyboardHeatmapCardState extends State<_KeyboardHeatmapCard> {
               border: Border.all(color: Colors.white.withAlpha(13)),
             ),
             child: Row(mainAxisSize: MainAxisSize.min, children: [
-              _RangeBtn(label: '7D', active: _range == '7', onTap: () => setState(() => _range = '7'), activeColor: const Color(0xFFEC4899)),
-              _RangeBtn(label: '30D', active: _range == '30', onTap: () => setState(() => _range = '30'), activeColor: const Color(0xFFEC4899)),
+              _RangeBtn(label: '7G', active: _range == '7', onTap: () => setState(() => _range = '7'), activeColor: const Color(0xFFEC4899)),
+              _RangeBtn(label: '30G', active: _range == '30', onTap: () => setState(() => _range = '30'), activeColor: const Color(0xFFEC4899)),
             ]),
           ),
         ]),
