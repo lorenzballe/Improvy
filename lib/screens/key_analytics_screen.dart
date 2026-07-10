@@ -8,34 +8,11 @@ import '../constants/app_colors.dart';
 import '../constants/music_constants.dart';
 import '../widgets/note_text.dart';
 
-// Roman labels for the 12 chromatic degrees, indexed by semitone (0..11).
+// Roman labels for the 12 semitones (0..11), flat spellings only — used for
+// the note the user actually tapped, where the keyboard gives no enharmonic
+// spelling. Asked degrees use romanDegree() instead, which keeps all 15
+// distinct spellings (♯II vs bIII, …).
 const _romanLabels = ['I', 'bII', 'II', 'bIII', 'III', 'IV', 'bV', 'V', 'bVI', 'VI', 'bVII', 'VII'];
-
-// Map a stored degree token (or extension) to a semitone offset 0..11.
-const _tokenToSemi = {
-  '1': 0,
-  '♭2': 1, 'b2': 1, '♯1': 1,
-  '2': 2,
-  '♭3': 3, 'b3': 3, '♯2': 3,
-  '3': 4,
-  '4': 5,
-  '♭5': 6, 'b5': 6, '♯4': 6,
-  '5': 7,
-  '♭6': 8, 'b6': 8, '♯5': 8,
-  '6': 9,
-  '♭7': 10, 'b7': 10,
-  '7': 11,
-  // jazz extensions
-  '9': 2, '♭9': 1, '♯9': 3, '11': 5, '♯11': 6, '13': 9, '♭13': 8,
-};
-
-int? _degSemi(String deg) {
-  if (_tokenToSemi.containsKey(deg)) return _tokenToSemi[deg];
-  for (final part in deg.split('/')) {
-    if (_tokenToSemi.containsKey(part)) return _tokenToSemi[part];
-  }
-  return null;
-}
 
 int? _noteSemi(String note) {
   final n = note.split('/')[0].trim();
@@ -94,7 +71,7 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
 
     // ── Aggregate stats across all tones (for ranking) and for this tone ──
     final tonalityStats = <String, (int correct, int total, int rt)>{};
-    final degTone = <int, (int correct, int total)>{}; // semitone -> stats
+    final degTone = <String, (int correct, int total)>{}; // roman label -> stats
     final confusions = <String, int>{}; // "asked→selected" roman -> count
 
     for (final session in history) {
@@ -104,16 +81,16 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
         tonalityStats[t] = (cur.$1 + (ans.isCorrect ? 1 : 0), cur.$2 + 1, cur.$3 + ans.responseTime);
 
         if (t == tone) {
-          final semi = _degSemi(ans.degree);
-          if (semi != null) {
-            final d = degTone[semi] ?? (0, 0);
-            degTone[semi] = (d.$1 + (ans.isCorrect ? 1 : 0), d.$2 + 1);
+          final deg = romanDegree(ans.degree);
+          if (deg.isNotEmpty) {
+            final d = degTone[deg] ?? (0, 0);
+            degTone[deg] = (d.$1 + (ans.isCorrect ? 1 : 0), d.$2 + 1);
             if (!ans.isCorrect && ans.selectedNote.isNotEmpty) {
               final selSemi = _noteSemi(ans.selectedNote);
               final rootSemi = kNoteToSemitone[tone];
               if (selSemi != null && rootSemi != null) {
                 final rel = ((selSemi - rootSemi) % 12 + 12) % 12;
-                final key = '${_romanLabels[semi]} for ${_romanLabels[rel]}';
+                final key = '$deg for ${_romanLabels[rel]}';
                 confusions[key] = (confusions[key] ?? 0) + 1;
               }
             }
@@ -138,20 +115,19 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
       });
     final rank = ranked.indexOf(tone) + 1;
 
-    // Chromatic degree mastery (12 fixed labels)
-    final chromDegrees = List.generate(12, (semi) {
-      final d = degTone[semi] ?? (0, 0);
+    // Chromatic degree mastery — all 15 degree spellings, enharmonics distinct
+    final chromDegrees = kRomanDegrees.map((label) {
+      final d = degTone[label] ?? (0, 0);
       final acc = d.$2 > 0 ? (d.$1 / d.$2 * 100).round() : 0;
-      return (label: _romanLabels[semi], accuracy: acc);
-    });
+      return (label: label, accuracy: acc);
+    }).toList();
 
     // Common confusions (top 3, min 2 occurrences)
     final confList = confusions.entries.map((e) {
       final parts = e.key.split(' for ');
       final asked = parts[0];
       final selected = parts.length > 1 ? parts[1] : '';
-      final askedSemi = _romanLabels.indexOf(asked);
-      final totalAsked = (askedSemi >= 0 ? degTone[askedSemi]?.$2 : 0) ?? 0;
+      final totalAsked = degTone[asked]?.$2 ?? 0;
       final errorRate = totalAsked > 0 ? (e.value / totalAsked * 100).round() : 0;
       return (degree: asked, selectedDegree: selected, count: e.value, errorRate: errorRate);
     }).where((c) => c.count >= 2).toList()

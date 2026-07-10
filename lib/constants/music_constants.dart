@@ -32,6 +32,31 @@ const Map<String, String> kDegreeCollapseMap = {
   '♯5': '♭6/♯5', '♭6': '♭6/♯5',
 };
 
+// Roman labels for the 15 distinct degree spellings, in scale order.
+// Enharmonic degrees (♯II/bIII, ♯IV/bV, ♯V/bVI) are separate entries: the
+// trainer asks them as distinct questions (kChromaticDegreesSplit), so every
+// stats screen must count them separately too.
+const List<String> kRomanDegrees = [
+  'I', 'bII', 'II', '♯II', 'bIII', 'III', 'IV', '♯IV', 'bV', 'V', '♯V', 'bVI', 'VI', 'bVII', 'VII',
+];
+
+// Stored degree token → roman label ('♭3' → 'bIII', '♯11' → '♯IV', '' on
+// unknown). Legacy slash records ('♭3/♯2') predate the enharmonic split —
+// attributed to the first-listed spelling, matching how they were shown then.
+String romanDegree(String raw) {
+  if (raw.isEmpty) return '';
+  var d = raw.split('/')[0].trim();
+  d = d.replaceAll('b', '♭').replaceAll('#', '♯');
+  const ext = {'♭9': '♭2', '9': '2', '♯9': '♯2', '11': '4', '♯11': '♯4', '♭13': '♭6', '13': '6'};
+  d = ext[d] ?? d;
+  var acc = '';
+  if (d.startsWith('♭')) { acc = 'b'; d = d.substring(1); }
+  else if (d.startsWith('♯')) { acc = '♯'; d = d.substring(1); }
+  const roman = {'1': 'I', '2': 'II', '3': 'III', '4': 'IV', '5': 'V', '6': 'VI', '7': 'VII'};
+  final r = roman[d];
+  return r == null ? '' : '$acc$r';
+}
+
 const Map<String, int> kNoteToSemitone = {
   'C': 0, 'B#': 0, 'B♯': 0,
   'C#': 1, 'C♯': 1, 'Db': 1, 'D♭': 1,

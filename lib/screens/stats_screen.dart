@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../models/stats.dart';
 import '../constants/app_colors.dart';
+import '../constants/music_constants.dart';
 import '../widgets/note_text.dart';
 import '../widgets/animal_icon.dart';
 import 'key_analytics_screen.dart';
@@ -170,7 +171,7 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
     final Map<String, ({int correct, int total})> degreeStats = {};
     for (final session in recentSessions) {
       for (final ans in session.answers) {
-        final deg = _normalizeDeg(ans.degree);
+        final deg = romanDegree(ans.degree);
         if (deg.isEmpty) continue;
         final cur = degreeStats[deg] ?? (correct: 0, total: 0);
         degreeStats[deg] = (
@@ -326,21 +327,6 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
   /// used by the Degree Accuracy card ('bIII', '♯IV', 'I', …).
   /// Enharmonic spellings stay DISTINCT buckets (♭5 ≠ ♯4): they are different
   /// mental calculations, which is exactly what the card measures.
-  static String _normalizeDeg(String raw) {
-    if (raw.isEmpty) return '';
-    // Legacy slash records ('♭3/♯2') predate the split — attribute to the
-    // flat spelling (listed first), matching how they were shown back then.
-    var d = raw.split('/')[0].trim();
-    d = d.replaceAll('b', '♭').replaceAll('#', '♯');
-    const ext = {'♭9': '♭2', '9': '2', '♯9': '♯2', '11': '4', '♯11': '♯4', '♭13': '♭6', '13': '6'};
-    d = ext[d] ?? d;
-    var acc = '';
-    if (d.startsWith('♭')) { acc = 'b'; d = d.substring(1); }
-    else if (d.startsWith('♯')) { acc = '♯'; d = d.substring(1); }
-    const roman = {'1': 'I', '2': 'II', '3': 'III', '4': 'IV', '5': 'V', '6': 'VI', '7': 'VII'};
-    final r = roman[d];
-    return r == null ? '' : '$acc$r';
-  }
 }
 
 // ─── CIRCULAR RING PAINTER ────────────────────────────────────────────────────
