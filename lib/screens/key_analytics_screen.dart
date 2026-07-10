@@ -382,6 +382,9 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                       builder: (ctx, box) {
                         final cellW = (box.maxWidth - 16) / 2;
                         return Wrap(
+                          // Full rows span the whole width, so centring only
+                          // moves the final odd cell to the middle.
+                          alignment: WrapAlignment.center,
                           spacing: 16,
                           runSpacing: 12,
                           children: [
