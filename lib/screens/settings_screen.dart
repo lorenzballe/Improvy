@@ -117,83 +117,6 @@ class SettingsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // STORE
-              _sectionLabel('STORE'),
-              const SizedBox(height: 12),
-              _card(
-                shadow: const [BoxShadow(color: Color(0x4D000000), blurRadius: 32, offset: Offset(0, 8))],
-                child: Column(
-                  children: [
-                    if (!provider.isPro)
-                      GestureDetector(
-                        onTap: onShowPaywall,
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF9333EA), Color(0xFF4F46E5)],
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: const [BoxShadow(
-                              color: Color(0x4C7C3AED),
-                              blurRadius: 15,
-                              offset: Offset(0, 4),
-                            )],
-                          ),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.star_rounded, color: Colors.white, size: 16),
-                              SizedBox(width: 8),
-                              Text('UPGRADE TO PRO', style: TextStyle(
-                                fontSize: 12, fontWeight: FontWeight.w700,
-                                color: Colors.white, letterSpacing: 0.6,
-                              )),
-                            ],
-                          ),
-                        ),
-                      ),
-                    if (!provider.isPro) const SizedBox(height: 8),
-                    GestureDetector(
-                      onTap: () async {
-                        final ok = await PurchaseService.instance.restorePurchases();
-                        if (ok) provider.setIsPro(true);
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text(ok ? 'PRO restored' : 'No previous purchase found'),
-                            behavior: SnackBarBehavior.floating,
-                          ));
-                        }
-                      },
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          color: const Color(0x33F59E0B),
-                          border: Border.all(color: const Color(0x4DF59E0B)),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.restore_rounded, color: Color(0xFFFBBF24), size: 16),
-                            SizedBox(width: 8),
-                            Text('RESTORE PURCHASES', style: TextStyle(
-                              fontSize: 12, fontWeight: FontWeight.w700,
-                              color: Color(0xFFFBBF24), letterSpacing: 0.6,
-                            )),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-
               // TRAINING
               _sectionLabel('TRAINING'),
               const SizedBox(height: 12),
@@ -484,6 +407,83 @@ class SettingsScreen extends StatelessWidget {
                             child: const _ScalesComingSoonPreview(),
                           ),
                         ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // STORE
+              _sectionLabel('STORE'),
+              const SizedBox(height: 12),
+              _card(
+                shadow: const [BoxShadow(color: Color(0x4D000000), blurRadius: 32, offset: Offset(0, 8))],
+                child: Column(
+                  children: [
+                    if (!provider.isPro)
+                      GestureDetector(
+                        onTap: onShowPaywall,
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF9333EA), Color(0xFF4F46E5)],
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: const [BoxShadow(
+                              color: Color(0x4C7C3AED),
+                              blurRadius: 15,
+                              offset: Offset(0, 4),
+                            )],
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.star_rounded, color: Colors.white, size: 16),
+                              SizedBox(width: 8),
+                              Text('UPGRADE TO PRO', style: TextStyle(
+                                fontSize: 12, fontWeight: FontWeight.w700,
+                                color: Colors.white, letterSpacing: 0.6,
+                              )),
+                            ],
+                          ),
+                        ),
+                      ),
+                    if (!provider.isPro) const SizedBox(height: 8),
+                    GestureDetector(
+                      onTap: () async {
+                        final ok = await PurchaseService.instance.restorePurchases();
+                        if (ok) provider.setIsPro(true);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(ok ? 'PRO restored' : 'No previous purchase found'),
+                            behavior: SnackBarBehavior.floating,
+                          ));
+                        }
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0x33F59E0B),
+                          border: Border.all(color: const Color(0x4DF59E0B)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.restore_rounded, color: Color(0xFFFBBF24), size: 16),
+                            SizedBox(width: 8),
+                            Text('RESTORE PURCHASES', style: TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.w700,
+                              color: Color(0xFFFBBF24), letterSpacing: 0.6,
+                            )),
+                          ],
+                        ),
                       ),
                     ),
                   ],
