@@ -46,7 +46,7 @@ class StatsScreen extends StatefulWidget {
 
 class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStateMixin {
   String? _analyticsKey;
-  String _rtRange = '7';
+  String _rtRange = '7'; // '7' = last 7 games, '30' = last 30 games
   late AnimationController _progressCtrl;
   late Animation<double> _progressAnim;
 
@@ -103,16 +103,16 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
       if (prev > 0) accuracyChange = (cur - prev) / prev * 100;
     }
 
-    // Response time per day (last 30d)
-    final now = DateTime.now();
-    final monthlyRt = List.generate(30, (i) {
-      final d = now.subtract(Duration(days: 29 - i));
-      final k = '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-      final ds = stats.dailyHistory[k];
-      if (ds == null || ds.attempts == 0) return 0;
-      return (ds.responseTime / ds.attempts).round();
-    });
-    final displayRt = _rtRange == '7' ? monthlyRt.sublist(23) : monthlyRt;
+    // Response time per game (last 30 games)
+    final gameRts = <int>[];
+    for (final session in stats.sessionHistory.reversed) {
+      if (gameRts.length >= 30) break;
+      if (session.answers.isEmpty) continue;
+      final avgMs = session.answers.fold<int>(0, (sum, a) => sum + a.responseTime) ~/ session.answers.length;
+      gameRts.add(avgMs);
+    }
+    gameRts.reverse(); // Reverse back to chronological order
+    final displayRt = _rtRange == '7' ? gameRts.sublist(math.max(0, gameRts.length - 7)) : gameRts;
     final validRt = displayRt.where((t) => t > 0);
     final avgRt = validRt.isEmpty ? 0 : validRt.reduce((a, b) => a + b) ~/ validRt.length;
 
@@ -261,7 +261,7 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
                   Container(height: 1, margin: const EdgeInsets.symmetric(horizontal: 24),
                     decoration: const BoxDecoration(gradient: LinearGradient(colors: [Colors.transparent, Colors.white10, Colors.transparent]))),
                   const SizedBox(height: 12),
-                  Text('STATISTICS BASED ON THE LAST 30 DAYS',
+                  Text('STATISTICS BASED ON THE LAST ${math.min(30, stats.sessionHistory.length)} GAMES',
                     style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white.withAlpha(77), letterSpacing: 1.8)),
                 ]),
               ),
@@ -532,14 +532,10 @@ class _ResponseTimeCardState extends State<_ResponseTimeCard> {
     }
   }
 
-  String _formatDate(int index, String range) {
-    final now = DateTime.now();
-    final daysAgo = (range == '7' ? 6 : 29) - index;
-    if (daysAgo == 0) return 'TODAY';
-    if (daysAgo == 1) return 'YESTERDAY';
-    final d = now.subtract(Duration(days: daysAgo));
-    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-    return '${months[d.month - 1]} ${d.day}';
+  String _formatGame(int index) {
+    final gamesAgo = widget.displayTimes.length - 1 - index;
+    if (gamesAgo == 0) return 'LAST GAME';
+    return 'GAME -${gamesAgo}';
   }
 
   void _handleDrag(double localX, double width) {
@@ -567,17 +563,19 @@ class _ResponseTimeCardState extends State<_ResponseTimeCard> {
     
     String labelToShow;
     if (showDragValue) {
-      final dateStr = _formatDate(_selectedIndex!, widget.range);
+      final gameStr = _formatGame(_selectedIndex!);
       if (valueToShow == 0) {
-        labelToShow = 'No sessions • $dateStr';
+        labelToShow = 'No data • $gameStr';
       } else {
-        labelToShow = 'Response Time • $dateStr';
+        labelToShow = 'Response Time • $gameStr';
       }
     } else {
       labelToShow = 'Response Time';
     }
 
-    final String valueText = valueToShow == 0 ? '—' : '$valueToShow';
+    // No data yet → show nothing (no ugly dash); the value appears once there
+    // are sessions to average.
+    final String valueText = valueToShow == 0 ? '' : '$valueToShow';
     final String suffixText = valueToShow == 0 ? '' : 'ms';
 
     return ClipRRect(
@@ -613,8 +611,8 @@ class _ResponseTimeCardState extends State<_ResponseTimeCard> {
                   border: Border.all(color: Colors.white.withAlpha(13)),
                 ),
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  _RangeBtn(label: '7D', active: widget.range == '7', onTap: () => widget.onRange('7')),
-                  _RangeBtn(label: '30D', active: widget.range == '30', onTap: () => widget.onRange('30')),
+                  _RangeBtn(label: '7G', active: widget.range == '7', onTap: () => widget.onRange('7')),
+                  _RangeBtn(label: '30G', active: widget.range == '30', onTap: () => widget.onRange('30')),
                 ]),
               ),
             ]),
