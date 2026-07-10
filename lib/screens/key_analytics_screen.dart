@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../models/key_progress.dart';
+import '../models/stats.dart';
 import '../constants/app_colors.dart';
 import '../constants/music_constants.dart';
 import '../widgets/note_text.dart';
@@ -41,11 +42,22 @@ int? _noteSemi(String note) {
   return kNoteToSemitone[n];
 }
 
+// Partial desaturation (saturation ≈ 0.2) — the locked per-tonality preview
+// is mostly grey but keeps just a hint of colour. s=0.2 → each channel is
+// lerp(luminance, itself, 0.2).
+const List<double> _kDesaturated = <double>[
+  0.37008, 0.57216, 0.05776, 0, 0,
+  0.17008, 0.77216, 0.05776, 0, 0,
+  0.17008, 0.57216, 0.25776, 0, 0,
+  0,       0,       0,       1, 0,
+];
+
 class KeyAnalyticsScreen extends StatefulWidget {
   final String keyName;
   final VoidCallback onBack;
+  final void Function([String? reason])? onShowPaywall;
 
-  const KeyAnalyticsScreen({super.key, required this.keyName, required this.onBack});
+  const KeyAnalyticsScreen({super.key, required this.keyName, required this.onBack, this.onShowPaywall});
 
   @override
   State<KeyAnalyticsScreen> createState() => _KeyAnalyticsScreenState();
@@ -59,8 +71,14 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
   Widget build(BuildContext context) {
     final provider = context.watch<AppProvider>();
     final tone = widget.keyName;
+
+    // Per-tonality analytics are Pro — except C. Locked keys render as a
+    // greyed-out teaser with all displayed stats blanked to zero. The real
+    // data stays stored untouched, so it appears the moment Pro is unlocked.
+    final locked = !provider.isPro && tone != 'C';
+
     final keyIndex = provider.progressData.indexWhere((k) => k.key == tone);
-    final keyData = keyIndex >= 0 ? provider.progressData[keyIndex] : KeyProgress(key: tone);
+    final keyData = (keyIndex >= 0 && !locked) ? provider.progressData[keyIndex] : KeyProgress(key: tone);
     // Match the tonality's colour to its row in the Skill Mastery list
     // (positional rainbow keyed by its index in progressData), not the
     // fixed per-note colour — so the two screens agree.
@@ -70,7 +88,9 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
     final diatonic = keyData.diatonicProgress;
     final chromatic = keyData.chromaticProgress;
 
-    final history = provider.stats.sessionHistory;
+    // Locked: feed empty history into every chart/stat below (display only —
+    // the stored session history is not modified).
+    final history = locked ? <SessionRecord>[] : provider.stats.sessionHistory;
 
     // ── Aggregate stats across all tones (for ranking) and for this tone ──
     final tonalityStats = <String, (int correct, int total, int rt)>{};
@@ -182,33 +202,32 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
       }
     }
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
+    final content = SingleChildScrollView(
           padding: EdgeInsets.fromLTRB(20, 4, 20, 28 + MediaQuery.of(context).padding.bottom),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ── Header: back arrow (left) + KEY ANALYSIS badge centred on the
-              // SAME line, so there is no empty space above it.
+              // SAME line, so there is no empty space above it. Full width so
+              // the badge stays centred even when the arrow is hidden (locked).
               SizedBox(
                 height: 40,
+                width: double.infinity,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    Align(
+                    if (!locked) Align(
                       alignment: Alignment.centerLeft,
                       child: GestureDetector(
                         onTap: widget.onBack,
                         child: Container(
                           width: 40, height: 40,
                           decoration: BoxDecoration(
-                            color: Colors.white.withAlpha(13),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: Colors.white.withAlpha(26), width: 1.2),
+                            color: const Color(0x08FFFFFF),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: Colors.white10),
                           ),
-                          child: const Icon(Icons.arrow_back_rounded, color: Colors.white70, size: 20),
+                          child: const Icon(Icons.arrow_back_rounded, color: Colors.white60, size: 20),
                         ),
                       ),
                     ),
@@ -454,7 +473,41 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
               ),
             ],
           ),
-        ),
+        );
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: locked
+            ? Stack(children: [
+                // Greyed, faded, non-interactive preview; a tap anywhere opens
+                // the paywall.
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => widget.onShowPaywall?.call('key_stats'),
+                  child: ColorFiltered(
+                    colorFilter: const ColorFilter.matrix(_kDesaturated),
+                    child: Opacity(opacity: 0.72, child: AbsorbPointer(child: content)),
+                  ),
+                ),
+                // Back arrow stays live and in colour — same button as Choose Mode.
+                Positioned(
+                  top: 4, left: 20,
+                  child: GestureDetector(
+                    onTap: widget.onBack,
+                    child: Container(
+                      width: 40, height: 40,
+                      decoration: BoxDecoration(
+                        color: const Color(0x08FFFFFF),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.white10),
+                      ),
+                      child: const Icon(Icons.arrow_back_rounded, color: Colors.white60, size: 20),
+                    ),
+                  ),
+                ),
+              ])
+            : content,
       ),
     );
   }

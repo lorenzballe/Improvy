@@ -38,7 +38,8 @@ const _keySignatures = {
 // ─── MAIN SCREEN ─────────────────────────────────────────────────────────────
 
 class StatsScreen extends StatefulWidget {
-  const StatsScreen({super.key});
+  final void Function([String? reason])? onShowPaywall;
+  const StatsScreen({super.key, this.onShowPaywall});
   @override
   State<StatsScreen> createState() => _StatsScreenState();
 }
@@ -73,6 +74,7 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
     if (_analyticsKey != null) {
       return KeyAnalyticsScreen(
         keyName: _analyticsKey!,
+        onShowPaywall: widget.onShowPaywall,
         onBack: () {
           context.read<AppProvider>().setViewingKeyStats(false);
           setState(() => _analyticsKey = null);
