@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -37,6 +37,19 @@ jobs:
       - name: Build web
         # --base-href must match the Pages sub-path: https://<user>.github.io/Improvy/
         run: flutter build web --release --base-href /Improvy/
+
+      - name: Publish build to web-build branch
+        # Sandboxed dev environments can't reach *.github.io or the Actions
+        # artifact store, but can fetch branches over git — so the built site
+        # is also force-pushed to a throwaway branch for local previews.
+        run: |
+          cd build/web
+          git init -q -b web-build
+          git -c user.name=github-actions -c user.email=github-actions@github.com add -A
+          git -c user.name=github-actions -c user.email=github-actions@github.com commit -q -m "Web build of ${GITHUB_SHA}"
+          git push -q --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" web-build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
