@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'dart:math' as math;
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
@@ -556,9 +556,11 @@ class SettingsScreen extends StatelessWidget {
                   const LegalScreen(title: 'Terms of Service', body: kTermsBody)),
               const SizedBox(height: 16),
 
-              // DEVELOPER DEBUG — debug builds only. This section includes an
-              // "Enable PRO" shortcut, so it must NEVER ship in a release build.
-              if (kDebugMode) ...[
+              // DEVELOPER DEBUG — shown in debug builds AND the web preview
+              // (the GitHub Pages test build), but NEVER in a native release.
+              // The section includes an "Enable PRO" shortcut, so it must not
+              // reach the App Store / Play Store build, where kIsWeb is false.
+              if (kDebugMode || kIsWeb) ...[
               _sectionLabel('DEVELOPER DEBUG'),
               const SizedBox(height: 12),
               _blurCard(
