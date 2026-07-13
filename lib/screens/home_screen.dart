@@ -1495,11 +1495,18 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: const Color(0xFFFF69B4).withAlpha(120)),
                       ),
-                      child: const Center(child: Row(
+                      child: Center(child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          _ThickGlyph('♯', 30),
-                          _ThickGlyph('♭', 36),
+                          const _ThickGlyph('♯', 30),
+                          // The flat sits wide of its advance box and poked past
+                          // the right edge of the icon; pull it left, snug to the
+                          // sharp. Transform doesn't change layout, so the pair
+                          // stays centred — the flat just moves inward.
+                          Transform.translate(
+                            offset: const Offset(-6, 0),
+                            child: const _ThickGlyph('♭', 36),
+                          ),
                         ],
                       )),
                     ),
