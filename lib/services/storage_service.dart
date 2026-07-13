@@ -12,6 +12,7 @@ class StorageService {
   static const _isProKey = 'isPro';
   static const _notationKey = 'musical_journey_notation';
   static const _keyboardFromTonicKey = 'musical_journey_keyboard_from_tonic';
+  static const _pendingKey = 'musical_journey_pending_session';
 
   late SharedPreferences _prefs;
 
@@ -58,6 +59,35 @@ class StorageService {
     await _prefs.setString(_statsKey, jsonEncode(stats.toJson()));
   }
 
+  // Lightweight per-answer snapshot — lifetime counters + dailyHistory + the
+  // in-progress session, but NOT the heavy sessionHistory list. Written after
+  // every answer so an OS-kill mid-game loses nothing; cheap because it omits
+  // the (up to 300-game) history that made a full saveStats janky per tap.
+  Future<void> savePending(AppStats s) async {
+    await _prefs.setString(_pendingKey, jsonEncode({
+      'totalSessions': s.totalSessions,
+      'totalAttempts': s.totalAttempts,
+      'totalCorrect': s.totalCorrect,
+      'totalResponseTime': s.totalResponseTime,
+      'dailyHistory': s.dailyHistory.map((k, v) => MapEntry(k, v.toJson())),
+      'currentSessionCorrect': s.currentSessionCorrect,
+      'currentSessionTotal': s.currentSessionTotal,
+      'currentSessionAnswers': s.currentSessionAnswers.map((a) => a.toJson()).toList(),
+    }));
+  }
+
+  Map<String, dynamic>? loadPending() {
+    final raw = _prefs.getString(_pendingKey);
+    if (raw == null) return null;
+    try {
+      return jsonDecode(raw) as Map<String, dynamic>;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> removePending() => _prefs.remove(_pendingKey);
+
   // Last session
   Map<String, dynamic>? loadLastSession() {
     final raw = _prefs.getString(_lastSessionKey);
@@ -99,5 +129,6 @@ class StorageService {
     await _prefs.remove(_lastSessionKey);
     await _prefs.remove(_adaptiveDiffKey);
     await _prefs.remove(_tutorialKey);
+    await _prefs.remove(_pendingKey);
   }
 }

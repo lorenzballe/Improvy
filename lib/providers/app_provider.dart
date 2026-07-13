@@ -49,7 +49,55 @@ class AppProvider extends ChangeNotifier {
     notation = _storage.loadNotation();
     keyboardFromTonic = _storage.loadKeyboardFromTonic();
     lastSession = _storage.loadLastSession();
+    _recoverPendingSession();
     notifyListeners();
+  }
+
+  // If the app was killed mid-game, a lightweight snapshot of the in-progress
+  // session was persisted after every answer. Fold it back in on launch so
+  // nothing is lost: sessionHistory is kept as loaded from disk, the fresher
+  // volatile fields come from the snapshot, then the recovered session is
+  // finalised with the same rule as a manual abandon.
+  void _recoverPendingSession() {
+    final p = _storage.loadPending();
+    if (p == null) return;
+    final answers = (p['currentSessionAnswers'] as List?)
+            ?.map((a) => AnswerRecord.fromJson(a as Map<String, dynamic>))
+            .toList() ??
+        <AnswerRecord>[];
+    if (answers.isEmpty) {
+      _storage.removePending();
+      return;
+    }
+    // Guard against the rare race where finishSession persisted the full stats
+    // but the pending-clear didn't land before a kill: if this exact session
+    // is already the newest in history, it was folded — just drop the snapshot.
+    final newest = stats.sessionHistory.isNotEmpty ? stats.sessionHistory.first : null;
+    final alreadyFolded = newest != null &&
+        newest.answers.isNotEmpty &&
+        newest.total == answers.length &&
+        newest.answers.first.timestamp == answers.first.timestamp;
+    if (alreadyFolded) {
+      _storage.removePending();
+      return;
+    }
+    final daily = (p['dailyHistory'] as Map<String, dynamic>?)?.map(
+          (k, v) => MapEntry(k, DayStats.fromJson(v as Map<String, dynamic>)),
+        ) ??
+        stats.dailyHistory;
+    stats = stats.copyWith(
+      totalAttempts: (p['totalAttempts'] as num?)?.toInt() ?? stats.totalAttempts,
+      totalCorrect: (p['totalCorrect'] as num?)?.toInt() ?? stats.totalCorrect,
+      totalResponseTime: (p['totalResponseTime'] as num?)?.toInt() ?? stats.totalResponseTime,
+      dailyHistory: daily,
+      currentSessionCorrect: (p['currentSessionCorrect'] as num?)?.toInt() ?? 0,
+      currentSessionTotal: (p['currentSessionTotal'] as num?)?.toInt() ?? 0,
+      currentSessionAnswers: answers,
+    );
+    // Same rule as a manual abandon: >=5 answers becomes a counted game,
+    // fewer is dropped from game history (its answers still live in the
+    // lifetime + daily totals). Also persists the merge and clears the snapshot.
+    _flushCurrentSession();
   }
 
   // Computed
@@ -222,7 +270,7 @@ class AppProvider extends ChangeNotifier {
 
   void _flushCurrentSession() {
     final answered = stats.currentSessionTotal;
-    if (answered == 0) return;
+    if (answered == 0) { _storage.removePending(); return; }
     // A run abandoned after just a few answers is not a game: recording it
     // would pollute the "last 30 games" charts while Total Sessions and Games
     // Played ignore it. Below 5 answers the run is dropped (its answers still
@@ -235,6 +283,7 @@ class AppProvider extends ChangeNotifier {
         currentSessionAnswers: [],
       );
       _storage.saveStats(stats);
+      _storage.removePending();
       return;
     }
     finishSession();
@@ -296,10 +345,12 @@ class AppProvider extends ChangeNotifier {
       _storage.saveProgress(progressData);
     }
 
-    // Stats are persisted when the session ends (finishSession / flush), not
-    // here: sessionHistory can hold 300 games × up to 100 answers, and
-    // re-serialising all of it after every single tap caused jank exactly
-    // where the game measures the user's milliseconds.
+    // Persist a LIGHT snapshot every answer — lifetime counters, dailyHistory
+    // and the in-progress session, but NOT the heavy sessionHistory list. So an
+    // OS-kill mid-game loses nothing (init folds the snapshot back in), while
+    // the multi-MB history is still serialised only once, at session end — the
+    // per-tap jank the full save caused is gone.
+    _storage.savePending(stats);
     notifyListeners();
   }
 
@@ -330,7 +381,10 @@ class AppProvider extends ChangeNotifier {
       currentSessionTotal: 0,
       currentSessionAnswers: [],
     );
+    // Full save (history included) happens once here, at session end; the
+    // in-progress snapshot is now stale, so drop it.
     _storage.saveStats(stats);
+    _storage.removePending();
     notifyListeners();
   }
 
