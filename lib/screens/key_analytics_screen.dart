@@ -74,7 +74,19 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
     final degTone = <String, (int correct, int total)>{}; // roman label -> stats
     final confusions = <String, int>{}; // "asked→selected" roman -> count
 
+    // Two windows on purpose: RANK and AVG RESP. compare the 12 keys over the
+    // whole stored history (a stable cross-key comparison), while Degree
+    // Mastery and Common Confusions describe the player NOW — they only count
+    // the last 30 games in which this key was played, matching the game-based
+    // windows used across the stats. A confusion drilled away months ago must
+    // not haunt the card forever.
+    final recentToneSessions = history
+        .where((s) => s.answers.any((a) => a.tonality == tone))
+        .take(30)
+        .toSet();
+
     for (final session in history) {
+      final inWindow = recentToneSessions.contains(session);
       for (final ans in session.answers) {
         final t = ans.tonality;
         final cur = tonalityStats[t] ?? (0, 0, 0, 0);
@@ -88,7 +100,7 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
           cur.$4 + (timed ? 1 : 0),
         );
 
-        if (t == tone) {
+        if (t == tone && inWindow) {
           final deg = romanDegree(ans.degree);
           if (deg.isNotEmpty) {
             final d = degTone[deg] ?? (0, 0);
