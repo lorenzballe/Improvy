@@ -1333,8 +1333,9 @@ class _SkillRow extends StatelessWidget {
                   child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                     Text('RANK', style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900,
                       color: Colors.white.withAlpha(77), letterSpacing: 0.8)),
-                    // Unranked keys show "0" (faded) — matches the web original.
-                    Text('$rank', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900,
+                    // Unranked keys (no games yet) show an em dash — a literal
+                    // "RANK 0" read like a score, not like missing data.
+                    Text(rank == 0 ? '—' : '$rank', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900,
                       letterSpacing: -1.2, color: rankColor, shadows: rankShadow)),
                   ]),
                 );
