@@ -51,9 +51,19 @@ class KeyProgress {
 
   factory KeyProgress.fromJson(Map<String, dynamic> json) => KeyProgress(
         key: json['key'] as String,
-        diatonicLevels: (json['diatonicLevels'] as List?)?.map((e) => e as int).toList() ?? [0, 0, 0],
-        chromaticLevels: (json['chromaticLevels'] as List?)?.map((e) => e as int).toList() ?? [0, 0, 0],
+        diatonicLevels: _levels(json['diatonicLevels']),
+        chromaticLevels: _levels(json['chromaticLevels']),
       );
+
+  // Tolerant parse: a single malformed value (e.g. a double from an import)
+  // must not throw — the caller's catch would reset ALL keys to zero.
+  static List<int> _levels(dynamic raw) {
+    if (raw is! List) return [0, 0, 0];
+    return List.generate(3, (i) {
+      final v = i < raw.length ? raw[i] : 0;
+      return v is num ? v.toInt() : 0;
+    });
+  }
 }
 
 const List<String> kDefaultKeyOrder = ['C', 'G', 'F', 'D', 'B♭', 'A', 'E♭', 'E', 'A♭', 'B', 'D♭', 'F♯'];

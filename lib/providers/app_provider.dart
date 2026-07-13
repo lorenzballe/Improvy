@@ -221,21 +221,23 @@ class AppProvider extends ChangeNotifier {
   }
 
   void _flushCurrentSession() {
-    if (stats.currentSessionTotal == 0) return;
-    final newSession = SessionRecord(
-      timestamp: DateTime.now().millisecondsSinceEpoch,
-      correct: stats.currentSessionCorrect,
-      total: stats.currentSessionTotal,
-      answers: List.from(stats.currentSessionAnswers),
-    );
-    final newHistory = [newSession, ...stats.sessionHistory].take(300).toList();
-    stats = stats.copyWith(
-      sessionHistory: newHistory,
-      currentSessionCorrect: 0,
-      currentSessionTotal: 0,
-      currentSessionAnswers: [],
-    );
-    _storage.saveStats(stats);
+    final answered = stats.currentSessionTotal;
+    if (answered == 0) return;
+    // A run abandoned after just a few answers is not a game: recording it
+    // would pollute the "last 30 games" charts while Total Sessions and Games
+    // Played ignore it. Below 5 answers the run is dropped (its answers still
+    // count toward lifetime practice totals); from 5 answers up an abandoned
+    // run counts as a full game everywhere, exactly like a finished one.
+    if (answered < 5) {
+      stats = stats.copyWith(
+        currentSessionCorrect: 0,
+        currentSessionTotal: 0,
+        currentSessionAnswers: [],
+      );
+      _storage.saveStats(stats);
+      return;
+    }
+    finishSession();
   }
 
   void recordAnswer({
@@ -263,10 +265,14 @@ class AppProvider extends ChangeNotifier {
       currentSessionAnswers: [...stats.currentSessionAnswers, answerDetails],
     );
 
-    // Update progress
-    if (selectedKey != null && activeMode != null) {
+    // Update key mastery — ONLY for the two standard modes. Custom and
+    // Note→Number sessions can be narrowed to a hand-picked (even single)
+    // degree, so counting them would let easy drills inflate a key's mastery;
+    // they remain free practice: recorded in stats, invisible to progression.
+    if (selectedKey != null &&
+        (activeMode == TrainingMode.diatonic || activeMode == TrainingMode.chromatic)) {
       final mode = activeMode!;
-      final diff = mode == TrainingMode.diatonic ? diatonicDifficulty : (customDifficulty ?? chromaticDifficulty);
+      final diff = mode == TrainingMode.diatonic ? diatonicDifficulty : chromaticDifficulty;
       final currentCorrect = stats.currentSessionCorrect;
 
       progressData = progressData.map((item) {
@@ -288,16 +294,12 @@ class AppProvider extends ChangeNotifier {
       }).toList();
 
       _storage.saveProgress(progressData);
-      lastSession = {
-        'key': selectedKey,
-        'mode': mode.storageKey,
-        'difficulty': diff,
-        'timestamp': DateTime.now().millisecondsSinceEpoch,
-      };
-      _storage.saveLastSession(lastSession!);
     }
 
-    _storage.saveStats(stats);
+    // Stats are persisted when the session ends (finishSession / flush), not
+    // here: sessionHistory can hold 300 games × up to 100 answers, and
+    // re-serialising all of it after every single tap caused jank exactly
+    // where the game measures the user's milliseconds.
     notifyListeners();
   }
 

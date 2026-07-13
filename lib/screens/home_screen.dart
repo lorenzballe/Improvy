@@ -191,7 +191,23 @@ class _HomeMain extends StatelessWidget {
                   if (ls == null) return;
                   final key = ls['key'] as String;
                   final mode = ls['mode'] as String;
-                  final diff = ls['difficulty'] as int;
+                  final diff = ls['difficulty'] as int? ?? 1;
+                  final isSpecial = mode == 'custom' || mode == 'note-to-number';
+                  // Same gating as everywhere else: special modes and non-C
+                  // keys are Pro. The last session may predate losing Pro, so
+                  // resuming must not become a paywall bypass.
+                  if (!provider.isPro && (isSpecial || key != 'C')) {
+                    onShowPaywall('resume');
+                    return;
+                  }
+                  if (isSpecial) {
+                    // The picked degrees aren't stored in lastSession — reopen
+                    // that mode's setup (key preselected) instead of silently
+                    // starting a standard chromatic game.
+                    provider.selectKey(key);
+                    onOpenSetup(mode == 'custom' ? TrainingMode.custom : TrainingMode.noteToNumber);
+                    return;
+                  }
                   provider.selectKey(key);
                   final tm = mode == 'diatonic' ? TrainingMode.diatonic : TrainingMode.chromatic;
                   if (tm == TrainingMode.diatonic) provider.setDiatonicDifficulty(diff);

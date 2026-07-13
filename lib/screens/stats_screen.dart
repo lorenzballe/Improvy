@@ -114,7 +114,14 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
         .reversed
         .toList();
     final monthlyRt = rtSessions.map((s) {
-      final times = s.answers.map((a) => a.responseTime).where((t) => t > 0).toList();
+      // Timed-out questions (no note tapped) carry responseTime == the full
+      // time limit; including them would make the average track the chosen
+      // difficulty instead of the player's real speed.
+      final times = s.answers
+          .where((a) => a.selectedNote.isNotEmpty)
+          .map((a) => a.responseTime)
+          .where((t) => t > 0)
+          .toList();
       return times.isEmpty ? 0 : (times.reduce((a, b) => a + b) / times.length).round();
     }).toList();
     final displayRt = _rtRange == '14'
@@ -128,6 +135,7 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
     final modeTimes = <String, List<int>>{}; // key -> [dCount, dTime, cCount, cTime]
     for (final s in stats.sessionHistory) {
       for (final a in s.answers) {
+        if (a.selectedNote.isEmpty) continue; // timeout — no speed information
         final mi = a.mode == 'diatonic' ? 0 : (a.mode == 'chromatic' ? 2 : -1);
         if (mi < 0) continue;
         final m = modeTimes.putIfAbsent(a.tonality, () => [0, 0, 0, 0]);
@@ -878,7 +886,10 @@ class _DegreeRow extends StatelessWidget {
               border: Border.all(color: Colors.white.withAlpha(26)),
               boxShadow: [BoxShadow(color: Colors.black.withAlpha(13), blurRadius: 4, offset: const Offset(0, 2))],
             ),
-            child: Center(child: Text(label,
+            // NoteText renders ♯/♭ from the bundled Noto Music font — a plain
+            // Text falls back to a runtime Google-Fonts download for ♯, which
+            // shows a placeholder box when the device is offline.
+            child: Center(child: NoteText(note: label,
               style: TextStyle(fontSize: label.length > 2 ? 11 : 14, fontWeight: FontWeight.w900, color: color,
                 shadows: [Shadow(color: color.withAlpha(128), blurRadius: 8)]))),
           ),
@@ -1049,6 +1060,7 @@ class _KeyboardHeatmapCardState extends State<_KeyboardHeatmapCard> {
     final Map<String, ({int sum, int n})> acc = {};
     for (final session in recent) {
       for (final ans in session.answers) {
+        if (ans.selectedNote.isEmpty) continue; // timeout — no speed information
         final k = _canon(ans.note);
         if (k.isEmpty) continue;
         final c = acc[k] ?? (sum: 0, n: 0);

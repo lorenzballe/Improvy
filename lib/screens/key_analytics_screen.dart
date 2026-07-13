@@ -70,15 +70,23 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
     final history = locked ? <SessionRecord>[] : provider.stats.sessionHistory;
 
     // ── Aggregate stats across all tones (for ranking) and for this tone ──
-    final tonalityStats = <String, (int correct, int total, int rt)>{};
+    final tonalityStats = <String, (int correct, int total, int rt, int rtN)>{};
     final degTone = <String, (int correct, int total)>{}; // roman label -> stats
     final confusions = <String, int>{}; // "asked→selected" roman -> count
 
     for (final session in history) {
       for (final ans in session.answers) {
         final t = ans.tonality;
-        final cur = tonalityStats[t] ?? (0, 0, 0);
-        tonalityStats[t] = (cur.$1 + (ans.isCorrect ? 1 : 0), cur.$2 + 1, cur.$3 + ans.responseTime);
+        final cur = tonalityStats[t] ?? (0, 0, 0, 0);
+        // Timed-out questions count for accuracy but carry no speed info —
+        // their responseTime is just the time limit of the difficulty played.
+        final timed = ans.selectedNote.isNotEmpty;
+        tonalityStats[t] = (
+          cur.$1 + (ans.isCorrect ? 1 : 0),
+          cur.$2 + 1,
+          cur.$3 + (timed ? ans.responseTime : 0),
+          cur.$4 + (timed ? 1 : 0),
+        );
 
         if (t == tone) {
           final deg = romanDegree(ans.degree);
@@ -99,18 +107,19 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
       }
     }
 
-    final toneStat = tonalityStats[tone] ?? (0, 0, 0);
-    final avgResp = toneStat.$2 > 0 ? (toneStat.$3 / toneStat.$2).round() : 0;
+    final toneStat = tonalityStats[tone] ?? (0, 0, 0, 0);
+    final hasToneData = toneStat.$2 > 0;
+    final avgResp = toneStat.$4 > 0 ? (toneStat.$3 / toneStat.$4).round() : 0;
 
     // Rank among the 12 keys (accuracy desc, then avg response asc)
     final ranked = [...kKeys]..sort((a, b) {
-        final sa = tonalityStats[a] ?? (0, 0, 0);
-        final sb = tonalityStats[b] ?? (0, 0, 0);
+        final sa = tonalityStats[a] ?? (0, 0, 0, 0);
+        final sb = tonalityStats[b] ?? (0, 0, 0, 0);
         final accA = sa.$2 > 0 ? sa.$1 / sa.$2 : 0.0;
         final accB = sb.$2 > 0 ? sb.$1 / sb.$2 : 0.0;
         if (accB != accA) return accB.compareTo(accA);
-        final rA = sa.$2 > 0 ? sa.$3 / sa.$2 : 999999.0;
-        final rB = sb.$2 > 0 ? sb.$3 / sb.$2 : 999999.0;
+        final rA = sa.$4 > 0 ? sa.$3 / sa.$4 : 999999.0;
+        final rB = sb.$4 > 0 ? sb.$3 / sb.$4 : 999999.0;
         return rA.compareTo(rB);
       });
     final rank = ranked.indexOf(tone) + 1;
@@ -269,13 +278,19 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
               const SizedBox(height: 18),
 
               // ── 3 stat cards ──
+              // AVG RESP. and RANK are meaningless before the first game in
+              // this key — a fresh key would otherwise claim "0ms" and "#1".
               Row(
                 children: [
                   Expanded(child: _StatCard(label: 'MASTERY', value: '$mastery', suffix: '%', trendUp: trend != null && trend > 0)),
                   const SizedBox(width: 12),
-                  Expanded(child: _StatCard(label: 'AVG RESP.', value: '$avgResp', suffix: 'ms')),
+                  Expanded(child: hasToneData
+                      ? _StatCard(label: 'AVG RESP.', value: '$avgResp', suffix: 'ms')
+                      : const _StatCard(label: 'AVG RESP.', value: '—')),
                   const SizedBox(width: 12),
-                  Expanded(child: _StatCard(label: 'RANK', value: '$rank', prefix: '#', suffix: '/12')),
+                  Expanded(child: hasToneData
+                      ? _StatCard(label: 'RANK', value: '$rank', prefix: '#', suffix: '/12')
+                      : const _StatCard(label: 'RANK', value: '—')),
                 ],
               ),
               const SizedBox(height: 20),
@@ -320,40 +335,49 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                     const SizedBox(height: 14),
                     // Big accuracy value at the scrubbed point — stays here and
                     // updates as the dot moves (no tooltip over the point).
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.baseline,
-                      textBaseline: TextBaseline.alphabetic,
-                      children: [
-                        Text('$selAcc',
-                          style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: color, height: 1, letterSpacing: -1.5)),
-                        Text('%',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: color.withAlpha(160), letterSpacing: -1)),
-                        const SizedBox(width: 10),
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 3),
-                          child: Text('ACCURACY',
-                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white.withAlpha(90), letterSpacing: 1.5)),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    LayoutBuilder(
-                      builder: (ctx, box) {
-                        final w = box.maxWidth;
-                        const h = 108.0;
-                        return GestureDetector(
-                          onTapDown: (d) => _updateSel(d.localPosition.dx, w),
-                          onHorizontalDragUpdate: (d) => _updateSel(d.localPosition.dx, w),
-                          behavior: HitTestBehavior.opaque,
-                          child: SizedBox(
-                            width: w, height: h + 28,
-                            child: CustomPaint(
-                              painter: _ChartPainter(ys: chartY, color: color, selected: _selPoint, chartH: h),
-                            ),
+                    // With no games in this key yet there is nothing to show:
+                    // a flat 0% line would read as terrible performance, not
+                    // as absence of data. Sized boxes keep the card height.
+                    if (!hasToneData)
+                      const SizedBox(height: 32)
+                    else
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.baseline,
+                        textBaseline: TextBaseline.alphabetic,
+                        children: [
+                          Text('$selAcc',
+                            style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: color, height: 1, letterSpacing: -1.5)),
+                          Text('%',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: color.withAlpha(160), letterSpacing: -1)),
+                          const SizedBox(width: 10),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 3),
+                            child: Text('ACCURACY',
+                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white.withAlpha(90), letterSpacing: 1.5)),
                           ),
-                        );
-                      },
-                    ),
+                        ],
+                      ),
+                    const SizedBox(height: 16),
+                    if (!hasToneData)
+                      const SizedBox(height: 108.0 + 28)
+                    else
+                      LayoutBuilder(
+                        builder: (ctx, box) {
+                          final w = box.maxWidth;
+                          const h = 108.0;
+                          return GestureDetector(
+                            onTapDown: (d) => _updateSel(d.localPosition.dx, w),
+                            onHorizontalDragUpdate: (d) => _updateSel(d.localPosition.dx, w),
+                            behavior: HitTestBehavior.opaque,
+                            child: SizedBox(
+                              width: w, height: h + 28,
+                              child: CustomPaint(
+                                painter: _ChartPainter(ys: chartY, color: color, selected: _selPoint, chartH: h),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     const SizedBox(height: 6),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -643,7 +667,10 @@ class _DegreeMasteryCell extends StatelessWidget {
                     color: color.withAlpha(33),
                     borderRadius: BorderRadius.circular(9),
                   ),
-                  child: Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: color)),
+                  // NoteText draws ♯/♭ from the bundled Noto Music font (a
+                  // plain Text needs a runtime font download for ♯ — offline
+                  // it renders a placeholder box).
+                  child: NoteText(note: label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: color)),
                 ),
                 Text('$accuracy%', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: color)),
               ],
@@ -725,7 +752,8 @@ class _ConfusionRow extends StatelessWidget {
           borderRadius: BorderRadius.circular(9),
           border: Border.all(color: border, width: 1.2),
         ),
-        child: Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: fg)),
+        // NoteText: bundled ♯/♭ glyphs, no runtime font download needed.
+        child: NoteText(note: label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: fg)),
       );
 }
 

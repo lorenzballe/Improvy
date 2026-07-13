@@ -94,9 +94,11 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
     _scale = calculateMajorScale(_currentKey);
     _remainingMs = _timeLimit;
 
-    // Seed lastSeenMap from session history
-    for (final session in widget.sessionHistory.reversed) {
+    // Seed lastSeenMap from this key's history (sessionHistory is
+    // newest-first, so the first record kept per degree is the newest).
+    for (final session in widget.sessionHistory) {
       for (final ans in (session.answers ?? [])) {
+        if (ans.tonality != _currentKey) continue;
         final deg = normalizeExtension(ans.degree ?? '');
         if (!_lastSeenMap.containsKey(deg)) {
           _lastSeenMap[deg] = (ans.timestamp as int?) ?? 0;
@@ -211,10 +213,13 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
   }
 
   String _pickAdaptiveDegree(List<String> possible, String currentDeg) {
+    // Only this key's history: the same degree lands on different piano keys
+    // in different tonalities (♭3 in C is a black key, in F♯ it's white), so
+    // struggling with a degree in one key says little about it in another.
     final allAnswers = [
       ...widget.sessionHistory
           .expand((s) => (s.answers ?? []) as List)
-          .where((a) => a.mode == widget.mode.storageKey)
+          .where((a) => a.mode == widget.mode.storageKey && a.tonality == _currentKey)
           .map((a) => _normalizedAnswer(a)),
       ..._sessionAnswers,
     ];
@@ -375,6 +380,85 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
     } catch (_) {}
   }
 
+  // X button / system back. Mid-run, confirm before throwing the game away —
+  // an accidental edge-swipe shouldn't kill a 40-question streak. The clock is
+  // paused while the dialog is up and restarts fresh on "keep playing".
+  void _requestExit() {
+    if (_attempts == 0 || _attempts >= _questionsPerKey) {
+      widget.onExit();
+      return;
+    }
+    _autoTimer?.cancel();
+    _timerTick?.cancel();
+    _feedbackTimer?.cancel();
+    HapticsService.impactLight();
+    showDialog<bool>(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.6),
+      builder: (ctx) => Dialog(
+        backgroundColor: const Color(0xFF1A1625),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(28),
+          side: BorderSide(color: Colors.white.withAlpha(26)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.logout_rounded, color: Color(0xFFFB7185), size: 34),
+              const SizedBox(height: 14),
+              const Text('End this session?',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white)),
+              const SizedBox(height: 8),
+              Text('You are $_attempts/$_questionsPerKey in — the run ends here if you leave.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 13, height: 1.5, color: Colors.white.withAlpha(150))),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF4F46E5),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                  onPressed: () => Navigator.of(ctx).pop(false),
+                  child: const Text('KEEP PLAYING',
+                      style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.5, color: Colors.white)),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(true),
+                child: Text('QUIT',
+                    style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.5,
+                        color: Colors.white.withAlpha(120))),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ).then((quit) {
+      if (!mounted) return;
+      if (quit == true) {
+        widget.onExit();
+        return;
+      }
+      // Resume where we paused: mid-feedback → advance; mid-question → fresh clock.
+      if (_showFeedback) {
+        if (_attempts >= _questionsPerKey) {
+          _finishSession();
+        } else {
+          _generateChallenge();
+        }
+      } else {
+        _questionStart = DateTime.now();
+        setState(() => _remainingMs = _timeLimit);
+        _startTimers();
+      }
+    });
+  }
+
   void _finishSession() {
     final elapsed = DateTime.now().difference(_sessionStart).inSeconds;
     widget.onFinish({
@@ -422,7 +506,7 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
 
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (_, __) => widget.onExit(),
+      onPopInvokedWithResult: (_, __) => _requestExit(),
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: Stack(
@@ -497,7 +581,7 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
               child: Column(
                 children: [
                   _TopBar(
-                    onExit: widget.onExit,
+                    onExit: _requestExit,
                     progress: progress,
                     timerPct: timerPct,
                     timeLimit: _timeLimit,
