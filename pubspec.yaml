@@ -22,6 +22,11 @@ dependencies:
   purchases_flutter: ^10.3.0
   purchases_ui_flutter: ^10.3.0
   posthog_flutter: ^5.24.0
+  # Local scheduled notifications (daily reminder / comeback). No web support —
+  # all usage goes through lib/services/notification_service.dart, whose
+  # conditional import keeps the web build compiling with a no-op stub.
+  flutter_local_notifications: ^18.0.1
+  timezone: ">=0.9.0 <0.11.0"
 
 dev_dependencies:
   flutter_test:

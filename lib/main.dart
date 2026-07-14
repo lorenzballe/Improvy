@@ -6,6 +6,7 @@ import 'providers/app_provider.dart';
 import 'services/storage_service.dart';
 import 'services/purchase_service.dart';
 import 'services/analytics_service.dart';
+import 'services/notification_service.dart';
 import 'screens/root_screen.dart';
 
 void main() async {
@@ -22,6 +23,10 @@ void main() async {
 
   final storage = StorageService();
   await storage.init();
+
+  // Local reminders — must be ready BEFORE provider.init(), which resyncs
+  // the pending notifications from the loaded stats. No-op stub on web.
+  await NotificationService.init();
 
   final provider = AppProvider(storage);
   await provider.init();

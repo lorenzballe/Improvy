@@ -4,7 +4,9 @@ import '../models/stats.dart';
 import '../models/training_mode.dart';
 import '../services/storage_service.dart';
 import '../services/analytics_service.dart';
+import '../services/notification_service.dart';
 import '../constants/levels.dart';
+import '../constants/music_constants.dart';
 
 class AppProvider extends ChangeNotifier {
   final StorageService _storage;
@@ -22,6 +24,12 @@ class AppProvider extends ChangeNotifier {
   // (or the white key just below it, if the tonic is a black key) instead of
   // always running C→C.
   bool keyboardFromTonic = false;
+
+  // Notification settings (local reminders; no-op on web).
+  bool notifDaily = true;
+  bool notifComeback = true;
+  int notifHour = 19;
+  int notifMinute = 0;
 
   String? selectedKey;
   // True while a single-key analytics sub-screen (inside Stats) is open, so the
@@ -49,8 +57,93 @@ class AppProvider extends ChangeNotifier {
     notation = _storage.loadNotation();
     keyboardFromTonic = _storage.loadKeyboardFromTonic();
     lastSession = _storage.loadLastSession();
+    notifDaily = _storage.loadNotifDaily();
+    notifComeback = _storage.loadNotifComeback();
+    notifHour = _storage.loadNotifHour();
+    notifMinute = _storage.loadNotifMinute();
     _recoverPendingSession();
+    resyncNotifications();
     notifyListeners();
+  }
+
+  // ── Notifications ──────────────────────────────────────────────────────────
+
+  // Rebuilds the pending local notifications from the freshest stats. Called
+  // on launch, at session end, and on every notification-setting change, so
+  // reminders always reflect reality (e.g. today's nudge vanishes after play).
+  void resyncNotifications() {
+    final today = _dateKey(DateTime.now());
+    NotificationService.resync(ReminderPlan(
+      dailyOn: notifDaily,
+      hour: notifHour,
+      minute: notifMinute,
+      comebackOn: notifComeback,
+      playedToday: (stats.dailyHistory[today]?.attempts ?? 0) > 0,
+      lastPlayedMs: stats.sessionHistory.isNotEmpty ? stats.sessionHistory.first.timestamp : null,
+      weakSpotBody: _weakSpotMessage(),
+    ));
+  }
+
+  // The single most frequent recurring confusion of the last 30 games — the
+  // same pairs Common Confusions shows — phrased as a nudge. Null when no
+  // pair reaches 3 occurrences: a weak-spot notification must be sure of
+  // itself or stay silent.
+  String? _weakSpotMessage() {
+    final counts = <String, int>{};
+    for (final s in stats.sessionHistory.take(30)) {
+      for (final a in s.answers) {
+        if (a.isCorrect || a.selectedNote.isEmpty) continue;
+        final asked = romanDegree(a.degree);
+        final selSemi = kNoteToSemitone[a.selectedNote.split('/')[0].trim()];
+        final rootSemi = kNoteToSemitone[a.tonality];
+        if (asked.isEmpty || selSemi == null || rootSemi == null) continue;
+        final played = kFlatRomanBySemitone[((selSemi - rootSemi) % 12 + 12) % 12];
+        if (played == asked) continue;
+        final key = '${a.tonality}|$asked|$played';
+        counts[key] = (counts[key] ?? 0) + 1;
+      }
+    }
+    MapEntry<String, int>? top;
+    for (final e in counts.entries) {
+      if (e.value >= 3 && (top == null || e.value > top.value)) top = e;
+    }
+    if (top == null) return null;
+    final parts = top.key.split('|');
+    return 'You keep mixing up ${parts[1]} and ${parts[2]} in ${parts[0]} major. '
+        '10 questions to nail it?';
+  }
+
+  void setNotifDaily(bool value) {
+    notifDaily = value;
+    _storage.saveNotifDaily(value);
+    AnalyticsService.instance.capture('setting_changed', {'setting': 'notif_daily', 'value': value});
+    if (value) _ensureNotifPermission();
+    resyncNotifications();
+    notifyListeners();
+  }
+
+  void setNotifComeback(bool value) {
+    notifComeback = value;
+    _storage.saveNotifComeback(value);
+    AnalyticsService.instance.capture('setting_changed', {'setting': 'notif_comeback', 'value': value});
+    if (value) _ensureNotifPermission();
+    resyncNotifications();
+    notifyListeners();
+  }
+
+  void setNotifTime(int hour, int minute) {
+    notifHour = hour;
+    notifMinute = minute;
+    _storage.saveNotifTime(hour, minute);
+    AnalyticsService.instance.capture('setting_changed', {'setting': 'notif_time', 'value': '$hour:$minute'});
+    resyncNotifications();
+    notifyListeners();
+  }
+
+  void _ensureNotifPermission() {
+    if (_storage.loadNotifPermAsked()) return;
+    _storage.saveNotifPermAsked(true);
+    NotificationService.requestPermission().then((_) => resyncNotifications());
   }
 
   // If the app was killed mid-game, a lightweight snapshot of the in-progress
@@ -265,6 +358,9 @@ class AppProvider extends ChangeNotifier {
     isReverse = null;
     customDifficulty = null;
     customQuestions = null;
+    // Covers the abandoned-run path too (playedToday may have changed even
+    // when the run was too short to count as a game).
+    resyncNotifications();
     notifyListeners();
   }
 
@@ -385,6 +481,10 @@ class AppProvider extends ChangeNotifier {
     // in-progress snapshot is now stale, so drop it.
     _storage.saveStats(stats);
     _storage.removePending();
+    // First finished game = the moment of proven value — the right time to
+    // ask for notification permission (never as a cold-start popup).
+    _ensureNotifPermission();
+    resyncNotifications();
     notifyListeners();
   }
 

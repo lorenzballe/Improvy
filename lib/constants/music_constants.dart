@@ -40,6 +40,13 @@ const List<String> kRomanDegrees = [
   'I', 'bII', 'II', '♯II', 'bIII', 'III', 'IV', '♯IV', 'bV', 'V', '♯V', 'bVI', 'VI', 'bVII', 'VII',
 ];
 
+// Roman label for each of the 12 semitones, flat spellings only — for places
+// that name the degree of a RAW PITCH (e.g. the note the user tapped), where
+// no enharmonic spelling exists.
+const List<String> kFlatRomanBySemitone = [
+  'I', 'bII', 'II', 'bIII', 'III', 'IV', 'bV', 'V', 'bVI', 'VI', 'bVII', 'VII',
+];
+
 // Stored degree token → roman label ('♭3' → 'bIII', '♯11' → '♯IV', '' on
 // unknown). Legacy slash records ('♭3/♯2') predate the enharmonic split —
 // attributed to the first-listed spelling, matching how they were shown then.
