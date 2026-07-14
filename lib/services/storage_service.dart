@@ -123,20 +123,7 @@ class StorageService {
   bool loadKeyboardFromTonic() => _prefs.getBool(_keyboardFromTonicKey) ?? false;
   Future<void> saveKeyboardFromTonic(bool v) => _prefs.setBool(_keyboardFromTonicKey, v);
 
-  // Notifications
-  bool loadNotifDaily() => _prefs.getBool('notif_daily') ?? true;
-  Future<void> saveNotifDaily(bool v) => _prefs.setBool('notif_daily', v);
-
-  bool loadNotifComeback() => _prefs.getBool('notif_comeback') ?? true;
-  Future<void> saveNotifComeback(bool v) => _prefs.setBool('notif_comeback', v);
-
-  int loadNotifHour() => _prefs.getInt('notif_hour') ?? 19;
-  int loadNotifMinute() => _prefs.getInt('notif_minute') ?? 0;
-  Future<void> saveNotifTime(int hour, int minute) async {
-    await _prefs.setInt('notif_hour', hour);
-    await _prefs.setInt('notif_minute', minute);
-  }
-
+  // Notifications — only whether the OS permission prompt was already shown.
   bool loadNotifPermAsked() => _prefs.getBool('notif_perm_asked') ?? false;
   Future<void> saveNotifPermAsked(bool v) => _prefs.setBool('notif_perm_asked', v);
 

@@ -25,12 +25,6 @@ class AppProvider extends ChangeNotifier {
   // always running C→C.
   bool keyboardFromTonic = false;
 
-  // Notification settings (local reminders; no-op on web).
-  bool notifDaily = true;
-  bool notifComeback = true;
-  int notifHour = 19;
-  int notifMinute = 0;
-
   String? selectedKey;
   // True while a single-key analytics sub-screen (inside Stats) is open, so the
   // root can hide the bottom nav and disable tab-swiping there.
@@ -57,10 +51,6 @@ class AppProvider extends ChangeNotifier {
     notation = _storage.loadNotation();
     keyboardFromTonic = _storage.loadKeyboardFromTonic();
     lastSession = _storage.loadLastSession();
-    notifDaily = _storage.loadNotifDaily();
-    notifComeback = _storage.loadNotifComeback();
-    notifHour = _storage.loadNotifHour();
-    notifMinute = _storage.loadNotifMinute();
     _recoverPendingSession();
     resyncNotifications();
     notifyListeners();
@@ -69,15 +59,17 @@ class AppProvider extends ChangeNotifier {
   // ── Notifications ──────────────────────────────────────────────────────────
 
   // Rebuilds the pending local notifications from the freshest stats. Called
-  // on launch, at session end, and on every notification-setting change, so
-  // reminders always reflect reality (e.g. today's nudge vanishes after play).
+  // on launch and at session end, so reminders always reflect reality (e.g.
+  // today's nudge vanishes after play). No user-facing settings by design:
+  // daily reminder fixed at 19:00, comeback nudges always on — the OS
+  // notification permission is the only switch.
   void resyncNotifications() {
     final today = _dateKey(DateTime.now());
     NotificationService.resync(ReminderPlan(
-      dailyOn: notifDaily,
-      hour: notifHour,
-      minute: notifMinute,
-      comebackOn: notifComeback,
+      dailyOn: true,
+      hour: 19,
+      minute: 0,
+      comebackOn: true,
       playedToday: (stats.dailyHistory[today]?.attempts ?? 0) > 0,
       lastPlayedMs: stats.sessionHistory.isNotEmpty ? stats.sessionHistory.first.timestamp : null,
       weakSpotBody: _weakSpotMessage(),
@@ -111,33 +103,6 @@ class AppProvider extends ChangeNotifier {
     final parts = top.key.split('|');
     return 'You keep mixing up ${parts[1]} and ${parts[2]} in ${parts[0]} major. '
         '10 questions to nail it?';
-  }
-
-  void setNotifDaily(bool value) {
-    notifDaily = value;
-    _storage.saveNotifDaily(value);
-    AnalyticsService.instance.capture('setting_changed', {'setting': 'notif_daily', 'value': value});
-    if (value) _ensureNotifPermission();
-    resyncNotifications();
-    notifyListeners();
-  }
-
-  void setNotifComeback(bool value) {
-    notifComeback = value;
-    _storage.saveNotifComeback(value);
-    AnalyticsService.instance.capture('setting_changed', {'setting': 'notif_comeback', 'value': value});
-    if (value) _ensureNotifPermission();
-    resyncNotifications();
-    notifyListeners();
-  }
-
-  void setNotifTime(int hour, int minute) {
-    notifHour = hour;
-    notifMinute = minute;
-    _storage.saveNotifTime(hour, minute);
-    AnalyticsService.instance.capture('setting_changed', {'setting': 'notif_time', 'value': '$hour:$minute'});
-    resyncNotifications();
-    notifyListeners();
   }
 
   void _ensureNotifPermission() {
