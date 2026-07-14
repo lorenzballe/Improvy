@@ -330,7 +330,13 @@ class SettingsScreen extends StatelessWidget {
                             context: context,
                             initialTime: TimeOfDay(hour: provider.notifHour, minute: provider.notifMinute),
                             builder: (ctx, child) => Theme(
-                              data: ThemeData.dark(useMaterial3: true).copyWith(
+                              // fontFamily must be set here too: a bare dark
+                              // theme falls back to Roboto, off-brand and not
+                              // bundled (invisible digits offline).
+                              data: ThemeData(
+                                brightness: Brightness.dark,
+                                useMaterial3: true,
+                                fontFamily: 'Lexend',
                                 colorScheme: const ColorScheme.dark(
                                   primary: Color(0xFFF59E0B),
                                   surface: Color(0xFF1A1625),
