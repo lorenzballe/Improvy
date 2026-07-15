@@ -104,6 +104,7 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
     }
 
     // Response time per game (last 30 games)
+    final now = DateTime.now();
     final gameRts = <int>[];
     for (final session in stats.sessionHistory.reversed) {
       if (gameRts.length >= 30) break;
@@ -111,7 +112,7 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
       final avgMs = session.answers.fold<int>(0, (sum, a) => sum + a.responseTime) ~/ session.answers.length;
       gameRts.add(avgMs);
     }
-    gameRts.reverse(); // Reverse back to chronological order
+    gameRts.setAll(0, gameRts.reversed.toList()); // reverse in place → chronological order
     final displayRt = _rtRange == '7' ? gameRts.sublist(math.max(0, gameRts.length - 7)) : gameRts;
     final validRt = displayRt.where((t) => t > 0);
     final avgRt = validRt.isEmpty ? 0 : validRt.reduce((a, b) => a + b) ~/ validRt.length;
