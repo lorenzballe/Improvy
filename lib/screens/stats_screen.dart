@@ -659,7 +659,7 @@ class _ResponseTimeCardState extends State<_ResponseTimeCard> {
             ),
             const SizedBox(height: 10),
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Text('${widget.range == '7' ? '7' : '30'} DAYS AGO',
+              Text('${widget.range == '7' ? '7' : '30'} GAMES AGO',
                 style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white.withAlpha(77))),
               Text('TODAY',
                 style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white.withAlpha(77))),
