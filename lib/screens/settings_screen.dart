@@ -300,6 +300,12 @@ class SettingsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
+              // NOTIFICATIONS
+              _sectionLabel('NOTIFICATIONS'),
+              const SizedBox(height: 12),
+              _NotificationsCard(provider: provider),
+              const SizedBox(height: 16),
+
               // NEWS & UPDATES
               _sectionLabel('NEWS & UPDATES'),
               const SizedBox(height: 12),
@@ -628,6 +634,15 @@ class SettingsScreen extends StatelessWidget {
                       borderColor: const Color(0x4DEC4899),
                       onTap: onSimulatePerfect,
                     ),
+                    const SizedBox(height: 8),
+                    _DebugButton(
+                      icon: Icons.notifications_active_rounded,
+                      label: 'SEND TEST NOTIFICATION',
+                      color: const Color(0xFFFBBF24),
+                      bgColor: const Color(0x33F59E0B),
+                      borderColor: const Color(0x4DF59E0B),
+                      onTap: () => provider.sendTestNotification(),
+                    ),
                   ],
                 ),
               ),
@@ -806,6 +821,95 @@ class _KeyboardFromTonicCard extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               'When the on-screen piano is active, it starts on the current key’s tonic (or the white key just below it) instead of always running from C.',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: Colors.white.withAlpha(102),
+                height: 18 / 11,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Notification controls — daily reminder on/off, its time, and comeback nudges.
+// (The reminders themselves are built by AppProvider; this only flips the
+// preferences and re-syncs the schedule.)
+class _NotificationsCard extends StatelessWidget {
+  final AppProvider provider;
+  const _NotificationsCard({required this.provider});
+
+  static const _accent = Color(0xFFF59E0B); // amber
+
+  @override
+  Widget build(BuildContext context) {
+    final on = provider.notifDailyOn;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => provider.setNotifDailyOn(!on),
+      child: AnimatedContainer(
+        duration: Duration.zero,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: on
+              ? const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0x4DF59E0B), Color(0x14F59E0B)],
+                )
+              : null,
+          color: on ? null : Colors.white.withAlpha(8),
+          border: Border.all(color: on ? const Color(0x66F59E0B) : Colors.white.withAlpha(13)),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: on ? [const BoxShadow(color: Color(0x26F59E0B), blurRadius: 30)] : null,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 48, height: 48,
+                  decoration: BoxDecoration(
+                    color: on ? _accent : Colors.white.withAlpha(26),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: on ? [const BoxShadow(color: Color(0x66F59E0B), blurRadius: 25)] : null,
+                  ),
+                  child: Icon(Icons.notifications_active_rounded,
+                      color: on ? Colors.white : Colors.white.withAlpha(102), size: 24),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Daily reminders',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w900,
+                            color: on ? Colors.white : Colors.white.withAlpha(179),
+                            letterSpacing: 0.4,
+                          )),
+                      const SizedBox(height: 3),
+                      Text('QUIZ NUDGE + STREAK SAVER',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white.withAlpha(102),
+                            letterSpacing: 1.5,
+                          )),
+                    ],
+                  ),
+                ),
+                _ToggleSwitch(value: on, color: _accent),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'A quick daily quiz — “What’s the ♭3 of E?” — plus a heads-up before your streak breaks. Turn it off here anytime.',
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w500,

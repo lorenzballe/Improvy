@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/foundation.dart';
 import '../models/key_progress.dart';
 import '../models/stats.dart';
@@ -25,6 +26,17 @@ class AppProvider extends ChangeNotifier {
   // always running C→C.
   bool keyboardFromTonic = false;
 
+  // Notification preferences (persisted; default ON). [notifHour]/[notifMinute]
+  // are the daily reminder's wall-clock slot, user-chosen in Settings.
+  bool notifDailyOn = true;
+  bool notifComebackOn = true;
+  int notifHour = 19;
+  int notifMinute = 0;
+  // True while the pre-permission priming sheet should be shown (set after the
+  // first finished game). The UI reads it and asks the OS only if the user opts
+  // in, so a "Don't Allow" never blindly burns the one-shot iOS permission.
+  bool showNotifPrompt = false;
+
   String? selectedKey;
   // True while a single-key analytics sub-screen (inside Stats) is open, so the
   // root can hide the bottom nav and disable tab-swiping there.
@@ -50,6 +62,10 @@ class AppProvider extends ChangeNotifier {
     tutorialCompleted = _storage.loadTutorialCompleted();
     notation = _storage.loadNotation();
     keyboardFromTonic = _storage.loadKeyboardFromTonic();
+    notifDailyOn = _storage.loadNotifDailyOn();
+    notifComebackOn = _storage.loadNotifComebackOn();
+    notifHour = _storage.loadNotifHour();
+    notifMinute = _storage.loadNotifMinute();
     lastSession = _storage.loadLastSession();
     _recoverPendingSession();
     resyncNotifications();
@@ -66,14 +82,92 @@ class AppProvider extends ChangeNotifier {
   void resyncNotifications() {
     final today = _dateKey(DateTime.now());
     NotificationService.resync(ReminderPlan(
-      dailyOn: true,
-      hour: 19,
-      minute: 0,
-      comebackOn: true,
+      dailyOn: notifDailyOn,
+      hour: notifHour,
+      minute: notifMinute,
+      comebackOn: notifComebackOn,
       playedToday: (stats.dailyHistory[today]?.attempts ?? 0) > 0,
       lastPlayedMs: stats.sessionHistory.isNotEmpty ? stats.sessionHistory.first.timestamp : null,
-      weakSpotBody: _weakSpotMessage(),
+      streak: streak,
+      dailyMessages: _dailyMessages(),
+      streakSaveMessage: _streakSaveMessage(),
     ));
+  }
+
+  void setNotifDailyOn(bool v) {
+    notifDailyOn = v;
+    _storage.saveNotifDailyOn(v);
+    resyncNotifications();
+    notifyListeners();
+  }
+
+  void setNotifComebackOn(bool v) {
+    notifComebackOn = v;
+    _storage.saveNotifComebackOn(v);
+    resyncNotifications();
+    notifyListeners();
+  }
+
+  void setNotifTime(int hour, int minute) {
+    notifHour = hour;
+    notifMinute = minute;
+    _storage.saveNotifTime(hour, minute);
+    resyncNotifications();
+    notifyListeners();
+  }
+
+  /// Fire a sample question notification immediately (debug "test" button).
+  void sendTestNotification() {
+    final m = _dailyMessages();
+    NotificationService.showTestNow(
+        m.isNotEmpty ? m.first : ('Improvy 🎹', 'Time to practise?'));
+  }
+
+  static String _ordinal(int n) => n == 2 ? '2nd' : n == 3 ? '3rd' : '${n}th';
+
+  // The rotating daily pool: mostly degree-recall quiz questions (the app's
+  // essence — they make you open the app to check yourself), plus a targeted
+  // weak-spot nudge, a level-progress nudge, and a couple of evergreens.
+  List<ReminderMessage> _dailyMessages() {
+    final rng = Random();
+    final msgs = <ReminderMessage>[];
+
+    final weak = _weakSpotMessage();
+    if (weak != null) msgs.add(('Target practice 🎯', weak));
+
+    for (var i = 0; i < 5; i++) {
+      final key = kKeys[rng.nextInt(kKeys.length)];
+      final deg = 2 + rng.nextInt(6); // 2..7 (the 1 is trivial)
+      msgs.add(('Quick quiz 🎹', "What's the ${_ordinal(deg)} of $key major? Tap to check."));
+    }
+
+    final a = animalLevel;
+    final p = totalProgress;
+    const thresholds = [12.5, 25.0, 37.5, 50.0, 62.5, 75.0, 87.5, 100.0];
+    double? toNext;
+    for (final t in thresholds) {
+      if (p < t) { toNext = t - p; break; }
+    }
+    msgs.add(toNext != null
+        ? ('${a.name} ${a.emoji}', "You're ${toNext.toStringAsFixed(1)}% from levelling up. Close the gap?")
+        : ('${a.name} ${a.emoji}', 'Maxed out — keep those reflexes razor-sharp.'));
+
+    msgs.add(('Improvy 🎹', 'Every degree, every key, instantly. Got 3 minutes?'));
+    msgs.add(('Ear training 🎧', 'Fast recall beats slow theory. Quick session?'));
+    return msgs;
+  }
+
+  // Loss-framed nudge for TODAY only: fires when a streak of 2+ will break
+  // tonight unless the user plays. Null otherwise (nothing to protect).
+  ReminderMessage? _streakSaveMessage() {
+    final today = _dateKey(DateTime.now());
+    final playedToday = (stats.dailyHistory[today]?.attempts ?? 0) > 0;
+    final s = streak;
+    if (s >= 2 && !playedToday) {
+      return ("Don't break your streak! 🔥",
+          'Your $s-day streak ends tonight — 2 minutes to keep it alive.');
+    }
+    return null;
   }
 
   // The single most frequent recurring confusion of the last 30 games — the
@@ -105,10 +199,26 @@ class AppProvider extends ChangeNotifier {
         '10 questions to nail it?';
   }
 
+  // First finished game → show the priming sheet once. The OS permission dialog
+  // is only fired if the user opts in there (acceptNotifPrompt), so a decline
+  // never blindly burns the one-shot iOS permission.
   void _ensureNotifPermission() {
     if (_storage.loadNotifPermAsked()) return;
+    showNotifPrompt = true;
+    notifyListeners();
+  }
+
+  void acceptNotifPrompt() {
+    showNotifPrompt = false;
     _storage.saveNotifPermAsked(true);
     NotificationService.requestPermission().then((_) => resyncNotifications());
+    notifyListeners();
+  }
+
+  void dismissNotifPrompt() {
+    showNotifPrompt = false;
+    _storage.saveNotifPermAsked(true);
+    notifyListeners();
   }
 
   // If the app was killed mid-game, a lightweight snapshot of the in-progress

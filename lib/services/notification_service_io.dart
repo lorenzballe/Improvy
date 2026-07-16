@@ -52,20 +52,12 @@ class NotificationService {
     return false;
   }
 
-  // Generic daily texts, rotated by date so consecutive days differ.
-  static const _daily = [
-    '5 minutes a day and every key becomes home. Ready?',
-    'Do you know the ♭3 of E without thinking? Prove it.',
-    'Fast thinking beats slow theory. Quick session?',
-    'Every degree, every key, instantly. Keep building it.',
-  ];
-
   static Future<void> resync(ReminderPlan plan) async {
     if (!_ready) return;
     await _plugin.cancelAll();
     final now = DateTime.now();
 
-    if (plan.dailyOn) {
+    if (plan.dailyOn && plan.dailyMessages.isNotEmpty) {
       // The next 7 daily slots as one-shots (re-armed on every resync). Fixed
       // instants instead of a repeating rule: content can differ per day and
       // no exact-alarm permission is needed.
@@ -73,14 +65,12 @@ class NotificationService {
         final when = DateTime(now.year, now.month, now.day + d, plan.hour, plan.minute);
         if (!when.isAfter(now)) continue; // today's slot already behind us
         if (d == 0 && plan.playedToday) continue; // already practised today
-        final seed = when.day + when.month;
-        final useWeak = plan.weakSpotBody != null && seed.isEven;
-        await _schedule(
-          100 + d,
-          useWeak ? 'Target practice 🎯' : 'Improvy',
-          useWeak ? plan.weakSpotBody! : _daily[seed % _daily.length],
-          when,
-        );
+        // Today's slot goes to the streak-save nudge when a streak is at risk;
+        // every other slot rotates through the (question-heavy) message pool.
+        final msg = (d == 0 && plan.streakSaveMessage != null)
+            ? plan.streakSaveMessage!
+            : plan.dailyMessages[(when.day + when.month + d) % plan.dailyMessages.length];
+        await _schedule(100 + d, msg.$1, msg.$2, when);
       }
     }
 
@@ -94,10 +84,17 @@ class NotificationService {
         (201, 7, 'A week away — your instant recall needs a warm-up. Come back?'),
       ];
       for (final (id, days, body) in comebacks) {
-        final when = DateTime(last.year, last.month, last.day + days, 19, 0);
+        final when = DateTime(last.year, last.month, last.day + days, plan.hour, plan.minute);
         if (when.isAfter(now)) await _schedule(id, 'Improvy', body, when);
       }
     }
+  }
+
+  /// Fires a notification immediately — used by the debug "test now" button so
+  /// the exact look of a reminder can be checked without waiting for a slot.
+  static Future<void> showTestNow(ReminderMessage msg) async {
+    if (!_ready) return;
+    await _plugin.show(999, msg.$1, msg.$2, _details);
   }
 
   static Future<void> _schedule(int id, String title, String body, DateTime when) {

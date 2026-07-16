@@ -436,6 +436,14 @@ class _RootScreenState extends State<RootScreen> {
             controller: _confettiCtrl,
             color: _confettiColor ?? Colors.white,
           ),
+          // Pre-permission priming — shown once after the first finished game.
+          if (provider.showNotifPrompt)
+            Positioned.fill(
+              child: _NotifPrimingModal(
+                onEnable: provider.acceptNotifPrompt,
+                onDismiss: provider.dismissNotifPrompt,
+              ),
+            ),
         ],
       ),
     );
@@ -657,6 +665,95 @@ class _RainbowGlowOverlayState extends State<_RainbowGlowOverlay>
               colors: [color, color.withValues(alpha: 0)]),
         ),
       );
+}
+
+// Pre-permission priming sheet: explains the value of reminders before the OS
+// dialog, so a "Don't Allow" never blindly burns the one-shot iOS permission.
+class _NotifPrimingModal extends StatelessWidget {
+  final VoidCallback onEnable;
+  final VoidCallback onDismiss;
+  const _NotifPrimingModal({required this.onEnable, required this.onDismiss});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(children: [
+      Positioned.fill(
+        child: GestureDetector(
+          onTap: onDismiss,
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+            child: Container(color: Colors.black.withValues(alpha: 0.6)),
+          ),
+        ),
+      ),
+      Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Container(
+            padding: const EdgeInsets.all(28),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1A1625),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 40, offset: const Offset(0, 20)),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 64, height: 64,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFEC4899)]),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: 0.4), blurRadius: 24)],
+                  ),
+                  child: const Icon(Icons.notifications_active_rounded, color: Colors.white, size: 32),
+                ),
+                const SizedBox(height: 20),
+                const Text('Stay sharp between sessions',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.3)),
+                const SizedBox(height: 10),
+                Text(
+                  'Get a quick daily quiz ("What\'s the ♭3 of E?"), a heads-up before your streak breaks, and a friendly poke if you drift away. No spam — tune or turn them off anytime.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 13, height: 1.5, color: Colors.white.withValues(alpha: 0.6)),
+                ),
+                const SizedBox(height: 24),
+                GestureDetector(
+                  onTap: onEnable,
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFEC4899)]),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [BoxShadow(color: const Color(0xFFEC4899).withValues(alpha: 0.35), blurRadius: 20, offset: const Offset(0, 8))],
+                    ),
+                    child: const Text('Enable reminders',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Colors.white)),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                GestureDetector(
+                  onTap: onDismiss,
+                  behavior: HitTestBehavior.opaque,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Text('Not now',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white.withValues(alpha: 0.5))),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ]);
+  }
 }
 
 class _ConfettiOverlay extends StatelessWidget {
