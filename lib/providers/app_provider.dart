@@ -182,6 +182,9 @@ class AppProvider extends ChangeNotifier {
     for (final s in stats.sessionHistory.take(30)) {
       for (final a in s.answers) {
         if (a.isCorrect || a.selectedNote.isEmpty) continue;
+        // "…Of What?" answers are about roots, not degrees inside a key —
+        // their `tonality` is a fixed note, so they'd produce nonsense pairs.
+        if (a.mode == 'of-what') continue;
         final asked = romanDegree(a.degree);
         final selSemi = kNoteToSemitone[a.selectedNote.split('/')[0].trim()];
         final rootSemi = kNoteToSemitone[a.tonality];

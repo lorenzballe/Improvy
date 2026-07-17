@@ -110,7 +110,10 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
   @override
   void initState() {
     super.initState();
-    _currentKey = widget.selectedKey;
+    // In "…Of What?" the fixed note IS the session's identity: records, the
+    // top-bar badge and the adaptive-difficulty history pool all key off it
+    // (selectedKey is meaningless there — the mode has no tonality).
+    _currentKey = _isOfWhat ? _fixedNote : widget.selectedKey;
     _scale = calculateMajorScale(_currentKey);
     _remainingMs = _timeLimit;
 
@@ -380,7 +383,7 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
       degree: currentDegree,
       note: _actualIsReverse ? _degreeLabel : _correctAnswer,
       selectedNote: selected,
-      tonality: _isOfWhat ? _fixedNote : _currentKey,
+      tonality: _currentKey, // in …Of What? this is the fixed note
       mode: widget.mode.storageKey,
       isReverse: _actualIsReverse,
       difficulty: widget.difficulty,
@@ -513,7 +516,7 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
   void _finishSession() {
     final elapsed = DateTime.now().difference(_sessionStart).inSeconds;
     widget.onFinish({
-      'key': _isOfWhat ? _fixedNote : _currentKey,
+      'key': _currentKey, // in …Of What? this is the fixed note
       'mode': widget.mode.storageKey,
       'accuracy': _attempts > 0 ? (_correct / _attempts * 100).round() : 0,
       'correct': _correct,
@@ -636,8 +639,11 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
                     progress: progress,
                     timerPct: timerPct,
                     timeLimit: _timeLimit,
-                    currentKey: _isOfWhat ? _fixedNote : _currentKey,
+                    currentKey: _currentKey,
                     contextLabel: _isOfWhat ? 'NOTE' : 'KEY',
+                    // Only …Of What? tints the badge: the fixed note is the
+                    // whole question's subject, so it wears its tonal colour.
+                    badgeColor: _isOfWhat ? AppColors.noteColors[_fixedNote] : null,
                     notation: widget.notation,
                     correct: _correct,
                     total: _questionsPerKey,
@@ -661,9 +667,8 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
                           fit: BoxFit.scaleDown,
                           child: _isOfWhat
                               ? _OfWhatQuestion(
-                                  note: _fixedNote,
                                   degree: _degreeLabel,
-                                  notation: widget.notation,
+                                  streak: _streak,
                                 )
                               : _QuestionDisplay(
                                   label: _degreeLabel,
@@ -903,6 +908,7 @@ class _TopBar extends StatelessWidget {
   final int timeLimit;
   final String currentKey;
   final String contextLabel; // 'KEY' normally, 'NOTE' in …Of What?
+  final Color? badgeColor; // tonal tint for the badge (…Of What? only)
   final String notation;
   final int correct;
   final int total;
@@ -919,6 +925,7 @@ class _TopBar extends StatelessWidget {
     required this.timeLimit,
     required this.currentKey,
     this.contextLabel = 'KEY',
+    this.badgeColor,
     required this.notation,
     required this.correct,
     required this.total,
@@ -1003,7 +1010,13 @@ class _TopBar extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.white10,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white.withAlpha(51), width: 1.2),
+                  border: Border.all(
+                    color: badgeColor?.withAlpha(140) ?? Colors.white.withAlpha(51),
+                    width: 1.2,
+                  ),
+                  boxShadow: badgeColor != null
+                      ? [BoxShadow(color: badgeColor!.withAlpha(80), blurRadius: 14)]
+                      : null,
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -1016,7 +1029,7 @@ class _TopBar extends StatelessWidget {
                       fit: BoxFit.scaleDown,
                       child: NoteText(
                         note: formatNoteForDisplay(currentKey, notation),
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white, height: 1.1),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: badgeColor ?? Colors.white, height: 1.1),
                       ),
                     ),
                   ],
@@ -1209,49 +1222,98 @@ class _QuestionDisplay extends StatelessWidget {
   );
 }
 
-// "…Of What?" question: the fixed melody note (small, tonal colour), then the
-// rotating degree (big), then the "…of what?" prompt — reads as one sentence
-// "B♭ is the 4 …of what?". Degrees use NoteText so ♭/♯ come from Noto Music.
+// "…Of What?" question: just the rotating degree (big) over the "…of what?"
+// prompt — the fixed note lives (coloured) in the top-right badge, so it is
+// not repeated here. Same sizing/streak-badge language as _QuestionDisplay.
 class _OfWhatQuestion extends StatelessWidget {
-  final String note;
   final String degree;
-  final String notation;
-  const _OfWhatQuestion({required this.note, required this.degree, required this.notation});
+  final int streak;
+  const _OfWhatQuestion({required this.degree, required this.streak});
 
   @override
   Widget build(BuildContext context) {
     final sz = MediaQuery.of(context).size;
-    final fontSize = min(sz.width * 0.42, sz.height * 0.20).clamp(72.0, 168.0);
-    final noteColor = AppColors.noteColors[note] ?? Colors.white;
+    final fontSize = min(sz.width * 0.45, sz.height * 0.22).clamp(88.0, 192.0);
+
+    final bigDegree = ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: sz.width - 64 - (streak > 4 ? 96 : 0)),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: NoteText(
+          note: degree,
+          style: TextStyle(
+            fontSize: fontSize, fontWeight: FontWeight.w900, color: Colors.white, height: 1.0,
+            shadows: const [Shadow(color: Colors.black54, blurRadius: 80, offset: Offset(0, 20))],
+          ),
+        ),
+      ),
+    );
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
-        NoteText(
-          note: formatNoteForDisplay(note, notation),
-          style: TextStyle(fontSize: fontSize * 0.36, fontWeight: FontWeight.w900, color: noteColor, height: 1.0),
-        ),
-        const SizedBox(height: 6),
-        Text('IS THE', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.white.withAlpha(130), letterSpacing: 4)),
-        const SizedBox(height: 8),
-        ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: sz.width - 56),
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: NoteText(
-              note: degree,
-              style: TextStyle(
-                fontSize: fontSize, fontWeight: FontWeight.w900, color: Colors.white, height: 1.0,
-                shadows: const [Shadow(color: Colors.black54, blurRadius: 80, offset: Offset(0, 20))],
-              ),
-            ),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 180),
+          reverseDuration: Duration.zero,
+          transitionBuilder: (child, anim) => ScaleTransition(
+            scale: CurvedAnimation(parent: anim, curve: Curves.easeOutBack),
+            child: FadeTransition(opacity: anim, child: child),
+          ),
+          child: Row(
+            key: ValueKey(degree),
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Invisible mirror keeps the degree centred (see _QuestionDisplay).
+              if (streak > 4) Opacity(opacity: 0, child: _streakBadge()),
+              bigDegree,
+              if (streak > 4) _streakBadge(),
+            ],
           ),
         ),
-        const SizedBox(height: 10),
-        Text('…OF WHAT?', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Colors.white.withAlpha(204), letterSpacing: 6)),
+        const SizedBox(height: 12),
+        Text('…OF WHAT?',
+            style: TextStyle(
+              fontSize: 13, fontWeight: FontWeight.w900,
+              color: Colors.white.withAlpha(204), letterSpacing: 6, height: 1.0,
+            )),
       ],
     );
   }
+
+  Widget _streakBadge() => Transform.translate(
+    offset: const Offset(-2, 0),
+    child: Container(
+      margin: const EdgeInsets.only(top: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: streak >= 10
+              ? const [Color(0xFFfacc15), Color(0xFFf97316), Color(0xFFdc2626)]
+              : const [Color(0xFF22c55e), Color(0xFF10b981)],
+        ),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.white.withAlpha(26)),
+        boxShadow: [
+          BoxShadow(
+            color: streak >= 10 ? const Color(0x66f97316) : const Color(0x6622c55e),
+            blurRadius: 15,
+          ),
+        ],
+      ),
+      child: Text(
+        'x$streak',
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w900,
+          color: streak >= 10 ? Colors.white : Colors.black,
+        ),
+      ),
+    ),
+  );
 }
 
 class _AnswerGrid extends StatelessWidget {

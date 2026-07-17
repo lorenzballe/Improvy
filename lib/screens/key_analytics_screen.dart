@@ -80,14 +80,19 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
     // the last 30 games in which this key was played, matching the game-based
     // windows used across the stats. A confusion drilled away months ago must
     // not haunt the card forever.
+    // "…Of What?" answers store the fixed NOTE in `tonality` — that is not a
+    // key context, so they must not leak into any per-key statistic here.
+    bool inKey(dynamic a) => a.tonality == tone && a.mode != 'of-what';
+
     final recentToneSessions = history
-        .where((s) => s.answers.any((a) => a.tonality == tone))
+        .where((s) => s.answers.any(inKey))
         .take(30)
         .toSet();
 
     for (final session in history) {
       final inWindow = recentToneSessions.contains(session);
       for (final ans in session.answers) {
+        if (ans.mode == 'of-what') continue; // not key-playing (see inKey)
         final t = ans.tonality;
         final cur = tonalityStats[t] ?? (0, 0, 0, 0);
         // Timed-out questions count for accuracy but carry no speed info —
@@ -159,7 +164,7 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
     final toneAnswers = <bool>[];
     for (final s in history) {
       for (final a in s.answers) {
-        if (a.tonality == tone) toneAnswers.add(a.isCorrect);
+        if (inKey(a)) toneAnswers.add(a.isCorrect);
       }
     }
     double? trend;
@@ -181,12 +186,12 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
     double? accuracyDelta;
     {
       final toneSessions = history.where((s) =>
-          (s.answers as List).any((a) => a.tonality == tone)).toList(); // newest-first
+          (s.answers as List).any(inKey)).toList(); // newest-first
       double accOf(Iterable sessions) {
         int c = 0, t = 0;
         for (final s in sessions) {
           for (final a in (s.answers as List)) {
-            if (a.tonality == tone) { t++; if (a.isCorrect) c++; }
+            if (inKey(a)) { t++; if (a.isCorrect) c++; }
           }
         }
         return t > 0 ? c / t : 0;
@@ -533,9 +538,12 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
   }
 
   // Build 7 bucket y-values (0..200, where 0 = 100% accuracy) for the tone.
+  // "…Of What?" answers are excluded — their `tonality` is a fixed note, not
+  // a key context (same rule as every per-key stat on this screen).
   List<double> _buildChart(List history, String tone, int limit) {
+    bool inKey(dynamic a) => a.tonality == tone && a.mode != 'of-what';
     final sessions = history.where((s) =>
-        (s.answers as List).any((a) => a.tonality == tone)).toList().reversed.toList();
+        (s.answers as List).any(inKey)).toList().reversed.toList();
     if (sessions.isEmpty) return List.filled(7, 200.0);
 
     final n = math.min(limit, sessions.length);
@@ -544,7 +552,7 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
     for (var i = 0; i < relevant.length; i++) {
       final bi = math.min(((i / relevant.length) * 7).floor(), 6);
       for (final a in (relevant[i].answers as List)) {
-        if (a.tonality == tone) {
+        if (inKey(a)) {
           buckets[bi][1]++;
           if (a.isCorrect) buckets[bi][0]++;
         }
