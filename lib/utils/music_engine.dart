@@ -34,50 +34,59 @@ bool areEnharmonicEquivalent(String n1, String n2) {
   return kNoteToSemitone[n1] == kNoteToSemitone[n2];
 }
 
+// Semitone offset above the root for each degree token (accidentals + jazz
+// extensions). Shared by the forward (degree→note) and inverse (note+degree→
+// root) spellers so they can never disagree.
+const Map<String, int> _degSemitone = {
+  '1': 0,
+  '♭2': 1, 'b2': 1, '♭9': 1, 'b9': 1,
+  '2': 2, '9': 2,
+  '♯2': 3, '#2': 3, '♭3': 3, 'b3': 3, '♯9': 3, '#9': 3,
+  '3': 4,
+  '4': 5, '11': 5,
+  '♯4': 6, '#4': 6, '♭5': 6, 'b5': 6, '♯11': 6, '#11': 6,
+  '5': 7,
+  '♯5': 8, '#5': 8, '♭6': 8, 'b6': 8, '♭13': 8, 'b13': 8,
+  '6': 9, '13': 9,
+  '♭7': 10, 'b7': 10,
+  '7': 11, 'maj7': 11, '△7': 11,
+};
+
+// How many natural-letter steps above the root each degree spans (a 3rd is 2
+// steps, a 4th/11th is 3, …). Fixes the letter name so accidentals fall out.
+const Map<String, int> _degLetterOffset = {
+  '1': 0,
+  '♭2': 1, 'b2': 1, '♭9': 1, 'b9': 1,
+  '2': 1, '9': 1,
+  '♯2': 1, '#2': 1, '♯9': 1, '#9': 1,
+  '♭3': 2, 'b3': 2, '3': 2,
+  '4': 3, '11': 3,
+  '♯4': 3, '#4': 3, '♯11': 3, '#11': 3,
+  '♭5': 4, 'b5': 4, '5': 4, '♯5': 4, '#5': 4,
+  '♭6': 5, 'b6': 5, '♭13': 5, 'b13': 5, '6': 5, '13': 5,
+  '♭7': 6, 'b7': 6, '7': 6, 'maj7': 6, '△7': 6,
+};
+
+String? _spell(String letter, int semitone) {
+  for (final acc in ['', '♯', '♭', '𝄪', '𝄫', '#', 'b']) {
+    if (kNoteToSemitone[letter + acc] == semitone) return letter + acc;
+  }
+  return null;
+}
+
 String getNoteFromChromaticDegree(String degree, List<String> scale, String key) {
   final cleanDegree = degree.split('/')[0];
-  const mapping = {
-    '1': 0,
-    '♭2': 1, 'b2': 1, '♭9': 1, 'b9': 1,
-    '2': 2, '9': 2,
-    '♯2': 3, '#2': 3, '♭3': 3, 'b3': 3, '♯9': 3, '#9': 3,
-    '3': 4,
-    '4': 5, '11': 5,
-    '♯4': 6, '#4': 6, '♭5': 6, 'b5': 6, '♯11': 6, '#11': 6,
-    '5': 7,
-    '♯5': 8, '#5': 8, '♭6': 8, 'b6': 8, '♭13': 8, 'b13': 8,
-    '6': 9, '13': 9,
-    '♭7': 10, 'b7': 10,
-    '7': 11,
-  };
-
-  const letterOffsets = {
-    '1': 0,
-    '♭2': 1, 'b2': 1, '♭9': 1, 'b9': 1,
-    '2': 1, '9': 1,
-    '♯2': 1, '#2': 1, '♯9': 1, '#9': 1,
-    '♭3': 2, 'b3': 2, '3': 2,
-    '4': 3, '11': 3,
-    '♯4': 3, '#4': 3, '♯11': 3, '#11': 3,
-    '♭5': 4, 'b5': 4, '5': 4, '♯5': 4, '#5': 4,
-    '♭6': 5, 'b6': 5, '♭13': 5, 'b13': 5, '6': 5, '13': 5,
-    '♭7': 6, 'b7': 6, '7': 6,
-  };
-
   final rootSemitone = kNoteToSemitone[key] ?? 0;
-  final semitoneOffset = mapping[cleanDegree] ?? 0;
+  final semitoneOffset = _degSemitone[cleanDegree] ?? 0;
   final targetSemitone = (rootSemitone + semitoneOffset) % 12;
 
-  final rootLetter = key[0];
-  final rootIndex = _naturalNotes.indexOf(rootLetter);
-  final letterOffset = letterOffsets[cleanDegree];
+  final rootIndex = _naturalNotes.indexOf(key[0]);
+  final letterOffset = _degLetterOffset[cleanDegree];
 
   if (letterOffset != null) {
     final targetLetter = _naturalNotes[(rootIndex + letterOffset) % 7];
-    for (final acc in ['', '♯', '♭', '𝄪', '𝄫', '#', 'b']) {
-      final candidate = targetLetter + acc;
-      if (kNoteToSemitone[candidate] == targetSemitone) return candidate;
-    }
+    final spelled = _spell(targetLetter, targetSemitone);
+    if (spelled != null) return spelled;
   }
 
   // Fallback to scale note or default name
@@ -85,6 +94,29 @@ String getNoteFromChromaticDegree(String degree, List<String> scale, String key)
     if (areEnharmonicEquivalent(s, _getSemitoneNoteName(targetSemitone))) return s;
   }
   return _getSemitoneNoteName(targetSemitone);
+}
+
+/// Inverse of [getNoteFromChromaticDegree] for the "…Of What?" mode: given a
+/// melody [note] and a [degree], the root for which that note *is* that degree,
+/// spelled correctly (B♭ as 4 → F; B♭ as ♭9 → A; B♭ as 3 → G♭; E as ♯11 → B♭).
+/// Returns null when the answer would need a double accidental (e.g. B♭ as ♯2
+/// → A𝄫) — such combinations aren't real chord roots and are skipped when a
+/// question is generated.
+String? rootFromNoteAndDegree(String note, String degree) {
+  final clean = degree.split('/')[0];
+  final noteSemitone = kNoteToSemitone[note];
+  final offset = _degSemitone[clean];
+  final letterOffset = _degLetterOffset[clean];
+  final noteIndex = _naturalNotes.indexOf(note[0]);
+  if (noteSemitone == null || offset == null || letterOffset == null || noteIndex < 0) {
+    return null;
+  }
+  final rootSemitone = (noteSemitone - offset) % 12;
+  final rootLetter = _naturalNotes[(noteIndex - letterOffset) % 7];
+  final spelled = _spell(rootLetter, (rootSemitone + 12) % 12);
+  // Reject double accidentals — not a usable root.
+  if (spelled == null || spelled.contains('𝄪') || spelled.contains('𝄫')) return null;
+  return spelled;
 }
 
 /// Note names for the on-screen piano in CHROMATIC mode: every semitone is
