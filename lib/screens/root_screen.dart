@@ -296,6 +296,19 @@ class _RootScreenState extends State<RootScreen> {
             );
           },
         );
+      } else if (_pendingSetup == TrainingMode.ofWhat) {
+        return OfWhatSetup(
+          onCancel: () { provider.deselectKey(); setState(() => _pendingSetup = null); },
+          onStart: (note, degrees, difficulty, questions) {
+            setState(() => _pendingSetup = null);
+            provider.startOfWhatMode(
+              note: note,
+              degrees: degrees,
+              difficulty: difficulty,
+              questions: questions,
+            );
+          },
+        );
       }
     }
 
@@ -309,7 +322,7 @@ class _RootScreenState extends State<RootScreen> {
               onRetry: () => setState(() { _finishedSession = null; _perfectGlow = false; }),
               onBack: () {
                 final mode = provider.activeMode;
-                final isSpecial = mode == TrainingMode.noteToNumber || mode == TrainingMode.custom;
+                final isSpecial = mode == TrainingMode.noteToNumber || mode == TrainingMode.custom || mode == TrainingMode.ofWhat;
                 setState(() { _finishedSession = null; _perfectGlow = false; });
                 if (isSpecial) provider.deselectKey();
                 provider.exitTrainer();
@@ -345,6 +358,7 @@ class _RootScreenState extends State<RootScreen> {
       return TrainerScreen(
         mode: provider.activeMode!,
         selectedKey: provider.selectedKey ?? 'C',
+        fixedNote: provider.fixedNote,
         difficulty: provider.activeMode == TrainingMode.diatonic
             ? provider.diatonicDifficulty
             : (provider.customDifficulty ?? provider.chromaticDifficulty),
@@ -357,7 +371,7 @@ class _RootScreenState extends State<RootScreen> {
         keyboardFromTonic: provider.keyboardFromTonic,
         onExit: () {
           final mode = provider.activeMode;
-          final isSpecial = mode == TrainingMode.noteToNumber || mode == TrainingMode.custom;
+          final isSpecial = mode == TrainingMode.noteToNumber || mode == TrainingMode.custom || mode == TrainingMode.ofWhat;
           if (isSpecial) provider.deselectKey();
           provider.exitTrainer();
         },

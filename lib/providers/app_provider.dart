@@ -53,6 +53,9 @@ class AppProvider extends ChangeNotifier {
   bool? isReverse;
   int? customDifficulty;
   int? customQuestions;
+  // "…Of What?" mode: the fixed melody note held for the whole session (the
+  // degree rotates and the root is the answer).
+  String? fixedNote;
 
   Future<void> init() async {
     progressData = _storage.loadProgress();
@@ -426,7 +429,49 @@ class AppProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // "…Of What?" — a fixed melody [note], the degree rotates each question, the
+  // answer is the root. Not tied to a key; reuses customDegrees/customQuestions.
+  void startOfWhatMode({
+    required String note,
+    required List<String> degrees,
+    int questions = 30,
+    int difficulty = 1,
+  }) {
+    fixedNote = note;
+    customDegrees = degrees;
+    isReverse = false;
+    customDifficulty = difficulty;
+    customQuestions = questions;
+    lastSession = {
+      'key': note,
+      'mode': TrainingMode.ofWhat.storageKey,
+      'difficulty': difficulty,
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    };
+    _storage.saveLastSession(lastSession!);
+    AnalyticsService.instance.capture('session_started', {
+      'mode': TrainingMode.ofWhat.storageKey,
+      'note': note,
+      'difficulty': difficulty,
+      'degrees': degrees.length,
+    });
+    activeMode = TrainingMode.ofWhat;
+    notifyListeners();
+  }
+
   void exitTrainer() {
+    _flushCurrentSession();
+    activeMode = null;
+    customDegrees = null;
+    isReverse = null;
+    customDifficulty = null;
+    customQuestions = null;
+    fixedNote = null;
+    // Covers the abandoned-run path too (playedToday may have changed even
+    // when the run was too short to count as a game).
+    resyncNotifications();
+    notifyListeners();
+  }
     _flushCurrentSession();
     activeMode = null;
     customDegrees = null;

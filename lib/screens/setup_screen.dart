@@ -355,6 +355,161 @@ class _CustomModeSetupState extends State<CustomModeSetup> {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// OfWhatSetup — "…Of What?" (harmonize): fix one melody note, the degree
+// rotates, the answer is the root.
+// ─────────────────────────────────────────────────────────────────────────────
+
+class OfWhatSetup extends StatefulWidget {
+  final void Function(String note, List<String> degrees, int difficulty, int questions) onStart;
+  final VoidCallback onCancel;
+
+  const OfWhatSetup({super.key, required this.onStart, required this.onCancel});
+
+  @override
+  State<OfWhatSetup> createState() => _OfWhatSetupState();
+}
+
+class _OfWhatSetupState extends State<OfWhatSetup> {
+  String _note = 'C';
+  Set<String> _degs = Set.of(kOfWhatChordTones);
+  int _diff = 1;
+  int _questions = 15;
+
+  static const _diffLabels = ['Apprentice', 'Virtuoso', 'Master'];
+  static const _questionOpts = ['15', '30', '50', '75', '100'];
+  static const _accent = Color(0xFF22D3EE); // cyan
+
+  // Jazz extensions reuse the colour of their base chromatic degree.
+  static Color _degColor(String d) {
+    const base = {'♭9': '♭2', '9': '2', '♯9': '♯2', '11': '4', '♯11': '♯4', '♭13': '♭6', '13': '6'};
+    return AppColors.degreeColors[base[d] ?? d] ?? _accent;
+  }
+
+  void _toggle(String d) {
+    setState(() {
+      if (_degs.contains(d)) {
+        if (_degs.length > 1) _degs.remove(d);
+      } else {
+        _degs.add(d);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (_, __) => widget.onCancel(),
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        body: Stack(
+          children: [
+            _GlowBg(primary: _accent, secondary: const Color(0xFF3B82F6)),
+            SafeArea(
+              child: Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _Header(
+                            title: '…Of What?',
+                            subtitle: 'HARMONIZE SETUP',
+                            gradColors: const [Color(0xFF22D3EE), Color(0xFF22D3EE)],
+                            onBack: widget.onCancel,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(24, 28, 24, 0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const _SectionTitle(
+                                  icon: Icons.music_note_rounded,
+                                  title: 'Select Note',
+                                  subtitle: 'The melody note held for the whole session.',
+                                ),
+                                const SizedBox(height: 18),
+                                _KeyGrid(
+                                  selected: _note,
+                                  accentColor: _accent,
+                                  onSelect: (n) => setState(() => _note = n),
+                                ),
+                                const SizedBox(height: 36),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    const Expanded(
+                                      child: _SectionTitle(
+                                        icon: Icons.tune_rounded,
+                                        title: 'Degrees to Ask',
+                                      ),
+                                    ),
+                                    _QuickBtn(label: 'CHORD', onTap: () => setState(() => _degs = Set.of(kOfWhatChordTones))),
+                                    const SizedBox(width: 8),
+                                    _QuickBtn(label: 'EXT', onTap: () => setState(() => _degs = Set.of(kOfWhatExtensions))),
+                                    const SizedBox(width: 8),
+                                    _QuickBtn(label: 'ALL', onTap: () => setState(() => _degs = Set.of(kOfWhatDegrees))),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                _DegreeGrid(
+                                  selected: _degs,
+                                  onToggle: _toggle,
+                                  list: kOfWhatDegrees,
+                                  colorFor: _degColor,
+                                ),
+                                const SizedBox(height: 36),
+                                const _SectionTitle(
+                                  icon: Icons.track_changes_rounded,
+                                  title: 'Difficulty',
+                                  subtitle: 'Higher difficulty means less time to answer.',
+                                ),
+                                const SizedBox(height: 18),
+                                _SlidingPillRow(
+                                  opts: _diffLabels,
+                                  sel: _diffLabels[_diff - 1],
+                                  accentColor: _accent,
+                                  onChange: (v) => setState(() => _diff = _diffLabels.indexOf(v) + 1),
+                                ),
+                                const SizedBox(height: 36),
+                                const _SectionTitle(
+                                  icon: Icons.auto_awesome_rounded,
+                                  title: 'Number of Questions',
+                                  subtitle: 'How many questions for this session?',
+                                ),
+                                const SizedBox(height: 18),
+                                _QuestionRow(
+                                  opts: _questionOpts,
+                                  selected: '$_questions',
+                                  accentColor: _accent,
+                                  onSelect: (v) => setState(() => _questions = int.parse(v)),
+                                ),
+                                const SizedBox(height: 40),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  _StartBtn(
+                    gradColors: const [Color(0xFF22D3EE), Color(0xFF22D3EE)],
+                    shadowColor: _accent.withValues(alpha: 0.4),
+                    icon: Icons.bolt_rounded,
+                    onTap: () => widget.onStart(_note, _degs.toList(), _diff, _questions),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Shared private widgets
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -806,13 +961,23 @@ class _DegreeGrid extends StatelessWidget {
   final Set<String> selected;
   final ValueChanged<String> onToggle;
   final bool reverse;
+  // Optional overrides used by the "…Of What?" setup (jazz degree vocabulary
+  // with its own colouring); null keeps the existing chromatic behaviour.
+  final List<String>? list;
+  final Color Function(String deg)? colorFor;
 
-  const _DegreeGrid({required this.selected, required this.onToggle, this.reverse = false});
+  const _DegreeGrid({
+    required this.selected,
+    required this.onToggle,
+    this.reverse = false,
+    this.list,
+    this.colorFor,
+  });
 
   @override
   Widget build(BuildContext context) {
     // Note→Number shows each enharmonic degree as two distinct buttons.
-    final degrees = reverse ? kChromaticDegreesSplit : kChromaticDegrees;
+    final degrees = list ?? (reverse ? kChromaticDegreesSplit : kChromaticDegrees);
     const cols = 4;
     const gap = 12.0; // web: gap-3
     final cellH = 48.0 * MediaQuery.textScalerOf(context).scale(1); // web: h-12
@@ -837,7 +1002,9 @@ class _DegreeGrid extends StatelessWidget {
                       child: Builder(builder: (_) {
                         final deg = degrees[r * cols + c];
                         final active = selected.contains(deg);
-                        final color = AppColors.degreeColors[deg.split('/')[0]] ?? Colors.white;
+                        final color = colorFor != null
+                            ? colorFor!(deg)
+                            : (AppColors.degreeColors[deg.split('/')[0]] ?? Colors.white);
                         return _DegreeCell(deg: deg, color: color, active: active, onTap: () => onToggle(deg));
                       }),
                     ),

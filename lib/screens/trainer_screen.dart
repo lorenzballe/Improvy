@@ -13,6 +13,8 @@ import '../widgets/note_text.dart';
 class TrainerScreen extends StatefulWidget {
   final TrainingMode mode;
   final String selectedKey;
+  // "…Of What?" only: the fixed melody note held for the whole session.
+  final String? fixedNote;
   final int difficulty;
   final int? numberOfQuestions;
   final List<String>? customDegrees;
@@ -29,6 +31,7 @@ class TrainerScreen extends StatefulWidget {
     super.key,
     required this.mode,
     required this.selectedKey,
+    this.fixedNote,
     required this.difficulty,
     this.numberOfQuestions,
     this.customDegrees,
@@ -79,6 +82,24 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
       widget.mode == TrainingMode.noteToNumber ||
       (widget.mode == TrainingMode.custom && (widget.isReverse ?? false));
 
+  // "…Of What?": fixed note in the badge, the degree rotates, the ROOT is the
+  // answer (so the answer side behaves like a forward/note-answer mode).
+  bool get _isOfWhat => widget.mode == TrainingMode.ofWhat;
+  late final String _fixedNote = widget.fixedNote ?? 'C';
+  // The subset of the chosen degrees that yield a real (cleanly-spelled) root
+  // for this note — e.g. B♭ as ♯9 has no clean root, so it's never asked. If
+  // the user's whole selection filters out, fall back to every clean degree
+  // for this note (never empty — '1' always maps to the note itself).
+  late final List<String> _ofWhatDegrees = () {
+    bool clean(String d) => rootFromNoteAndDegree(_fixedNote, d) != null;
+    final chosen = (widget.customDegrees ?? kOfWhatChordTones.toList()).where(clean).toList();
+    return chosen.isNotEmpty ? chosen : kOfWhatDegrees.where(clean).toList();
+  }();
+  // The 12 possible roots, shown as answer buttons / piano.
+  static const List<String> _rootChoices = [
+    'C', 'D♭', 'D', 'E♭', 'E', 'F', 'G♭', 'G', 'A♭', 'A', 'B♭', 'B',
+  ];
+
   int get _questionsPerKey =>
       widget.numberOfQuestions ??
       (widget.difficulty == 1 ? 30 : widget.difficulty == 2 ? 40 : 50);
@@ -109,6 +130,10 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
   }
 
   List<NoteItem> get _notesToShow {
+    if (_isOfWhat) {
+      // Answer with a root: all 12 notes, plain names.
+      return _rootChoices.map((n) => NoteItem(label: n, rawLabel: n, note: n)).toList();
+    }
     if (_actualIsReverse) {
       final degrees = widget.customDegrees?.isNotEmpty == true
           ? widget.customDegrees!
@@ -136,11 +161,13 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
     _autoTimer?.cancel();
     _timerTick?.cancel();
 
-    final possibleDegrees = widget.mode == TrainingMode.diatonic
-        ? ['1', '2', '3', '4', '5', '6', '7']
-        : (widget.customDegrees?.isNotEmpty == true
-            ? widget.customDegrees!
-            : (_actualIsReverse ? kChromaticDegreesSplit : kChromaticDegrees).toList());
+    final possibleDegrees = _isOfWhat
+        ? _ofWhatDegrees
+        : widget.mode == TrainingMode.diatonic
+            ? ['1', '2', '3', '4', '5', '6', '7']
+            : (widget.customDegrees?.isNotEmpty == true
+                ? widget.customDegrees!
+                : (_actualIsReverse ? kChromaticDegreesSplit : kChromaticDegrees).toList());
 
     final currentDeg = _actualIsReverse ? _correctAnswer : _fullDegree;
     String next;
@@ -164,7 +191,12 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
       _lastSelected = null;
       _remainingMs = _timeLimit;
       _fullDegree = next; // logical degree (incl. slash) — used for de-dup
-      if (_actualIsReverse) {
+      if (_isOfWhat) {
+        // Question: fixed note + this degree. Answer: the root for which the
+        // note is that degree (guaranteed clean — _ofWhatDegrees pre-filters).
+        _degreeLabel = next;
+        _correctAnswer = rootFromNoteAndDegree(_fixedNote, next) ?? 'C';
+      } else if (_actualIsReverse) {
         _degreeLabel = getNoteFromChromaticDegree(next, _scale, _currentKey);
         _correctAnswer = next;
       } else if (widget.mode == TrainingMode.diatonic) {
@@ -348,7 +380,7 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
       degree: currentDegree,
       note: _actualIsReverse ? _degreeLabel : _correctAnswer,
       selectedNote: selected,
-      tonality: _currentKey,
+      tonality: _isOfWhat ? _fixedNote : _currentKey,
       mode: widget.mode.storageKey,
       isReverse: _actualIsReverse,
       difficulty: widget.difficulty,
@@ -481,7 +513,7 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
   void _finishSession() {
     final elapsed = DateTime.now().difference(_sessionStart).inSeconds;
     widget.onFinish({
-      'key': _currentKey,
+      'key': _isOfWhat ? _fixedNote : _currentKey,
       'mode': widget.mode.storageKey,
       'accuracy': _attempts > 0 ? (_correct / _attempts * 100).round() : 0,
       'correct': _correct,
@@ -604,7 +636,8 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
                     progress: progress,
                     timerPct: timerPct,
                     timeLimit: _timeLimit,
-                    currentKey: _currentKey,
+                    currentKey: _isOfWhat ? _fixedNote : _currentKey,
+                    contextLabel: _isOfWhat ? 'NOTE' : 'KEY',
                     notation: widget.notation,
                     correct: _correct,
                     total: _questionsPerKey,
@@ -626,12 +659,18 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
                         // the big note/number can never overlap the answer area.
                         child: FittedBox(
                           fit: BoxFit.scaleDown,
-                          child: _QuestionDisplay(
-                            label: _degreeLabel,
-                            isReverse: _actualIsReverse,
-                            notation: widget.notation,
-                            streak: _streak,
-                          ),
+                          child: _isOfWhat
+                              ? _OfWhatQuestion(
+                                  note: _fixedNote,
+                                  degree: _degreeLabel,
+                                  notation: widget.notation,
+                                )
+                              : _QuestionDisplay(
+                                  label: _degreeLabel,
+                                  isReverse: _actualIsReverse,
+                                  notation: widget.notation,
+                                  streak: _streak,
+                                ),
                         ),
                       ),
                     ),
@@ -863,6 +902,7 @@ class _TopBar extends StatelessWidget {
   final double timerPct;
   final int timeLimit;
   final String currentKey;
+  final String contextLabel; // 'KEY' normally, 'NOTE' in …Of What?
   final String notation;
   final int correct;
   final int total;
@@ -878,6 +918,7 @@ class _TopBar extends StatelessWidget {
     required this.timerPct,
     required this.timeLimit,
     required this.currentKey,
+    this.contextLabel = 'KEY',
     required this.notation,
     required this.correct,
     required this.total,
@@ -967,9 +1008,9 @@ class _TopBar extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const FittedBox(
+                    FittedBox(
                       fit: BoxFit.scaleDown,
-                      child: Text('KEY', maxLines: 1, softWrap: false, style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.white60, letterSpacing: 1.5)),
+                      child: Text(contextLabel, maxLines: 1, softWrap: false, style: const TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.white60, letterSpacing: 1.5)),
                     ),
                     FittedBox(
                       fit: BoxFit.scaleDown,
@@ -1166,6 +1207,51 @@ class _QuestionDisplay extends StatelessWidget {
       ),
     ),
   );
+}
+
+// "…Of What?" question: the fixed melody note (small, tonal colour), then the
+// rotating degree (big), then the "…of what?" prompt — reads as one sentence
+// "B♭ is the 4 …of what?". Degrees use NoteText so ♭/♯ come from Noto Music.
+class _OfWhatQuestion extends StatelessWidget {
+  final String note;
+  final String degree;
+  final String notation;
+  const _OfWhatQuestion({required this.note, required this.degree, required this.notation});
+
+  @override
+  Widget build(BuildContext context) {
+    final sz = MediaQuery.of(context).size;
+    final fontSize = min(sz.width * 0.42, sz.height * 0.20).clamp(72.0, 168.0);
+    final noteColor = AppColors.noteColors[note] ?? Colors.white;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        NoteText(
+          note: formatNoteForDisplay(note, notation),
+          style: TextStyle(fontSize: fontSize * 0.36, fontWeight: FontWeight.w900, color: noteColor, height: 1.0),
+        ),
+        const SizedBox(height: 6),
+        Text('IS THE', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.white.withAlpha(130), letterSpacing: 4)),
+        const SizedBox(height: 8),
+        ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: sz.width - 56),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: NoteText(
+              note: degree,
+              style: TextStyle(
+                fontSize: fontSize, fontWeight: FontWeight.w900, color: Colors.white, height: 1.0,
+                shadows: const [Shadow(color: Colors.black54, blurRadius: 80, offset: Offset(0, 20))],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        Text('…OF WHAT?', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Colors.white.withAlpha(204), letterSpacing: 6)),
+      ],
+    );
+  }
 }
 
 class _AnswerGrid extends StatelessWidget {

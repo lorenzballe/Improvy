@@ -32,6 +32,16 @@ const Map<String, String> kDegreeCollapseMap = {
   '♯5': '♭6/♯5', '♭6': '♭6/♯5',
 };
 
+// Degrees offered by the "…Of What?" harmonization mode — a jazz chord-degree
+// vocabulary WITH extensions. The generator drops any degree that would give a
+// double-accidental root for the chosen note, so both enharmonic spellings can
+// be offered (♯9 vs ♭3, ♯11 vs ♭5, ♯5 vs ♭13) and only the sensible one is asked.
+const List<String> kOfWhatDegrees = [
+  '1', '♭9', '9', '♯9', '♭3', '3', '11', '♯11', '♭5', '5', '♯5', '♭13', '13', '♭7', '7',
+];
+const Set<String> kOfWhatChordTones = {'1', '♭3', '3', '5', '♭7', '7'};
+const Set<String> kOfWhatExtensions = {'♭9', '9', '♯9', '11', '♯11', '♭13', '13'};
+
 // Roman labels for the 15 distinct degree spellings, in scale order.
 // Enharmonic degrees (♯II/bIII, ♯IV/bV, ♯V/bVI) are separate entries: the
 // trainer asks them as distinct questions (kChromaticDegreesSplit), so every

@@ -37,7 +37,7 @@ class SessionSummaryScreen extends StatelessWidget {
     final passed  = errors <= 3;
     final perfect = errors == 0;
     final hasNext = diff < 3;
-    final isCustom = mode == 'custom' || mode == 'note-to-number';
+    final isCustom = mode == 'custom' || mode == 'note-to-number' || mode == 'of-what';
     final isDiat  = mode == 'diatonic';
 
     final diffLabels = ['Apprentice', 'Virtuoso', 'Master'];
@@ -46,6 +46,7 @@ class SessionSummaryScreen extends StatelessWidget {
       'chromatic' => 'Chromatic',
       'note-to-number' => 'Note to Number',
       'custom' => 'Custom',
+      'of-what' => '…Of What?',
       _ => mode,
     };
 

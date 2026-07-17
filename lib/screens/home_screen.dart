@@ -172,6 +172,19 @@ class _HomeMain extends StatelessWidget {
                     onOpenSetup(TrainingMode.custom);
                   },
                 ),
+                const SizedBox(height: 12),
+                _BigSpecialCard(
+                  title: '…Of What?',
+                  subtitle: 'A note is a given degree — name the root. Harmonize any melody.',
+                  icon: Icons.hub_rounded,
+                  accentColor: const Color(0xFF22D3EE),
+                  borderColor: const Color(0xFF22D3EE).withAlpha(110),
+                  isLocked: !provider.isPro,
+                  onTap: () {
+                    if (!provider.isPro) { onShowPaywall(); return; }
+                    onOpenSetup(TrainingMode.ofWhat);
+                  },
+                ),
               ]),
             )),
             const SizedBox(height: 28),
