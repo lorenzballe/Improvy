@@ -176,7 +176,7 @@ class _HomeMain extends StatelessWidget {
                 _BigSpecialCard(
                   title: '…Of What?',
                   subtitle: 'A note is a given degree — name the root. Harmonize any melody.',
-                  icon: Icons.hub_rounded,
+                  icon: Icons.question_mark_rounded,
                   accentColor: const Color(0xFF22D3EE),
                   borderColor: const Color(0xFF22D3EE).withAlpha(110),
                   isLocked: !provider.isPro,
