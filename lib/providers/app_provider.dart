@@ -472,17 +472,6 @@ class AppProvider extends ChangeNotifier {
     resyncNotifications();
     notifyListeners();
   }
-    _flushCurrentSession();
-    activeMode = null;
-    customDegrees = null;
-    isReverse = null;
-    customDifficulty = null;
-    customQuestions = null;
-    // Covers the abandoned-run path too (playedToday may have changed even
-    // when the run was too short to count as a game).
-    resyncNotifications();
-    notifyListeners();
-  }
 
   void _flushCurrentSession() {
     final answered = stats.currentSessionTotal;
