@@ -298,6 +298,14 @@ class _RootScreenState extends State<RootScreen> {
         );
       } else if (_pendingSetup == TrainingMode.ofWhat) {
         return OfWhatSetup(
+          isPro: provider.isPro,
+          onShowPaywall: () {
+            // The paywall overlay only renders on the main scaffold, so the
+            // setup has to be dismissed before it can appear.
+            provider.deselectKey();
+            setState(() => _pendingSetup = null);
+            _showPaywallSheet('ofwhat-degrees');
+          },
           onCancel: () { provider.deselectKey(); setState(() => _pendingSetup = null); },
           onStart: (note, degrees, difficulty, questions) {
             setState(() => _pendingSetup = null);

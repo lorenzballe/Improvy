@@ -362,8 +362,16 @@ class _CustomModeSetupState extends State<CustomModeSetup> {
 class OfWhatSetup extends StatefulWidget {
   final void Function(String note, List<String> degrees, int difficulty, int questions) onStart;
   final VoidCallback onCancel;
+  final bool isPro;
+  final VoidCallback onShowPaywall;
 
-  const OfWhatSetup({super.key, required this.onStart, required this.onCancel});
+  const OfWhatSetup({
+    super.key,
+    required this.onStart,
+    required this.onCancel,
+    required this.isPro,
+    required this.onShowPaywall,
+  });
 
   @override
   State<OfWhatSetup> createState() => _OfWhatSetupState();
@@ -393,6 +401,42 @@ class _OfWhatSetupState extends State<OfWhatSetup> {
         _degs.add(d);
       }
     });
+  }
+
+  // Chord tones are free; anything beyond them (the EXT / ALL presets, or
+  // extensions picked by hand) needs Pro. Checked on Start, not on selection,
+  // so free users can still explore the grid.
+  bool get _needsPro => !widget.isPro && _degs.any((d) => !kOfWhatChordTones.contains(d));
+
+  void _showProDialog() {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1625),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Improvy Pro',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 18)),
+        content: Text(
+          'EXT and ALL degrees are available only with Improvy Pro.',
+          style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 14, height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text('NOT NOW',
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontWeight: FontWeight.w700)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              widget.onShowPaywall();
+            },
+            child: const Text('GET PRO',
+                style: TextStyle(color: Color(0xFF22D3EE), fontWeight: FontWeight.w800)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -497,7 +541,10 @@ class _OfWhatSetupState extends State<OfWhatSetup> {
                     gradColors: const [Color(0xFF22D3EE), Color(0xFF22D3EE)],
                     shadowColor: _accent.withValues(alpha: 0.4),
                     icon: Icons.bolt_rounded,
-                    onTap: () => widget.onStart(_note, _degs.toList(), _diff, _questions),
+                    onTap: () {
+                      if (_needsPro) { _showProDialog(); return; }
+                      widget.onStart(_note, _degs.toList(), _diff, _questions);
+                    },
                   ),
                 ],
               ),

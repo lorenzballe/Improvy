@@ -181,9 +181,10 @@ class _HomeMain extends StatelessWidget {
                   iconWidget: const Center(child: _ThickGlyph('?', 27)),
                   accentColor: const Color(0xFF22D3EE),
                   borderColor: const Color(0xFF22D3EE).withAlpha(110),
-                  isLocked: !provider.isPro,
+                  // Free to open — only the EXT/ALL degree selections inside its
+                  // setup are Pro-gated (checked when the session starts).
+                  isLocked: false,
                   onTap: () {
-                    if (!provider.isPro) { onShowPaywall(); return; }
                     onOpenSetup(TrainingMode.ofWhat);
                   },
                 ),
@@ -208,6 +209,12 @@ class _HomeMain extends StatelessWidget {
                   final mode = ls['mode'] as String;
                   final diff = ls['difficulty'] as int? ?? 1;
                   final isSpecial = mode == 'custom' || mode == 'note-to-number';
+                  if (mode == 'of-what') {
+                    // Of What is free; the degrees aren't stored in lastSession,
+                    // so reopen its setup (Pro gating happens there on Start).
+                    onOpenSetup(TrainingMode.ofWhat);
+                    return;
+                  }
                   // Same gating as everywhere else: special modes and non-C
                   // keys are Pro. The last session may predate losing Pro, so
                   // resuming must not become a paywall bypass.
