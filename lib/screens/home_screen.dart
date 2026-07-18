@@ -176,7 +176,9 @@ class _HomeMain extends StatelessWidget {
                 _BigSpecialCard(
                   title: '…Of What?',
                   subtitle: 'A note is a given degree — name the root. Harmonize any melody.',
-                  icon: Icons.question_mark_rounded,
+                  // A typographic "?" in the app's own heavy face — the thin
+                  // material glyph looked generic next to the ♯♭ lettering.
+                  iconWidget: const Center(child: _ThickGlyph('?', 27)),
                   accentColor: const Color(0xFF22D3EE),
                   borderColor: const Color(0xFF22D3EE).withAlpha(110),
                   isLocked: !provider.isPro,
@@ -910,7 +912,8 @@ class _KeyCardState extends State<_KeyCard> {
 class _BigSpecialCard extends StatefulWidget {
   final String title;
   final String subtitle;
-  final IconData icon;
+  final IconData? icon;
+  final Widget? iconWidget;
   final Color accentColor;
   final Color borderColor;
   final bool isLocked;
@@ -918,9 +921,9 @@ class _BigSpecialCard extends StatefulWidget {
 
   const _BigSpecialCard({
     required this.title, required this.subtitle,
-    required this.icon, required this.accentColor,
+    this.icon, this.iconWidget, required this.accentColor,
     required this.borderColor, required this.isLocked, required this.onTap,
-  });
+  }) : assert(icon != null || iconWidget != null);
 
   @override
   State<_BigSpecialCard> createState() => _BigSpecialCardState();
@@ -1003,7 +1006,7 @@ class _BigSpecialCardState extends State<_BigSpecialCard> {
                           border: Border.all(color: accent.withAlpha(140)),
                           boxShadow: [BoxShadow(color: accent.withValues(alpha:0.35), blurRadius: 16, offset: const Offset(0, 6))],
                         ),
-                        child: Icon(widget.icon, color: Colors.white, size: 24),
+                        child: widget.iconWidget ?? Icon(widget.icon, color: Colors.white, size: 24),
                       ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
