@@ -222,7 +222,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
                 builder: (_, __) {
                   final t = Curves.easeInOut.transform(_breathe.value);
                   return Container(
-                    width: 210 + 26 * t, height: 210 + 26 * t,
+                    width: 235 + 26 * t, height: 235 + 26 * t,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: RadialGradient(
@@ -241,10 +241,10 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
           ),
         ),
         Container(
-          width: 104, height: 104,
+          width: 124, height: 124,
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(28),
             border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
             boxShadow: [
               BoxShadow(color: const Color(0xFF7C3AED).withValues(alpha: 0.48),
