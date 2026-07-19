@@ -253,11 +253,17 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
                 blurRadius: 44, offset: const Offset(11, 18), spreadRadius: -8),
             ],
           ),
-          child: Image.asset('assets/images/improvy_logo.png', fit: BoxFit.cover, filterQuality: FilterQuality.high),
+          // The asset is the app icon: piano keys inside a black rounded
+          // square whose frame eats ~25% of the tile. Scale it up inside the
+          // clipped box so the keys fill the tile and only a slim frame stays.
+          child: Transform.scale(
+            scale: 1.25,
+            child: Image.asset('assets/images/improvy_logo.png', fit: BoxFit.cover, filterQuality: FilterQuality.high),
+          ),
         ),
       ],
     ),
-    const SizedBox(height: 24),
+    const SizedBox(height: 14),
     Row(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
