@@ -403,41 +403,13 @@ class _OfWhatSetupState extends State<OfWhatSetup> {
     });
   }
 
-  // Chord tones are free; anything beyond them (the EXT / ALL presets, or
-  // extensions picked by hand) needs Pro. Checked on Start, not on selection,
-  // so free users can still explore the grid.
-  bool get _needsPro => !widget.isPro && _degs.any((d) => !kOfWhatChordTones.contains(d));
-
-  void _showProDialog() {
-    showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1625),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Improvy Pro',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 18)),
-        content: Text(
-          'EXT and ALL degrees are available only with Improvy Pro.',
-          style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 14, height: 1.5),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text('NOT NOW',
-                style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontWeight: FontWeight.w700)),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              widget.onShowPaywall();
-            },
-            child: const Text('GET PRO',
-                style: TextStyle(color: Color(0xFF22D3EE), fontWeight: FontWeight.w800)),
-          ),
-        ],
-      ),
-    );
-  }
+  // Chord tones are free; everything beyond them (the EXT / ALL presets and
+  // the extension degrees in the grid) is Pro. The gate lives on the controls
+  // themselves — locked chips/cells open the paywall — so Start never has to
+  // block: a free user's selection can only ever contain free degrees.
+  Set<String> get _lockedDegs => widget.isPro
+      ? const {}
+      : kOfWhatDegrees.where((d) => !kOfWhatChordTones.contains(d)).toSet();
 
   @override
   Widget build(BuildContext context) {
@@ -491,9 +463,23 @@ class _OfWhatSetupState extends State<OfWhatSetup> {
                                     ),
                                     _QuickBtn(label: 'CHORD', onTap: () => setState(() => _degs = Set.of(kOfWhatChordTones))),
                                     const SizedBox(width: 8),
-                                    _QuickBtn(label: 'EXT', onTap: () => setState(() => _degs = Set.of(kOfWhatExtensions))),
+                                    _QuickBtn(
+                                      label: 'EXT',
+                                      locked: !widget.isPro,
+                                      onTap: () {
+                                        if (!widget.isPro) { widget.onShowPaywall(); return; }
+                                        setState(() => _degs = Set.of(kOfWhatExtensions));
+                                      },
+                                    ),
                                     const SizedBox(width: 8),
-                                    _QuickBtn(label: 'ALL', onTap: () => setState(() => _degs = Set.of(kOfWhatDegrees))),
+                                    _QuickBtn(
+                                      label: 'ALL',
+                                      locked: !widget.isPro,
+                                      onTap: () {
+                                        if (!widget.isPro) { widget.onShowPaywall(); return; }
+                                        setState(() => _degs = Set.of(kOfWhatDegrees));
+                                      },
+                                    ),
                                   ],
                                 ),
                                 const SizedBox(height: 16),
@@ -502,6 +488,8 @@ class _OfWhatSetupState extends State<OfWhatSetup> {
                                   onToggle: _toggle,
                                   list: kOfWhatDegrees,
                                   colorFor: _degColor,
+                                  lockedDegrees: _lockedDegs,
+                                  onLockedTap: widget.onShowPaywall,
                                 ),
                                 const SizedBox(height: 36),
                                 const _SectionTitle(
@@ -541,10 +529,7 @@ class _OfWhatSetupState extends State<OfWhatSetup> {
                     gradColors: const [Color(0xFF22D3EE), Color(0xFF22D3EE)],
                     shadowColor: _accent.withValues(alpha: 0.4),
                     icon: Icons.bolt_rounded,
-                    onTap: () {
-                      if (_needsPro) { _showProDialog(); return; }
-                      widget.onStart(_note, _degs.toList(), _diff, _questions);
-                    },
+                    onTap: () => widget.onStart(_note, _degs.toList(), _diff, _questions),
                   ),
                 ],
               ),
@@ -901,7 +886,10 @@ class _SlidingPillRow extends StatelessWidget {
 class _QuickBtn extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
-  const _QuickBtn({required this.label, required this.onTap});
+  // Pro-gated preset: shows a monochrome lock before the label; the caller
+  // routes the tap to the paywall instead of applying the preset.
+  final bool locked;
+  const _QuickBtn({required this.label, required this.onTap, this.locked = false});
 
   @override
   Widget build(BuildContext context) => GestureDetector(
@@ -915,16 +903,25 @@ class _QuickBtn extends StatelessWidget {
       ),
       child: FittedBox(
         fit: BoxFit.scaleDown,
-        child: Text(
-          label,
-          maxLines: 1,
-          softWrap: false,
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w900,
-            color: Colors.white.withValues(alpha:0.4),
-            letterSpacing: 0.5,
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (locked) ...[
+              Icon(Icons.lock_rounded, size: 10, color: Colors.white.withValues(alpha:0.4)),
+              const SizedBox(width: 4),
+            ],
+            Text(
+              label,
+              maxLines: 1,
+              softWrap: false,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w900,
+                color: Colors.white.withValues(alpha:0.4),
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
         ),
       ),
     ),
@@ -1012,6 +1009,10 @@ class _DegreeGrid extends StatelessWidget {
   // with its own colouring); null keeps the existing chromatic behaviour.
   final List<String>? list;
   final Color Function(String deg)? colorFor;
+  // Pro-gated degrees render dimmed with a monochrome lock; tapping one calls
+  // onLockedTap (the paywall) instead of toggling.
+  final Set<String> lockedDegrees;
+  final VoidCallback? onLockedTap;
 
   const _DegreeGrid({
     required this.selected,
@@ -1019,6 +1020,8 @@ class _DegreeGrid extends StatelessWidget {
     this.reverse = false,
     this.list,
     this.colorFor,
+    this.lockedDegrees = const {},
+    this.onLockedTap,
   });
 
   @override
@@ -1049,10 +1052,17 @@ class _DegreeGrid extends StatelessWidget {
                       child: Builder(builder: (_) {
                         final deg = degrees[r * cols + c];
                         final active = selected.contains(deg);
+                        final locked = lockedDegrees.contains(deg);
                         final color = colorFor != null
                             ? colorFor!(deg)
                             : (AppColors.degreeColors[deg.split('/')[0]] ?? Colors.white);
-                        return _DegreeCell(deg: deg, color: color, active: active, onTap: () => onToggle(deg));
+                        return _DegreeCell(
+                          deg: deg,
+                          color: color,
+                          active: active && !locked,
+                          locked: locked,
+                          onTap: locked ? (onLockedTap ?? () {}) : () => onToggle(deg),
+                        );
                       }),
                     ),
                   ],
@@ -1070,9 +1080,10 @@ class _DegreeCell extends StatelessWidget {
   final String deg;
   final Color color;
   final bool active;
+  final bool locked;
   final VoidCallback onTap;
 
-  const _DegreeCell({required this.deg, required this.color, required this.active, required this.onTap});
+  const _DegreeCell({required this.deg, required this.color, required this.active, required this.onTap, this.locked = false});
 
   @override
   Widget build(BuildContext context) {
@@ -1085,7 +1096,8 @@ class _DegreeCell extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           // Selected: vivid degree colour + soft glow; unselected: glass tile.
-          color: a ? null : Colors.white.withValues(alpha:0.045),
+          // Locked: even fainter glass tile, monochrome (no degree colour).
+          color: a ? null : Colors.white.withValues(alpha: locked ? 0.025 : 0.045),
           gradient: a
               ? LinearGradient(
                   begin: Alignment.topCenter,
@@ -1095,29 +1107,38 @@ class _DegreeCell extends StatelessWidget {
               : null,
           borderRadius: BorderRadius.circular(12), // rounded-xl
           border: Border.all(
-            color: a ? Colors.white.withValues(alpha:0.18) : Colors.white.withValues(alpha:0.07),
+            color: a ? Colors.white.withValues(alpha:0.18) : Colors.white.withValues(alpha: locked ? 0.05 : 0.07),
           ),
           boxShadow: a
               ? [BoxShadow(color: c.withValues(alpha:0.35), blurRadius: 14, offset: const Offset(0, 4), spreadRadius: -3)]
               : null,
         ),
-        child: Center(
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              deg,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              softWrap: false,
-              style: TextStyle(
-                fontSize: deg.length > 3 ? 11 : 14, // web: text-sm
-                fontWeight: FontWeight.w900,
-                color: a ? Colors.white : Colors.white.withValues(alpha:0.3),
-                letterSpacing: -0.2,
-                shadows: a ? const [Shadow(color: Color(0x66000000), blurRadius: 4, offset: Offset(0, 1))] : null,
+        child: Stack(
+          children: [
+            Center(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  deg,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  softWrap: false,
+                  style: TextStyle(
+                    fontSize: deg.length > 3 ? 11 : 14, // web: text-sm
+                    fontWeight: FontWeight.w900,
+                    color: a ? Colors.white : Colors.white.withValues(alpha: locked ? 0.18 : 0.3),
+                    letterSpacing: -0.2,
+                    shadows: a ? const [Shadow(color: Color(0x66000000), blurRadius: 4, offset: Offset(0, 1))] : null,
+                  ),
+                ),
               ),
             ),
-          ),
+            if (locked)
+              Positioned(
+                top: 5, right: 6,
+                child: Icon(Icons.lock_rounded, size: 10, color: Colors.white.withValues(alpha:0.35)),
+              ),
+          ],
         ),
       ),
     );

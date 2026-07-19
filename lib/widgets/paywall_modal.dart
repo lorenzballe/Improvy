@@ -101,6 +101,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
     'Chromatic Mode',
     'Note to Number',
     'Custom Mode',
+    '…Of What? Extensions',
     'Adaptive Difficulty',
     'Deep Analytics',
   ];

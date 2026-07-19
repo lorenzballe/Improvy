@@ -200,6 +200,27 @@ class _RootScreenState extends State<RootScreen> {
     setState(() => _pendingSetup = mode);
   }
 
+  // The paywall overlay is shared between the main scaffold and the "…Of What?"
+  // setup (whose locked EXT/ALL controls open it in place, keeping the user's
+  // configuration intact underneath).
+  Widget _paywallOverlay(AppProvider provider) => Positioned.fill(
+    child: PaywallModal(
+      onClose: () => setState(() => _showPaywall = false),
+      onPurchase: () async {
+        final outcome = await PurchaseService.instance.purchasePro();
+        if (!mounted) return;
+        if (outcome == PurchaseOutcome.success) {
+          provider.setIsPro(true);
+          setState(() => _showPaywall = false);
+        } else if (outcome != PurchaseOutcome.cancelled) {
+          // Keep the paywall open and tell the user what went wrong —
+          // a silent dead button is the worst possible outcome.
+          _showPurchaseError(outcome);
+        }
+      },
+    ),
+  );
+
   void _handleFinishSession(Map<String, dynamic> data, AppProvider provider) {
     // Detect level-up
     final newLevel = provider.animalLevel;
@@ -297,26 +318,23 @@ class _RootScreenState extends State<RootScreen> {
           },
         );
       } else if (_pendingSetup == TrainingMode.ofWhat) {
-        return OfWhatSetup(
-          isPro: provider.isPro,
-          onShowPaywall: () {
-            // The paywall overlay only renders on the main scaffold, so the
-            // setup has to be dismissed before it can appear.
-            provider.deselectKey();
-            setState(() => _pendingSetup = null);
-            _showPaywallSheet('ofwhat-degrees');
-          },
-          onCancel: () { provider.deselectKey(); setState(() => _pendingSetup = null); },
-          onStart: (note, degrees, difficulty, questions) {
-            setState(() => _pendingSetup = null);
-            provider.startOfWhatMode(
-              note: note,
-              degrees: degrees,
-              difficulty: difficulty,
-              questions: questions,
-            );
-          },
-        );
+        return Stack(children: [
+          OfWhatSetup(
+            isPro: provider.isPro,
+            onShowPaywall: () => _showPaywallSheet('ofwhat-degrees'),
+            onCancel: () { provider.deselectKey(); setState(() => _pendingSetup = null); },
+            onStart: (note, degrees, difficulty, questions) {
+              setState(() => _pendingSetup = null);
+              provider.startOfWhatMode(
+                note: note,
+                degrees: degrees,
+                difficulty: difficulty,
+                questions: questions,
+              );
+            },
+          ),
+          if (_showPaywall) _paywallOverlay(provider),
+        ]);
       }
     }
 
@@ -414,24 +432,7 @@ class _RootScreenState extends State<RootScreen> {
               _KeepAlivePage(child: SettingsScreen(onShowPaywall: _showPaywallSheet, onSimulatePerfect: _triggerPerfectCelebration)),
             ],
           ),
-          if (_showPaywall)
-            Positioned.fill(
-              child: PaywallModal(
-                onClose: () => setState(() => _showPaywall = false),
-                onPurchase: () async {
-                  final outcome = await PurchaseService.instance.purchasePro();
-                  if (!mounted) return;
-                  if (outcome == PurchaseOutcome.success) {
-                    provider.setIsPro(true);
-                    setState(() => _showPaywall = false);
-                  } else if (outcome != PurchaseOutcome.cancelled) {
-                    // Keep the paywall open and tell the user what went wrong —
-                    // a silent dead button is the worst possible outcome.
-                    _showPurchaseError(outcome);
-                  }
-                },
-              ),
-            ),
+          if (_showPaywall) _paywallOverlay(provider),
           if (provider.selectedKey == null && !provider.viewingKeyStats && !_showPaywall)
             Positioned(
               bottom: 24 + _stableBottomInset,
