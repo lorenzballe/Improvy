@@ -160,12 +160,21 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
     return buttons;
   }
 
+  // "…Of What?": degree 1 makes the root the fixed note itself — a giveaway.
+  // Drop it from the pool almost always, letting it slip through only ~1 in 25
+  // questions, unless the player deliberately picked nothing but degree 1.
+  List<String> _ofWhatPool() {
+    final nonRoot = _ofWhatDegrees.where((d) => d != '1').toList();
+    if (nonRoot.isEmpty) return _ofWhatDegrees;
+    return Random().nextInt(25) == 0 ? const ['1'] : nonRoot;
+  }
+
   void _generateChallenge() {
     _autoTimer?.cancel();
     _timerTick?.cancel();
 
     final possibleDegrees = _isOfWhat
-        ? _ofWhatDegrees
+        ? _ofWhatPool()
         : widget.mode == TrainingMode.diatonic
             ? ['1', '2', '3', '4', '5', '6', '7']
             : (widget.customDegrees?.isNotEmpty == true
