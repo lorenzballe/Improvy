@@ -462,6 +462,19 @@ class AppProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Pocket Mode runs outside the tap-game engine, but should still surface in
+  /// "Pick Up Where You Left Off" — record it as the last session on start.
+  void recordPocketSession({required String key, required bool shuffle}) {
+    lastSession = {
+      'key': shuffle ? '' : key,
+      'mode': TrainingMode.pocket.storageKey,
+      'pocketShuffle': shuffle,
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    };
+    _storage.saveLastSession(lastSession!);
+    notifyListeners();
+  }
+
   void exitTrainer() {
     _flushCurrentSession();
     activeMode = null;

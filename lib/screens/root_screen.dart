@@ -313,6 +313,7 @@ class _RootScreenState extends State<RootScreen> {
                 'shuffle': config.shuffleKeys,
                 'degrees': config.degrees.length,
               });
+              provider.recordPocketSession(key: config.key, shuffle: config.shuffleKeys);
               setState(() { _pendingSetup = null; _pocketConfig = config; });
             },
           ),

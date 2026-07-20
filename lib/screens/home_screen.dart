@@ -230,6 +230,13 @@ class _HomeMain extends StatelessWidget {
                     onOpenSetup(TrainingMode.ofWhat);
                     return;
                   }
+                  if (mode == 'pocket') {
+                    // Pocket Mode is free; reopen its setup (config isn't stored,
+                    // chromatic-degree Pro gating happens there on Start).
+                    if (provider.selectedKey == null) provider.selectKey(provider.progressData.first.key);
+                    onOpenSetup(TrainingMode.pocket);
+                    return;
+                  }
                   // Same gating as everywhere else: special modes and non-C
                   // keys are Pro. The last session may predate losing Pro, so
                   // resuming must not become a paywall bypass.
@@ -1155,13 +1162,23 @@ class _WithSession extends StatelessWidget {
     final diff = session['difficulty'] as int? ?? 1;
     final ts = session['timestamp'] as int? ?? 0;
     final diffLabels = ['Apprentice', 'Virtuoso', 'Master'];
+    final isPocket = mode == 'pocket';
+    final pocketShuffle = session['pocketShuffle'] as bool? ?? false;
     final modeLabel = switch (mode) {
       'diatonic' => 'Diatonic',
       'chromatic' => 'Chromatic',
       'note-to-number' => 'Note to Number',
       'custom' => 'Custom',
+      'pocket' => 'Pocket Mode',
       _ => mode.isEmpty ? '' : mode[0].toUpperCase() + mode.substring(1),
     };
+    // Pocket: shuffle has no single key; the title is just the mode name.
+    final titleText = (isPocket && (pocketShuffle || key.isEmpty))
+        ? modeLabel
+        : '${formatNoteForDisplay(key, context.select<AppProvider, String>((p) => p.notation))} $modeLabel';
+    final subtitleText = isPocket
+        ? (pocketShuffle ? 'Shuffle · hands-free' : 'Hands-free audio')
+        : (diff > 0 && diff <= 3 ? '${diffLabels[diff - 1]} Difficulty' : '');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1190,7 +1207,7 @@ class _WithSession extends StatelessWidget {
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerLeft,
                   child: NoteText(
-                    note: '${formatNoteForDisplay(key, context.select<AppProvider, String>((p) => p.notation))} $modeLabel',
+                    note: titleText,
                     style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white, height: 1),
                   ),
                 ),
@@ -1198,7 +1215,7 @@ class _WithSession extends StatelessWidget {
                 FittedBox(
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerLeft,
-                  child: Text(diff > 0 && diff <= 3 ? '${diffLabels[diff - 1]} Difficulty' : '',
+                  child: Text(subtitleText,
                     maxLines: 1,
                     softWrap: false,
                     style: TextStyle(fontSize: 13, color: Colors.white.withAlpha(97))),
