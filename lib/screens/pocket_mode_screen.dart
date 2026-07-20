@@ -53,7 +53,8 @@ class _PocketModeScreenState extends State<PocketModeScreen> {
   int _index = 0; // questions completed
   int _phase = 0; // 0 idle · 1 asking · 2 thinking (countdown) · 3 answering
   String _key = '';
-  String _degree = '';
+  String _degree = ''; // base degree — drives the answer note + colour
+  String _presented = ''; // label actually spoken/shown (may be the extension)
   String _answer = '';
   String? _prevDegree;
   int _countdownMs = 0;
@@ -77,6 +78,16 @@ class _PocketModeScreenState extends State<PocketModeScreen> {
   static const _numberWords = {
     '1': 'one', '2': 'two', '3': 'three', '4': 'four',
     '5': 'five', '6': 'six', '7': 'seven',
+    '9': 'nine', '11': 'eleven', '13': 'thirteen',
+  };
+
+  // A degree and the upper-structure extension that names the SAME note an
+  // octave up (2↔9, 4↔11, 6↔13, plus the altered ♭9/♯9/♯11/♭13). In-game the
+  // voice asks either name at random, so both must feel familiar; the answer
+  // note is identical either way, so it's always computed from the base degree.
+  static const _extensionOf = {
+    '♭2': '♭9', '2': '9', '♭3/♯2': '♯9',
+    '4': '11', '♯4/♭5': '♯11', '♭6/♯5': '♭13', '6': '13',
   };
 
   String _spokenNote(String n) =>
@@ -141,12 +152,16 @@ class _PocketModeScreenState extends State<PocketModeScreen> {
     while (mounted && gen == _gen && (total == 0 || _index < total)) {
       final key = widget.config.shuffleKeys ? kAllKeys[_rng.nextInt(kAllKeys.length)] : widget.config.key;
       final degree = _pickDegree();
+      // For degrees with an octave-up name (6/13, 2/9, …) the voice asks either
+      // form at random; the answer note is the same, computed from the base.
+      final ext = _extensionOf[degree];
+      final presented = (ext != null && _rng.nextBool()) ? ext : degree;
       final scale = calculateMajorScale(key);
       final answer = getNoteFromChromaticDegree(degree, scale, key);
       if (gen != _gen || !mounted) return;
 
-      setState(() { _key = key; _degree = degree; _answer = ''; _phase = 1; });
-      await _tts.speak(_questionSpeech(degree, key));
+      setState(() { _key = key; _degree = degree; _presented = presented; _answer = ''; _phase = 1; });
+      await _tts.speak(_questionSpeech(presented, key));
       if (gen != _gen || !mounted) return;
 
       setState(() => _phase = 2);
@@ -257,10 +272,11 @@ class _PocketModeScreenState extends State<PocketModeScreen> {
                     ),
                     const SizedBox(height: 36),
 
-                    // Question: "[degree] of [key]"
-                    if (_degree.isNotEmpty) ...[
+                    // Question: "[degree] of [key]" — shows the name being asked
+                    // (base number or its extension), coloured by the base degree.
+                    if (_presented.isNotEmpty) ...[
                       Row(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.center, children: [
-                        NoteText(note: _degree.split('/').first,
+                        NoteText(note: _presented.split('/').first,
                             style: TextStyle(fontSize: 72, fontWeight: FontWeight.w900, color: degColor, height: 1)),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 14),

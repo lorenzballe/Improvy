@@ -43,11 +43,14 @@ class TtsService {
   }
 
   /// Speaks [text] and resolves when the utterance has finished. Errors are
-  /// swallowed so a single failed utterance never breaks the Pocket loop.
+  /// swallowed, and a hard timeout guarantees the caller is never left hanging
+  /// if the engine never reports completion (e.g. a device with no voice), so
+  /// the Pocket loop always keeps moving. 8s comfortably outlasts any of the
+  /// short phrases Pocket Mode speaks.
   Future<void> speak(String text) async {
     try {
       await _ensureReady();
-      await _tts.speak(text);
+      await _tts.speak(text).timeout(const Duration(seconds: 8), onTimeout: () => null);
     } catch (_) {}
   }
 
