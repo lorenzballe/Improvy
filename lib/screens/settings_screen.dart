@@ -820,7 +820,7 @@ class _KeyboardFromTonicCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'When the on-screen piano is active, it starts on the current key’s tonic (or the white key just below it) instead of always running from C.',
+              'The in-game piano starts on your key’s tonic instead of C.',
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w500,
@@ -909,7 +909,7 @@ class _NotificationsCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'A quick daily quiz — “What’s the ♭3 of E?” — plus a heads-up before your streak breaks. Turn it off here anytime.',
+              'One quick quiz a day, plus a nudge before your streak breaks.',
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w500,
