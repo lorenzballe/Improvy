@@ -62,6 +62,7 @@ class _PocketModeScreenState extends State<PocketModeScreen> {
   @override
   void initState() {
     super.initState();
+    _tts.warmUp(); // init the audio session/voice before the first question
     // Auto-start: the user already pressed Start on the setup screen.
     WidgetsBinding.instance.addPostFrameCallback((_) => _play());
   }
@@ -147,6 +148,15 @@ class _PocketModeScreenState extends State<PocketModeScreen> {
     widget.onExit();
   }
 
+  // Generous estimate of how long an utterance takes at the configured rate.
+  // The loop paces itself off this instead of waiting for the engine to report
+  // completion — some web/TTS engines never fire that event, which would freeze
+  // the loop. Better a touch long (a natural pause) than cut off.
+  int _speechMs(String phrase) {
+    final n = phrase.split(' ').where((w) => w.isNotEmpty).length;
+    return 500 + n * 480;
+  }
+
   Future<void> _loop(int gen) async {
     final total = widget.config.questions;
     while (mounted && gen == _gen && (total == 0 || _index < total)) {
@@ -160,26 +170,29 @@ class _PocketModeScreenState extends State<PocketModeScreen> {
       final answer = getNoteFromChromaticDegree(degree, scale, key);
       if (gen != _gen || !mounted) return;
 
+      // Ask. Speech is fired without awaiting completion; _wait drives the pace
+      // so the loop can never stall on an engine that never reports "done".
+      final qText = _questionSpeech(presented, key);
       setState(() { _key = key; _degree = degree; _presented = presented; _answer = ''; _phase = 1; });
-      await _tts.speak(_questionSpeech(presented, key));
-      if (gen != _gen || !mounted) return;
+      _tts.speak(qText);
+      if (!await _wait(_speechMs(qText), gen)) return;
 
+      // Think.
       setState(() => _phase = 2);
       if (!await _wait(widget.config.delayMs, gen)) return;
 
+      // Reveal on screen + speak the answer.
+      final aText = _spokenNote(answer);
       setState(() { _answer = answer; _phase = 3; });
-      await _tts.speak(_spokenNote(answer));
-      if (gen != _gen || !mounted) return;
-      if (!await _wait(900, gen)) return;
+      _tts.speak(aText);
+      if (!await _wait(_speechMs(aText) + 800, gen)) return;
 
       _prevDegree = degree;
       if (mounted) setState(() => _index++);
     }
     if (mounted && gen == _gen) {
-      await _tts.speak('Session complete.');
-      if (mounted && gen == _gen) {
-        setState(() { _playing = false; _finished = true; _phase = 0; });
-      }
+      _tts.speak('Session complete.');
+      setState(() { _playing = false; _finished = true; _phase = 0; });
     }
   }
 
@@ -288,24 +301,37 @@ class _PocketModeScreenState extends State<PocketModeScreen> {
                     ] else
                       Text('Get ready…', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Colors.white.withValues(alpha: 0.5))),
 
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 44),
 
                     // Answer slot: reserved height so nothing jumps when revealed.
                     SizedBox(
-                      height: 96,
-                      child: _phase == 3 && _answer.isNotEmpty
-                          ? Column(mainAxisSize: MainAxisSize.min, children: [
-                              Text('IS', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.white.withValues(alpha: 0.4), letterSpacing: 3)),
-                              const SizedBox(height: 6),
-                              NoteText(note: _answer,
-                                  style: TextStyle(fontSize: 56, fontWeight: FontWeight.w900, color: noteColor, height: 1)),
-                            ])
-                          : _phase == 2
-                              ? Text(
-                                  '${(_countdownMs / 1000).ceil()}',
-                                  style: TextStyle(fontSize: 56, fontWeight: FontWeight.w900, color: Colors.white.withValues(alpha: 0.25), height: 1),
-                                )
-                              : const SizedBox.shrink(),
+                      height: 150,
+                      child: Center(
+                        child: _phase == 3 && _answer.isNotEmpty
+                            // Big, unmistakable answer card in the note's colour.
+                            ? Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 34, vertical: 16),
+                                decoration: BoxDecoration(
+                                  color: noteColor.withValues(alpha: 0.16),
+                                  borderRadius: BorderRadius.circular(26),
+                                  border: Border.all(color: noteColor.withValues(alpha: 0.55), width: 2),
+                                  boxShadow: [BoxShadow(color: noteColor.withValues(alpha: 0.30), blurRadius: 34, spreadRadius: -6)],
+                                ),
+                                child: Column(mainAxisSize: MainAxisSize.min, children: [
+                                  Text('ANSWER',
+                                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.white.withValues(alpha: 0.55), letterSpacing: 4)),
+                                  const SizedBox(height: 4),
+                                  NoteText(note: _answer,
+                                      style: TextStyle(fontSize: 84, fontWeight: FontWeight.w900, color: noteColor, height: 1.05)),
+                                ]),
+                              )
+                            : _phase == 2
+                                ? Text(
+                                    '${(_countdownMs / 1000).ceil()}',
+                                    style: TextStyle(fontSize: 72, fontWeight: FontWeight.w900, color: Colors.white.withValues(alpha: 0.22), height: 1),
+                                  )
+                                : const SizedBox.shrink(),
+                      ),
                     ),
                   ]),
                 ),

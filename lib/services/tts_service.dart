@@ -12,11 +12,16 @@ class TtsService {
   final FlutterTts _tts = FlutterTts();
   bool _ready = false;
 
+  /// Warms up the engine (audio session + voice) ahead of the first utterance,
+  /// so the opening question isn't clipped while the platform initialises.
+  Future<void> warmUp() => _ensureReady();
+
   Future<void> _ensureReady() async {
     if (_ready) return;
-    // speak() must resolve only when the utterance finishes, so the Pocket
-    // loop can await it and time the pause that follows.
-    await _tts.awaitSpeakCompletion(true);
+    // The Pocket loop paces itself with estimated durations, so speak() should
+    // fire and return immediately rather than block until the utterance ends
+    // (that "ended" event is unreliable on some web/TTS engines).
+    await _tts.awaitSpeakCompletion(false);
     if (!kIsWeb) {
       try {
         await _tts.setSharedInstance(true);
@@ -42,15 +47,13 @@ class TtsService {
     _ready = true;
   }
 
-  /// Speaks [text] and resolves when the utterance has finished. Errors are
-  /// swallowed, and a hard timeout guarantees the caller is never left hanging
-  /// if the engine never reports completion (e.g. a device with no voice), so
-  /// the Pocket loop always keeps moving. 8s comfortably outlasts any of the
-  /// short phrases Pocket Mode speaks.
+  /// Fires [text] to the speech engine. Returns as soon as the utterance is
+  /// queued (not when it finishes) — the caller times the pace itself. Errors
+  /// are swallowed so a single failed utterance never breaks the Pocket loop.
   Future<void> speak(String text) async {
     try {
       await _ensureReady();
-      await _tts.speak(text).timeout(const Duration(seconds: 8), onTimeout: () => null);
+      await _tts.speak(text);
     } catch (_) {}
   }
 
