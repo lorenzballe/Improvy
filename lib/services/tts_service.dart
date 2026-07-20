@@ -42,10 +42,13 @@ class TtsService {
     _ready = true;
   }
 
-  /// Speaks [text] and resolves when the utterance has finished.
+  /// Speaks [text] and resolves when the utterance has finished. Errors are
+  /// swallowed so a single failed utterance never breaks the Pocket loop.
   Future<void> speak(String text) async {
-    await _ensureReady();
-    await _tts.speak(text);
+    try {
+      await _ensureReady();
+      await _tts.speak(text);
+    } catch (_) {}
   }
 
   Future<void> stop() async {

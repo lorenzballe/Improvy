@@ -573,8 +573,8 @@ class _PocketModeSetupState extends State<PocketModeSetup> {
   static const _accent = Color(0xFF6366F1); // indigo
   static const _grad = [Color(0xFF6366F1), Color(0xFF6366F1)];
 
-  static const _delayLabels = ['3s', '5s', '8s'];
-  static const _delayMap = {'3s': 3000, '5s': 5000, '8s': 8000};
+  static const _delayLabels = ['1s', '2s', '3s', '5s', '8s'];
+  static const _delayMap = {'1s': 1000, '2s': 2000, '3s': 3000, '5s': 5000, '8s': 8000};
   static const _questionOpts = ['15', '30', '50', '∞'];
 
   @override
