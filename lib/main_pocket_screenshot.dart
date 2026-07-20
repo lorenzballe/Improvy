@@ -22,6 +22,8 @@ class _HostState extends State<_Host> {
     }
     return PocketModeSetup(
       initialKey: 'C',
+      isPro: false, // preview with the chromatic-degree locks visible
+      onShowPaywall: () {},
       onCancel: () {},
       onStart: (c) => setState(() => _config = c),
     );

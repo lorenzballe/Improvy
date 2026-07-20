@@ -549,12 +549,16 @@ class _OfWhatSetupState extends State<OfWhatSetup> {
 
 class PocketModeSetup extends StatefulWidget {
   final String initialKey;
+  final bool isPro;
+  final VoidCallback onShowPaywall;
   final void Function(PocketConfig config) onStart;
   final VoidCallback onCancel;
 
   const PocketModeSetup({
     super.key,
     required this.initialKey,
+    required this.isPro,
+    required this.onShowPaywall,
     required this.onStart,
     required this.onCancel,
   });
@@ -564,18 +568,24 @@ class PocketModeSetup extends StatefulWidget {
 }
 
 class _PocketModeSetupState extends State<PocketModeSetup> {
+  static const _diatonic = {'1', '2', '3', '4', '5', '6', '7'};
+
   late String _key;
   bool _shuffle = false;
-  Set<String> _degs = {'1', '2', '3', '4', '5', '6', '7'};
+  Set<String> _degs = {..._diatonic};
   int _delayMs = 5000;
   int _questions = 30;
 
   static const _accent = Color(0xFF6366F1); // indigo
   static const _grad = [Color(0xFF6366F1), Color(0xFF6366F1)];
 
-  static const _delayLabels = ['1s', '2s', '3s', '5s', '8s'];
-  static const _delayMap = {'1s': 1000, '2s': 2000, '3s': 3000, '5s': 5000, '8s': 8000};
   static const _questionOpts = ['15', '30', '50', '∞'];
+
+  // Chromatic (non-diatonic) degrees are Pro; free users get the 7 scale
+  // degrees and see the rest locked.
+  Set<String> get _lockedDegs => widget.isPro
+      ? const {}
+      : kChromaticDegrees.where((d) => !_diatonic.contains(d)).toSet();
 
   @override
   void initState() {
@@ -583,8 +593,11 @@ class _PocketModeSetupState extends State<PocketModeSetup> {
     _key = widget.initialKey;
   }
 
-  void _setDiatonic() => setState(() => _degs = {'1', '2', '3', '4', '5', '6', '7'});
-  void _setAll() => setState(() => _degs = Set.of(kChromaticDegrees));
+  void _setDiatonic() => setState(() => _degs = {..._diatonic});
+  void _setAll() {
+    if (!widget.isPro) { widget.onShowPaywall(); return; }
+    setState(() => _degs = Set.of(kChromaticDegrees));
+  }
 
   void _toggleDeg(String deg) {
     setState(() {
@@ -658,29 +671,30 @@ class _PocketModeSetupState extends State<PocketModeSetup> {
                                     ),
                                     _QuickBtn(label: 'DIATONIC', onTap: _setDiatonic),
                                     const SizedBox(width: 8),
-                                    _QuickBtn(label: 'ALL', onTap: _setAll),
+                                    _QuickBtn(label: 'ALL', locked: !widget.isPro, onTap: _setAll),
                                   ],
                                 ),
                                 const SizedBox(height: 16),
                                 _DegreeGrid(
                                   selected: _degs,
                                   onToggle: _toggleDeg,
+                                  lockedDegrees: _lockedDegs,
+                                  onLockedTap: widget.onShowPaywall,
                                 ),
                                 const SizedBox(height: 36),
 
-                                const _SectionTitle(
+                                _SectionTitle(
                                   icon: Icons.timer_outlined,
                                   title: 'Answer Delay',
-                                  subtitle: 'How long before the voice reveals the note.',
+                                  subtitle: '${(_delayMs / 1000).round()}s before the voice reveals the note.',
                                 ),
-                                const SizedBox(height: 18),
-                                _SlidingPillRow(
-                                  opts: _delayLabels,
-                                  sel: _delayLabels.firstWhere((l) => _delayMap[l] == _delayMs, orElse: () => '5s'),
-                                  accentColor: _accent,
-                                  onChange: (v) => setState(() => _delayMs = _delayMap[v] ?? 5000),
+                                const SizedBox(height: 8),
+                                _DelaySlider(
+                                  seconds: (_delayMs / 1000).toDouble(),
+                                  accent: _accent,
+                                  onChanged: (v) => setState(() => _delayMs = (v * 1000).round()),
                                 ),
-                                const SizedBox(height: 36),
+                                const SizedBox(height: 32),
 
                                 const _SectionTitle(
                                   icon: Icons.auto_awesome_rounded,
@@ -720,6 +734,58 @@ class _PocketModeSetupState extends State<PocketModeSetup> {
           ],
         ),
       ),
+    );
+  }
+}
+
+// ── Answer-delay slider (1–10s, whole seconds) ───────────────────────────────
+
+class _DelaySlider extends StatelessWidget {
+  final double seconds;
+  final Color accent;
+  final ValueChanged<double> onChanged;
+  const _DelaySlider({required this.seconds, required this.accent, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Center(
+          child: Text('${seconds.round()}s',
+              style: TextStyle(fontSize: 34, fontWeight: FontWeight.w900, color: accent, letterSpacing: -0.5)),
+        ),
+        const SizedBox(height: 4),
+        SliderTheme(
+          data: SliderThemeData(
+            trackHeight: 6,
+            activeTrackColor: accent,
+            inactiveTrackColor: Colors.white.withValues(alpha: 0.10),
+            thumbColor: Colors.white,
+            overlayColor: accent.withValues(alpha: 0.18),
+            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 11, elevation: 3),
+            overlayShape: const RoundSliderOverlayShape(overlayRadius: 22),
+            trackShape: const RoundedRectSliderTrackShape(),
+            tickMarkShape: SliderTickMarkShape.noTickMark,
+          ),
+          child: Slider(
+            value: seconds.clamp(1, 10),
+            min: 1,
+            max: 10,
+            divisions: 9,
+            onChanged: onChanged,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('1s', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white.withValues(alpha: 0.35))),
+              Text('10s', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white.withValues(alpha: 0.35))),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

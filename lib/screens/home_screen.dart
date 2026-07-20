@@ -195,9 +195,10 @@ class _HomeMain extends StatelessWidget {
                   icon: Icons.headphones_rounded,
                   accentColor: const Color(0xFF6366F1),
                   borderColor: const Color(0xFF6366F1).withAlpha(110),
-                  isLocked: !provider.isPro,
+                  // Free to open — chromatic degrees inside its setup are the
+                  // Pro-gated part (diatonic works for everyone).
+                  isLocked: false,
                   onTap: () {
-                    if (!provider.isPro) { onShowPaywall(); return; }
                     if (provider.selectedKey == null) provider.selectKey(provider.progressData.first.key);
                     onOpenSetup(TrainingMode.pocket);
                   },

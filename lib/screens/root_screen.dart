@@ -301,18 +301,23 @@ class _RootScreenState extends State<RootScreen> {
     if (_pendingSetup != null && provider.activeMode == null) {
       final key = provider.selectedKey ?? 'C';
       if (_pendingSetup == TrainingMode.pocket) {
-        return PocketModeSetup(
-          initialKey: key,
-          onCancel: () { provider.deselectKey(); setState(() => _pendingSetup = null); },
-          onStart: (config) {
-            AnalyticsService.instance.capture('session_started', {
-              'mode': 'pocket',
-              'shuffle': config.shuffleKeys,
-              'degrees': config.degrees.length,
-            });
-            setState(() { _pendingSetup = null; _pocketConfig = config; });
-          },
-        );
+        return Stack(children: [
+          PocketModeSetup(
+            initialKey: key,
+            isPro: provider.isPro,
+            onShowPaywall: () => _showPaywallSheet('pocket-degrees'),
+            onCancel: () { provider.deselectKey(); setState(() => _pendingSetup = null); },
+            onStart: (config) {
+              AnalyticsService.instance.capture('session_started', {
+                'mode': 'pocket',
+                'shuffle': config.shuffleKeys,
+                'degrees': config.degrees.length,
+              });
+              setState(() { _pendingSetup = null; _pocketConfig = config; });
+            },
+          ),
+          if (_showPaywall) _paywallOverlay(provider),
+        ]);
       }
       if (_pendingSetup == TrainingMode.custom) {
         return CustomModeSetup(
