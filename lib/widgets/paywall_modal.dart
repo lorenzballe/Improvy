@@ -241,10 +241,10 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
           ),
         ),
         Container(
-          width: 124, height: 124,
+          width: 132, height: 132,
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(30),
             border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
             boxShadow: [
               BoxShadow(color: const Color(0xFF7C3AED).withValues(alpha: 0.48),
@@ -253,13 +253,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
                 blurRadius: 44, offset: const Offset(11, 18), spreadRadius: -8),
             ],
           ),
-          // The asset is the app icon: piano keys inside a black rounded
-          // square whose frame eats ~25% of the tile. Scale it up inside the
-          // clipped box so the keys fill the tile and only a slim frame stays.
-          child: Transform.scale(
-            scale: 1.25,
-            child: Image.asset('assets/images/improvy_logo.png', fit: BoxFit.cover, filterQuality: FilterQuality.high),
-          ),
+          child: Image.asset('assets/images/improvy_logo.png', fit: BoxFit.cover, filterQuality: FilterQuality.high),
         ),
       ],
     ),
