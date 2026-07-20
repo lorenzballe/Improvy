@@ -57,6 +57,7 @@ class _PocketModeScreenState extends State<PocketModeScreen> {
   String _presented = ''; // label actually spoken/shown (may be the extension)
   String _answer = '';
   String? _prevDegree;
+  String _spokenKey = ''; // last key the voice named, to avoid repeating it
   int _countdownMs = 0;
 
   @override
@@ -139,6 +140,7 @@ class _PocketModeScreenState extends State<PocketModeScreen> {
   void _pause() {
     _gen++; // invalidate the running loop
     _tts.stop();
+    _spokenKey = ''; // re-announce the key on the first question after resuming
     setState(() { _playing = false; _phase = 0; _countdownMs = 0; });
   }
 
@@ -170,9 +172,14 @@ class _PocketModeScreenState extends State<PocketModeScreen> {
       final answer = getNoteFromChromaticDegree(degree, scale, key);
       if (gen != _gen || !mounted) return;
 
-      // Ask. Speech is fired without awaiting completion; _wait drives the pace
-      // so the loop can never stall on an engine that never reports "done".
-      final qText = _questionSpeech(presented, key);
+      // Ask. On a fixed key the voice names the key only when it changes (the
+      // first question, or after a resume) and then speaks just the degree, so
+      // it isn't repeating "of C" every time. Shuffling always names the key.
+      final sameKeyContext = !widget.config.shuffleKeys && key == _spokenKey;
+      final qText = sameKeyContext ? _spokenDegree(presented) : _questionSpeech(presented, key);
+      _spokenKey = key;
+      // Speech is fired without awaiting completion; _wait drives the pace so
+      // the loop can never stall on an engine that never reports "done".
       setState(() { _key = key; _degree = degree; _presented = presented; _answer = ''; _phase = 1; });
       _tts.speak(qText);
       if (!await _wait(_speechMs(qText), gen)) return;
