@@ -594,8 +594,12 @@ class AppProvider extends ChangeNotifier {
     _storage.saveStats(stats);
     _storage.removePending();
     // First finished game = the moment of proven value — the right time to
-    // ask for notification permission (never as a cold-start popup).
-    _ensureNotifPermission();
+    // ask for notification permission (never as a cold-start popup). But only
+    // on a good score: primed right after a rough game (say two errors and a
+    // quit), the answer would be a reflex "no". A bad first game doesn't burn
+    // the prompt — the next good one asks instead.
+    final accuracy = newSession.total > 0 ? newSession.correct / newSession.total : 0.0;
+    if (accuracy >= 0.7) _ensureNotifPermission();
     resyncNotifications();
     notifyListeners();
   }
