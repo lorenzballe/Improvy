@@ -12,6 +12,7 @@ import 'trainer_screen.dart';
 import 'session_summary_screen.dart';
 import 'onboarding_screen.dart';
 import 'setup_screen.dart';
+import 'pocket_mode_screen.dart';
 import '../widgets/paywall_modal.dart';
 import '../widgets/level_up_modal.dart';
 import '../constants/app_colors.dart';
@@ -30,6 +31,7 @@ class _RootScreenState extends State<RootScreen> {
   Map<String, dynamic>? _finishedSession;
   bool _showPaywall = false;
   TrainingMode? _pendingSetup; // which setup screen to show
+  PocketConfig? _pocketConfig; // non-null while Pocket Mode is running
 
   // Rainbow frame-glow flag: true for one 3s colour cycle after a PERFECT
   // session, driving the [_RainbowGlowOverlay] that haloes the screen edges.
@@ -286,9 +288,32 @@ class _RootScreenState extends State<RootScreen> {
       });
     }
 
+    // Pocket Mode runs as a self-contained full-screen takeover (audio loop,
+    // not the tap-based game engine).
+    if (_pocketConfig != null) {
+      return PocketModeScreen(
+        config: _pocketConfig!,
+        onExit: () { provider.deselectKey(); setState(() => _pocketConfig = null); },
+      );
+    }
+
     // Setup screens (overlay before entering trainer)
     if (_pendingSetup != null && provider.activeMode == null) {
       final key = provider.selectedKey ?? 'C';
+      if (_pendingSetup == TrainingMode.pocket) {
+        return PocketModeSetup(
+          initialKey: key,
+          onCancel: () { provider.deselectKey(); setState(() => _pendingSetup = null); },
+          onStart: (config) {
+            AnalyticsService.instance.capture('session_started', {
+              'mode': 'pocket',
+              'shuffle': config.shuffleKeys,
+              'degrees': config.degrees.length,
+            });
+            setState(() { _pendingSetup = null; _pocketConfig = config; });
+          },
+        );
+      }
       if (_pendingSetup == TrainingMode.custom) {
         return CustomModeSetup(
           initialKey: key,

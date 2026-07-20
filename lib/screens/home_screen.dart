@@ -188,6 +188,20 @@ class _HomeMain extends StatelessWidget {
                     onOpenSetup(TrainingMode.ofWhat);
                   },
                 ),
+                const SizedBox(height: 12),
+                _BigSpecialCard(
+                  title: 'Pocket Mode',
+                  subtitle: 'Hands-free audio drill: a voice asks, waits, then says the note. Plays with the screen off.',
+                  icon: Icons.headphones_rounded,
+                  accentColor: const Color(0xFF6366F1),
+                  borderColor: const Color(0xFF6366F1).withAlpha(110),
+                  isLocked: !provider.isPro,
+                  onTap: () {
+                    if (!provider.isPro) { onShowPaywall(); return; }
+                    if (provider.selectedKey == null) provider.selectKey(provider.progressData.first.key);
+                    onOpenSetup(TrainingMode.pocket);
+                  },
+                ),
               ]),
             )),
             const SizedBox(height: 28),

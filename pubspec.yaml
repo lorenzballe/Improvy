@@ -27,6 +27,10 @@ dependencies:
   # conditional import keeps the web build compiling with a no-op stub.
   flutter_local_notifications: ^18.0.1
   timezone: ">=0.9.0 <0.11.0"
+  # Text-to-speech for Pocket Mode (hands-free audio training). Works on
+  # iOS/Android/web; iOS keeps speaking with the screen locked via the
+  # playback audio category + the `audio` background mode (see Info.plist).
+  flutter_tts: ^4.2.2
 
 dev_dependencies:
   flutter_test:

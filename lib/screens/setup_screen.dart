@@ -5,6 +5,7 @@ import '../constants/app_colors.dart';
 import '../constants/music_constants.dart';
 import '../providers/app_provider.dart';
 import '../widgets/note_text.dart';
+import 'pocket_mode_screen.dart' show PocketConfig;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // NoteToNumberSetup
@@ -530,6 +531,188 @@ class _OfWhatSetupState extends State<OfWhatSetup> {
                     shadowColor: _accent.withValues(alpha: 0.4),
                     icon: Icons.bolt_rounded,
                     onTap: () => widget.onStart(_note, _degs.toList(), _diff, _questions),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PocketModeSetup — hands-free audio trainer (speaks the degree, waits, then
+// speaks the answer). Same "choose everything first" flow as the other modes.
+// ─────────────────────────────────────────────────────────────────────────────
+
+class PocketModeSetup extends StatefulWidget {
+  final String initialKey;
+  final void Function(PocketConfig config) onStart;
+  final VoidCallback onCancel;
+
+  const PocketModeSetup({
+    super.key,
+    required this.initialKey,
+    required this.onStart,
+    required this.onCancel,
+  });
+
+  @override
+  State<PocketModeSetup> createState() => _PocketModeSetupState();
+}
+
+class _PocketModeSetupState extends State<PocketModeSetup> {
+  late String _key;
+  bool _shuffle = false;
+  Set<String> _degs = {'1', '2', '3', '4', '5', '6', '7'};
+  int _delayMs = 5000;
+  int _questions = 30;
+
+  static const _accent = Color(0xFF6366F1); // indigo
+  static const _grad = [Color(0xFF6366F1), Color(0xFF6366F1)];
+
+  static const _delayLabels = ['3s', '5s', '8s'];
+  static const _delayMap = {'3s': 3000, '5s': 5000, '8s': 8000};
+  static const _questionOpts = ['15', '30', '50', '∞'];
+
+  @override
+  void initState() {
+    super.initState();
+    _key = widget.initialKey;
+  }
+
+  void _setDiatonic() => setState(() => _degs = {'1', '2', '3', '4', '5', '6', '7'});
+  void _setAll() => setState(() => _degs = Set.of(kChromaticDegrees));
+
+  void _toggleDeg(String deg) {
+    setState(() {
+      if (_degs.contains(deg)) {
+        if (_degs.length > 1) _degs.remove(deg);
+      } else {
+        _degs.add(deg);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (_, __) => widget.onCancel(),
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        body: Stack(
+          children: [
+            _GlowBg(primary: _accent, secondary: const Color(0xFF8B5CF6)),
+            SafeArea(
+              child: Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _Header(
+                            title: 'Pocket Mode',
+                            subtitle: 'HANDS-FREE · AUDIO',
+                            gradColors: _grad,
+                            onBack: widget.onCancel,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(24, 28, 24, 0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const _SectionTitle(
+                                  icon: Icons.headphones_rounded,
+                                  title: 'Keys',
+                                  subtitle: 'Train one key, or shuffle through all 12.',
+                                ),
+                                const SizedBox(height: 18),
+                                _SlidingPillRow(
+                                  opts: const ['One key', 'Shuffle all'],
+                                  sel: _shuffle ? 'Shuffle all' : 'One key',
+                                  accentColor: _accent,
+                                  onChange: (v) => setState(() => _shuffle = v == 'Shuffle all'),
+                                ),
+                                if (!_shuffle) ...[
+                                  const SizedBox(height: 24),
+                                  _KeyGrid(
+                                    selected: _key,
+                                    accentColor: _accent,
+                                    onSelect: (k) => setState(() => _key = k),
+                                  ),
+                                ],
+                                const SizedBox(height: 36),
+
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    const Expanded(
+                                      child: _SectionTitle(
+                                        icon: Icons.tune_rounded,
+                                        title: 'Degrees',
+                                      ),
+                                    ),
+                                    _QuickBtn(label: 'DIATONIC', onTap: _setDiatonic),
+                                    const SizedBox(width: 8),
+                                    _QuickBtn(label: 'ALL', onTap: _setAll),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                _DegreeGrid(
+                                  selected: _degs,
+                                  onToggle: _toggleDeg,
+                                ),
+                                const SizedBox(height: 36),
+
+                                const _SectionTitle(
+                                  icon: Icons.timer_outlined,
+                                  title: 'Answer Delay',
+                                  subtitle: 'How long before the voice reveals the note.',
+                                ),
+                                const SizedBox(height: 18),
+                                _SlidingPillRow(
+                                  opts: _delayLabels,
+                                  sel: _delayLabels.firstWhere((l) => _delayMap[l] == _delayMs, orElse: () => '5s'),
+                                  accentColor: _accent,
+                                  onChange: (v) => setState(() => _delayMs = _delayMap[v] ?? 5000),
+                                ),
+                                const SizedBox(height: 36),
+
+                                const _SectionTitle(
+                                  icon: Icons.auto_awesome_rounded,
+                                  title: 'Length',
+                                  subtitle: 'Number of questions (∞ = until you stop).',
+                                ),
+                                const SizedBox(height: 18),
+                                _QuestionRow(
+                                  opts: _questionOpts,
+                                  selected: _questions == 0 ? '∞' : '$_questions',
+                                  accentColor: _accent,
+                                  onSelect: (v) => setState(() => _questions = v == '∞' ? 0 : int.parse(v)),
+                                ),
+                                const SizedBox(height: 40),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  _StartBtn(
+                    gradColors: _grad,
+                    shadowColor: _accent.withValues(alpha: 0.4),
+                    icon: Icons.play_arrow_rounded,
+                    onTap: () => widget.onStart(PocketConfig(
+                      key: _key,
+                      degrees: _degs.toList(),
+                      delayMs: _delayMs,
+                      questions: _questions,
+                      shuffleKeys: _shuffle,
+                    )),
                   ),
                 ],
               ),
