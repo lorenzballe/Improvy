@@ -1843,10 +1843,26 @@ class _PianoKeyboard extends StatelessWidget {
                       final blackW = whiteW * 0.62;
                       final blackH = h * 0.65;
                       final leadReserve = hasLead ? edgeInset + blackW / 2 : 0.0;
+                      final whiteAreaRight = leadReserve + whites.length * whiteW;
                       double whiteLeft(int i) => leadReserve + i * whiteW;
                       double blackLeft(double frac) => leadReserve + frac * 7 * whiteW - blackW / 2;
                       return Stack(
                         children: [
+                          // Reserved edge strips painted white: the sliver of the
+                          // (cut-off) neighbouring white key that sits under the
+                          // protruding edge black key. Not a real, tappable key —
+                          // just so the black key rests on white, not on the dark
+                          // rim. Drawn first so the black key covers most of it.
+                          if (hasLead)
+                            Positioned(
+                              left: 0, top: 0, width: leadReserve, height: h,
+                              child: const ColoredBox(color: Colors.white),
+                            ),
+                          if (hasTrail)
+                            Positioned(
+                              left: whiteAreaRight, top: 0, width: w - whiteAreaRight, height: h,
+                              child: const ColoredBox(color: Colors.white),
+                            ),
                           // White keys (bottom layer) — positioned so each fills full height
                           for (int i = 0; i < whites.length; i++)
                             Positioned(
@@ -1865,7 +1881,18 @@ class _PianoKeyboard extends StatelessWidget {
                                 onTap: () => onSelect(whites[i].name),
                               ),
                             ),
-                          // Thin separators between adjacent white keys (real-piano look)
+                          // Thin separators between adjacent white keys (real-piano
+                          // look), plus one at each reserved edge strip's inner seam.
+                          if (hasLead)
+                            Positioned(
+                              left: leadReserve - 0.5, top: 0, width: 1, height: h,
+                              child: const ColoredBox(color: Color(0xFFCBD5E1)),
+                            ),
+                          if (hasTrail)
+                            Positioned(
+                              left: whiteAreaRight - 0.5, top: 0, width: 1, height: h,
+                              child: const ColoredBox(color: Color(0xFFCBD5E1)),
+                            ),
                           for (int i = 1; i < whites.length; i++)
                             Positioned(
                               left: whiteLeft(i) - 0.5,
