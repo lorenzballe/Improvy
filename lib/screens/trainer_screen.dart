@@ -692,6 +692,10 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
                       notation: widget.notation,
                       height: inputH - 32,
                       startWhiteSemitone: _keyboardStartSemitone,
+                      // "…Of What?": the held melody note is the keyboard's
+                      // highest key (far right, permanently lit) — every root
+                      // the user can answer with sits below it.
+                      topSemitone: _isOfWhat ? kNoteToSemitone[_fixedNote] : null,
                       chromaticTonic:
                           widget.mode == TrainingMode.chromatic ? _currentKey : null,
                       onSelect: _handleAnswer,
@@ -1671,6 +1675,10 @@ class _PianoKeyboard extends StatelessWidget {
   final String notation;
   final double height;
   final int startWhiteSemitone; // semitone of the leftmost white key (0 = C)
+  // Non-null in "…Of What?": the octave is anchored at the TOP instead — this
+  // semitone becomes the rightmost (highest) key, permanently lit in its tonal
+  // colour, so every possible root sits below the held melody note.
+  final int? topSemitone;
   // Non-null in CHROMATIC mode: key labels are then spelled by relative degree
   // (1 ♭2 2 ♭3 3 4 ♯4 5 ♭6 6 ♭7 7 of this tonic) instead of the button names.
   final String? chromaticTonic;
@@ -1684,6 +1692,7 @@ class _PianoKeyboard extends StatelessWidget {
     required this.notation,
     required this.height,
     this.startWhiteSemitone = 0,
+    this.topSemitone,
     this.chromaticTonic,
     required this.onSelect,
   });
@@ -1727,6 +1736,41 @@ class _PianoKeyboard extends StatelessWidget {
     return (whites, blacks);
   }
 
+  // Octave anchored at the TOP: [topSemi] is the highest key, rendered at the
+  // far right (as the trailing half-black when it's a black note), and the
+  // octave completes with a leading half-black at the LEFT edge when the
+  // semitone just below the first white belongs to the window.
+  static (List<_KeyDef>, List<_KeyDef>) _buildKeysEndingAt(int topSemi, Map<int, String> scaleNames) {
+    const order = [
+      ('C', 0), ('D', 2), ('E', 4), ('F', 5), ('G', 7), ('A', 9), ('B', 11),
+    ];
+    const blackDefault = {1: 'C♯', 3: 'E♭', 6: 'F♯', 8: 'A♭', 10: 'B♭'};
+    final blackTop = blackDefault.containsKey(topSemi);
+    final topWhite = blackTop ? (topSemi - 1 + 12) % 12 : topSemi;
+    var e = order.indexWhere((el) => el.$2 == topWhite);
+    if (e < 0) e = 6;
+    final whites = [
+      for (var k = 0; k < 7; k++)
+        _KeyDef(order[(e - 6 + k + 7) % 7].$1, order[(e - 6 + k + 7) % 7].$2, false),
+    ];
+    final blacks = <_KeyDef>[];
+    for (var k = 0; k < 6; k++) {
+      final cur = whites[k].semitone, nxt = whites[k + 1].semitone;
+      if ((nxt - cur + 12) % 12 == 2) {
+        final bs = (cur + 1) % 12;
+        blacks.add(_KeyDef(scaleNames[bs] ?? blackDefault[bs]!, bs, true, (k + 1) / 7));
+      }
+    }
+    if (blackTop) {
+      blacks.add(_KeyDef(scaleNames[topSemi] ?? blackDefault[topSemi]!, topSemi, true, 6.75 / 7));
+    }
+    final below = (whites.first.semitone - 1 + 12) % 12;
+    if (blackDefault.containsKey(below) && below != topSemi) {
+      blacks.add(_KeyDef(scaleNames[below] ?? blackDefault[below]!, below, true, 0.25 / 7));
+    }
+    return (whites, blacks);
+  }
+
   @override
   Widget build(BuildContext context) {
     // Chromatic mode spells keys by relative degree of the tonic; other modes
@@ -1737,7 +1781,9 @@ class _PianoKeyboard extends StatelessWidget {
             for (final n in notes)
               if (kNoteToSemitone[n.note] != null) kNoteToSemitone[n.note]!: n.note,
           };
-    final (whites, blacks) = _buildKeys(startWhiteSemitone, scaleNames);
+    final (whites, blacks) = topSemitone != null
+        ? _buildKeysEndingAt(topSemitone!, scaleNames)
+        : _buildKeys(startWhiteSemitone, scaleNames);
     // Which semitones are valid answer options right now
     final active = <int>{};
     for (final n in notes) {
@@ -1793,6 +1839,7 @@ class _PianoKeyboard extends StatelessWidget {
                                 active: active.contains(whites[i].semitone),
                                 isCorrect: correctSemi == whites[i].semitone,
                                 isSelected: selectedSemi == whites[i].semitone,
+                                isFixed: topSemitone == whites[i].semitone,
                                 showFeedback: showFeedback,
                                 notation: notation,
                                 onTap: () => onSelect(whites[i].name),
@@ -1819,6 +1866,7 @@ class _PianoKeyboard extends StatelessWidget {
                                 active: active.contains(k.semitone),
                                 isCorrect: correctSemi == k.semitone,
                                 isSelected: selectedSemi == k.semitone,
+                                isFixed: topSemitone == k.semitone,
                                 showFeedback: showFeedback,
                                 notation: notation,
                                 onTap: () => onSelect(k.name),
@@ -1843,6 +1891,9 @@ class _PianoKey extends StatefulWidget {
   final bool active;
   final bool isCorrect;
   final bool isSelected;
+  // "…Of What?" held melody note: permanently lit in its tonal colour so the
+  // user always sees which note they're harmonizing under.
+  final bool isFixed;
   final bool showFeedback;
   final String notation;
   final VoidCallback onTap;
@@ -1852,6 +1903,7 @@ class _PianoKey extends StatefulWidget {
     required this.active,
     required this.isCorrect,
     required this.isSelected,
+    this.isFixed = false,
     required this.showFeedback,
     required this.notation,
     required this.onTap,
@@ -1885,6 +1937,12 @@ class _PianoKeyState extends State<_PianoKey> {
       bg = const Color(0xFFF43F5E);
       labelColor = Colors.white;
       shadows = const [BoxShadow(color: Color(0xB3F43F5E), blurRadius: 30)];
+    } else if (widget.isFixed) {
+      // Held melody note — always lit in its tonal colour (feedback states
+      // above still win when this key is itself the asked root).
+      bg = noteColor;
+      labelColor = Colors.white;
+      shadows = [BoxShadow(color: noteColor.withAlpha(136), blurRadius: 30)];
     } else {
       // Idle key — identical background whether the note is in the scale or not.
       // Only the LABEL colour distinguishes them: tonal colour for scale notes,
