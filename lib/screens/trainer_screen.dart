@@ -1725,13 +1725,14 @@ class _PianoKeyboard extends StatelessWidget {
     }
     // Check if there's a black key between the last white key and the first white of the next octave.
     // E.g., when starting from G, the last white is F(5), and the next octave's first white is G(7) —
-    // F♯(6) should be included. Render it to the right of F, properly positioned.
+    // F♯(6) should be included. frac 1.0 = the octave boundary at the far right; the
+    // layout reserves a slot there so it sits fully inside, evenly spaced (see build()).
     final last = whites.last.semitone;
     final nextOctaveFirst = (whites.first.semitone + 12) % 12;
     if ((nextOctaveFirst - last + 12) % 12 == 2) {
       final bs = (last + 1) % 12;
       final name = scaleNames[bs] ?? blackDefault[bs]!;
-      blacks.add(_KeyDef(name, bs, true, 6.75 / 7));
+      blacks.add(_KeyDef(name, bs, true, 1.0));
     }
     return (whites, blacks);
   }
@@ -1761,12 +1762,15 @@ class _PianoKeyboard extends StatelessWidget {
         blacks.add(_KeyDef(scaleNames[bs] ?? blackDefault[bs]!, bs, true, (k + 1) / 7));
       }
     }
+    // Edge blacks sit on the true octave boundaries (frac 1.0 = far right,
+    // 0.0 = far left); build() reserves a slot on each such side so the key
+    // is fully visible and evenly spaced instead of crammed against the rim.
     if (blackTop) {
-      blacks.add(_KeyDef(scaleNames[topSemi] ?? blackDefault[topSemi]!, topSemi, true, 6.75 / 7));
+      blacks.add(_KeyDef(scaleNames[topSemi] ?? blackDefault[topSemi]!, topSemi, true, 1.0));
     }
     final below = (whites.first.semitone - 1 + 12) % 12;
     if (blackDefault.containsKey(below) && below != topSemi) {
-      blacks.add(_KeyDef(scaleNames[below] ?? blackDefault[below]!, below, true, 0.25 / 7));
+      blacks.add(_KeyDef(scaleNames[below] ?? blackDefault[below]!, below, true, 0.0));
     }
     return (whites, blacks);
   }
@@ -1822,15 +1826,31 @@ class _PianoKeyboard extends StatelessWidget {
                     builder: (ctx, c) {
                       final w = c.maxWidth;
                       final h = c.maxHeight;
-                      final whiteW = w / 7;
+                      // An edge black key (a black note as the very first or last
+                      // key, frac 0.0 / 1.0) would otherwise be crammed against
+                      // its white neighbour and clipped by the rim. Reserve a slot
+                      // on that side so it sits on the true octave boundary — the
+                      // same one-white-key spacing every interior black has —
+                      // fully inside. The whites take the rest (a ~5% squeeze on
+                      // that side only), so the keyboard as a whole looks unchanged.
+                      const edgeInset = 4.0;
+                      final hasLead = blacks.any((b) => b.frac <= 0.001);
+                      final hasTrail = blacks.any((b) => b.frac >= 0.999);
+                      final sides = (hasLead ? 1 : 0) + (hasTrail ? 1 : 0);
+                      // blackW = 0.62·whiteW, so each reserved slot is
+                      // edgeInset + blackW/2 = edgeInset + 0.31·whiteW wide.
+                      final whiteW = (w - sides * edgeInset) / (7 + 0.31 * sides);
                       final blackW = whiteW * 0.62;
                       final blackH = h * 0.65;
+                      final leadReserve = hasLead ? edgeInset + blackW / 2 : 0.0;
+                      double whiteLeft(int i) => leadReserve + i * whiteW;
+                      double blackLeft(double frac) => leadReserve + frac * 7 * whiteW - blackW / 2;
                       return Stack(
                         children: [
                           // White keys (bottom layer) — positioned so each fills full height
                           for (int i = 0; i < whites.length; i++)
                             Positioned(
-                              left: i * whiteW,
+                              left: whiteLeft(i),
                               top: 0,
                               width: whiteW,
                               height: h,
@@ -1848,7 +1868,7 @@ class _PianoKeyboard extends StatelessWidget {
                           // Thin separators between adjacent white keys (real-piano look)
                           for (int i = 1; i < whites.length; i++)
                             Positioned(
-                              left: i * whiteW - 0.5,
+                              left: whiteLeft(i) - 0.5,
                               top: 0,
                               width: 1,
                               height: h,
@@ -1857,7 +1877,7 @@ class _PianoKeyboard extends StatelessWidget {
                           // Black keys (top layer)
                           for (final k in blacks)
                             Positioned(
-                              left: k.frac * w - blackW / 2,
+                              left: blackLeft(k.frac),
                               top: 0,
                               width: blackW,
                               height: blackH,
