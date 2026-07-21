@@ -32,8 +32,9 @@ class PocketConfig {
 /// with the screen locked (iOS playback audio session + background audio mode).
 class PocketModeScreen extends StatefulWidget {
   final PocketConfig config;
+  final String notation; // app's note-naming setting, for the key badge
   final VoidCallback onExit;
-  const PocketModeScreen({super.key, required this.config, required this.onExit});
+  const PocketModeScreen({super.key, required this.config, this.notation = 'CDE', required this.onExit});
 
   @override
   State<PocketModeScreen> createState() => _PocketModeScreenState();
@@ -271,18 +272,20 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
             child: Column(children: [
               // ── Top bar + session progress ──
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                 child: Row(children: [
+                  // Same X button as every training screen.
                   GestureDetector(
                     onTap: _exit,
                     child: Container(
-                      width: 44, height: 44,
+                      width: 48, height: 48,
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.06),
-                        borderRadius: BorderRadius.circular(22),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                        color: Colors.white10,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: Colors.white10, width: 1.2),
+                        boxShadow: const [BoxShadow(color: Color(0x40000000), blurRadius: 20)],
                       ),
-                      child: const Icon(Icons.close_rounded, color: Colors.white70, size: 22),
+                      child: const Icon(Icons.close_rounded, color: Colors.white70, size: 24),
                     ),
                   ),
                   const Expanded(
@@ -290,7 +293,8 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 4)),
                   ),
-                  const SizedBox(width: 44),
+                  // Training-key badge — same style/position as the other modes.
+                  _keyBadge(),
                 ]),
               ),
               Padding(
@@ -485,24 +489,18 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
     return Column(mainAxisSize: MainAxisSize.min, children: [
       Text(statusText,
           style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: statusColor.withValues(alpha: 0.9), letterSpacing: 3)),
-      const SizedBox(height: 16),
-      // Question "[degree] of [key]"
+      const SizedBox(height: 14),
+      // The degree being asked — the training key lives in the top-right badge,
+      // exactly like the other modes, so it isn't repeated here.
       if (_presented.isNotEmpty)
         FittedBox(
           fit: BoxFit.scaleDown,
-          child: Row(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.center, children: [
-            NoteText(note: _presented.split('/').first,
-                style: TextStyle(fontSize: 46, fontWeight: FontWeight.w900, color: degColor, height: 1)),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Text('of', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white.withValues(alpha: 0.4))),
-            ),
-            NoteText(note: _key,
-                style: const TextStyle(fontSize: 40, fontWeight: FontWeight.w900, color: Colors.white, height: 1)),
-          ]),
+          child: NoteText(note: _presented.split('/').first,
+              style: TextStyle(fontSize: 66, fontWeight: FontWeight.w900, color: degColor, height: 1,
+                  shadows: [Shadow(color: degColor.withValues(alpha: 0.35), blurRadius: 20)])),
         )
       else
-        Text('…', style: TextStyle(fontSize: 40, fontWeight: FontWeight.w900, color: Colors.white.withValues(alpha: 0.3))),
+        Text('…', style: TextStyle(fontSize: 48, fontWeight: FontWeight.w900, color: Colors.white.withValues(alpha: 0.3))),
       const SizedBox(height: 12),
       // Answer reveal / countdown — fixed slot so the layout never jumps.
       SizedBox(
@@ -528,6 +526,44 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
         ),
       ),
     ]);
+  }
+
+  // Training-key badge, matching the other modes' top-right badge exactly.
+  // On a fixed key it's that key; while shuffling it tracks the current key
+  // (a shuffle glyph before the first question), tinted by the key's colour.
+  Widget _keyBadge() {
+    final shuffle = widget.config.shuffleKeys;
+    final key = _key.isNotEmpty ? _key : (shuffle ? '' : widget.config.key);
+    final kc = key.isEmpty ? Colors.white : (AppColors.noteColors[key] ?? Colors.white);
+    final notation = widget.notation;
+    return Container(
+      width: 48, height: 48,
+      decoration: BoxDecoration(
+        color: Colors.white10,
+        shape: BoxShape.circle,
+        border: Border.all(color: kc.withAlpha(140), width: 1.2),
+        boxShadow: key.isEmpty ? null : [BoxShadow(color: kc.withAlpha(70), blurRadius: 14)],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text('KEY', maxLines: 1, softWrap: false,
+                style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.white60, letterSpacing: 1.5)),
+          ),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: (shuffle && key.isEmpty)
+                ? const Icon(Icons.shuffle_rounded, size: 15, color: Colors.white)
+                : NoteText(
+                    note: formatNoteForDisplay(key, notation),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: kc, height: 1.1),
+                  ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _blob(double size, Color color) => IgnorePointer(

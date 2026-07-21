@@ -293,6 +293,7 @@ class _RootScreenState extends State<RootScreen> {
     if (_pocketConfig != null) {
       return PocketModeScreen(
         config: _pocketConfig!,
+        notation: provider.notation,
         onExit: () { provider.deselectKey(); setState(() => _pocketConfig = null); },
       );
     }
