@@ -161,39 +161,50 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
 
           SafeArea(
             child: Stack(children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(children: [
-                  const Spacer(flex: 3),
+              // Spacers centre the content on tall screens; on short ones the
+              // whole thing scrolls instead of clipping the CTA off the bottom.
+              LayoutBuilder(
+                builder: (context, c) => SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: c.maxHeight),
+                    child: IntrinsicHeight(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Column(children: [
+                          const Spacer(flex: 3),
 
-                  _in(0.0, 0.45, child: _hero()),
+                          _in(0.0, 0.45, child: _hero()),
 
-                  const Spacer(flex: 3),
+                          const Spacer(flex: 3),
 
-                  _in(0.14, 0.62, child: _membershipCard()),
+                          _in(0.14, 0.62, child: _membershipCard()),
 
-                  const Spacer(flex: 3),
+                          const Spacer(flex: 3),
 
-                  _in(0.32, 0.85, child: _BuyButton(
-                    title: 'Unlock Lifetime Access',
-                    subtitle: '${_livePrice ?? _fallbackPrice} · one-time payment',
-                    busy: _purchasing,
-                    onTap: _buy,
-                  )),
-                  const SizedBox(height: 14),
-                  _in(0.42, 0.95, child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Row(mainAxisSize: MainAxisSize.min, children: [
-                      _miniLink(_restoring ? 'Restoring…' : 'Restore Purchase', _restoring ? null : _restore),
-                      _dot(),
-                      _miniLink('Terms', () => _openLegal('Terms of Service', kTermsBody)),
-                      _dot(),
-                      _miniLink('Privacy', () => _openLegal('Privacy Policy', kPrivacyPolicyBody)),
-                    ]),
-                  )),
+                          _in(0.32, 0.85, child: _BuyButton(
+                            title: 'Unlock Lifetime Access',
+                            subtitle: '${_livePrice ?? _fallbackPrice} · one-time payment',
+                            busy: _purchasing,
+                            onTap: _buy,
+                          )),
+                          const SizedBox(height: 14),
+                          _in(0.42, 0.95, child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Row(mainAxisSize: MainAxisSize.min, children: [
+                              _miniLink(_restoring ? 'Restoring…' : 'Restore Purchase', _restoring ? null : _restore),
+                              _dot(),
+                              _miniLink('Terms', () => _openLegal('Terms of Service', kTermsBody)),
+                              _dot(),
+                              _miniLink('Privacy', () => _openLegal('Privacy Policy', kPrivacyPolicyBody)),
+                            ]),
+                          )),
 
-                  const SizedBox(height: 10),
-                ]),
+                          const SizedBox(height: 10),
+                        ]),
+                      ),
+                    ),
+                  ),
+                ),
               ),
               Positioned(top: 6, right: 16, child: _CloseButton(onTap: widget.onClose)),
             ]),
