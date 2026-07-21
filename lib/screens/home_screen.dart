@@ -144,35 +144,8 @@ class _HomeMain extends StatelessWidget {
             const SizedBox(height: 12),
             RepaintBoundary(child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
+              // Free modes first, Pro modes below.
               child: Column(children: [
-                _BigSpecialCard(
-                  title: 'Note to Number',
-                  subtitle: 'Given a note name, identify its numerical degree.',
-                  icon: Icons.swap_horiz_rounded,
-                  accentColor: const Color(0xFF34D399),
-                  borderColor: const Color(0xFF34D399).withAlpha(110),
-                  isLocked: !provider.isPro,
-                  onTap: () {
-                    if (!provider.isPro) { onShowPaywall(); return; }
-                    if (provider.selectedKey == null) provider.selectKey(provider.progressData.first.key);
-                    onOpenSetup(TrainingMode.noteToNumber);
-                  },
-                ),
-                const SizedBox(height: 12),
-                _BigSpecialCard(
-                  title: 'Custom Mode',
-                  subtitle: 'Choose your key, direction, and specific degrees to train on.',
-                  icon: Icons.tune_rounded,
-                  accentColor: const Color(0xFFD857EC),
-                  borderColor: const Color(0xFFD857EC).withAlpha(110),
-                  isLocked: !provider.isPro,
-                  onTap: () {
-                    if (!provider.isPro) { onShowPaywall(); return; }
-                    if (provider.selectedKey == null) provider.selectKey(provider.progressData.first.key);
-                    onOpenSetup(TrainingMode.custom);
-                  },
-                ),
-                const SizedBox(height: 12),
                 _BigSpecialCard(
                   title: '…Of What?',
                   subtitle: 'A note is a given degree — name the root. Harmonize any melody.',
@@ -201,6 +174,34 @@ class _HomeMain extends StatelessWidget {
                   onTap: () {
                     if (provider.selectedKey == null) provider.selectKey(provider.progressData.first.key);
                     onOpenSetup(TrainingMode.pocket);
+                  },
+                ),
+                const SizedBox(height: 12),
+                _BigSpecialCard(
+                  title: 'Note to Number',
+                  subtitle: 'Given a note name, identify its numerical degree.',
+                  icon: Icons.swap_horiz_rounded,
+                  accentColor: const Color(0xFF34D399),
+                  borderColor: const Color(0xFF34D399).withAlpha(110),
+                  isLocked: !provider.isPro,
+                  onTap: () {
+                    if (!provider.isPro) { onShowPaywall(); return; }
+                    if (provider.selectedKey == null) provider.selectKey(provider.progressData.first.key);
+                    onOpenSetup(TrainingMode.noteToNumber);
+                  },
+                ),
+                const SizedBox(height: 12),
+                _BigSpecialCard(
+                  title: 'Custom Mode',
+                  subtitle: 'Choose your key, direction, and specific degrees to train on.',
+                  icon: Icons.tune_rounded,
+                  accentColor: const Color(0xFFD857EC),
+                  borderColor: const Color(0xFFD857EC).withAlpha(110),
+                  isLocked: !provider.isPro,
+                  onTap: () {
+                    if (!provider.isPro) { onShowPaywall(); return; }
+                    if (provider.selectedKey == null) provider.selectKey(provider.progressData.first.key);
+                    onOpenSetup(TrainingMode.custom);
                   },
                 ),
               ]),
