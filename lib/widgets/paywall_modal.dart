@@ -161,25 +161,31 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
 
           SafeArea(
             child: Stack(children: [
-              // Spacers centre the content on tall screens; on short ones the
-              // whole thing scrolls instead of clipping the CTA off the bottom.
+              // No scrolling: the content is a fixed, well-spaced block that sits
+              // at full size on tall phones and scales down as one unit to fit
+              // shorter screens — always centred and whole, never clipped.
               LayoutBuilder(
-                builder: (context, c) => SingleChildScrollView(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: c.maxHeight),
-                    child: IntrinsicHeight(
+                builder: (context, c) => SizedBox(
+                  width: c.maxWidth,
+                  height: c.maxHeight,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.center,
+                    clipBehavior: Clip.none,
+                    child: SizedBox(
+                      width: c.maxWidth,
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: Column(children: [
-                          const Spacer(flex: 3),
+                        child: Column(mainAxisSize: MainAxisSize.min, children: [
+                          const SizedBox(height: 14),
 
                           _in(0.0, 0.45, child: _hero()),
 
-                          const Spacer(flex: 3),
+                          const SizedBox(height: 34),
 
                           _in(0.14, 0.62, child: _membershipCard()),
 
-                          const Spacer(flex: 3),
+                          const SizedBox(height: 30),
 
                           _in(0.32, 0.85, child: _BuyButton(
                             title: 'Unlock Lifetime Access',
@@ -187,7 +193,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
                             busy: _purchasing,
                             onTap: _buy,
                           )),
-                          const SizedBox(height: 14),
+                          const SizedBox(height: 16),
                           _in(0.42, 0.95, child: FittedBox(
                             fit: BoxFit.scaleDown,
                             child: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -199,7 +205,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
                             ]),
                           )),
 
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 14),
                         ]),
                       ),
                     ),
