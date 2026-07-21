@@ -39,12 +39,14 @@ class PocketModeScreen extends StatefulWidget {
   State<PocketModeScreen> createState() => _PocketModeScreenState();
 }
 
-class _PocketModeScreenState extends State<PocketModeScreen> with SingleTickerProviderStateMixin {
+class _PocketModeScreenState extends State<PocketModeScreen> with TickerProviderStateMixin {
   static const _accent = Color(0xFF6366F1); // indigo — Pocket Mode's colour
 
   final TtsService _tts = TtsService();
   final Random _rng = Random();
-  late final AnimationController _pulse; // slow ambient breathing behind the stage
+  late final AnimationController _pulse;  // slow ambient breathing behind the stage
+  late final AnimationController _wave;   // looping sonar rings while the voice speaks
+  late final AnimationController _reveal; // one-shot bloom when the answer lands
 
   // A monotonically increasing token: bumping it invalidates any loop iteration
   // still awaiting, so pause / exit stop cleanly mid-utterance or mid-wait.
@@ -66,6 +68,8 @@ class _PocketModeScreenState extends State<PocketModeScreen> with SingleTickerPr
   void initState() {
     super.initState();
     _pulse = AnimationController(vsync: this, duration: const Duration(milliseconds: 2600))..repeat(reverse: true);
+    _wave = AnimationController(vsync: this, duration: const Duration(milliseconds: 2000))..repeat();
+    _reveal = AnimationController(vsync: this, duration: const Duration(milliseconds: 820));
     _tts.warmUp(); // init the audio session/voice before the first question
     // Auto-start: the user already pressed Start on the setup screen.
     WidgetsBinding.instance.addPostFrameCallback((_) => _play());
@@ -76,6 +80,8 @@ class _PocketModeScreenState extends State<PocketModeScreen> with SingleTickerPr
     _gen++;
     _tts.stop();
     _pulse.dispose();
+    _wave.dispose();
+    _reveal.dispose();
     super.dispose();
   }
 
@@ -195,6 +201,8 @@ class _PocketModeScreenState extends State<PocketModeScreen> with SingleTickerPr
       // Reveal on screen + speak the answer.
       final aText = _spokenNote(answer);
       setState(() { _answer = answer; _phase = 3; });
+      _reveal.forward(from: 0); // bloom ripple
+      HapticsService.impactLight();
       _tts.speak(aText);
       if (!await _wait(_speechMs(aText) + 800, gen)) return;
 
@@ -238,9 +246,27 @@ class _PocketModeScreenState extends State<PocketModeScreen> with SingleTickerPr
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: Stack(children: [
-          // Ambient glow — the bottom blob picks up the live colour.
-          Positioned(top: -90, right: -70, child: _blob(300, _accent.withValues(alpha: 0.14))),
-          Positioned(bottom: -80, left: -60, child: _blob(260, live.withValues(alpha: 0.12))),
+          // Phase-reactive ambient wash: a soft radial glow behind the stage
+          // that breathes and takes the live colour, plus two quiet corner blobs.
+          AnimatedBuilder(
+            animation: _pulse,
+            builder: (context, _) {
+              final t = Curves.easeInOut.transform(_pulse.value);
+              return Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: RadialGradient(
+                      center: const Alignment(0, -0.25),
+                      radius: 0.95,
+                      colors: [live.withValues(alpha: 0.10 + 0.06 * t), Colors.transparent],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+          Positioned(top: -90, right: -70, child: _blob(300, _accent.withValues(alpha: 0.10))),
+          Positioned(bottom: -80, left: -60, child: _blob(260, live.withValues(alpha: 0.10))),
           SafeArea(
             child: Column(children: [
               // ── Top bar + session progress ──
@@ -343,14 +369,14 @@ class _PocketModeScreenState extends State<PocketModeScreen> with SingleTickerPr
     );
   }
 
-  // The circular centrepiece: breathing glow, a countdown ring, and the
-  // question/answer content that cross-fades as the round progresses.
+  // The circular centrepiece: sonar rings while the voice speaks, a countdown
+  // ring that depletes, a materic glass orb, and a bloom when the answer lands.
   Widget _stage(double size, Color noteColor) {
     final degColor = AppColors.degreeColors[_degree.split('/').first] ?? _accent;
     final delayMs = widget.config.delayMs;
 
     return AnimatedBuilder(
-      animation: _pulse,
+      animation: Listenable.merge([_pulse, _wave, _reveal]),
       builder: (context, _) {
         final t = Curves.easeInOut.transform(_pulse.value);
 
@@ -376,38 +402,61 @@ class _PocketModeScreenState extends State<PocketModeScreen> with SingleTickerPr
             glow = 0;
         }
         final glowColor = _phase == 3 ? noteColor : _accent;
+        // A hair of breathing scale on the whole orb keeps it alive.
+        final scale = 1 + (_phase == 1 ? 0.012 * t : _phase == 3 ? 0.02 * (1 - _reveal.value) : 0.0);
 
         return SizedBox(
           width: size,
           height: size,
-          child: Stack(alignment: Alignment.center, children: [
-            // breathing halo
-            Container(
-              width: size * 0.86,
-              height: size * 0.86,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [BoxShadow(color: glowColor.withValues(alpha: 0.10 + 0.12 * t), blurRadius: 55 + 25 * t, spreadRadius: 6)],
-              ),
-            ),
-            // glass disc
-            Container(
-              width: size - 42,
-              height: size - 42,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [Colors.white.withValues(alpha: 0.05), Colors.white.withValues(alpha: 0.015)],
+          child: Stack(alignment: Alignment.center, clipBehavior: Clip.none, children: [
+            // sonar rings emanating while the voice asks
+            if (_phase == 1)
+              CustomPaint(size: Size(size, size), painter: _SonarPainter(t: _wave.value, color: _accent)),
+            // bloom ripple on the answer reveal
+            if (_reveal.isAnimating && _phase == 3)
+              CustomPaint(size: Size(size, size), painter: _BloomPainter(t: _reveal.value, color: noteColor)),
+            Transform.scale(
+              scale: scale,
+              child: Stack(alignment: Alignment.center, children: [
+                // breathing halo
+                Container(
+                  width: size * 0.86,
+                  height: size * 0.86,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [BoxShadow(color: glowColor.withValues(alpha: 0.10 + 0.12 * t), blurRadius: 55 + 25 * t, spreadRadius: 6)],
+                  ),
                 ),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
-              ),
-            ),
-            // ring
-            CustomPaint(size: Size(size, size), painter: _StageRingPainter(progress: progress, color: ringColor, glow: glow)),
-            // content
-            Padding(
-              padding: EdgeInsets.all(size * 0.16),
-              child: _stageContent(degColor, noteColor),
+                // glass orb — radial fill + a top-left highlight for depth
+                Container(
+                  width: size - 42,
+                  height: size - 42,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      center: const Alignment(-0.4, -0.5),
+                      radius: 1.1,
+                      colors: [
+                        Colors.white.withValues(alpha: 0.08),
+                        Colors.white.withValues(alpha: 0.02),
+                        glowColor.withValues(alpha: 0.04),
+                      ],
+                      stops: const [0.0, 0.55, 1.0],
+                    ),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                    boxShadow: [
+                      BoxShadow(color: Colors.black.withValues(alpha: 0.25), blurRadius: 30, spreadRadius: -10, offset: const Offset(0, 12)),
+                    ],
+                  ),
+                ),
+                // ring
+                CustomPaint(size: Size(size, size), painter: _StageRingPainter(progress: progress, color: ringColor, glow: glow)),
+                // content
+                Padding(
+                  padding: EdgeInsets.all(size * 0.16),
+                  child: _stageContent(degColor, noteColor),
+                ),
+              ]),
             ),
           ]),
         );
@@ -530,4 +579,72 @@ class _StageRingPainter extends CustomPainter {
   @override
   bool shouldRepaint(_StageRingPainter old) =>
       old.progress != progress || old.color != color || old.glow != glow;
+}
+
+// Concentric rings that expand and fade out of the orb while the voice is
+// speaking — a quiet "sound is playing" signal.
+class _SonarPainter extends CustomPainter {
+  final double t; // 0..1 loop
+  final Color color;
+  _SonarPainter({required this.t, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final ring = size.width / 2 - 5;
+    const rings = 3;
+    for (var i = 0; i < rings; i++) {
+      final p = (t + i / rings) % 1.0;
+      final r = ring * (0.42 + p * 0.56); // grow from inside toward the ring
+      final alpha = (1 - p) * 0.22;
+      if (alpha <= 0.01) continue;
+      canvas.drawCircle(
+        center,
+        r,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2
+          ..color = color.withValues(alpha: alpha),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_SonarPainter old) => old.t != t || old.color != color;
+}
+
+// One-shot bloom: a filled disc + ring that burst outward and fade the moment
+// the answer is revealed.
+class _BloomPainter extends CustomPainter {
+  final double t; // 0..1 reveal progress
+  final Color color;
+  _BloomPainter({required this.t, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (t <= 0 || t >= 1) return;
+    final center = Offset(size.width / 2, size.height / 2);
+    final maxR = size.width / 2 - 5;
+    final ease = Curves.easeOut.transform(t);
+    // soft filled bloom
+    canvas.drawCircle(
+      center,
+      maxR * (0.3 + ease * 0.75),
+      Paint()
+        ..color = color.withValues(alpha: (1 - t) * 0.28)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 18),
+    );
+    // crisp expanding ring
+    canvas.drawCircle(
+      center,
+      maxR * (0.5 + ease * 0.6),
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3 * (1 - ease)
+        ..color = color.withValues(alpha: (1 - t) * 0.5),
+    );
+  }
+
+  @override
+  bool shouldRepaint(_BloomPainter old) => old.t != t || old.color != color;
 }
