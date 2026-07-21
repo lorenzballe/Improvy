@@ -534,15 +534,14 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
   Widget _keyBadge() {
     final shuffle = widget.config.shuffleKeys;
     final key = _key.isNotEmpty ? _key : (shuffle ? '' : widget.config.key);
-    final kc = key.isEmpty ? Colors.white : (AppColors.noteColors[key] ?? Colors.white);
-    final notation = widget.notation;
+    // Neutral (uncoloured) badge, exactly like Diatonic / Chromatic — white
+    // hairline border, no tint, no glow.
     return Container(
       width: 48, height: 48,
       decoration: BoxDecoration(
         color: Colors.white10,
         shape: BoxShape.circle,
-        border: Border.all(color: kc.withAlpha(140), width: 1.2),
-        boxShadow: key.isEmpty ? null : [BoxShadow(color: kc.withAlpha(70), blurRadius: 14)],
+        border: Border.all(color: Colors.white.withAlpha(51), width: 1.2),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -557,8 +556,8 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
             child: (shuffle && key.isEmpty)
                 ? const Icon(Icons.shuffle_rounded, size: 15, color: Colors.white)
                 : NoteText(
-                    note: formatNoteForDisplay(key, notation),
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: kc, height: 1.1),
+                    note: formatNoteForDisplay(key, widget.notation),
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white, height: 1.1),
                   ),
           ),
         ],
