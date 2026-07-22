@@ -78,7 +78,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               )),
               const SizedBox(height: 16),
               _in(0.3, 0.82, child: Text(
-                'Train your mind to recognize\nevery note and degree, instantly.',
+                'Visualize and work out every note and degree,\nin any key — the foundation of improvisation.',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, height: 1.5, color: Colors.white.withValues(alpha: 0.55)),
               )),
