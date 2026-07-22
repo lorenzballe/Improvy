@@ -175,7 +175,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
                     child: SizedBox(
                       width: c.maxWidth,
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        padding: const EdgeInsets.symmetric(horizontal: 18),
                         child: Column(mainAxisSize: MainAxisSize.min, children: [
                           const SizedBox(height: 14),
 
