@@ -346,7 +346,6 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
               ),
 
               // ── Question: the big degree number, like the trainer's ──
-              // ── Big number ringed by the countdown, colour of the number ──
               Expanded(
                 child: Center(
                   child: Padding(
@@ -356,40 +355,24 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
                 ),
               ),
 
-              // ── Start / stop, centred below ──
-              Padding(
-                padding: EdgeInsets.only(bottom: 18 + MediaQuery.of(context).padding.bottom),
-                child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  GestureDetector(
-                    onTap: _togglePlay,
-                    child: Container(
-                      width: 84, height: 84,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(colors: [Color(0xFF818CF8), Color(0xFF6366F1)], begin: Alignment.topCenter, end: Alignment.bottomCenter),
-                        shape: BoxShape.circle,
-                        boxShadow: [BoxShadow(color: _accent.withValues(alpha: 0.5), blurRadius: 30, offset: const Offset(0, 12), spreadRadius: -4)],
-                      ),
-                      child: Icon(
-                        _finished ? Icons.replay_rounded : (_playing ? Icons.pause_rounded : Icons.play_arrow_rounded),
-                        color: Colors.white, size: 44,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Icon(Icons.lock_outline_rounded, size: 12, color: Colors.white.withValues(alpha: 0.32)),
-                    const SizedBox(width: 6),
-                    Text('Keeps playing with the screen off',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white.withValues(alpha: 0.32))),
-                  ]),
-                ]),
-              ),
+              // ── Answer board: the app's colourful note pills; the answer
+              // lights up on the reveal (auto, not tappable). ──
+              _noteGrid(),
+
+              const SizedBox(height: 12),
+
+              // ── Playback bar (glass, app-style) ──
+              _playBar(),
+              SizedBox(height: 8 + MediaQuery.of(context).padding.bottom),
             ]),
           ),
         ]),
       ),
     );
   }
+
+  // The 12 chromatic roots, shown as the answer board.
+  static const _gridNotes = ['C', 'D♭', 'D', 'E♭', 'E', 'F', 'G♭', 'G', 'A♭', 'A', 'B♭', 'B'];
 
   Widget _questionArea(Color degColor, Color noteColor) {
     final statusText = switch (_phase) {
@@ -399,54 +382,146 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
       _ => _finished ? 'SESSION COMPLETE' : 'READY',
     };
     final statusColor = _phase == 3 ? noteColor : _accent;
-    // The centre shows the asked degree, then flips to the answer note on the
-    // reveal; the ring takes that same colour ("the colour of the number").
-    final showingAnswer = _phase == 3 && _answer.isNotEmpty;
-    final centreColor = showingAnswer ? noteColor : degColor;
-    final centreText = showingAnswer
-        ? formatNoteForDisplay(_answer, widget.notation)
-        : (_presented.isNotEmpty ? _presented.split('/').first : '…');
-    const ring = 272.0;
     return Column(mainAxisSize: MainAxisSize.min, children: [
       Text(statusText,
           style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: statusColor.withValues(alpha: 0.9), letterSpacing: 5)),
-      const SizedBox(height: 22),
+      const SizedBox(height: 18),
+      if (_presented.isNotEmpty)
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: NoteText(note: _presented.split('/').first,
+              style: TextStyle(fontSize: 128, fontWeight: FontWeight.w900, color: degColor, height: 1,
+                  shadows: [Shadow(color: degColor.withValues(alpha: 0.4), blurRadius: 40)])),
+        )
+      else
+        Text('…', style: TextStyle(fontSize: 96, fontWeight: FontWeight.w900, color: Colors.white.withValues(alpha: 0.25))),
+      const SizedBox(height: 24),
+      // Countdown bar (thinking) — thin, app-native, smoothly depleting.
       SizedBox(
-        width: ring,
-        height: ring,
-        child: Stack(alignment: Alignment.center, children: [
-          // The contour ring, in the number's colour. The countdown makes it
-          // sweep round while thinking; it sits full otherwise.
-          RepaintBoundary(
-            child: AnimatedBuilder(
-              animation: _countdown,
-              builder: (_, __) {
-                final progress = _phase == 2 ? _countdown.value.clamp(0.0, 1.0) : 1.0;
-                return CustomPaint(size: const Size(ring, ring), painter: _NumberRingPainter(progress: progress, color: centreColor));
-              },
+        height: 6,
+        width: 180,
+        child: _phase == 2
+            ? AnimatedBuilder(
+                animation: _countdown,
+                builder: (_, __) => ClipRRect(
+                  borderRadius: BorderRadius.circular(100),
+                  child: Stack(children: [
+                    Container(color: Colors.white.withValues(alpha: 0.08)),
+                    FractionallySizedBox(
+                      widthFactor: _countdown.value.clamp(0.0, 1.0),
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(colors: [Color(0xFF60A5FA), Color(0xFFA855F7), Color(0xFFEC4899)]),
+                        ),
+                      ),
+                    ),
+                  ]),
+                ),
+              )
+            : const SizedBox.shrink(),
+      ),
+    ]);
+  }
+
+  Widget _noteGrid() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: LayoutBuilder(builder: (ctx, c) {
+        const gap = 10.0;
+        const cols = 4;
+        final bw = (c.maxWidth - (cols - 1) * gap) / cols;
+        final h = bw * 0.62;
+        return Column(mainAxisSize: MainAxisSize.min, children: [
+          for (int r = 0; r < 3; r++) ...[
+            if (r > 0) const SizedBox(height: gap),
+            Row(children: [
+              for (int col = 0; col < cols; col++) ...[
+                if (col > 0) const SizedBox(width: gap),
+                _pill(_gridNotes[r * cols + col], bw, h),
+              ],
+            ]),
+          ],
+        ]);
+      }),
+    );
+  }
+
+  Widget _pill(String note, double w, double h) {
+    final nc = AppColors.noteColors[note] ?? Colors.white;
+    final isAnswer = _phase == 3 && _answer.isNotEmpty && areEnharmonicEquivalent(note, _answer);
+    final label = NoteText(
+      note: formatNoteForDisplay(note, widget.notation),
+      style: TextStyle(fontSize: 19, fontWeight: FontWeight.w900,
+          color: isAnswer ? Colors.white : nc.withValues(alpha: 0.9)),
+    );
+    Widget cell(double scale) => Transform.scale(
+          scale: scale,
+          child: Container(
+            width: w, height: h,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: isAnswer ? nc : Colors.white.withValues(alpha: 0.045),
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: isAnswer ? [BoxShadow(color: nc.withValues(alpha: 0.5), blurRadius: 26, spreadRadius: -4)] : null,
             ),
+            child: label,
           ),
-          // The big number inside the ring — degree, or answer note on reveal.
-          Padding(
-            padding: const EdgeInsets.all(46),
-            child: AnimatedBuilder(
-              animation: _reveal,
-              builder: (_, child) => showingAnswer
-                  ? Transform.scale(scale: 0.82 + 0.18 * Curves.easeOutBack.transform(_reveal.value.clamp(0.0, 1.0)), child: child)
-                  : child!,
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: centreText == '…'
-                    ? Text('…', style: TextStyle(fontSize: 88, fontWeight: FontWeight.w900, color: Colors.white.withValues(alpha: 0.25)))
-                    : NoteText(note: centreText,
-                        style: TextStyle(fontSize: 120, fontWeight: FontWeight.w900, color: centreColor, height: 1,
-                            shadows: [Shadow(color: centreColor.withValues(alpha: 0.45), blurRadius: 34)])),
+        );
+    // Only the revealed answer animates (a little pop); the rest stay still.
+    return isAnswer
+        ? AnimatedBuilder(
+            animation: _reveal,
+            builder: (_, __) => cell(0.9 + 0.1 * Curves.easeOutBack.transform(_reveal.value.clamp(0.0, 1.0))),
+          )
+        : cell(1.0);
+  }
+
+  Widget _playBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(20, 12, 12, 12),
+        decoration: BoxDecoration(
+          color: const Color(0x1A1A1625),
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(color: Colors.white10, width: 1.2),
+        ),
+        child: Row(children: [
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+              Text(_finished ? 'SESSION COMPLETE' : (_playing ? 'PLAYING' : 'PAUSED'),
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: _accent, letterSpacing: 2)),
+              const SizedBox(height: 3),
+              Row(children: [
+                Icon(Icons.lock_outline_rounded, size: 12, color: Colors.white.withValues(alpha: 0.38)),
+                const SizedBox(width: 5),
+                Flexible(
+                  child: Text('Keeps playing with the screen off',
+                      maxLines: 1, overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white.withValues(alpha: 0.38))),
+                ),
+              ]),
+            ]),
+          ),
+          const SizedBox(width: 12),
+          GestureDetector(
+            onTap: _togglePlay,
+            child: Container(
+              width: 58, height: 58,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(colors: [Color(0xFF818CF8), Color(0xFF6366F1)], begin: Alignment.topCenter, end: Alignment.bottomCenter),
+                shape: BoxShape.circle,
+                boxShadow: [BoxShadow(color: _accent.withValues(alpha: 0.5), blurRadius: 22, offset: const Offset(0, 8), spreadRadius: -4)],
+              ),
+              child: Icon(
+                _finished ? Icons.replay_rounded : (_playing ? Icons.pause_rounded : Icons.play_arrow_rounded),
+                color: Colors.white, size: 32,
               ),
             ),
           ),
         ]),
       ),
-    ]);
+    );
   }
 
   // Training-key badge, matching the other modes' top-right badge exactly.
@@ -510,40 +585,4 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
           child: Container(width: size, height: size, decoration: BoxDecoration(shape: BoxShape.circle, color: color)),
         ),
       );
-}
-
-// Thin contour ring around the number, in the number's colour. [progress] is
-// the fraction still filled (the countdown sweeps it from the top clockwise).
-class _NumberRingPainter extends CustomPainter {
-  final double progress;
-  final Color color;
-  _NumberRingPainter({required this.progress, required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2 - 4;
-    final track = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 5
-      ..strokeCap = StrokeCap.round
-      ..color = Colors.white.withValues(alpha: 0.08);
-    canvas.drawCircle(center, radius, track);
-    if (progress <= 0) return;
-    final arc = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 5
-      ..strokeCap = StrokeCap.round
-      ..color = color;
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      -3.141592653589793 / 2,
-      6.283185307179586 * progress.clamp(0.0, 1.0),
-      false,
-      arc,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_NumberRingPainter old) => old.progress != progress || old.color != color;
 }
