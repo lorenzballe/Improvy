@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 import 'dart:math' show Random;
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -46,7 +45,6 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
   final TtsService _tts = TtsService();
   final Random _rng = Random();
   late final AnimationController _pulse;    // slow ambient breathing behind the stage
-  late final AnimationController _wave;     // looping sonar rings while the voice speaks
   late final AnimationController _reveal;   // one-shot bloom when the answer lands
   late final AnimationController _countdown; // smooth 1→0 sweep for the thinking ring
 
@@ -69,7 +67,6 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
   void initState() {
     super.initState();
     _pulse = AnimationController(vsync: this, duration: const Duration(milliseconds: 2600))..repeat(reverse: true);
-    _wave = AnimationController(vsync: this, duration: const Duration(milliseconds: 2000))..repeat();
     _reveal = AnimationController(vsync: this, duration: const Duration(milliseconds: 820));
     _countdown = AnimationController(vsync: this, duration: const Duration(seconds: 1), value: 0);
     _tts.warmUp(); // init the audio session/voice before the first question
@@ -82,7 +79,6 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
     _gen++;
     _tts.stop();
     _pulse.dispose();
-    _wave.dispose();
     _reveal.dispose();
     _countdown.dispose();
     super.dispose();
@@ -245,8 +241,9 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
   Widget build(BuildContext context) {
     final total = widget.config.questions;
     final noteColor = AppColors.noteColors[_answer] ?? Colors.white;
+    final degColor = AppColors.degreeColors[_degree.split('/').first] ?? _accent;
     // The mode's live accent: indigo while asking/thinking, the note's colour
-    // on the reveal — it tints the glow, the ring and the progress bar together.
+    // on the reveal — it tints the ambient wash.
     final live = _phase == 3 ? noteColor : _accent;
 
     return PopScope(
@@ -348,45 +345,25 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
                 ),
               ),
 
-              // ── Central animated stage ──
+              // ── Question: the big degree number, like the trainer's ──
               Expanded(
                 child: Center(
-                  child: LayoutBuilder(builder: (ctx, c) {
-                    final size = math.min(c.maxWidth - 48, 320.0).clamp(220.0, 320.0);
-                    return _stage(size.toDouble(), noteColor);
-                  }),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: _questionArea(degColor, noteColor),
+                  ),
                 ),
               ),
 
-              // ── Play / pause ──
-              Padding(
-                padding: EdgeInsets.fromLTRB(24, 0, 24, 14 + MediaQuery.of(context).padding.bottom),
-                child: Column(children: [
-                  GestureDetector(
-                    onTap: _togglePlay,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      width: 82, height: 82,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(colors: [Color(0xFF818CF8), Color(0xFF6366F1)], begin: Alignment.topCenter, end: Alignment.bottomCenter),
-                        shape: BoxShape.circle,
-                        boxShadow: [BoxShadow(color: _accent.withValues(alpha: 0.5), blurRadius: 30, offset: const Offset(0, 12), spreadRadius: -4)],
-                      ),
-                      child: Icon(
-                        _finished ? Icons.replay_rounded : (_playing ? Icons.pause_rounded : Icons.play_arrow_rounded),
-                        color: Colors.white, size: 44,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Icon(Icons.lock_outline_rounded, size: 12, color: Colors.white.withValues(alpha: 0.32)),
-                    const SizedBox(width: 6),
-                    Text('Keeps playing with the screen off',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white.withValues(alpha: 0.32))),
-                  ]),
-                ]),
-              ),
+              // ── Answer board: the app's colourful note pills; the answer
+              // lights up on the reveal (auto, not tappable). ──
+              _noteGrid(),
+
+              const SizedBox(height: 12),
+
+              // ── Playback bar (glass, app-style) ──
+              _playBar(),
+              SizedBox(height: 8 + MediaQuery.of(context).padding.bottom),
             ]),
           ),
         ]),
@@ -394,184 +371,157 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
     );
   }
 
-  // The circular centrepiece: sonar rings while the voice speaks, a countdown
-  // ring that depletes, a materic glass orb, and a bloom when the answer lands.
-  Widget _stage(double size, Color noteColor) {
-    final degColor = AppColors.degreeColors[_degree.split('/').first] ?? _accent;
-    final glowColor = _phase == 3 ? noteColor : _accent;
+  // The 12 chromatic roots, shown as the answer board.
+  static const _gridNotes = ['C', 'D♭', 'D', 'E♭', 'E', 'F', 'G♭', 'G', 'A♭', 'A', 'B♭', 'B'];
 
-    // Each animated layer has its own builder + RepaintBoundary, so the smooth
-    // 60fps countdown ring repaints ALONE (a crisp, blur-free arc) instead of
-    // dragging the whole heavy stage — expensive blurs are painted once and
-    // only cheap opacity/scale animate. This is what keeps the sweep fluid.
-    return SizedBox(
-      width: size,
-      height: size,
-      child: Stack(alignment: Alignment.center, clipBehavior: Clip.none, children: [
-        // sonar rings while the voice asks (phase 1 only)
-        if (_phase == 1)
-          RepaintBoundary(
-            child: AnimatedBuilder(
-              animation: _wave,
-              builder: (_, __) => CustomPaint(size: Size(size, size), painter: _SonarPainter(t: _wave.value, color: _accent)),
-            ),
-          ),
-        // bloom ripple on the answer reveal (phase 3 only)
-        if (_phase == 3)
-          RepaintBoundary(
-            child: AnimatedBuilder(
-              animation: _reveal,
-              builder: (_, __) => _reveal.isAnimating
-                  ? CustomPaint(size: Size(size, size), painter: _BloomPainter(t: _reveal.value, color: noteColor))
-                  : const SizedBox.shrink(),
-            ),
-          ),
-        // breathing halo — the heavy 60px blur is painted once and cached; only
-        // a cheap Opacity animates, so it never re-blurs per frame.
-        AnimatedBuilder(
-          animation: _pulse,
-          builder: (_, child) => Opacity(opacity: 0.5 + 0.5 * Curves.easeInOut.transform(_pulse.value), child: child),
-          child: RepaintBoundary(
-            child: Container(
-              width: size * 0.86,
-              height: size * 0.86,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [BoxShadow(color: glowColor.withValues(alpha: 0.20), blurRadius: 60, spreadRadius: 6)],
-              ),
-            ),
-          ),
-        ),
-        // glass orb — static per phase (rebuilt only on setState), so its
-        // gradient + shadow don't repaint during the countdown.
-        RepaintBoundary(
-          child: Container(
-            width: size - 42,
-            height: size - 42,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                center: const Alignment(-0.4, -0.5),
-                radius: 1.1,
-                colors: [
-                  Colors.white.withValues(alpha: 0.08),
-                  Colors.white.withValues(alpha: 0.02),
-                  glowColor.withValues(alpha: 0.04),
-                ],
-                stops: const [0.0, 0.55, 1.0],
-              ),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-              boxShadow: [
-                BoxShadow(color: Colors.black.withValues(alpha: 0.25), blurRadius: 30, spreadRadius: -10, offset: const Offset(0, 12)),
-              ],
-            ),
-          ),
-        ),
-        // countdown / status ring — isolated so the sweep is buttery.
-        RepaintBoundary(
-          child: AnimatedBuilder(
-            animation: Listenable.merge([_countdown, _pulse]),
-            builder: (_, __) {
-              final t = Curves.easeInOut.transform(_pulse.value);
-              double progress;
-              Color ringColor;
-              double glow;
-              switch (_phase) {
-                case 1: // listening
-                  progress = 1.0;
-                  ringColor = _accent.withValues(alpha: 0.35 + 0.4 * t);
-                  glow = 0;
-                case 2: // thinking — smooth crisp sweep, no per-frame blur
-                  progress = _countdown.value.clamp(0.0, 1.0);
-                  ringColor = _accent;
-                  glow = 0;
-                case 3: // answer — full ring in the note's colour
-                  progress = 1.0;
-                  ringColor = noteColor;
-                  glow = 0.5;
-                default:
-                  progress = 0;
-                  ringColor = _accent;
-                  glow = 0;
-              }
-              return CustomPaint(size: Size(size, size), painter: _StageRingPainter(progress: progress, color: ringColor, glow: glow));
-            },
-          ),
-        ),
-        // content
-        Padding(
-          padding: EdgeInsets.all(size * 0.16),
-          child: _stageContent(degColor, noteColor),
-        ),
-      ]),
-    );
-  }
-
-  Widget _stageContent(Color degColor, Color noteColor) {
-    if (_finished) {
-      return Column(mainAxisSize: MainAxisSize.min, children: [
-        Icon(Icons.check_circle_rounded, color: _accent, size: 56),
-        const SizedBox(height: 14),
-        const Text('Session\ncomplete', textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white, height: 1.15)),
-      ]);
-    }
-
+  Widget _questionArea(Color degColor, Color noteColor) {
     final statusText = switch (_phase) {
       1 => 'LISTEN',
       2 => 'YOUR TURN',
       3 => 'ANSWER',
-      _ => 'GET READY',
+      _ => _finished ? 'SESSION COMPLETE' : 'READY',
     };
     final statusColor = _phase == 3 ? noteColor : _accent;
-
     return Column(mainAxisSize: MainAxisSize.min, children: [
       Text(statusText,
-          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: statusColor.withValues(alpha: 0.9), letterSpacing: 3)),
-      const SizedBox(height: 14),
-      // The degree being asked — the training key lives in the top-right badge,
-      // exactly like the other modes, so it isn't repeated here.
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: statusColor.withValues(alpha: 0.9), letterSpacing: 5)),
+      const SizedBox(height: 18),
       if (_presented.isNotEmpty)
         FittedBox(
           fit: BoxFit.scaleDown,
           child: NoteText(note: _presented.split('/').first,
-              style: TextStyle(fontSize: 66, fontWeight: FontWeight.w900, color: degColor, height: 1,
-                  shadows: [Shadow(color: degColor.withValues(alpha: 0.35), blurRadius: 20)])),
+              style: TextStyle(fontSize: 128, fontWeight: FontWeight.w900, color: degColor, height: 1,
+                  shadows: [Shadow(color: degColor.withValues(alpha: 0.4), blurRadius: 40)])),
         )
       else
-        Text('…', style: TextStyle(fontSize: 48, fontWeight: FontWeight.w900, color: Colors.white.withValues(alpha: 0.3))),
-      const SizedBox(height: 12),
-      // Answer reveal / countdown — fixed slot so the layout never jumps. Each
-      // state animates via its own controller (kept off the main rebuild path).
+        Text('…', style: TextStyle(fontSize: 96, fontWeight: FontWeight.w900, color: Colors.white.withValues(alpha: 0.25))),
+      const SizedBox(height: 24),
+      // Countdown bar (thinking) — thin, app-native, smoothly depleting.
       SizedBox(
-        height: 66,
-        child: Center(
-          child: _phase == 3 && _answer.isNotEmpty
-              ? AnimatedBuilder(
-                  animation: _reveal,
-                  builder: (_, child) {
-                    final s = Curves.easeOutBack.transform(_reveal.value.clamp(0.0, 1.0));
-                    return Opacity(opacity: _reveal.value.clamp(0.0, 1.0), child: Transform.scale(scale: 0.65 + 0.35 * s, child: child));
-                  },
-                  child: NoteText(
-                    note: formatNoteForDisplay(_answer, widget.notation),
-                    style: TextStyle(fontSize: 58, fontWeight: FontWeight.w900, color: noteColor, height: 1,
-                        shadows: [Shadow(color: noteColor.withValues(alpha: 0.5), blurRadius: 24)]),
-                  ),
-                )
-              : _phase == 2
-                  ? AnimatedBuilder(
-                      animation: _countdown,
-                      builder: (_, __) {
-                        final secs = (_countdown.value * (widget.config.delayMs / 1000)).ceil().clamp(1, 99);
-                        return Text('$secs',
-                            style: TextStyle(fontSize: 46, fontWeight: FontWeight.w900, color: Colors.white.withValues(alpha: 0.22), height: 1));
-                      },
-                    )
-                  : const SizedBox.shrink(),
-        ),
+        height: 6,
+        width: 180,
+        child: _phase == 2
+            ? AnimatedBuilder(
+                animation: _countdown,
+                builder: (_, __) => ClipRRect(
+                  borderRadius: BorderRadius.circular(100),
+                  child: Stack(children: [
+                    Container(color: Colors.white.withValues(alpha: 0.08)),
+                    FractionallySizedBox(
+                      widthFactor: _countdown.value.clamp(0.0, 1.0),
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(colors: [Color(0xFF60A5FA), Color(0xFFA855F7), Color(0xFFEC4899)]),
+                        ),
+                      ),
+                    ),
+                  ]),
+                ),
+              )
+            : const SizedBox.shrink(),
       ),
     ]);
+  }
+
+  Widget _noteGrid() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: LayoutBuilder(builder: (ctx, c) {
+        const gap = 10.0;
+        const cols = 4;
+        final bw = (c.maxWidth - (cols - 1) * gap) / cols;
+        final h = bw * 0.62;
+        return Column(mainAxisSize: MainAxisSize.min, children: [
+          for (int r = 0; r < 3; r++) ...[
+            if (r > 0) const SizedBox(height: gap),
+            Row(children: [
+              for (int col = 0; col < cols; col++) ...[
+                if (col > 0) const SizedBox(width: gap),
+                _pill(_gridNotes[r * cols + col], bw, h),
+              ],
+            ]),
+          ],
+        ]);
+      }),
+    );
+  }
+
+  Widget _pill(String note, double w, double h) {
+    final nc = AppColors.noteColors[note] ?? Colors.white;
+    final isAnswer = _phase == 3 && _answer.isNotEmpty && areEnharmonicEquivalent(note, _answer);
+    final label = NoteText(
+      note: formatNoteForDisplay(note, widget.notation),
+      style: TextStyle(fontSize: 19, fontWeight: FontWeight.w900,
+          color: isAnswer ? Colors.white : nc.withValues(alpha: 0.9)),
+    );
+    Widget cell(double scale) => Transform.scale(
+          scale: scale,
+          child: Container(
+            width: w, height: h,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: isAnswer ? nc : Colors.white.withValues(alpha: 0.045),
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: isAnswer ? [BoxShadow(color: nc.withValues(alpha: 0.5), blurRadius: 26, spreadRadius: -4)] : null,
+            ),
+            child: label,
+          ),
+        );
+    // Only the revealed answer animates (a little pop); the rest stay still.
+    return isAnswer
+        ? AnimatedBuilder(
+            animation: _reveal,
+            builder: (_, __) => cell(0.9 + 0.1 * Curves.easeOutBack.transform(_reveal.value.clamp(0.0, 1.0))),
+          )
+        : cell(1.0);
+  }
+
+  Widget _playBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(20, 12, 12, 12),
+        decoration: BoxDecoration(
+          color: const Color(0x1A1A1625),
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(color: Colors.white10, width: 1.2),
+        ),
+        child: Row(children: [
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+              Text(_finished ? 'SESSION COMPLETE' : (_playing ? 'PLAYING' : 'PAUSED'),
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: _accent, letterSpacing: 2)),
+              const SizedBox(height: 3),
+              Row(children: [
+                Icon(Icons.lock_outline_rounded, size: 12, color: Colors.white.withValues(alpha: 0.38)),
+                const SizedBox(width: 5),
+                Flexible(
+                  child: Text('Keeps playing with the screen off',
+                      maxLines: 1, overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white.withValues(alpha: 0.38))),
+                ),
+              ]),
+            ]),
+          ),
+          const SizedBox(width: 12),
+          GestureDetector(
+            onTap: _togglePlay,
+            child: Container(
+              width: 58, height: 58,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(colors: [Color(0xFF818CF8), Color(0xFF6366F1)], begin: Alignment.topCenter, end: Alignment.bottomCenter),
+                shape: BoxShape.circle,
+                boxShadow: [BoxShadow(color: _accent.withValues(alpha: 0.5), blurRadius: 22, offset: const Offset(0, 8), spreadRadius: -4)],
+              ),
+              child: Icon(
+                _finished ? Icons.replay_rounded : (_playing ? Icons.pause_rounded : Icons.play_arrow_rounded),
+                color: Colors.white, size: 32,
+              ),
+            ),
+          ),
+        ]),
+      ),
+    );
   }
 
   // Training-key badge, matching the other modes' top-right badge exactly.
@@ -635,115 +585,4 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
           child: Container(width: size, height: size, decoration: BoxDecoration(shape: BoxShape.circle, color: color)),
         ),
       );
-}
-
-// Countdown / status ring drawn around the stage: a faint full track with a
-// coloured arc sweeping from the top. During the answer phase it's a full
-// glowing circle in the note's colour.
-class _StageRingPainter extends CustomPainter {
-  final double progress; // 0..1 of the circle, from 12 o'clock clockwise
-  final Color color;
-  final double glow; // 0..1 blur intensity
-
-  _StageRingPainter({required this.progress, required this.color, this.glow = 0});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2 - 5;
-
-    final track = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 7
-      ..strokeCap = StrokeCap.round
-      ..color = Colors.white.withValues(alpha: 0.07);
-    canvas.drawCircle(center, radius, track);
-
-    if (progress <= 0) return;
-    final arc = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 7
-      ..strokeCap = StrokeCap.round
-      ..color = color;
-    if (glow > 0) arc.maskFilter = MaskFilter.blur(BlurStyle.normal, 5 * glow);
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      -math.pi / 2,
-      2 * math.pi * progress.clamp(0.0, 1.0),
-      false,
-      arc,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_StageRingPainter old) =>
-      old.progress != progress || old.color != color || old.glow != glow;
-}
-
-// Concentric rings that expand and fade out of the orb while the voice is
-// speaking — a quiet "sound is playing" signal.
-class _SonarPainter extends CustomPainter {
-  final double t; // 0..1 loop
-  final Color color;
-  _SonarPainter({required this.t, required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final ring = size.width / 2 - 5;
-    const rings = 3;
-    for (var i = 0; i < rings; i++) {
-      final p = (t + i / rings) % 1.0;
-      final r = ring * (0.42 + p * 0.56); // grow from inside toward the ring
-      final alpha = (1 - p) * 0.22;
-      if (alpha <= 0.01) continue;
-      canvas.drawCircle(
-        center,
-        r,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2
-          ..color = color.withValues(alpha: alpha),
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(_SonarPainter old) => old.t != t || old.color != color;
-}
-
-// One-shot bloom: a filled disc + ring that burst outward and fade the moment
-// the answer is revealed.
-class _BloomPainter extends CustomPainter {
-  final double t; // 0..1 reveal progress
-  final Color color;
-  _BloomPainter({required this.t, required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (t <= 0 || t >= 1) return;
-    final center = Offset(size.width / 2, size.height / 2);
-    final maxR = size.width / 2 - 5;
-    final ease = Curves.easeOut.transform(t);
-    // soft filled bloom
-    canvas.drawCircle(
-      center,
-      maxR * (0.3 + ease * 0.75),
-      Paint()
-        ..color = color.withValues(alpha: (1 - t) * 0.28)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 18),
-    );
-    // crisp expanding ring
-    canvas.drawCircle(
-      center,
-      maxR * (0.5 + ease * 0.6),
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 3 * (1 - ease)
-        ..color = color.withValues(alpha: (1 - t) * 0.5),
-    );
-  }
-
-  @override
-  bool shouldRepaint(_BloomPainter old) => old.t != t || old.color != color;
 }
