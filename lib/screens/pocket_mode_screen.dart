@@ -105,8 +105,12 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
     '4': '11', '♯4/♭5': '♯11', '♭6/♯5': '♭13', '6': '13',
   };
 
-  String _spokenNote(String n) =>
-      n.replaceAll('♭', ' flat').replaceAll('♯', ' sharp').trim();
+  // Notes are named in the app's chosen notation (C D E… or Do Re Mi…) for
+  // both the voice and the screen, then accidentals become spoken words.
+  String _spokenNote(String n) => formatNoteForDisplay(n, widget.notation)
+      .replaceAll('♭', ' flat')
+      .replaceAll('♯', ' sharp')
+      .trim();
 
   String _spokenDegree(String d) {
     var s = d.split('/').first;
@@ -538,7 +542,7 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
                     return Opacity(opacity: _reveal.value.clamp(0.0, 1.0), child: Transform.scale(scale: 0.65 + 0.35 * s, child: child));
                   },
                   child: NoteText(
-                    note: _answer,
+                    note: formatNoteForDisplay(_answer, widget.notation),
                     style: TextStyle(fontSize: 58, fontWeight: FontWeight.w900, color: noteColor, height: 1,
                         shadows: [Shadow(color: noteColor.withValues(alpha: 0.5), blurRadius: 24)]),
                   ),
