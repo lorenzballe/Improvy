@@ -45,9 +45,10 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
 
   final TtsService _tts = TtsService();
   final Random _rng = Random();
-  late final AnimationController _pulse;  // slow ambient breathing behind the stage
-  late final AnimationController _wave;   // looping sonar rings while the voice speaks
-  late final AnimationController _reveal; // one-shot bloom when the answer lands
+  late final AnimationController _pulse;    // slow ambient breathing behind the stage
+  late final AnimationController _wave;     // looping sonar rings while the voice speaks
+  late final AnimationController _reveal;   // one-shot bloom when the answer lands
+  late final AnimationController _countdown; // smooth 1→0 sweep for the thinking ring
 
   // A monotonically increasing token: bumping it invalidates any loop iteration
   // still awaiting, so pause / exit stop cleanly mid-utterance or mid-wait.
@@ -63,7 +64,6 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
   String _answer = '';
   String? _prevDegree;
   String _spokenKey = ''; // last key the voice named, to avoid repeating it
-  int _countdownMs = 0;
 
   @override
   void initState() {
@@ -71,6 +71,7 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
     _pulse = AnimationController(vsync: this, duration: const Duration(milliseconds: 2600))..repeat(reverse: true);
     _wave = AnimationController(vsync: this, duration: const Duration(milliseconds: 2000))..repeat();
     _reveal = AnimationController(vsync: this, duration: const Duration(milliseconds: 820));
+    _countdown = AnimationController(vsync: this, duration: const Duration(seconds: 1), value: 0);
     _tts.warmUp(); // init the audio session/voice before the first question
     // Auto-start: the user already pressed Start on the setup screen.
     WidgetsBinding.instance.addPostFrameCallback((_) => _play());
@@ -83,6 +84,7 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
     _pulse.dispose();
     _wave.dispose();
     _reveal.dispose();
+    _countdown.dispose();
     super.dispose();
   }
 
@@ -151,8 +153,9 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
   void _pause() {
     _gen++; // invalidate the running loop
     _tts.stop();
+    _countdown.stop();
     _spokenKey = ''; // re-announce the key on the first question after resuming
-    setState(() { _playing = false; _phase = 0; _countdownMs = 0; });
+    setState(() { _playing = false; _phase = 0; });
   }
 
   void _exit() {
@@ -195,8 +198,10 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
       _tts.speak(qText);
       if (!await _wait(_speechMs(qText), gen)) return;
 
-      // Think.
+      // Think — a smooth 1→0 ring sweep over the delay (60fps, not stepped).
       setState(() => _phase = 2);
+      _countdown.duration = Duration(milliseconds: widget.config.delayMs);
+      _countdown.reverse(from: 1.0);
       if (!await _wait(widget.config.delayMs, gen)) return;
 
       // Reveal on screen + speak the answer.
@@ -216,18 +221,17 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
     }
   }
 
-  /// Waits [ms], updating the countdown, but bails the moment the generation
-  /// token changes (pause/exit). Returns false if it was interrupted.
+  /// Interruptible pace timer: waits [ms] but bails the moment the generation
+  /// token changes (pause/exit). Visuals are driven by the animation
+  /// controllers, so this no longer calls setState. Returns false if interrupted.
   Future<bool> _wait(int ms, int gen) async {
     var left = ms;
-    const step = 100;
+    const step = 60;
     while (left > 0) {
       if (gen != _gen || !mounted) return false;
-      setState(() => _countdownMs = left);
       await Future<void>.delayed(const Duration(milliseconds: step));
       left -= step;
     }
-    if (mounted) setState(() => _countdownMs = 0);
     return gen == _gen && mounted;
   }
 
@@ -377,10 +381,9 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
   // ring that depletes, a materic glass orb, and a bloom when the answer lands.
   Widget _stage(double size, Color noteColor) {
     final degColor = AppColors.degreeColors[_degree.split('/').first] ?? _accent;
-    final delayMs = widget.config.delayMs;
 
     return AnimatedBuilder(
-      animation: Listenable.merge([_pulse, _wave, _reveal]),
+      animation: Listenable.merge([_pulse, _wave, _reveal, _countdown]),
       builder: (context, _) {
         final t = Curves.easeInOut.transform(_pulse.value);
 
@@ -392,8 +395,8 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
             progress = 1.0;
             ringColor = _accent.withValues(alpha: 0.30 + 0.45 * t);
             glow = 0.3 + 0.5 * t;
-          case 2: // thinking — countdown depletes
-            progress = delayMs == 0 ? 0 : (_countdownMs / delayMs).clamp(0.0, 1.0);
+          case 2: // thinking — smooth countdown sweep (controller-driven)
+            progress = _countdown.value.clamp(0.0, 1.0);
             ringColor = _accent;
             glow = 0.25;
           case 3: // answer — full ring in the note's colour
@@ -519,9 +522,12 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
                       shadows: [Shadow(color: noteColor.withValues(alpha: 0.5), blurRadius: 24)]),
                 )
               : _phase == 2
-                  ? Text('${(_countdownMs / 1000).ceil()}',
-                      key: ValueKey('c${(_countdownMs / 1000).ceil()}'),
-                      style: TextStyle(fontSize: 46, fontWeight: FontWeight.w900, color: Colors.white.withValues(alpha: 0.22), height: 1))
+                  ? Builder(builder: (_) {
+                      final secs = (_countdown.value * (widget.config.delayMs / 1000)).ceil().clamp(1, 99);
+                      return Text('$secs',
+                          key: ValueKey('c$secs'),
+                          style: TextStyle(fontSize: 46, fontWeight: FontWeight.w900, color: Colors.white.withValues(alpha: 0.22), height: 1));
+                    })
                   : const SizedBox.shrink(),
         ),
       ),
