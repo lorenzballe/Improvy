@@ -279,11 +279,10 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
           Positioned(bottom: -80, left: -60, child: _blob(260, live.withValues(alpha: 0.10))),
           SafeArea(
             child: Column(children: [
-              // ── Top bar + session progress ──
+              // ── Top bar (same as every training screen) ──
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                 child: Row(children: [
-                  // Same X button as every training screen.
                   GestureDetector(
                     onTap: _exit,
                     child: Container(
@@ -302,38 +301,51 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 4)),
                   ),
-                  // Training-key badge — same style/position as the other modes.
                   _keyBadge(),
                 ]),
               ),
+              const SizedBox(height: 12),
+              // ── Session card — the app's signature frosted card: a gradient
+              // progress bar over a stat row, exactly like the trainer's. ──
               Padding(
-                padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-                child: Column(children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(100),
-                    child: Stack(children: [
-                      Container(height: 5, color: Colors.white.withValues(alpha: 0.07)),
-                      if (total > 0)
-                        FractionallySizedBox(
-                          widthFactor: (_index / total).clamp(0.0, 1.0),
-                          child: Container(
-                            height: 5,
-                            decoration: const BoxDecoration(
-                              gradient: LinearGradient(colors: [Color(0xFF818CF8), Color(0xFF6366F1)]),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+                  decoration: BoxDecoration(
+                    color: const Color(0x1A1A1625),
+                    borderRadius: BorderRadius.circular(28),
+                    border: Border.all(color: Colors.white10, width: 1.2),
+                  ),
+                  child: Column(children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(100),
+                      child: LayoutBuilder(builder: (ctx, bc) => Stack(children: [
+                        Container(height: 6, color: Colors.white.withValues(alpha: 0.08)),
+                        Container(
+                          height: 6,
+                          width: total == 0 ? bc.maxWidth : bc.maxWidth * (_index / total).clamp(0.0, 1.0),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(3),
+                            gradient: LinearGradient(
+                              colors: total == 0
+                                  ? [const Color(0x2260A5FA), const Color(0x22EC4899)]
+                                  : const [Color(0xFF60A5FA), Color(0xFFA855F7), Color(0xFFEC4899)],
                             ),
+                            boxShadow: total == 0 ? null : const [BoxShadow(color: Color(0x66A855F7), blurRadius: 12)],
                           ),
                         ),
-                    ]),
-                  ),
-                  const SizedBox(height: 8),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      total == 0 ? 'ENDLESS' : '${_index.clamp(0, total)} / $total',
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.white.withValues(alpha: 0.4), letterSpacing: 1.5),
+                      ])),
                     ),
-                  ),
-                ]),
+                    const SizedBox(height: 16),
+                    Row(children: [
+                      Expanded(child: _stat('DEGREES', '${widget.config.degrees.length}')),
+                      Container(width: 1, height: 28, color: Colors.white10),
+                      Expanded(child: _stat('DELAY', '${(widget.config.delayMs / 1000).round()}s')),
+                      Container(width: 1, height: 28, color: Colors.white10),
+                      Expanded(child: _stat('SESSION', total == 0 ? '∞' : '${_index.clamp(0, total)}/$total')),
+                    ]),
+                  ]),
+                ),
               ),
 
               // ── Central animated stage ──
@@ -598,6 +610,24 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
       ),
     );
   }
+
+  // Stat cell for the session card — matches the trainer's _StatItem.
+  Widget _stat(String label, String value) => Column(
+        children: [
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(label, maxLines: 1, softWrap: false,
+                style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white60, letterSpacing: 2)),
+          ),
+          const SizedBox(height: 2),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(value, maxLines: 1, softWrap: false,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white,
+                    fontFeatures: [FontFeature.tabularFigures()])),
+          ),
+        ],
+      );
 
   Widget _blob(double size, Color color) => IgnorePointer(
         child: ImageFiltered(
