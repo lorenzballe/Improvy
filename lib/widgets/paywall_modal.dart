@@ -327,23 +327,24 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
   // ── Glass membership card: gradient hairline border + sheen + check rows ───
 
   Widget _membershipCard() {
-    return Container(
-      // Refined glass edge — a soft light-to-violet hairline, no rainbow.
-      // Colour is reserved for the aurora behind the screen.
-      padding: const EdgeInsets.all(1.2),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(22),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft, end: Alignment.bottomRight,
-          colors: [
-            Colors.white.withValues(alpha: 0.22),
-            Colors.white.withValues(alpha: 0.05),
-            const Color(0xFF8B5CF6).withValues(alpha: 0.12),
+    return AnimatedBuilder(
+      animation: _orbit,
+      builder: (_, child) => Container(
+        // Slow rotating rainbow hairline — the app's signature, framing the
+        // card that lists everything Pro unlocks.
+        padding: const EdgeInsets.all(1.4),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(22),
+          gradient: SweepGradient(
+            transform: GradientRotation(_orbit.value * 2 * math.pi),
+            colors: _kRainbow,
+          ),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withValues(alpha: 0.35), blurRadius: 30, offset: const Offset(0, 14)),
+            BoxShadow(color: const Color(0xFFA855F7).withValues(alpha: 0.10), blurRadius: 32, spreadRadius: -8, offset: const Offset(0, 8)),
           ],
         ),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.35), blurRadius: 30, offset: const Offset(0, 14)),
-        ],
+        child: child,
       ),
       child: Container(
         clipBehavior: Clip.antiAlias,
@@ -543,10 +544,9 @@ class _BuyButton extends StatefulWidget {
   State<_BuyButton> createState() => _BuyButtonState();
 }
 
-class _BuyButtonState extends State<_BuyButton> with TickerProviderStateMixin {
+class _BuyButtonState extends State<_BuyButton> with SingleTickerProviderStateMixin {
   bool _pressed = false;
   late final AnimationController _shim;
-  late final AnimationController _ring; // slow rotation of the rainbow outline
 
   static const _ink = Color(0xFF2A1B04); // near-black brown on gold: 10:1+ contrast
 
@@ -556,13 +556,11 @@ class _BuyButtonState extends State<_BuyButton> with TickerProviderStateMixin {
     // One light sweep, then a pause — the sweep lives in the first 35% of
     // each 4.5s cycle.
     _shim = AnimationController(vsync: this, duration: const Duration(milliseconds: 4500))..repeat();
-    _ring = AnimationController(vsync: this, duration: const Duration(seconds: 9))..repeat();
   }
 
   @override
   void dispose() {
     _shim.dispose();
-    _ring.dispose();
     super.dispose();
   }
 
@@ -574,47 +572,27 @@ class _BuyButtonState extends State<_BuyButton> with TickerProviderStateMixin {
     child: AnimatedScale(
       scale: _pressed ? 0.97 : 1.0,
       duration: const Duration(milliseconds: 110),
-      child: AnimatedBuilder(
-        animation: _ring,
-        builder: (_, child) => Container(
-          // The app's signature: a slow rainbow outline hugging the gold CTA,
-          // with a soft multicolour halo beneath. The magic, kept on the button.
-          padding: const EdgeInsets.all(1.7),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(19.7),
-            gradient: SweepGradient(
-              transform: GradientRotation(_ring.value * 2 * math.pi),
-              colors: _kRainbow,
-            ),
-            boxShadow: [
-              BoxShadow(color: const Color(0xFFA855F7).withValues(alpha: widget.busy ? 0.10 : 0.26),
-                blurRadius: 22, offset: const Offset(0, 8), spreadRadius: -6),
-              BoxShadow(color: const Color(0xFF3B82F6).withValues(alpha: widget.busy ? 0.08 : 0.18),
-                blurRadius: 30, offset: const Offset(0, 10), spreadRadius: -10),
-            ],
+      child: Container(
+        width: double.infinity,
+        height: 68,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          // Champagne → amber: a richer, more metallic gold than flat yellow.
+          gradient: const LinearGradient(
+            begin: Alignment.topCenter, end: Alignment.bottomCenter,
+            colors: [Color(0xFFFCE7A6), Color(0xFFF7C955), Color(0xFFE8A22B)],
+            stops: [0.0, 0.5, 1.0],
           ),
-          child: child,
+          boxShadow: [
+            // Tamed warm halo + a tight ambient shadow that grounds the button.
+            BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: widget.busy ? 0.12 : 0.26),
+              blurRadius: 26, offset: const Offset(0, 12), spreadRadius: -8),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.28),
+              blurRadius: 16, offset: const Offset(0, 6), spreadRadius: -8),
+          ],
         ),
-        child: Container(
-          width: double.infinity,
-          height: 68,
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            // Champagne → amber: a richer, more metallic gold than flat yellow.
-            gradient: const LinearGradient(
-              begin: Alignment.topCenter, end: Alignment.bottomCenter,
-              colors: [Color(0xFFFCE7A6), Color(0xFFF7C955), Color(0xFFE8A22B)],
-              stops: [0.0, 0.5, 1.0],
-            ),
-            boxShadow: [
-              // A tight ambient shadow grounds the button; colour comes from the
-              // rainbow halo above.
-              BoxShadow(color: Colors.black.withValues(alpha: 0.30),
-                blurRadius: 16, offset: const Offset(0, 6), spreadRadius: -8),
-            ],
-          ),
-          child: Stack(children: [
+        child: Stack(children: [
           // Top-edge highlight — the "pressed metal" sheen.
           Positioned(
             top: 0, left: 16, right: 16,
@@ -671,7 +649,6 @@ class _BuyButtonState extends State<_BuyButton> with TickerProviderStateMixin {
             ),
           ),
         ]),
-        ),
       ),
     ),
   );
