@@ -100,13 +100,15 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
   void _openLegal(String title, String body) => Navigator.of(context)
       .push(MaterialPageRoute(builder: (_) => LegalScreen(title: title, body: body)));
 
-  static const _features = <String>[
-    'Chromatic Mode',
-    'Note to Number',
-    'Custom Mode',
-    '…Of What? Extensions',
-    'Adaptive Difficulty',
-    'Deep Analytics',
+  // Each feature carries its own quiet line icon — a more premium, less
+  // repetitive read than six identical checkmarks.
+  static const _features = <(String, IconData)>[
+    ('Chromatic Mode', Icons.piano_rounded),
+    ('Note to Number', Icons.tag_rounded),
+    ('Custom Mode', Icons.tune_rounded),
+    ('…Of What? Extensions', Icons.auto_awesome_rounded),
+    ('Adaptive Difficulty', Icons.trending_up_rounded),
+    ('Deep Analytics', Icons.insights_rounded),
   ];
 
   @override
@@ -345,68 +347,73 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
       ),
       child: Container(
         clipBehavior: Clip.antiAlias,
-        // Opaque base so the border gradient stays a hairline and cannot
-        // bleed through the glass fill.
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(21),
-          color: const Color(0xFF181022),
+        // Opaque base with a subtle top-lit gradient — gives the glass depth
+        // instead of a flat, plastic fill. Border gradient stays a hairline.
+        decoration: const BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(21)),
+          gradient: LinearGradient(
+            begin: Alignment.topCenter, end: Alignment.bottomCenter,
+            colors: [Color(0xFF211830), Color(0xFF15101F)],
+          ),
         ),
-        // Glass sheen: lighter at the top edge.
+        // Glass sheen: a brighter hairline right at the top edge, fading down.
         foregroundDecoration: BoxDecoration(
           borderRadius: BorderRadius.circular(21),
           gradient: LinearGradient(
             begin: Alignment.topCenter, end: Alignment.bottomCenter,
             colors: [
-              Colors.white.withValues(alpha: 0.07),
-              Colors.white.withValues(alpha: 0.015),
-              Colors.white.withValues(alpha: 0.03),
+              Colors.white.withValues(alpha: 0.08),
+              Colors.white.withValues(alpha: 0.01),
+              Colors.white.withValues(alpha: 0.028),
             ],
-            stops: const [0.0, 0.3, 1.0],
+            stops: const [0.0, 0.22, 1.0],
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 21, 24, 12),
+          padding: const EdgeInsets.fromLTRB(22, 20, 22, 14),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             // Header: label + LIFETIME tag
             Row(children: [
               Text('WHAT\'S INCLUDED',
-                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.7,
-                  color: Colors.white.withValues(alpha: 0.42))),
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.8,
+                  color: Colors.white.withValues(alpha: 0.40))),
               const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
-                  color: _gold.withValues(alpha: 0.12),
-                  border: Border.all(color: _gold.withValues(alpha: 0.30)),
+                  color: _gold.withValues(alpha: 0.10),
+                  border: Border.all(color: _gold.withValues(alpha: 0.28)),
                 ),
                 child: const Text('LIFETIME',
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1.4,
+                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1.5,
                     color: _goldSoft)),
               ),
             ]),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             for (int i = 0; i < _features.length; i++) ...[
-              if (i > 0) Container(height: 1, color: Colors.white.withValues(alpha: 0.055)),
+              if (i > 0) Container(height: 1, color: Colors.white.withValues(alpha: 0.045)),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 15),
+                padding: const EdgeInsets.symmetric(vertical: 13),
                 child: Row(children: [
+                  // Soft gold-tinted glass chip with a quiet line icon.
                   Container(
-                    width: 25, height: 25,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
+                    width: 34, height: 34,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(11),
                       gradient: LinearGradient(
                         begin: Alignment.topLeft, end: Alignment.bottomRight,
-                        colors: [_goldSoft, _goldDeep],
+                        colors: [_gold.withValues(alpha: 0.16), _goldDeep.withValues(alpha: 0.07)],
                       ),
+                      border: Border.all(color: _gold.withValues(alpha: 0.26), width: 1),
                     ),
-                    child: const Icon(Icons.check_rounded, size: 17, color: Color(0xFF2A1B04)),
+                    child: Icon(_features[i].$2, size: 18, color: _goldSoft),
                   ),
                   const SizedBox(width: 15),
-                  Expanded(child: Text(_features[i],
+                  Expanded(child: Text(_features[i].$1,
                     maxLines: 1, overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, height: 1.2,
-                      letterSpacing: 0.1, color: Colors.white.withValues(alpha: 0.93)))),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, height: 1.2,
+                      letterSpacing: 0.1, color: Colors.white.withValues(alpha: 0.90)))),
                 ]),
               ),
             ],
@@ -563,21 +570,25 @@ class _BuyButtonState extends State<_BuyButton> with SingleTickerProviderStateMi
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
+          // Champagne → amber: a richer, more metallic gold than flat yellow.
           gradient: const LinearGradient(
             begin: Alignment.topCenter, end: Alignment.bottomCenter,
-            colors: [Color(0xFFFDDB6E), Color(0xFFFBBF24), Color(0xFFF59E0B)],
-            stops: [0.0, 0.45, 1.0],
+            colors: [Color(0xFFFCE7A6), Color(0xFFF7C955), Color(0xFFE8A22B)],
+            stops: [0.0, 0.5, 1.0],
           ),
           boxShadow: [
-            BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: widget.busy ? 0.18 : 0.38),
-              blurRadius: 30, offset: const Offset(0, 12), spreadRadius: -4),
+            // Tamed warm halo + a tight ambient shadow that grounds the button.
+            BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: widget.busy ? 0.12 : 0.26),
+              blurRadius: 26, offset: const Offset(0, 12), spreadRadius: -8),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.28),
+              blurRadius: 16, offset: const Offset(0, 6), spreadRadius: -8),
           ],
         ),
         child: Stack(children: [
           // Top-edge highlight — the "pressed metal" sheen.
           Positioned(
-            top: 0, left: 14, right: 14,
-            child: Container(height: 1.4, color: Colors.white.withValues(alpha: 0.55)),
+            top: 0, left: 16, right: 16,
+            child: Container(height: 1.2, color: Colors.white.withValues(alpha: 0.5)),
           ),
           // Light blade sweeping across the gold — then resting.
           if (!widget.busy)
