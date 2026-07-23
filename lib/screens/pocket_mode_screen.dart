@@ -545,7 +545,7 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
             child: Container(
               width: 58, height: 58,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [Color(0xFF818CF8), Color(0xFF6366F1)], begin: Alignment.topCenter, end: Alignment.bottomCenter),
+                color: _accent, // flat single colour — no gradient
                 shape: BoxShape.circle,
                 boxShadow: [BoxShadow(color: _accent.withValues(alpha: 0.5), blurRadius: 22, offset: const Offset(0, 8), spreadRadius: -4)],
               ),
