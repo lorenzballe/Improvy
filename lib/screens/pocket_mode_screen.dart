@@ -355,9 +355,8 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
                 ),
               ),
 
-              // ── Answer board: the app's colourful note pills; the answer
-              // lights up on the reveal (auto, not tappable). ──
-              _noteGrid(),
+              // ── Answer board: the in-game piano; the answer key lights up. ──
+              _keyboard(),
 
               const SizedBox(height: 12),
 
@@ -372,7 +371,6 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
   }
 
   // The 12 chromatic roots, shown as the answer board.
-  static const _gridNotes = ['C', 'D♭', 'D', 'E♭', 'E', 'F', 'G♭', 'G', 'A♭', 'A', 'B♭', 'B'];
 
   Widget _questionArea(Color degColor, Color noteColor) {
     final statusText = switch (_phase) {
@@ -382,98 +380,106 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
       _ => _finished ? 'SESSION COMPLETE' : 'READY',
     };
     final statusColor = _phase == 3 ? noteColor : _accent;
+    const ring = 250.0;
     return Column(mainAxisSize: MainAxisSize.min, children: [
       Text(statusText,
           style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: statusColor.withValues(alpha: 0.9), letterSpacing: 5)),
-      const SizedBox(height: 18),
-      if (_presented.isNotEmpty)
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: NoteText(note: _presented.split('/').first,
-              style: TextStyle(fontSize: 128, fontWeight: FontWeight.w900, color: degColor, height: 1,
-                  shadows: [Shadow(color: degColor.withValues(alpha: 0.4), blurRadius: 40)])),
-        )
-      else
-        Text('…', style: TextStyle(fontSize: 96, fontWeight: FontWeight.w900, color: Colors.white.withValues(alpha: 0.25))),
-      const SizedBox(height: 24),
-      // Countdown bar (thinking) — thin, app-native, smoothly depleting.
+      const SizedBox(height: 20),
       SizedBox(
-        height: 6,
-        width: 180,
-        child: _phase == 2
-            ? AnimatedBuilder(
-                animation: _countdown,
-                builder: (_, __) => ClipRRect(
-                  borderRadius: BorderRadius.circular(100),
-                  child: Stack(children: [
-                    Container(color: Colors.white.withValues(alpha: 0.08)),
-                    FractionallySizedBox(
-                      widthFactor: _countdown.value.clamp(0.0, 1.0),
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(colors: [Color(0xFF60A5FA), Color(0xFFA855F7), Color(0xFFEC4899)]),
-                        ),
-                      ),
-                    ),
-                  ]),
-                ),
-              )
-            : const SizedBox.shrink(),
+        width: ring,
+        height: ring,
+        child: Stack(alignment: Alignment.center, children: [
+          // Contour ring in the number's colour; the countdown sweeps it round
+          // while thinking, otherwise it sits full.
+          RepaintBoundary(
+            child: AnimatedBuilder(
+              animation: _countdown,
+              builder: (_, __) {
+                final progress = _phase == 2 ? _countdown.value.clamp(0.0, 1.0) : 1.0;
+                return CustomPaint(size: const Size(ring, ring), painter: _NumberRingPainter(progress: progress, color: degColor));
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(44),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: _presented.isNotEmpty
+                  ? NoteText(note: _presented.split('/').first,
+                      style: TextStyle(fontSize: 112, fontWeight: FontWeight.w900, color: degColor, height: 1,
+                          shadows: [Shadow(color: degColor.withValues(alpha: 0.45), blurRadius: 34)]))
+                  : Text('…', style: TextStyle(fontSize: 84, fontWeight: FontWeight.w900, color: Colors.white.withValues(alpha: 0.25))),
+            ),
+          ),
+        ]),
       ),
     ]);
   }
 
-  Widget _noteGrid() {
+  // One-octave keyboard (C..B). The answer key lights up in its note colour.
+  static const _whiteNames = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+  static const _blackNames = ['D♭', 'E♭', 'G♭', 'A♭', 'B♭'];
+  static const _blackBoundary = [1, 2, 4, 5, 6]; // white-key boundary each black sits over
+
+  Widget _keyboard() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: LayoutBuilder(builder: (ctx, c) {
-        const gap = 10.0;
-        const cols = 4;
-        final bw = (c.maxWidth - (cols - 1) * gap) / cols;
-        final h = bw * 0.62;
-        return Column(mainAxisSize: MainAxisSize.min, children: [
-          for (int r = 0; r < 3; r++) ...[
-            if (r > 0) const SizedBox(height: gap),
-            Row(children: [
-              for (int col = 0; col < cols; col++) ...[
-                if (col > 0) const SizedBox(width: gap),
-                _pill(_gridNotes[r * cols + col], bw, h),
-              ],
-            ]),
-          ],
-        ]);
-      }),
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
+        ),
+        child: SizedBox(
+          height: 124,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: Container(
+              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.04)),
+              child: LayoutBuilder(builder: (ctx, c) {
+                final w = c.maxWidth;
+                final h = c.maxHeight;
+                final whiteW = w / 7;
+                final blackW = whiteW * 0.62;
+                final blackH = h * 0.62;
+                return Stack(children: [
+                  for (int i = 0; i < 7; i++)
+                    Positioned(left: i * whiteW, top: 0, width: whiteW, height: h, child: _pianoKey(_whiteNames[i], false)),
+                  for (int i = 1; i < 7; i++)
+                    Positioned(left: i * whiteW - 0.5, top: 0, width: 1, height: h, child: const ColoredBox(color: Color(0xFFCBD5E1))),
+                  for (int i = 0; i < _blackNames.length; i++)
+                    Positioned(left: _blackBoundary[i] * whiteW - blackW / 2, top: 0, width: blackW, height: blackH, child: _pianoKey(_blackNames[i], true)),
+                ]);
+              }),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
-  Widget _pill(String note, double w, double h) {
-    final nc = AppColors.noteColors[note] ?? Colors.white;
-    final isAnswer = _phase == 3 && _answer.isNotEmpty && areEnharmonicEquivalent(note, _answer);
-    final label = NoteText(
-      note: formatNoteForDisplay(note, widget.notation),
-      style: TextStyle(fontSize: 19, fontWeight: FontWeight.w900,
-          color: isAnswer ? Colors.white : nc.withValues(alpha: 0.9)),
+  Widget _pianoKey(String name, bool black) {
+    final nc = AppColors.noteColors[name] ?? Colors.white;
+    final isAns = _phase == 3 && _answer.isNotEmpty && areEnharmonicEquivalent(name, _answer);
+    final bg = isAns ? nc : (black ? const Color(0xFF1E293B) : Colors.white);
+    return Container(
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: black ? const BorderRadius.vertical(bottom: Radius.circular(6)) : null,
+        border: black ? Border.all(color: Colors.white.withValues(alpha: 0.10)) : null,
+        boxShadow: isAns
+            ? [BoxShadow(color: nc.withValues(alpha: 0.6), blurRadius: 22, spreadRadius: -2)]
+            : (black ? const [BoxShadow(color: Color(0x80000000), blurRadius: 8, offset: Offset(0, 4))] : null),
+      ),
+      child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [
+        NoteText(
+          note: formatNoteForDisplay(name, widget.notation),
+          style: TextStyle(fontSize: black ? 11 : 15, fontWeight: FontWeight.w900, color: isAns ? Colors.white : nc),
+        ),
+        SizedBox(height: black ? 9 : 12),
+      ]),
     );
-    Widget cell(double scale) => Transform.scale(
-          scale: scale,
-          child: Container(
-            width: w, height: h,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: isAnswer ? nc : Colors.white.withValues(alpha: 0.045),
-              borderRadius: BorderRadius.circular(18),
-              boxShadow: isAnswer ? [BoxShadow(color: nc.withValues(alpha: 0.5), blurRadius: 26, spreadRadius: -4)] : null,
-            ),
-            child: label,
-          ),
-        );
-    // Only the revealed answer animates (a little pop); the rest stay still.
-    return isAnswer
-        ? AnimatedBuilder(
-            animation: _reveal,
-            builder: (_, __) => cell(0.9 + 0.1 * Curves.easeOutBack.transform(_reveal.value.clamp(0.0, 1.0))),
-          )
-        : cell(1.0);
   }
 
   Widget _playBar() {
@@ -585,4 +591,52 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
           child: Container(width: size, height: size, decoration: BoxDecoration(shape: BoxShape.circle, color: color)),
         ),
       );
+}
+
+/// A contour ring around the big degree number. [progress] (1→0) is swept by
+/// the countdown while the user is thinking; the rest of the time it sits full.
+class _NumberRingPainter extends CustomPainter {
+  final double progress;
+  final Color color;
+  _NumberRingPainter({required this.progress, required this.color});
+
+  static const _twoPi = 6.283185307179586;
+  static const _quarter = 1.5707963267948966; // start at 12 o'clock
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2 - 4;
+    final rect = Rect.fromCircle(center: center, radius: radius);
+
+    // Faint full track underneath.
+    final track = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 6
+      ..strokeCap = StrokeCap.round
+      ..color = Colors.white.withValues(alpha: 0.07);
+    canvas.drawCircle(center, radius, track);
+
+    if (progress <= 0) return;
+
+    // Soft glow, then the crisp coloured arc on top.
+    final glow = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 6
+      ..strokeCap = StrokeCap.round
+      ..color = color.withValues(alpha: 0.28)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+    final arc = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 6
+      ..strokeCap = StrokeCap.round
+      ..color = color;
+
+    final sweep = _twoPi * progress.clamp(0.0, 1.0);
+    canvas.drawArc(rect, -_quarter, sweep, false, glow);
+    canvas.drawArc(rect, -_quarter, sweep, false, arc);
+  }
+
+  @override
+  bool shouldRepaint(_NumberRingPainter old) => old.progress != progress || old.color != color;
 }
