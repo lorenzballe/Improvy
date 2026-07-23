@@ -148,10 +148,10 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
                     child: SizedBox(
                       width: c.maxWidth,
                       child: Padding(
-                        // Slim side padding so the card/button run wide, close to
+                        // Minimal side padding so the card/button run right up to
                         // the screen edges. Vertical spacing is kept tight so the
                         // block fits at (near) full scale — scaling narrows it.
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 0),
                         child: Column(mainAxisSize: MainAxisSize.min, children: [
                           const SizedBox(height: 6),
 
