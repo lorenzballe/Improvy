@@ -421,24 +421,31 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
     });
   }
 
-  // The seven natural letters, in order — the keyboard is one octave of these,
-  // rotated to begin on the training key so it reads in the exercise's context.
-  static const _naturals = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+  // Pitch class (0..11, C=0) → the white-key natural letter / the black-key name.
+  static const _pcNatural = {0: 'C', 2: 'D', 4: 'E', 5: 'F', 7: 'G', 9: 'A', 11: 'B'};
+  static const _pcBlack = {1: 'D♭', 3: 'E♭', 6: 'G♭', 8: 'A♭', 10: 'B♭'};
 
-  // The keyboard's white keys: a full octave (8 keys, key→key) starting on the
-  // training key's letter. On a fixed key it begins there — as the user asked —
-  // and a full octave always shows every one of the 12 notes, so the answer key
-  // can always light up. While shuffling there's no chosen key, so it stays on C.
-  List<String> _whiteKeys() {
-    final startKey = widget.config.shuffleKeys ? 'C' : widget.config.key;
-    final letter = startKey.isNotEmpty ? startKey[0] : 'C';
-    final start = _naturals.indexOf(letter).clamp(0, 6);
-    return [for (int i = 0; i <= 7; i++) _naturals[(start + i) % 7]];
-  }
-
+  // One octave that BEGINS on the exercise note (root → its octave, 13 semitones)
+  // so the keyboard reads in the exercise's context and every one of the 12 notes
+  // is present — the answer always lights up. Works for flat/sharp keys too: a
+  // black-note key (B♭, E♭, F♯…) becomes the leftmost key, exactly as asked.
   Widget _keyboard() {
-    final whites = _whiteKeys();
-    final n = whites.length; // 8 (one octave, key → key)
+    final rootKey = widget.config.shuffleKeys ? 'C' : (widget.config.key.isNotEmpty ? widget.config.key : 'C');
+    final rootPc = kNoteToSemitone[rootKey] ?? 0;
+    final notes = <({String name, bool black, int off})>[];
+    for (int s = 0; s <= 12; s++) {
+      final pc = (rootPc + s) % 12;
+      if (_pcNatural.containsKey(pc)) {
+        notes.add((name: _pcNatural[pc]!, black: false, off: s));
+      } else {
+        // Name the octave's own endpoints with the exercise key's spelling.
+        notes.add((name: (s == 0 || s == 12) ? rootKey : _pcBlack[pc]!, black: true, off: s));
+      }
+    }
+    final whites = [for (final k in notes) if (!k.black) k];
+    final blacks = [for (final k in notes) if (k.black) k];
+    final nW = whites.length;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
@@ -457,23 +464,22 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
               child: LayoutBuilder(builder: (ctx, c) {
                 final w = c.maxWidth;
                 final h = c.maxHeight;
-                final whiteW = w / n;
+                final whiteW = w / nW;
                 final blackW = whiteW * 0.62;
                 final blackH = h * 0.62;
                 return Stack(children: [
-                  for (int i = 0; i < n; i++)
-                    Positioned(left: i * whiteW, top: 0, width: whiteW, height: h, child: _pianoKey(whites[i], false)),
-                  for (int i = 1; i < n; i++)
-                    Positioned(left: i * whiteW - 0.5, top: 0, width: 1, height: h, child: const ColoredBox(color: Color(0xFFCBD5E1))),
-                  // A black key sits between two white letters unless the left one
-                  // is E or B (the two natural semitone steps). Its name is the
-                  // flat of the white key to its right (C→D gives D♭, etc.).
-                  for (int i = 0; i < n - 1; i++)
-                    if (whites[i] != 'E' && whites[i] != 'B')
-                      Positioned(
-                        left: (i + 1) * whiteW - blackW / 2, top: 0, width: blackW, height: blackH,
-                        child: _pianoKey('${whites[i + 1]}♭', true),
-                      ),
+                  for (int j = 0; j < nW; j++)
+                    Positioned(left: j * whiteW, top: 0, width: whiteW, height: h, child: _pianoKey(whites[j].name, false)),
+                  for (int j = 1; j < nW; j++)
+                    Positioned(left: j * whiteW - 0.5, top: 0, width: 1, height: h, child: const ColoredBox(color: Color(0xFFCBD5E1))),
+                  // Each black key sits after however many white keys precede it;
+                  // clamped so a root black key at either end stays fully visible.
+                  for (final b in blacks)
+                    Positioned(
+                      left: (whites.where((wk) => wk.off < b.off).length * whiteW - blackW / 2).clamp(0.0, w - blackW),
+                      top: 0, width: blackW, height: blackH,
+                      child: _pianoKey(b.name, true),
+                    ),
                 ]);
               }),
             ),

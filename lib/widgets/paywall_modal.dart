@@ -148,17 +148,20 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
                     child: SizedBox(
                       width: c.maxWidth,
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        // Slim side padding so the card/button run wide, close to
+                        // the screen edges. Vertical spacing is kept tight so the
+                        // block fits at (near) full scale — scaling narrows it.
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
                         child: Column(mainAxisSize: MainAxisSize.min, children: [
-                          const SizedBox(height: 14),
+                          const SizedBox(height: 6),
 
                           _in(0.0, 0.45, child: _hero()),
 
-                          const SizedBox(height: 34),
+                          const SizedBox(height: 22),
 
                           _in(0.14, 0.62, child: _membershipCard()),
 
-                          const SizedBox(height: 30),
+                          const SizedBox(height: 20),
 
                           _in(0.32, 0.85, child: _BuyButton(
                             title: 'Unlock Lifetime Access',
@@ -166,7 +169,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
                             busy: _purchasing,
                             onTap: _buy,
                           )),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 12),
                           _in(0.42, 0.95, child: FittedBox(
                             fit: BoxFit.scaleDown,
                             child: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -178,7 +181,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
                             ]),
                           )),
 
-                          const SizedBox(height: 14),
+                          const SizedBox(height: 6),
                         ]),
                       ),
                     ),
@@ -239,7 +242,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
     // tiny rainbow sparkles drifting around it. Colour/magic otherwise lives in
     // the aurora behind the whole screen.
     SizedBox(
-      width: 210, height: 210,
+      width: 210, height: 186,
       child: Stack(
         alignment: Alignment.center,
         clipBehavior: Clip.none,
