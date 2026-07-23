@@ -1417,7 +1417,6 @@ class _StartBtnState extends State<_StartBtn> {
   @override
   Widget build(BuildContext context) {
     final base = widget.gradColors.last;
-    final light = Color.lerp(base, Colors.white, 0.22)!;
     return Padding(
       padding: EdgeInsets.fromLTRB(20, 12, 20, 20 + MediaQuery.of(context).padding.bottom),
       child: GestureDetector(
@@ -1432,22 +1431,14 @@ class _StartBtnState extends State<_StartBtn> {
             height: 60,
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [light, base],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
+              // Flat, single colour — no gradient (per design: monochrome CTA).
+              color: base,
               borderRadius: BorderRadius.circular(17),
               boxShadow: [
                 BoxShadow(color: widget.shadowColor, blurRadius: 28, offset: const Offset(0, 10), spreadRadius: -4),
               ],
             ),
             child: Stack(children: [
-              // Top-edge highlight, same language as the paywall CTA.
-              Positioned(
-                top: 0, left: 14, right: 14,
-                child: Container(height: 1.3, color: Colors.white.withValues(alpha: 0.5)),
-              ),
               Center(
                 child: Row(
                   mainAxisSize: MainAxisSize.min,

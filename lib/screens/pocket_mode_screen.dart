@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:math' show Random;
+import 'dart:math' show Random, min;
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
@@ -380,8 +380,12 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
       _ => _finished ? 'SESSION COMPLETE' : 'READY',
     };
     final statusColor = _phase == 3 ? noteColor : _accent;
-    const ring = 250.0;
-    return Column(mainAxisSize: MainAxisSize.min, children: [
+    return LayoutBuilder(builder: (ctx, c) {
+      // Fit the ring to whatever room the Expanded gives us: never wider than
+      // the stage, never taller than the space left under the status label, and
+      // capped so it stays elegant on big screens. Adapts to every screen size.
+      final ring = min(280.0, min(c.maxWidth, (c.maxHeight - 44).clamp(120.0, 320.0)));
+      return Column(mainAxisSize: MainAxisSize.min, mainAxisAlignment: MainAxisAlignment.center, children: [
       Text(statusText,
           style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: statusColor.withValues(alpha: 0.9), letterSpacing: 5)),
       const SizedBox(height: 20),
@@ -396,12 +400,12 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
               animation: _countdown,
               builder: (_, __) {
                 final progress = _phase == 2 ? _countdown.value.clamp(0.0, 1.0) : 1.0;
-                return CustomPaint(size: const Size(ring, ring), painter: _NumberRingPainter(progress: progress, color: degColor));
+                return CustomPaint(size: Size(ring, ring), painter: _NumberRingPainter(progress: progress, color: degColor));
               },
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(44),
+            padding: EdgeInsets.all(ring * 0.18),
             child: FittedBox(
               fit: BoxFit.scaleDown,
               child: _presented.isNotEmpty
@@ -414,14 +418,27 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
         ]),
       ),
     ]);
+    });
   }
 
-  // One-octave keyboard (C..B). The answer key lights up in its note colour.
-  static const _whiteNames = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
-  static const _blackNames = ['D♭', 'E♭', 'G♭', 'A♭', 'B♭'];
-  static const _blackBoundary = [1, 2, 4, 5, 6]; // white-key boundary each black sits over
+  // The seven natural letters, in order — the keyboard is one octave of these,
+  // rotated to begin on the training key so it reads in the exercise's context.
+  static const _naturals = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+
+  // The keyboard's white keys: a full octave (8 keys, key→key) starting on the
+  // training key's letter. On a fixed key it begins there — as the user asked —
+  // and a full octave always shows every one of the 12 notes, so the answer key
+  // can always light up. While shuffling there's no chosen key, so it stays on C.
+  List<String> _whiteKeys() {
+    final startKey = widget.config.shuffleKeys ? 'C' : widget.config.key;
+    final letter = startKey.isNotEmpty ? startKey[0] : 'C';
+    final start = _naturals.indexOf(letter).clamp(0, 6);
+    return [for (int i = 0; i <= 7; i++) _naturals[(start + i) % 7]];
+  }
 
   Widget _keyboard() {
+    final whites = _whiteKeys();
+    final n = whites.length; // 8 (one octave, key → key)
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
@@ -440,16 +457,23 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
               child: LayoutBuilder(builder: (ctx, c) {
                 final w = c.maxWidth;
                 final h = c.maxHeight;
-                final whiteW = w / 7;
+                final whiteW = w / n;
                 final blackW = whiteW * 0.62;
                 final blackH = h * 0.62;
                 return Stack(children: [
-                  for (int i = 0; i < 7; i++)
-                    Positioned(left: i * whiteW, top: 0, width: whiteW, height: h, child: _pianoKey(_whiteNames[i], false)),
-                  for (int i = 1; i < 7; i++)
+                  for (int i = 0; i < n; i++)
+                    Positioned(left: i * whiteW, top: 0, width: whiteW, height: h, child: _pianoKey(whites[i], false)),
+                  for (int i = 1; i < n; i++)
                     Positioned(left: i * whiteW - 0.5, top: 0, width: 1, height: h, child: const ColoredBox(color: Color(0xFFCBD5E1))),
-                  for (int i = 0; i < _blackNames.length; i++)
-                    Positioned(left: _blackBoundary[i] * whiteW - blackW / 2, top: 0, width: blackW, height: blackH, child: _pianoKey(_blackNames[i], true)),
+                  // A black key sits between two white letters unless the left one
+                  // is E or B (the two natural semitone steps). Its name is the
+                  // flat of the white key to its right (C→D gives D♭, etc.).
+                  for (int i = 0; i < n - 1; i++)
+                    if (whites[i] != 'E' && whites[i] != 'B')
+                      Positioned(
+                        left: (i + 1) * whiteW - blackW / 2, top: 0, width: blackW, height: blackH,
+                        child: _pianoKey('${whites[i + 1]}♭', true),
+                      ),
                 ]);
               }),
             ),
