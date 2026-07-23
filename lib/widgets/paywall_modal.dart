@@ -27,6 +27,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
   late final AnimationController _enter;
   late final AnimationController _breathe; // aurora breathe + logo halo pulse
   late final AnimationController _drift;   // very slow aurora drift behind everything
+  late final AnimationController _orbit;   // small sparkles drifting around the logo
 
   bool _purchasing = false;
   bool _restoring = false;
@@ -43,6 +44,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
     _enter = AnimationController(vsync: this, duration: const Duration(milliseconds: 700))..forward();
     _breathe = AnimationController(vsync: this, duration: const Duration(seconds: 6))..repeat(reverse: true);
     _drift = AnimationController(vsync: this, duration: const Duration(seconds: 26))..repeat();
+    _orbit = AnimationController(vsync: this, duration: const Duration(seconds: 18))..repeat();
     // Live, store-localized price. Falls back to the static price until
     // (or unless) RevenueCat returns the real product.
     PurchaseService.instance.proPriceString().then((p) {
@@ -55,6 +57,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
     _enter.dispose();
     _breathe.dispose();
     _drift.dispose();
+    _orbit.dispose();
     super.dispose();
   }
 
@@ -230,32 +233,33 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
   );
 
   Widget _hero() => Column(children: [
-    // Clean, premium logo — a soft breathing halo behind it, no ornaments.
-    // All the colour/magic now lives in the aurora behind the whole screen.
-    Stack(
-      alignment: Alignment.center,
-      clipBehavior: Clip.none,
-      children: [
-        Positioned.fill(
-          child: IgnorePointer(
-            child: OverflowBox(
-              maxWidth: double.infinity,
-              maxHeight: double.infinity,
-              alignment: Alignment.center,
+    // Clean, premium logo — a soft breathing halo behind it, plus a scatter of
+    // tiny rainbow sparkles drifting around it. Colour/magic otherwise lives in
+    // the aurora behind the whole screen.
+    SizedBox(
+      width: 210, height: 210,
+      child: Stack(
+        alignment: Alignment.center,
+        clipBehavior: Clip.none,
+        children: [
+          Positioned.fill(
+            child: IgnorePointer(
               child: AnimatedBuilder(
                 animation: _breathe,
                 builder: (_, __) {
                   final t = Curves.easeInOut.transform(_breathe.value);
-                  return Container(
-                    width: 250 + 24 * t, height: 250 + 24 * t,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [
-                          const Color(0xFF8B5CF6).withValues(alpha: 0.16 + 0.06 * t),
-                          Colors.transparent,
-                        ],
-                        stops: const [0.0, 0.7],
+                  return Center(
+                    child: Container(
+                      width: 250 + 24 * t, height: 250 + 24 * t,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: [
+                            const Color(0xFF8B5CF6).withValues(alpha: 0.16 + 0.06 * t),
+                            Colors.transparent,
+                          ],
+                          stops: const [0.0, 0.7],
+                        ),
                       ),
                     ),
                   );
@@ -263,23 +267,34 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
               ),
             ),
           ),
-        ),
-        Container(
-          width: 132, height: 132,
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(30),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-            boxShadow: [
-              BoxShadow(color: const Color(0xFF7C3AED).withValues(alpha: 0.42),
-                blurRadius: 48, offset: const Offset(-10, 16), spreadRadius: -8),
-              BoxShadow(color: const Color(0xFF3B82F6).withValues(alpha: 0.30),
-                blurRadius: 48, offset: const Offset(12, 18), spreadRadius: -10),
-            ],
+          // Tiny rainbow sparkles — subtle, twinkling motes of light.
+          Positioned.fill(
+            child: IgnorePointer(
+              child: RepaintBoundary(
+                child: AnimatedBuilder(
+                  animation: _orbit,
+                  builder: (_, __) => CustomPaint(painter: _SparklePainter(_orbit.value)),
+                ),
+              ),
+            ),
           ),
-          child: Image.asset('assets/images/improvy_logo.png', fit: BoxFit.cover, filterQuality: FilterQuality.high),
-        ),
-      ],
+          Container(
+            width: 132, height: 132,
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+              boxShadow: [
+                BoxShadow(color: const Color(0xFF7C3AED).withValues(alpha: 0.42),
+                  blurRadius: 48, offset: const Offset(-10, 16), spreadRadius: -8),
+                BoxShadow(color: const Color(0xFF3B82F6).withValues(alpha: 0.30),
+                  blurRadius: 48, offset: const Offset(12, 18), spreadRadius: -10),
+              ],
+            ),
+            child: Image.asset('assets/images/improvy_logo.png', fit: BoxFit.cover, filterQuality: FilterQuality.high),
+          ),
+        ],
+      ),
     ),
     const SizedBox(height: 14),
     Row(
@@ -414,6 +429,69 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
 
   Widget _dot() => Text('   ·   ',
     style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white.withValues(alpha: 0.2)));
+}
+
+// ── Tiny rainbow sparkles drifting and twinkling around the logo ──────────────
+
+class _SparklePainter extends CustomPainter {
+  final double t; // 0..1 drift phase
+  _SparklePainter(this.t);
+
+  static const _cols = <Color>[
+    Color(0xFFF87171), Color(0xFFFBBF24), Color(0xFF34D399),
+    Color(0xFF22D3EE), Color(0xFF60A5FA), Color(0xFFA855F7),
+    Color(0xFFF472B6),
+  ];
+
+  // radiusFactor · angle0 · orbitSpeed · size · colorIdx · isStar
+  static const _specs = <(double, double, double, double, int, bool)>[
+    (0.40, 0.5, 0.9, 2.3, 5, true),
+    (0.47, 1.7, 0.7, 1.5, 3, false),
+    (0.37, 2.8, 1.0, 2.0, 0, true),
+    (0.49, 3.6, 0.8, 1.4, 4, false),
+    (0.42, 4.5, 0.95, 2.2, 6, true),
+    (0.45, 5.3, 0.75, 1.6, 1, false),
+    (0.36, 6.0, 1.05, 1.8, 2, false),
+  ];
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final c = Offset(size.width / 2, size.height / 2);
+    for (final s in _specs) {
+      final ang = s.$2 + t * 2 * math.pi * s.$3;
+      final r = size.width * s.$1;
+      final p = c + Offset(math.cos(ang) * r, math.sin(ang) * r);
+      // Out-of-phase twinkle: each mote fades at its own gentle rate.
+      final twinkle = 0.15 + 0.75 * (0.5 + 0.5 * math.sin(t * 2 * math.pi * (2 + s.$5 * 0.5) + s.$2 * 4));
+      final col = _cols[s.$5];
+      final sz = s.$4;
+
+      canvas.drawCircle(p, sz * 2.2, Paint()
+        ..color = col.withValues(alpha: 0.22 * twinkle)
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, sz * 1.3));
+
+      final core = Color.lerp(col, Colors.white, 0.5)!.withValues(alpha: twinkle);
+      if (s.$6) {
+        canvas.drawPath(_star(p, sz * 1.7, sz * 0.5), Paint()..color = core);
+      } else {
+        canvas.drawCircle(p, sz * 0.85, Paint()..color = core);
+      }
+    }
+  }
+
+  Path _star(Offset c, double outer, double inner) {
+    final path = Path();
+    for (int i = 0; i < 8; i++) {
+      final a = -math.pi / 2 + i * math.pi / 4;
+      final rad = i.isEven ? outer : inner;
+      final pt = c + Offset(math.cos(a) * rad, math.sin(a) * rad);
+      i == 0 ? path.moveTo(pt.dx, pt.dy) : path.lineTo(pt.dx, pt.dy);
+    }
+    return path..close();
+  }
+
+  @override
+  bool shouldRepaint(_SparklePainter old) => old.t != t;
 }
 
 // ── Close button ──────────────────────────────────────────────────────────────
