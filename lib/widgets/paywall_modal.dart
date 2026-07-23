@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 
@@ -26,19 +25,11 @@ class PaywallModal extends StatefulWidget {
 
 class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMixin {
   late final AnimationController _enter;
-  late final AnimationController _border;  // slow rainbow sweep on the card
-  late final AnimationController _breathe; // ambient drift + logo halo pulse
-  late final AnimationController _orbit;   // rainbow aura + sparkles around the logo
+  late final AnimationController _breathe; // aurora breathe + logo halo pulse
+  late final AnimationController _drift;   // very slow aurora drift behind everything
 
   bool _purchasing = false;
   bool _restoring = false;
-
-  // The app's signature rainbow, used for every magical accent on this screen.
-  static const _rainbow = <Color>[
-    Color(0xFFEF4444), Color(0xFFF97316), Color(0xFFEAB308),
-    Color(0xFF22C55E), Color(0xFF06B6D4), Color(0xFF3B82F6),
-    Color(0xFFA855F7), Color(0xFFEC4899), Color(0xFFEF4444),
-  ];
 
   static const _gold = Color(0xFFFBBF24);
   static const _goldSoft = Color(0xFFFCD34D);
@@ -50,9 +41,8 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
   void initState() {
     super.initState();
     _enter = AnimationController(vsync: this, duration: const Duration(milliseconds: 700))..forward();
-    _border = AnimationController(vsync: this, duration: const Duration(seconds: 8))..repeat();
-    _breathe = AnimationController(vsync: this, duration: const Duration(seconds: 5))..repeat(reverse: true);
-    _orbit = AnimationController(vsync: this, duration: const Duration(seconds: 14))..repeat();
+    _breathe = AnimationController(vsync: this, duration: const Duration(seconds: 6))..repeat(reverse: true);
+    _drift = AnimationController(vsync: this, duration: const Duration(seconds: 26))..repeat();
     // Live, store-localized price. Falls back to the static price until
     // (or unless) RevenueCat returns the real product.
     PurchaseService.instance.proPriceString().then((p) {
@@ -63,9 +53,8 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
   @override
   void dispose() {
     _enter.dispose();
-    _border.dispose();
     _breathe.dispose();
-    _orbit.dispose();
+    _drift.dispose();
     super.dispose();
   }
 
@@ -126,49 +115,17 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
       child: Material(
         color: AppColors.background,
         child: Stack(children: [
-          // ── Cinematic base: vertical gradient + two still ambient glows ────
+          // ── Cinematic base: deep vertical gradient ────────────────────────
           const Positioned.fill(child: DecoratedBox(decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter, end: Alignment.bottomCenter,
               stops: [0.0, 0.45, 1.0],
-              colors: [Color(0xFF1D1434), Color(0xFF110C1E), Color(0xFF0C0814)],
+              colors: [Color(0xFF1A1030), Color(0xFF110C1E), Color(0xFF0B0712)],
             ),
           ))),
-          // Ambient glows breathe and drift very slowly — alive, not busy.
-          AnimatedBuilder(
-            animation: _breathe,
-            builder: (_, __) {
-              final t = Curves.easeInOut.transform(_breathe.value);
-              return Stack(children: [
-                Positioned(
-                  top: -140 + 14 * t, right: -80 - 10 * t,
-                  child: IgnorePointer(child: Container(
-                    width: 380, height: 380,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [_goldDeep.withValues(alpha: 0.09 + 0.05 * t), Colors.transparent],
-                        stops: const [0.0, 0.7],
-                      ),
-                    ),
-                  )),
-                ),
-                Positioned(
-                  bottom: -160 + 12 * (1 - t), left: -110 - 8 * (1 - t),
-                  child: IgnorePointer(child: Container(
-                    width: 420, height: 420,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [const Color(0xFF7C3AED).withValues(alpha: 0.08 + 0.05 * (1 - t)), Colors.transparent],
-                        stops: const [0.0, 0.7],
-                      ),
-                    ),
-                  )),
-                ),
-              ]);
-            },
-          ),
+          // ── Magical aurora: big, soft colour washes drifting behind it all.
+          // This is the only place colour lives now — quiet, dreamy, premium.
+          Positioned.fill(child: _aurora()),
 
           SafeArea(
             child: Stack(children: [
@@ -233,97 +190,96 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
 
   // ── Hero: logo with dual colored glow, wordmark, promise ───────────────────
 
-  Widget _hero() => Column(children: [
-    // A magical, alive logo: a slow-rotating rainbow aura, a crisp rainbow ring
-    // hugging the artwork, and sparkles orbiting and twinkling around it.
-    SizedBox(
-      width: 208, height: 208,
-      child: Stack(
-        alignment: Alignment.center,
-        clipBehavior: Clip.none,
-        children: [
-          // 1) Soft rotating rainbow cloud — the aura. Heavily blurred so the
-          //    colours melt together; breathes gently in and out.
-          Positioned.fill(
-            child: IgnorePointer(
-              child: RepaintBoundary(
-                child: AnimatedBuilder(
-                  animation: Listenable.merge([_orbit, _breathe]),
-                  builder: (_, __) {
-                    final b = Curves.easeInOut.transform(_breathe.value);
-                    return Transform.scale(
-                      scale: 0.96 + 0.08 * b,
-                      child: Opacity(
-                        opacity: 0.55 + 0.15 * b,
-                        child: ImageFiltered(
-                          imageFilter: ImageFilter.blur(sigmaX: 34, sigmaY: 34),
-                          child: Container(
-                            margin: const EdgeInsets.all(30),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: SweepGradient(
-                                transform: GradientRotation(_orbit.value * 2 * math.pi),
-                                colors: _rainbow,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-          ),
-          // 2) Sparkles orbiting the logo — twinkling motes of rainbow light.
-          Positioned.fill(
-            child: IgnorePointer(
-              child: RepaintBoundary(
-                child: AnimatedBuilder(
-                  animation: _orbit,
-                  builder: (_, __) => CustomPaint(painter: _SparklePainter(_orbit.value)),
-                ),
-              ),
-            ),
-          ),
-          // 3) The crisp rainbow ring framing the logo — a rotating sweep border.
-          RepaintBoundary(
-            child: AnimatedBuilder(
-              animation: _orbit,
-              builder: (_, child) => Container(
-                width: 150, height: 150,
-                padding: const EdgeInsets.all(3.2),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(34),
-                  gradient: SweepGradient(
-                    transform: GradientRotation(_orbit.value * 2 * math.pi),
-                    colors: _rainbow,
-                  ),
-                  boxShadow: [
-                    BoxShadow(color: const Color(0xFFA855F7).withValues(alpha: 0.35),
-                      blurRadius: 34, spreadRadius: -6),
-                    BoxShadow(color: const Color(0xFF3B82F6).withValues(alpha: 0.22),
-                      blurRadius: 40, spreadRadius: -4),
-                  ],
-                ),
-                child: child,
-              ),
-              // A thin dark gap so the rainbow reads as a ring, then the logo.
-              child: Container(
-                padding: const EdgeInsets.all(3),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(31),
-                  color: const Color(0xFF0C0814),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(28),
-                  child: Image.asset('assets/images/improvy_logo.png', fit: BoxFit.cover, filterQuality: FilterQuality.high),
-                ),
-              ),
-            ),
-          ),
-        ],
+  // ── Aurora: soft, drifting colour washes — the screen's only colour ────────
+
+  Widget _aurora() => IgnorePointer(
+    child: RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: Listenable.merge([_drift, _breathe]),
+        builder: (_, __) {
+          final o = _drift.value * 2 * math.pi;
+          final b = Curves.easeInOut.transform(_breathe.value);
+          return Stack(children: [
+            _blob(top: -130 + 30 * math.sin(o), right: -90 + 26 * math.cos(o),
+              size: 430, color: const Color(0xFF7C3AED), alpha: 0.22 + 0.05 * b),
+            _blob(top: 130 + 34 * math.cos(o * 0.8), left: -150 + 24 * math.sin(o * 0.8),
+              size: 470, color: const Color(0xFF2563EB), alpha: 0.16 + 0.05 * (1 - b)),
+            _blob(bottom: -150 + 28 * math.sin(o * 1.1), right: -120 + 30 * math.cos(o * 1.1),
+              size: 480, color: const Color(0xFFDB2777), alpha: 0.15 + 0.05 * b),
+            _blob(bottom: 30 + 26 * math.cos(o * 0.9), left: -130 + 22 * math.sin(o),
+              size: 380, color: const Color(0xFF0EA5B7), alpha: 0.11 + 0.04 * (1 - b)),
+          ]);
+        },
       ),
+    ),
+  );
+
+  Widget _blob({double? top, double? bottom, double? left, double? right,
+      required double size, required Color color, required double alpha}) => Positioned(
+    top: top, bottom: bottom, left: left, right: right,
+    child: Container(
+      width: size, height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: [color.withValues(alpha: alpha), Colors.transparent],
+          stops: const [0.0, 0.72],
+        ),
+      ),
+    ),
+  );
+
+  Widget _hero() => Column(children: [
+    // Clean, premium logo — a soft breathing halo behind it, no ornaments.
+    // All the colour/magic now lives in the aurora behind the whole screen.
+    Stack(
+      alignment: Alignment.center,
+      clipBehavior: Clip.none,
+      children: [
+        Positioned.fill(
+          child: IgnorePointer(
+            child: OverflowBox(
+              maxWidth: double.infinity,
+              maxHeight: double.infinity,
+              alignment: Alignment.center,
+              child: AnimatedBuilder(
+                animation: _breathe,
+                builder: (_, __) {
+                  final t = Curves.easeInOut.transform(_breathe.value);
+                  return Container(
+                    width: 250 + 24 * t, height: 250 + 24 * t,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          const Color(0xFF8B5CF6).withValues(alpha: 0.16 + 0.06 * t),
+                          Colors.transparent,
+                        ],
+                        stops: const [0.0, 0.7],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+        Container(
+          width: 132, height: 132,
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+            boxShadow: [
+              BoxShadow(color: const Color(0xFF7C3AED).withValues(alpha: 0.42),
+                blurRadius: 48, offset: const Offset(-10, 16), spreadRadius: -8),
+              BoxShadow(color: const Color(0xFF3B82F6).withValues(alpha: 0.30),
+                blurRadius: 48, offset: const Offset(12, 18), spreadRadius: -10),
+            ],
+          ),
+          child: Image.asset('assets/images/improvy_logo.png', fit: BoxFit.cover, filterQuality: FilterQuality.high),
+        ),
+      ],
     ),
     const SizedBox(height: 14),
     Row(
@@ -354,28 +310,23 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
   // ── Glass membership card: gradient hairline border + sheen + check rows ───
 
   Widget _membershipCard() {
-    return AnimatedBuilder(
-      animation: _border,
-      builder: (_, child) => Container(
-        // Animated rainbow hairline — the same slow 8s sweep as the home
-        // progress card, so the paywall shares the app's "magic" signature.
-        padding: const EdgeInsets.all(1.4),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(22),
-          gradient: SweepGradient(
-            transform: GradientRotation(_border.value * 2 * math.pi),
-            colors: const [
-              Color(0xFFEF4444), Color(0xFFF97316), Color(0xFFEAB308),
-              Color(0xFF22C55E), Color(0xFF3B82F6), Color(0xFFA855F7),
-              Color(0xFFEC4899), Color(0xFFEF4444),
-            ],
-          ),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.35), blurRadius: 30, offset: const Offset(0, 14)),
-            BoxShadow(color: _goldDeep.withValues(alpha: 0.07), blurRadius: 44, offset: const Offset(0, 6)),
+    return Container(
+      // Refined glass edge — a soft light-to-violet hairline, no rainbow.
+      // Colour is reserved for the aurora behind the screen.
+      padding: const EdgeInsets.all(1.2),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft, end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withValues(alpha: 0.22),
+            Colors.white.withValues(alpha: 0.05),
+            const Color(0xFF8B5CF6).withValues(alpha: 0.12),
           ],
         ),
-        child: child,
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.35), blurRadius: 30, offset: const Offset(0, 14)),
+        ],
       ),
       child: Container(
         clipBehavior: Clip.antiAlias,
@@ -463,73 +414,6 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
 
   Widget _dot() => Text('   ·   ',
     style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white.withValues(alpha: 0.2)));
-}
-
-// ── Sparkles: motes of rainbow light orbiting and twinkling around the logo ────
-
-class _SparklePainter extends CustomPainter {
-  final double t; // 0..1 orbit phase
-  _SparklePainter(this.t);
-
-  static const _cols = <Color>[
-    Color(0xFFEF4444), Color(0xFFF97316), Color(0xFFEAB308),
-    Color(0xFF22C55E), Color(0xFF06B6D4), Color(0xFF3B82F6),
-    Color(0xFFA855F7), Color(0xFFEC4899), Color(0xFFF472B6),
-  ];
-
-  // radiusFactor · angle0 · orbitSpeed · size · colorIdx · isStar
-  static const _specs = <(double, double, double, double, int, bool)>[
-    (0.40, 0.4, 1.00, 3.6, 0, true),
-    (0.46, 1.6, 0.80, 2.2, 1, false),
-    (0.37, 2.7, 1.15, 3.0, 3, true),
-    (0.48, 3.5, 0.90, 2.0, 4, false),
-    (0.41, 4.4, 1.05, 3.2, 6, true),
-    (0.45, 5.2, 0.85, 2.4, 7, false),
-    (0.35, 5.9, 1.20, 2.7, 5, true),
-    (0.49, 0.9, 0.75, 1.9, 2, false),
-    (0.43, 3.0, 0.95, 2.3, 8, false),
-  ];
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final c = Offset(size.width / 2, size.height / 2);
-    for (final s in _specs) {
-      final ang = s.$2 + t * 2 * math.pi * s.$3;
-      final r = size.width * s.$1;
-      final p = c + Offset(math.cos(ang) * r, math.sin(ang) * r);
-      // Out-of-phase twinkle: each mote breathes at its own rate.
-      final twinkle = 0.18 + 0.82 * (0.5 + 0.5 * math.sin(t * 2 * math.pi * (3 + s.$5 * 0.6) + s.$2 * 4));
-      final col = _cols[s.$5];
-      final sz = s.$4;
-
-      // Soft coloured glow.
-      canvas.drawCircle(p, sz * 2.4, Paint()
-        ..color = col.withValues(alpha: 0.28 * twinkle)
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, sz * 1.4));
-
-      final core = Color.lerp(col, Colors.white, 0.55)!.withValues(alpha: twinkle);
-      if (s.$6) {
-        canvas.drawPath(_star(p, sz * 1.7, sz * 0.55), Paint()..color = core);
-      } else {
-        canvas.drawCircle(p, sz * 0.9, Paint()..color = core);
-      }
-    }
-  }
-
-  // A sharp four-point star.
-  Path _star(Offset c, double outer, double inner) {
-    final path = Path();
-    for (int i = 0; i < 8; i++) {
-      final a = -math.pi / 2 + i * math.pi / 4;
-      final rad = i.isEven ? outer : inner;
-      final pt = c + Offset(math.cos(a) * rad, math.sin(a) * rad);
-      i == 0 ? path.moveTo(pt.dx, pt.dy) : path.lineTo(pt.dx, pt.dy);
-    }
-    return path..close();
-  }
-
-  @override
-  bool shouldRepaint(_SparklePainter old) => old.t != t;
 }
 
 // ── Close button ──────────────────────────────────────────────────────────────
