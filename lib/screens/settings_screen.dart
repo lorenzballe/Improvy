@@ -55,16 +55,6 @@ class SettingsScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'ACCOUNT STATUS',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white.withAlpha(102),
-                                letterSpacing: 2,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
@@ -73,11 +63,11 @@ class SettingsScreen extends StatelessWidget {
                                     fit: BoxFit.scaleDown,
                                     alignment: Alignment.centerLeft,
                                     child: Text(
-                                      provider.isPro ? 'PRO' : 'NON-PRO',
+                                      provider.isPro ? 'Improvy Pro' : 'Free Plan',
                                       maxLines: 1,
                                       softWrap: false,
                                       style: const TextStyle(
-                                        fontSize: 30,
+                                        fontSize: 28,
                                         fontWeight: FontWeight.w900,
                                         color: Colors.white,
                                         letterSpacing: -0.75,
@@ -87,9 +77,21 @@ class SettingsScreen extends StatelessWidget {
                                 ),
                                 if (provider.isPro) ...[
                                   const SizedBox(width: 8),
-                                  const Icon(Icons.workspace_premium_rounded, color: Color(0xFFFBBF24), size: 26),
+                                  const Icon(Icons.workspace_premium_rounded, color: Color(0xFFFBBF24), size: 24),
                                 ],
                               ],
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              provider.isPro
+                                  ? 'Every mode and key, unlocked.'
+                                  : 'Tap to unlock every mode and key.',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white.withAlpha(120),
+                                height: 1.3,
+                              ),
                             ),
                           ],
                         ),

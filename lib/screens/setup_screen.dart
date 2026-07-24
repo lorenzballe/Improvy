@@ -1108,12 +1108,24 @@ class _SlidingPillRow extends StatelessWidget {
                           color: active ? const Color(0xE6000000) : Colors.white.withValues(alpha:0.45),
                           letterSpacing: 1.5,
                         ),
-                        child: Text(
-                          opt.toUpperCase(),
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          softWrap: false,
-                        ),
+                        // A literal "→" isn't in the UI font (tofu on CanvasKit
+                        // web), so render it as a real arrow icon between words.
+                        child: opt.contains('→')
+                            ? Row(mainAxisSize: MainAxisSize.min, children: [
+                                Text(opt.split('→')[0].trim().toUpperCase(), maxLines: 1, softWrap: false),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 5),
+                                  child: Icon(Icons.arrow_forward_rounded, size: 13,
+                                      color: active ? const Color(0xE6000000) : Colors.white.withValues(alpha: 0.45)),
+                                ),
+                                Text(opt.split('→')[1].trim().toUpperCase(), maxLines: 1, softWrap: false),
+                              ])
+                            : Text(
+                                opt.toUpperCase(),
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                softWrap: false,
+                              ),
                       ),
                     ),
                   ),
@@ -1375,6 +1387,10 @@ class _DegreeCell extends StatelessWidget {
                   style: TextStyle(
                     fontSize: deg.length > 3 ? 11 : 14, // web: text-sm
                     fontWeight: FontWeight.w900,
+                    // ♭/♯ aren't in the UI font — fall back to Noto Music so the
+                    // accidental degrees render on every platform (CanvasKit web
+                    // has no automatic system-font fallback).
+                    fontFamilyFallback: const ['NotoMusic'],
                     color: a ? Colors.white : Colors.white.withValues(alpha: locked ? 0.18 : 0.3),
                     letterSpacing: -0.2,
                     shadows: a ? const [Shadow(color: Color(0x66000000), blurRadius: 4, offset: Offset(0, 1))] : null,

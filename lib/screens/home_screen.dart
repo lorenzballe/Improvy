@@ -454,8 +454,10 @@ class _ProgressCardState extends State<_ProgressCard> with SingleTickerProviderS
   }
 
   String _nextMilestone() {
-    const thresholds = [12.5, 25.0, 37.5, 50.0, 62.5, 75.0, 87.5, 100.0];
-    const names = ['Turtle', 'Rabbit', 'Dog', 'Horse', 'Eagle', 'Dolphin', 'Cheetah', 'Max'];
+    // Must match the real animal progression in levels.dart (getAnimalLevel):
+    // Snail → Turtle → Penguin → Rabbit → Fox → Horse → Falcon → Cheetah.
+    const thresholds = [12.5, 25.0, 37.5, 50.0, 62.5, 75.0, 87.5];
+    const names = ['Turtle', 'Penguin', 'Rabbit', 'Fox', 'Horse', 'Falcon', 'Cheetah'];
     for (int i = 0; i < thresholds.length; i++) {
       if (widget.totalProgress < thresholds[i]) {
         final rem = (thresholds[i] - widget.totalProgress).toStringAsFixed(1);
