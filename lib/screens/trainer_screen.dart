@@ -1142,6 +1142,10 @@ class _QuestionDisplay extends StatelessWidget {
               fontWeight: FontWeight.w900,
               color: Colors.white,
               height: 1.0,
+              // Chromatic degrees carry ♭/♯, which the UI font lacks — fall back
+              // to the bundled Noto Music so they render everywhere (CanvasKit
+              // web has no automatic system-font fallback and would show tofu).
+              fontFamilyFallback: const ['NotoMusic'],
               shadows: const [Shadow(color: Colors.black54, blurRadius: 80, offset: Offset(0, 20))],
             ),
           );
