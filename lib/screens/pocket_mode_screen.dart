@@ -358,13 +358,11 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
               // ── Answer board: the in-game piano; the answer key lights up. ──
               _keyboard(),
 
-              // Give the transport bar real breathing room from the keyboard —
-              // sitting tight under it made the whole bottom look squashed.
-              const SizedBox(height: 26),
+              const SizedBox(height: 12),
 
               // ── Playback bar (glass, app-style) ──
               _playBar(),
-              SizedBox(height: 18 + MediaQuery.of(context).padding.bottom),
+              SizedBox(height: 8 + MediaQuery.of(context).padding.bottom),
             ]),
           ),
         ]),
