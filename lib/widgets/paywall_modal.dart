@@ -150,7 +150,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
                       child: Padding(
                         // Standard app side margin. Vertical spacing is kept tight
                         // so the block fits at (near) full scale — scaling narrows it.
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
                         child: Column(mainAxisSize: MainAxisSize.min, children: [
                           const SizedBox(height: 6),
 
@@ -207,14 +207,30 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
           final o = _drift.value * 2 * math.pi;
           final b = Curves.easeInOut.transform(_breathe.value);
           return Stack(children: [
-            _blob(top: -130 + 30 * math.sin(o), right: -90 + 26 * math.cos(o),
-              size: 430, color: const Color(0xFF7C3AED), alpha: 0.22 + 0.05 * b),
-            _blob(top: 130 + 34 * math.cos(o * 0.8), left: -150 + 24 * math.sin(o * 0.8),
-              size: 470, color: const Color(0xFF2563EB), alpha: 0.16 + 0.05 * (1 - b)),
-            _blob(bottom: -150 + 28 * math.sin(o * 1.1), right: -120 + 30 * math.cos(o * 1.1),
-              size: 480, color: const Color(0xFFDB2777), alpha: 0.15 + 0.05 * b),
-            _blob(bottom: 30 + 26 * math.cos(o * 0.9), left: -130 + 22 * math.sin(o),
-              size: 380, color: const Color(0xFF0EA5B7), alpha: 0.11 + 0.04 * (1 - b)),
+            // Richer, brighter aurora — more colour and more light than before.
+            _blob(top: -140 + 34 * math.sin(o), right: -100 + 30 * math.cos(o),
+              size: 500, color: const Color(0xFF8B5CF6), alpha: 0.34 + 0.08 * b),
+            _blob(top: 110 + 38 * math.cos(o * 0.8), left: -170 + 28 * math.sin(o * 0.8),
+              size: 540, color: const Color(0xFF3B82F6), alpha: 0.26 + 0.08 * (1 - b)),
+            _blob(bottom: -160 + 32 * math.sin(o * 1.1), right: -130 + 34 * math.cos(o * 1.1),
+              size: 540, color: const Color(0xFFEC4899), alpha: 0.26 + 0.08 * b),
+            _blob(bottom: 20 + 30 * math.cos(o * 0.9), left: -150 + 26 * math.sin(o),
+              size: 430, color: const Color(0xFF22D3EE), alpha: 0.20 + 0.06 * (1 - b)),
+            // A warm gold bloom behind the CTA, tying the aurora to the price.
+            _blob(bottom: -120 + 22 * math.sin(o * 1.3), left: 40 + 30 * math.cos(o * 1.3),
+              size: 380, color: const Color(0xFFF59E0B), alpha: 0.14 + 0.05 * b),
+            // Slow godrays sweeping across the whole screen.
+            Positioned.fill(
+              child: RepaintBoundary(
+                child: CustomPaint(painter: _RayPainter(_drift.value, 0.30 + 0.14 * b)),
+              ),
+            ),
+            // A faint veil of stars, drifting with the aurora.
+            Positioned.fill(
+              child: RepaintBoundary(
+                child: CustomPaint(painter: _StarfieldPainter(_orbit.value, b)),
+              ),
+            ),
           ]);
         },
       ),
@@ -654,4 +670,79 @@ class _BuyButtonState extends State<_BuyButton> with SingleTickerProviderStateMi
       ),
     ),
   );
+}
+
+// ── Godrays: slow beams fanning from the top, giving the aurora some light ────
+
+class _RayPainter extends CustomPainter {
+  final double t;        // 0..1 drift phase
+  final double strength; // overall opacity multiplier
+  _RayPainter(this.t, this.strength);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final origin = Offset(size.width * 0.5, -size.height * 0.25);
+    final base = t * 2 * math.pi;
+    const beams = 7;
+    for (int i = 0; i < beams; i++) {
+      // Each beam sways at its own rate so the fan never looks mechanical.
+      final a = -math.pi / 2 + (i - beams / 2) * 0.20 + math.sin(base + i) * 0.05;
+      final w = 0.055 + 0.02 * math.sin(base * 1.3 + i * 1.7).abs();
+      final len = size.height * 1.9;
+      final p = Path()
+        ..moveTo(origin.dx, origin.dy)
+        ..lineTo(origin.dx + math.cos(a - w) * len, origin.dy - math.sin(a - w) * len)
+        ..lineTo(origin.dx + math.cos(a + w) * len, origin.dy - math.sin(a + w) * len)
+        ..close();
+      final tint = i.isEven ? const Color(0xFFA855F7) : const Color(0xFF60A5FA);
+      final alpha = (0.05 + 0.035 * math.sin(base * 0.9 + i * 2.1).abs()) * strength;
+      canvas.drawPath(p, Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [tint.withValues(alpha: alpha), Colors.transparent],
+        ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 40));
+    }
+  }
+
+  @override
+  bool shouldRepaint(_RayPainter old) => old.t != t || old.strength != strength;
+}
+
+// ── Starfield: a quiet veil of drifting motes behind everything ───────────────
+
+class _StarfieldPainter extends CustomPainter {
+  final double t;      // 0..1 orbit phase
+  final double breath; // 0..1, gently swells the whole veil
+  _StarfieldPainter(this.t, this.breath);
+
+  // x · y · radius · twinkle speed (fixed layout — a deterministic sky).
+  static const _stars = <(double, double, double, double)>[
+    (0.08, 0.12, 1.5, 1.0), (0.21, 0.31, 1.1, 1.7), (0.33, 0.08, 1.8, 0.8),
+    (0.47, 0.22, 1.2, 2.1), (0.61, 0.09, 1.6, 1.3), (0.74, 0.27, 1.3, 1.9),
+    (0.88, 0.14, 1.7, 1.1), (0.13, 0.52, 1.4, 1.5), (0.29, 0.67, 1.1, 2.3),
+    (0.44, 0.58, 1.6, 0.9), (0.58, 0.72, 1.2, 1.6), (0.71, 0.55, 1.5, 2.0),
+    (0.86, 0.66, 1.3, 1.2), (0.05, 0.83, 1.6, 1.8), (0.24, 0.91, 1.2, 1.0),
+    (0.52, 0.87, 1.4, 1.4), (0.79, 0.93, 1.1, 2.2), (0.94, 0.79, 1.5, 1.6),
+  ];
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final base = t * 2 * math.pi;
+    for (final s in _stars) {
+      final drift = math.sin(base * 0.5 + s.$1 * 8) * 5;
+      final p = Offset(s.$1 * size.width + drift, s.$2 * size.height - drift * 0.6);
+      final twinkle = 0.30 + 0.70 * (0.5 + 0.5 * math.sin(base * s.$4 + s.$1 * 12));
+      final a = (0.12 + 0.28 * twinkle) * (0.85 + 0.15 * breath);
+      final r = s.$3 * (0.9 + 0.25 * twinkle);
+      canvas.drawCircle(p, r * 3.0, Paint()
+        ..color = Colors.white.withValues(alpha: a * 0.30)
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, r * 2.2));
+      canvas.drawCircle(p, r, Paint()..color = Colors.white.withValues(alpha: a));
+    }
+  }
+
+  @override
+  bool shouldRepaint(_StarfieldPainter old) => old.t != t || old.breath != breath;
 }
