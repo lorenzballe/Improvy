@@ -155,6 +155,12 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
           // ── Magical aurora: big, soft colour washes drifting behind it all.
           // This is the only place colour lives now — quiet, dreamy, premium.
           Positioned.fill(child: _aurora()),
+          // Dims the backdrop only — the hues stay exactly as they are, just
+          // less bright. The logo's own halo and sparkles are damped by the
+          // same factor below, so the whole screen drops in brightness evenly.
+          const Positioned.fill(
+            child: IgnorePointer(child: ColoredBox(color: Color(0x59000000))),
+          ),
 
           SafeArea(
             child: Stack(children: [
@@ -339,7 +345,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
                         shape: BoxShape.circle,
                         gradient: RadialGradient(
                           colors: [
-                            const Color(0xFF8B5CF6).withValues(alpha: 0.16 + 0.06 * t),
+                            const Color(0xFF8B5CF6).withValues(alpha: 0.10 + 0.04 * t),
                             Colors.transparent,
                           ],
                           stops: const [0.0, 0.7],
@@ -369,9 +375,9 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
               borderRadius: BorderRadius.circular(30),
               border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
               boxShadow: [
-                BoxShadow(color: const Color(0xFF7C3AED).withValues(alpha: 0.42),
+                BoxShadow(color: const Color(0xFF7C3AED).withValues(alpha: 0.27),
                   blurRadius: 48, offset: const Offset(-10, 16), spreadRadius: -8),
-                BoxShadow(color: const Color(0xFF3B82F6).withValues(alpha: 0.30),
+                BoxShadow(color: const Color(0xFF3B82F6).withValues(alpha: 0.20),
                   blurRadius: 48, offset: const Offset(12, 18), spreadRadius: -10),
               ],
             ),
@@ -553,14 +559,15 @@ class _SparklePainter extends CustomPainter {
       final p = c + Offset(math.cos(ang) * r, math.sin(ang) * r);
       // Out-of-phase twinkle: each mote fades at its own gentle rate.
       final twinkle = 0.15 + 0.75 * (0.5 + 0.5 * math.sin(t * 2 * math.pi * (2 + s.$5 * 0.5) + s.$2 * 4));
+      // Damped to match the backdrop veil, so nothing glares against it.
       final col = _cols[s.$5];
       final sz = s.$4;
 
       canvas.drawCircle(p, sz * 2.2, Paint()
-        ..color = col.withValues(alpha: 0.22 * twinkle)
+        ..color = col.withValues(alpha: 0.14 * twinkle)
         ..maskFilter = MaskFilter.blur(BlurStyle.normal, sz * 1.3));
 
-      final core = Color.lerp(col, Colors.white, 0.5)!.withValues(alpha: twinkle);
+      final core = Color.lerp(col, Colors.white, 0.5)!.withValues(alpha: twinkle * 0.65);
       if (s.$6) {
         canvas.drawPath(_star(p, sz * 1.7, sz * 0.5), Paint()..color = core);
       } else {
