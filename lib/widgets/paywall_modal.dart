@@ -150,7 +150,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
                       child: Padding(
                         // Standard app side margin. Vertical spacing is kept tight
                         // so the block fits at (near) full scale — scaling narrows it.
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
                         child: Column(mainAxisSize: MainAxisSize.min, children: [
                           const SizedBox(height: 6),
 
@@ -207,6 +207,31 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
           final o = _drift.value * 2 * math.pi;
           final b = Curves.easeInOut.transform(_breathe.value);
           return Stack(children: [
+            // Two counter-rotating rainbow washes, way out at the bottom of the
+            // stack: the aurora blobs and godrays sit on top and diffuse them,
+            // so what reads through is slow drifting colour, not pie slices.
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: SweepGradient(
+                    center: const Alignment(-0.3, -0.5),
+                    transform: GradientRotation(o * 0.35),
+                    colors: _rainbowWash(0.10 + 0.03 * b),
+                  ),
+                ),
+              ),
+            ),
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: SweepGradient(
+                    center: const Alignment(0.5, 0.7),
+                    transform: GradientRotation(-o * 0.22 + 1.2),
+                    colors: _rainbowWash(0.08 + 0.03 * (1 - b)),
+                  ),
+                ),
+              ),
+            ),
             // Richer, brighter aurora — more colour and more light than before.
             _blob(top: -140 + 34 * math.sin(o), right: -100 + 30 * math.cos(o),
               size: 500, color: const Color(0xFF8B5CF6), alpha: 0.34 + 0.08 * b),
@@ -236,6 +261,14 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
       ),
     ),
   );
+
+  // Full spectrum at a whisper of opacity, looping back to red so the sweep has
+  // no seam as it turns.
+  static List<Color> _rainbowWash(double a) => [
+        const Color(0xFFEF4444), const Color(0xFFF97316), const Color(0xFFEAB308),
+        const Color(0xFF22C55E), const Color(0xFF06B6D4), const Color(0xFF3B82F6),
+        const Color(0xFFA855F7), const Color(0xFFEC4899), const Color(0xFFEF4444),
+      ].map((c) => c.withValues(alpha: a)).toList();
 
   Widget _blob({double? top, double? bottom, double? left, double? right,
       required double size, required Color color, required double alpha}) => Positioned(
