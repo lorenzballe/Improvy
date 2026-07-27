@@ -20,6 +20,10 @@ class SettingsScreen extends StatelessWidget {
       backgroundColor: const Color(0xFF0F0A1A),
       body: SafeArea(
         child: SingleChildScrollView(
+          // Always rubber-bands, like the rest of the app — without this the
+          // list only bounces on platforms whose default physics do, and sits
+          // dead still everywhere else.
+          physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
           padding: EdgeInsets.fromLTRB(24, 16, 24, 140 + MediaQuery.of(context).padding.bottom),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

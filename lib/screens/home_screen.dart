@@ -1481,14 +1481,16 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                       GestureDetector(
                         onTap: () { HapticsService.impactLight(); provider.deselectKey(); },
                         child: Container(
-                          width: 48, height: 48,
+                          // Sized to match the back button on the key-analysis
+                          // screen — same spot, just a lighter presence.
+                          width: 40, height: 40,
                           decoration: BoxDecoration(
                             color: Colors.white10,
-                            borderRadius: BorderRadius.circular(24),
+                            borderRadius: BorderRadius.circular(20),
                             border: Border.all(color: Colors.white10, width: 1.2),
                             boxShadow: const [BoxShadow(color: Color(0x40000000), blurRadius: 20)],
                           ),
-                          child: const Icon(Icons.arrow_back_rounded, color: Colors.white70, size: 24),
+                          child: const Icon(Icons.arrow_back_rounded, color: Colors.white70, size: 20),
                         ),
                       ),
                       Expanded(
