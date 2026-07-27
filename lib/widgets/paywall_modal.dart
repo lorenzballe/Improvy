@@ -327,9 +327,11 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
     // tiny rainbow sparkles drifting around it. Colour/magic otherwise lives in
     // the aurora behind the whole screen.
     SizedBox(
-      // The box gives up its halo padding on short screens, but never goes
-      // below the logo it holds.
-      width: 210, height: (186 * _k).clamp(148.0, 186.0),
+      // Height is unchanged from when the logo was smaller: the logo grew into
+      // the box's own padding, so it reads bigger without pushing the wordmark
+      // and everything under it further down. The floor keeps the box from
+      // ever closing in tighter than the logo it holds.
+      width: 210, height: (186 * _k).clamp(164.0, 186.0),
       child: Stack(
         alignment: Alignment.center,
         clipBehavior: Clip.none,
@@ -371,10 +373,9 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
             ),
           ),
           Container(
-            // The hero logo keeps its full size. The vertical compression is
-            // paid for by the gaps and row heights around it — shrinking the
-            // one thing the eye lands on first was never worth the 18px.
-            width: 132, height: 132,
+            // Fixed — the vertical compression is paid for by the gaps and row
+            // heights around it, never by the one thing the eye lands on first.
+            width: 152, height: 152,
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(30),
