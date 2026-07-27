@@ -31,6 +31,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
 
   bool _purchasing = false;
   bool _restoring = false;
+  bool _closing = false;
   // Vertical compression factor: 1.0 on a tall phone, smaller on short
   // viewports (e.g. a browser with its chrome). Only ever squeezes heights —
   // never widths — so the card and CTA keep spanning the screen.
@@ -78,6 +79,16 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
     );
   }
 
+  /// Rewinds the entrance animation, then hands control back — so leaving the
+  /// paywall reads as the reverse of arriving, instead of snapping away.
+  Future<void> _dismiss() async {
+    if (_closing) return;
+    setState(() => _closing = true);
+    await _enter.animateBack(0.0,
+        duration: const Duration(milliseconds: 320), curve: Curves.easeOutCubic);
+    if (mounted) widget.onClose();
+  }
+
   Future<void> _buy() async {
     if (_purchasing) return;
     setState(() => _purchasing = true);
@@ -92,7 +103,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
     if (!mounted) return;
     setState(() => _restoring = false);
     if (ok) {
-      widget.onClose();
+      _dismiss();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('No previous purchase found'),
@@ -117,10 +128,19 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-    final reveal = CurvedAnimation(parent: _enter, curve: const Interval(0.0, 0.3));
     return AnimatedBuilder(
-      animation: reveal,
-      builder: (_, child) => Opacity(opacity: reveal.value.clamp(0.0, 1.0), child: child),
+      animation: _enter,
+      builder: (_, child) {
+        // Arriving, the backdrop snaps in over the first 30% so the staggered
+        // content lands on a solid screen. Leaving, the fade is spread over the
+        // whole rewind — otherwise it would hold full opacity and then vanish.
+        final t = _enter.value;
+        final v = (_closing ? t : t / 0.3).clamp(0.0, 1.0);
+        return Opacity(
+          opacity: v,
+          child: Transform.scale(scale: 0.965 + 0.035 * v, child: child),
+        );
+      },
       child: Material(
         color: AppColors.background,
         child: Stack(children: [
@@ -157,7 +177,9 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
                     child: SizedBox(
                       width: c.maxWidth,
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        // Standard side margin — the card spans the screen, but isn't glued
+                        // to the edges.
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Column(mainAxisSize: MainAxisSize.min, children: [
                           SizedBox(height: 6 * k),
 
@@ -196,7 +218,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
                 );
                 },
               ),
-              Positioned(top: 6, right: 16, child: _CloseButton(onTap: widget.onClose)),
+              Positioned(top: 6, right: 16, child: _CloseButton(onTap: _dismiss)),
             ]),
           ),
         ]),
