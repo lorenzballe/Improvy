@@ -31,6 +31,10 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
 
   bool _purchasing = false;
   bool _restoring = false;
+  // Vertical compression factor: 1.0 on a tall phone, smaller on short
+  // viewports (e.g. a browser with its chrome). Only ever squeezes heights —
+  // never widths — so the card and CTA keep spanning the screen.
+  double _k = 1.0;
 
   static const _gold = Color(0xFFFBBF24);
   static const _goldSoft = Color(0xFFFCD34D);
@@ -134,11 +138,16 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
 
           SafeArea(
             child: Stack(children: [
-              // No scrolling: the content is a fixed, well-spaced block that sits
-              // at full size on tall phones and scales down as one unit to fit
-              // shorter screens — always centred and whole, never clipped.
+              // No scrolling. On a short viewport the block COMPRESSES
+              // VERTICALLY (gaps, logo and row heights shrink) instead of being
+              // scaled down as a whole — scaling shrank the width too, which
+              // left ugly side margins and made the card look narrow. Width
+              // always stays full; the FittedBox is only a last-ditch guard.
               LayoutBuilder(
-                builder: (context, c) => SizedBox(
+                builder: (context, c) {
+                  _k = (c.maxHeight / 880).clamp(0.62, 1.0);
+                  final k = _k;
+                  return SizedBox(
                   width: c.maxWidth,
                   height: c.maxHeight,
                   child: FittedBox(
@@ -148,27 +157,26 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
                     child: SizedBox(
                       width: c.maxWidth,
                       child: Padding(
-                        // Standard app side margin. Vertical spacing is kept tight
-                        // so the block fits at (near) full scale — scaling narrows it.
                         padding: const EdgeInsets.symmetric(horizontal: 4),
                         child: Column(mainAxisSize: MainAxisSize.min, children: [
-                          const SizedBox(height: 6),
+                          SizedBox(height: 6 * k),
 
                           _in(0.0, 0.45, child: _hero()),
 
-                          const SizedBox(height: 22),
+                          SizedBox(height: 22 * k),
 
                           _in(0.14, 0.62, child: _membershipCard()),
 
-                          const SizedBox(height: 20),
+                          SizedBox(height: 20 * k),
 
                           _in(0.32, 0.85, child: _BuyButton(
                             title: 'Unlock Lifetime Access',
                             subtitle: '${_livePrice ?? _fallbackPrice} · one-time payment',
                             busy: _purchasing,
+                            height: (68 * k).clamp(54.0, 68.0),
                             onTap: _buy,
                           )),
-                          const SizedBox(height: 12),
+                          SizedBox(height: 12 * k),
                           _in(0.42, 0.95, child: FittedBox(
                             fit: BoxFit.scaleDown,
                             child: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -180,12 +188,13 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
                             ]),
                           )),
 
-                          const SizedBox(height: 6),
+                          SizedBox(height: 6 * k),
                         ]),
                       ),
                     ),
                   ),
-                ),
+                );
+                },
               ),
               Positioned(top: 6, right: 16, child: _CloseButton(onTap: widget.onClose)),
             ]),
@@ -290,7 +299,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
     // tiny rainbow sparkles drifting around it. Colour/magic otherwise lives in
     // the aurora behind the whole screen.
     SizedBox(
-      width: 210, height: 186,
+      width: 210, height: 186 * _k,
       child: Stack(
         alignment: Alignment.center,
         clipBehavior: Clip.none,
@@ -332,7 +341,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
             ),
           ),
           Container(
-            width: 132, height: 132,
+            width: 132 * _k, height: 132 * _k,
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(30),
@@ -349,7 +358,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
         ],
       ),
     ),
-    const SizedBox(height: 14),
+    SizedBox(height: 14 * _k),
     Row(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
@@ -367,7 +376,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
         ),
       ],
     ),
-    const SizedBox(height: 12),
+    SizedBox(height: 12 * _k),
     Text('Every key. Every mode. Forever.',
       textAlign: TextAlign.center,
       maxLines: 1, overflow: TextOverflow.ellipsis,
@@ -422,7 +431,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(22, 20, 22, 14),
+          padding: EdgeInsets.fromLTRB(22, 20 * _k, 22, 14 * _k),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             // Header: label + LIFETIME tag
             Row(children: [
@@ -442,11 +451,11 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
                     color: _goldSoft)),
               ),
             ]),
-            const SizedBox(height: 10),
+            SizedBox(height: 10 * _k),
             for (int i = 0; i < _features.length; i++) ...[
               if (i > 0) Container(height: 1, color: Colors.white.withValues(alpha: 0.045)),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 13),
+                padding: EdgeInsets.symmetric(vertical: 13 * _k),
                 child: Row(children: [
                   // Soft gold-tinted glass chip with a quiet line icon.
                   Container(
@@ -588,8 +597,9 @@ class _BuyButton extends StatefulWidget {
   final String title;
   final String subtitle;
   final bool busy;
+  final double height;
   final VoidCallback onTap;
-  const _BuyButton({required this.title, required this.subtitle, required this.busy, required this.onTap});
+  const _BuyButton({required this.title, required this.subtitle, required this.busy, required this.height, required this.onTap});
 
   @override
   State<_BuyButton> createState() => _BuyButtonState();
@@ -625,7 +635,7 @@ class _BuyButtonState extends State<_BuyButton> with SingleTickerProviderStateMi
       duration: const Duration(milliseconds: 110),
       child: Container(
         width: double.infinity,
-        height: 68,
+        height: widget.height,
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
