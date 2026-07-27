@@ -64,6 +64,9 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
     final mastery = keyData.totalProgress;
     final diatonic = keyData.diatonicProgress;
     final chromatic = keyData.chromaticProgress;
+    // "…Of What?" is drilled per NOTE, not per key — it gets its own dial at
+    // the bottom of the screen and stays out of the mastery figure above.
+    final harmonizer = keyData.harmonizerProgress;
 
     // Locked: feed empty history into every chart/stat below (display only —
     // the stored session history is not modified).
@@ -491,6 +494,51 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                   ],
                 ),
               ),
+              const SizedBox(height: 16),
+
+              // ── Harmonizer ──
+              // The note on its own, outside any key: how far "…Of What?" has
+              // been drilled on it. The ring around the note IS the progress.
+              _Card(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('NOTE',
+                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900,
+                        color: Colors.white.withAlpha(102), letterSpacing: 1.5)),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        _HarmonizerRing(
+                          note: formatNoteForDisplay(tone, provider.notation),
+                          pct: harmonizer,
+                          color: color,
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('Harmonizer',
+                                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700,
+                                  color: Colors.white, letterSpacing: 0.2)),
+                              const SizedBox(height: 3),
+                              Text('“…Of What?” mastery',
+                                maxLines: 1, overflow: TextOverflow.ellipsis,
+                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600,
+                                  color: Colors.white.withAlpha(102))),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Text('$harmonizer%',
+                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900,
+                            color: color, letterSpacing: -0.5)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         );
@@ -804,6 +852,90 @@ class _Bar extends StatelessWidget {
           ),
         ),
       );
+}
+
+// ─── Harmonizer dial: the note in a ring that fills with its progress ─────────
+
+class _HarmonizerRing extends StatelessWidget {
+  final String note;
+  final int pct;
+  final Color color;
+  const _HarmonizerRing({required this.note, required this.pct, required this.color});
+
+  static const double _size = 56;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+        width: _size, height: _size,
+        child: CustomPaint(
+          painter: _RingPainter(pct: pct / 100, color: color),
+          child: Center(
+            child: Padding(
+              // Keep the label clear of the ring — solfège spellings ("Si♭")
+              // are far wider than a single letter.
+              padding: const EdgeInsets.symmetric(horizontal: 11),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: NoteText(
+                  note: note,
+                  style: const TextStyle(
+                    fontSize: 19, fontWeight: FontWeight.w900,
+                    color: Colors.white, letterSpacing: -0.5, height: 1,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+}
+
+class _RingPainter extends CustomPainter {
+  final double pct; // 0..1
+  final Color color;
+  _RingPainter({required this.pct, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const stroke = 3.5;
+    final rect = Offset.zero & size;
+    final center = rect.center;
+    final radius = (size.shortestSide - stroke) / 2;
+
+    // Well inside the ring, so the fill never bleeds over the track.
+    canvas.drawCircle(center, radius - stroke / 2, Paint()..color = Colors.white.withAlpha(8));
+    canvas.drawCircle(
+      center, radius,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = stroke
+        ..color = Colors.white.withAlpha(20),
+    );
+
+    final v = pct.clamp(0.0, 1.0);
+    if (v <= 0) return;
+
+    final arc = Rect.fromCircle(center: center, radius: radius);
+    const start = -math.pi / 2; // 12 o'clock
+    final sweep = 2 * math.pi * v;
+
+    canvas.drawArc(arc, start, sweep, false,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = stroke + 1.5
+        ..strokeCap = StrokeCap.round
+        ..color = color.withAlpha(80)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5));
+    canvas.drawArc(arc, start, sweep, false,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = stroke
+        ..strokeCap = StrokeCap.round
+        ..color = color);
+  }
+
+  @override
+  bool shouldRepaint(_RingPainter old) => old.pct != pct || old.color != color;
 }
 
 // ─── Smooth line chart with gradient fill + selectable point ──────────────────

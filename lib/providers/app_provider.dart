@@ -566,6 +566,29 @@ class AppProvider extends ChangeNotifier {
       _storage.saveProgress(progressData);
     }
 
+    // Harmonizer mastery — "…Of What?" keeps its own dial, keyed by the note
+    // being drilled (the mode has no tonality, so selectedKey is null and
+    // fixedNote is the identity). Same best-of-session scale as above.
+    // Unlike key mastery this DOES count degree-narrowed sessions: the drill
+    // ships narrowed by default (chord tones), so requiring the full set would
+    // leave the dial at zero for almost everyone. It feeds only this card,
+    // never the key's mastery percentage.
+    if (activeMode == TrainingMode.ofWhat && fixedNote != null) {
+      final diff = (customDifficulty ?? 1).clamp(1, 3);
+      final currentCorrect = stats.currentSessionCorrect;
+
+      progressData = progressData.map((item) {
+        if (item.key != fixedNote) return item;
+        final levels = List<int>.from(item.harmonizerLevels);
+        final maxForLevel = diff == 1 ? 30 : diff == 2 ? 40 : 50;
+        final best = currentCorrect > levels[diff - 1] ? currentCorrect : levels[diff - 1];
+        levels[diff - 1] = best > maxForLevel ? maxForLevel : best;
+        return item.copyWith(harmonizerLevels: levels);
+      }).toList();
+
+      _storage.saveProgress(progressData);
+    }
+
     // Persist a LIGHT snapshot every answer — lifetime counters, dailyHistory
     // and the in-progress session, but NOT the heavy sessionHistory list. So an
     // OS-kill mid-game loses nothing (init folds the snapshot back in), while
