@@ -1,5 +1,32 @@
 # 🎵 Improvy Store Assets - iOS App Store & Google Play
 
+> ## ⚠ REWRITE NEEDED BEFORE SUBMITTING
+>
+> The listing copy below still sells the original product — an interval
+> ear-trainer. The app that exists trains *mental* scale-degree recall across
+> 12 keys; it does not test your ear on intervals and does not teach perfect
+> pitch. Submitting as-is risks rejection under App Store Review 2.3
+> (accurate metadata) and refund claims. Each item below is checked against
+> the code.
+>
+> | Where | Says | Actually |
+> |---|---|---|
+> | Subtitle | "Ear Training for Musicians" | not an ear trainer |
+> | Description title | "Master Ear Training & Music Intervals" | scale-degree recall |
+> | Opening line | "Perfect pitch is rare… teaches your ear to recognize musical intervals, scales, and chords" | no interval recognition, no pitch training |
+> | Modes | 3 modes, all framed as interval training | 6 modes: Diatonic, Chromatic, Custom, Note to Number, …Of What?, Pocket Mode (`lib/models/training_mode.dart`) |
+> | "12 ANIMAL LEVELS (Mouse → Octopus → Phoenix)" | 12 levels, those animals | 8 levels: Snail, Turtle, Penguin, Rabbit, Fox, Horse, Falcon, Cheetah (`lib/constants/levels.dart`) |
+> | "HOW IT WORKS" | "Listen to an interval (two notes played in sequence) → identify which interval" | not the interaction the app has |
+> | "Scientifically Grounded" | "proven to accelerate pitch recognition development (source: music theory research)" | unsourced efficacy claim — drop it or cite something real |
+> | Closing lines | "pitch-perfect ear", "Your ear training companion" | — |
+> | iOS + Android keywords | "ear training, perfect pitch, relative pitch, interval recognition" | none of these describe the app |
+> | Age-rating answer | "contains music → instrumental ear training" | the app uses TTS, not instrument samples — re-check the answer |
+>
+> The site and the Terms already carry accurate wording to reuse:
+> *"a music-training application that helps you master where every scale degree
+> lives across all 12 keys — building the instant recall used for
+> improvisation, transposition, and composition."*
+
 ## App Store Metadata
 
 ### App Name
