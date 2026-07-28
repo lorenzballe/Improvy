@@ -115,7 +115,7 @@ Next Step: Archive in Xcode → Upload to TestFlight
 - [x] Rating: 4+ (PEGI)
 - [x] Privacy Policy URL: improvy.app/privacy
 - [x] Terms URL: improvy.app/terms
-- [x] Support Email: support@improvy.app
+- [x] Support Email: thebalecompany@gmail.com
 
 #### Screenshots Ready
 - [ ] Screenshot 1: Home (1170×2532px)
@@ -153,7 +153,7 @@ Next Step: Archive in Xcode → Upload to TestFlight
 - [x] Content Rating: Everyone (PEGI 3)
 - [x] Privacy Policy URL: improvy.app/privacy
 - [x] Terms URL: improvy.app/terms
-- [x] Support Email: support@improvy.app
+- [x] Support Email: thebalecompany@gmail.com
 
 #### Screenshots Ready
 - [ ] Screenshot 1: Home (1080×1920px)
@@ -345,7 +345,7 @@ All criteria met. Ready to submit to app stores.
 ### During Review
 - **Apple**: Check App Store Connect daily
 - **Google**: Check Play Console daily
-- **Email**: Monitor support@improvy.app
+- **Email**: Monitor thebalecompany@gmail.com
 - **Slack/Discord**: Set up notifications
 
 ### Post-Launch
