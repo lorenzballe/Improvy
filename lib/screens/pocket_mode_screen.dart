@@ -425,21 +425,22 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
   static const _pcNatural = {0: 'C', 2: 'D', 4: 'E', 5: 'F', 7: 'G', 9: 'A', 11: 'B'};
   static const _pcBlack = {1: 'D♭', 3: 'E♭', 6: 'G♭', 8: 'A♭', 10: 'B♭'};
 
-  // One octave that BEGINS on the exercise note (root → its octave, 13 semitones)
-  // so the keyboard reads in the exercise's context and every one of the 12 notes
-  // is present — the answer always lights up. Works for flat/sharp keys too: a
-  // black-note key (B♭, E♭, F♯…) becomes the leftmost key, exactly as asked.
+  // One octave that BEGINS on the exercise note: 12 semitones, so all 12 notes
+  // are present exactly once — the answer always lights up, and the root is NOT
+  // repeated at the right edge (same as the in-game keyboard, which lays out a
+  // single octave of 7 whites). Works for flat/sharp keys too: a black-note key
+  // (B♭, E♭, F♯…) becomes the leftmost key.
   Widget _keyboard() {
     final rootKey = widget.config.shuffleKeys ? 'C' : (widget.config.key.isNotEmpty ? widget.config.key : 'C');
     final rootPc = kNoteToSemitone[rootKey] ?? 0;
     final notes = <({String name, bool black, int off})>[];
-    for (int s = 0; s <= 12; s++) {
+    for (int s = 0; s < 12; s++) {
       final pc = (rootPc + s) % 12;
       if (_pcNatural.containsKey(pc)) {
         notes.add((name: _pcNatural[pc]!, black: false, off: s));
       } else {
-        // Name the octave's own endpoints with the exercise key's spelling.
-        notes.add((name: (s == 0 || s == 12) ? rootKey : _pcBlack[pc]!, black: true, off: s));
+        // Spell a black-note root the way the exercise does (F♯ vs G♭).
+        notes.add((name: s == 0 ? rootKey : _pcBlack[pc]!, black: true, off: s));
       }
     }
     final whites = [for (final k in notes) if (!k.black) k];
