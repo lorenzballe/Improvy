@@ -60,9 +60,11 @@ class LegalScreen extends StatelessWidget {
 const String kPrivacyPolicyBody = '''
 PRIVACY POLICY
 
-Last updated: June 28, 2026
+Last updated: July 24, 2026
 
 Improvy ("App", "we", "us") is developed and operated by Lorenzo Ballestrazzi ("Developer"). This Privacy Policy explains what information we collect, how we use it, and your rights.
+
+The short version: Improvy has no accounts and collects no personal data. Everything below simply spells that out.
 
 1. INFORMATION WE COLLECT
 
@@ -133,7 +135,7 @@ We implement reasonable technical measures to protect data in transit and at res
 
 8. CHANGES TO THIS POLICY
 
-We may update this Privacy Policy. When we do, we will revise the "Last updated" date above and, for material changes, notify you within the App. The current version is always the one shown here, under Settings → Privacy Policy.
+We may update this Privacy Policy. When we do, we will revise the "Last updated" date above and, for material changes, notify you within the App. The latest version is always available in the App and on our website.
 
 9. CONTACT
 
@@ -147,7 +149,7 @@ $kWebsiteUrl
 const String kTermsBody = '''
 TERMS OF SERVICE
 
-Last updated: June 28, 2026
+Last updated: July 24, 2026
 
 Please read these Terms of Service ("Terms") carefully before using Improvy.
 
@@ -157,11 +159,11 @@ By downloading, installing, or using the Improvy app ("App"), you confirm that y
 
 2. DESCRIPTION OF THE APP
 
-Improvy is a music ear-training application that helps users develop interval recognition, scale knowledge, and relative pitch. The App is available on iOS and Android.
+Improvy is a music-training application that helps you master where every scale degree lives across all 12 keys — building the instant recall used for improvisation, transposition, and composition. The App is available on iOS and Android.
 
 3. LICENSE
 
-Subject to your compliance with these Terms, we grant you a limited, personal, non-exclusive, non-transferable, revocable licence to use the App on devices you own or control, solely for personal, non-commercial ear-training purposes.
+Subject to your compliance with these Terms, we grant you a limited, personal, non-exclusive, non-transferable, revocable licence to use the App on devices you own or control, solely for personal, non-commercial training.
 
 You may not:
 - Copy, modify, distribute, or create derivative works of the App
@@ -171,7 +173,7 @@ You may not:
 
 4. IMPROVY PRO
 
-Certain features of the App ("Improvy PRO") are available only after a one-time in-app purchase ("lifetime upgrade") processed by Apple (App Store) or Google (Play Store).
+Certain features of the App ("Improvy PRO") are available only after a one-time in-app purchase — a lifetime upgrade, not a subscription. There are no recurring fees. The purchase is processed by Apple (App Store) or Google (Play Store).
 
 Price: displayed in your local currency at the time of purchase.
 
