@@ -87,8 +87,8 @@ IMPROVY. Your ear training companion.
 
 ---
 
-Support: support@improvy.app
-Privacy: improvy.app/privacy
+Support: thebalecompany@gmail.com
+Privacy: lorenzballe.github.io/Improvyapp
 ```
 
 **Character Count**: ~2,100 / 4,000 (App Store) or 4,000 (Google Play)  
@@ -122,10 +122,18 @@ music ear development, audio training, sound training
 
 | Link | Value | Status |
 |------|-------|--------|
-| Support Email | support@improvy.app | ✓ Configure |
-| Privacy Policy | https://improvy.app/privacy | ✓ Ready |
-| Terms of Service | https://improvy.app/terms | ✓ Ready |
-| Website | https://improvy.app | ✓ Ready |
+| Support Email | thebalecompany@gmail.com | ✓ Live |
+| Website | https://lorenzballe.github.io/Improvyapp/ | ✓ Live |
+| Privacy Policy | in-app: Settings → Privacy Policy | ⚠ No public URL yet |
+| Terms of Service | in-app: Settings → Terms of Service | ⚠ No public URL yet |
+
+> ⚠ **App Store Connect needs a Privacy Policy URL that resolves publicly.**
+> The marketing site is a single-page app with no router, so `/privacy` and
+> `/terms` are not reachable addresses — and `improvy.app` is not a registered
+> domain at all. Before submitting, publish the two policy texts as real pages
+> (e.g. `privacy.html` / `terms.html` in the site repo's `public/`) and put
+> those URLs here. The authoritative copy is `kPrivacyPolicyBody` and
+> `kTermsBody` in `lib/screens/legal_screen.dart`.
 
 ---
 

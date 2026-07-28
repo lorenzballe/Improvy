@@ -113,8 +113,8 @@ Next Step: Archive in Xcode → Upload to TestFlight
 - [x] Keywords: Music training, intervals, etc
 - [x] Category: Music
 - [x] Rating: 4+ (PEGI)
-- [x] Privacy Policy URL: improvy.app/privacy
-- [x] Terms URL: improvy.app/terms
+- [ ] Privacy Policy URL: no public page yet (policy lives in-app)
+- [ ] Terms URL: no public page yet (terms live in-app)
 - [x] Support Email: thebalecompany@gmail.com
 
 #### Screenshots Ready
@@ -151,8 +151,8 @@ Next Step: Archive in Xcode → Upload to TestFlight
 - [x] Keywords: Music training, intervals, etc
 - [x] Category: Music & Audio
 - [x] Content Rating: Everyone (PEGI 3)
-- [x] Privacy Policy URL: improvy.app/privacy
-- [x] Terms URL: improvy.app/terms
+- [ ] Privacy Policy URL: no public page yet (policy lives in-app)
+- [ ] Terms URL: no public page yet (terms live in-app)
 - [x] Support Email: thebalecompany@gmail.com
 
 #### Screenshots Ready

@@ -7,9 +7,6 @@ class LegalScreen extends StatelessWidget {
   final String body;
   const LegalScreen({super.key, required this.title, required this.body});
 
-  static const String privacyPolicyUrl = 'https://improvy.app/privacy';
-  static const String termsUrl = 'https://improvy.app/terms';
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -136,12 +133,13 @@ We implement reasonable technical measures to protect data in transit and at res
 
 8. CHANGES TO THIS POLICY
 
-We may update this Privacy Policy. When we do, we will revise the "Last updated" date above and, for material changes, notify you within the App. The latest version is always available at: https://improvy.app/privacy
+We may update this Privacy Policy. When we do, we will revise the "Last updated" date above and, for material changes, notify you within the App. The current version is always the one shown here, under Settings → Privacy Policy.
 
 9. CONTACT
 
 Lorenzo Ballestrazzi
 $kSupportEmail
+$kWebsiteUrl
 ''';
 
 // ─── TERMS OF SERVICE ────────────────────────────────────────────────────────
@@ -222,5 +220,5 @@ We may update these Terms at any time. We will notify you of significant changes
 
 Lorenzo Ballestrazzi
 $kSupportEmail
-https://improvy.app
+$kWebsiteUrl
 ''';
