@@ -100,7 +100,7 @@ Required:
       "ear training, music theory, intervals, relative pitch, perfect pitch"
   
   [ ] Support URL: https://lorenzballe.github.io/Improvyapp/
-  [ ] Privacy URL: needs a real published page (see STORE_ASSETS.md)
+  [ ] Privacy URL: https://lorenzballe.github.io/Improvyapp/#privacy
   [ ] Category: Music (MusicalApps)
 ```
 

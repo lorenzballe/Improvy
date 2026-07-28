@@ -88,7 +88,7 @@ IMPROVY. Your ear training companion.
 ---
 
 Support: thebalecompany@gmail.com
-Privacy: lorenzballe.github.io/Improvyapp
+Privacy: lorenzballe.github.io/Improvyapp/#privacy
 ```
 
 **Character Count**: ~2,100 / 4,000 (App Store) or 4,000 (Google Play)  
@@ -124,16 +124,15 @@ music ear development, audio training, sound training
 |------|-------|--------|
 | Support Email | thebalecompany@gmail.com | ✓ Live |
 | Website | https://lorenzballe.github.io/Improvyapp/ | ✓ Live |
-| Privacy Policy | in-app: Settings → Privacy Policy | ⚠ No public URL yet |
-| Terms of Service | in-app: Settings → Terms of Service | ⚠ No public URL yet |
+| Privacy Policy | https://lorenzballe.github.io/Improvyapp/#privacy | ✓ Live |
+| Terms of Service | https://lorenzballe.github.io/Improvyapp/#terms | ✓ Live |
 
-> ⚠ **App Store Connect needs a Privacy Policy URL that resolves publicly.**
-> The marketing site is a single-page app with no router, so `/privacy` and
-> `/terms` are not reachable addresses — and `improvy.app` is not a registered
-> domain at all. Before submitting, publish the two policy texts as real pages
-> (e.g. `privacy.html` / `terms.html` in the site repo's `public/`) and put
-> those URLs here. The authoritative copy is `kPrivacyPolicyBody` and
-> `kTermsBody` in `lib/screens/legal_screen.dart`.
+> These are the URLs to paste into App Store Connect and Play Console. They are
+> served by the marketing site and show the same text the app ships in Settings.
+> Two copies exist — `kPrivacyPolicyBody` / `kTermsBody` in
+> `lib/screens/legal_screen.dart`, and `PrivacyPolicyPage.tsx` /
+> `TermsOfServicePage.tsx` in the site repo. Change one, change the other, and
+> bump the "Last updated" date in both.
 
 ---
 
