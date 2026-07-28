@@ -3,7 +3,9 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../providers/app_provider.dart';
+import '../constants/app_info.dart';
 import '../services/purchase_service.dart';
 import 'legal_screen.dart';
 
@@ -11,6 +13,29 @@ class SettingsScreen extends StatelessWidget {
   final void Function([String? reason]) onShowPaywall;
   final VoidCallback onSimulatePerfect;
   const SettingsScreen({super.key, required this.onShowPaywall, required this.onSimulatePerfect});
+
+  /// Hands the address to the OS mail app. If the device has no mail client
+  /// set up nothing opens, so the row shows the address itself — the user can
+  /// still read it and write from wherever they like.
+  static Future<void> _contactSupport(BuildContext context) async {
+    try {
+      final ok = await launchUrl(
+        Uri.parse(kSupportMailto),
+        mode: LaunchMode.externalApplication,
+      );
+      if (ok || !context.mounted) return;
+    } catch (_) {
+      if (!context.mounted) return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color(0xFF1A1625),
+        content: const Text('Write to $kSupportEmail',
+          style: TextStyle(fontWeight: FontWeight.w600)),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -507,7 +532,7 @@ class SettingsScreen extends StatelessWidget {
               _sectionLabel('SUPPORT'),
               const SizedBox(height: 12),
               GestureDetector(
-                onTap: () {},
+                onTap: () => _contactSupport(context),
                 child: _blurCard(
                   child: Row(
                     children: [
@@ -540,12 +565,20 @@ class SettingsScreen extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            Text(
-                              "Questions or feedback? We're here to help.",
-                              style: TextStyle(
-                                fontSize: 9,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white.withAlpha(102),
+                            // The address is spelled out, not just implied by
+                            // the tap: it's the same one published on the site.
+                            const FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                kSupportEmail,
+                                maxLines: 1,
+                                softWrap: false,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFFFBBF24),
+                                ),
                               ),
                             ),
                           ],

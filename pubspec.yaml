@@ -37,6 +37,8 @@ dependencies:
   # plays an inaudible track on repeat for the whole session so the output
   # never goes idle. See lib/services/keep_alive_audio.dart.
   audioplayers: ^6.1.0
+  # Opens the user's mail app from Contact Support (see constants/app_info.dart).
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_test:

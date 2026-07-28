@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
+import '../constants/app_info.dart';
 
 class LegalScreen extends StatelessWidget {
   final String title;
@@ -121,7 +122,7 @@ If you are located in the European Economic Area (EEA), you have the right to:
 - Object to or restrict our processing of your data
 - Lodge a complaint with your national data protection authority
 
-Because Improvy collects only anonymous data with no account or identity, there is typically no personal data to access, correct, or delete. For any privacy concern, contact us at support@improvy.app and we will respond within 30 days.
+Because Improvy collects only anonymous data with no account or identity, there is typically no personal data to access, correct, or delete. For any privacy concern, contact us at $kSupportEmail and we will respond within 30 days.
 
 Legal basis for processing: Legitimate interests (improving the App) — applied only to fully anonymous events.
 
@@ -140,7 +141,7 @@ We may update this Privacy Policy. When we do, we will revise the "Last updated"
 9. CONTACT
 
 Lorenzo Ballestrazzi
-support@improvy.app
+$kSupportEmail
 ''';
 
 // ─── TERMS OF SERVICE ────────────────────────────────────────────────────────
@@ -220,6 +221,6 @@ We may update these Terms at any time. We will notify you of significant changes
 11. CONTACT
 
 Lorenzo Ballestrazzi
-support@improvy.app
+$kSupportEmail
 https://improvy.app
 ''';
