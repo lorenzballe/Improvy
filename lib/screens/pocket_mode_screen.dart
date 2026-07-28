@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/music_constants.dart';
 import '../services/tts_service.dart';
+import '../services/keep_alive_audio.dart';
 import '../services/haptics_service.dart';
 import '../utils/music_engine.dart';
 import '../widgets/note_text.dart';
@@ -43,6 +44,9 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
   static const _accent = Color(0xFF6366F1); // indigo — Pocket Mode's colour
 
   final TtsService _tts = TtsService();
+  // Runs for as long as the session is playing: without audio actually flowing
+  // iOS suspends the app during the silent gaps and the loop stops dead.
+  final KeepAliveAudio _keepAlive = KeepAliveAudio();
   final Random _rng = Random();
   late final AnimationController _pulse;    // slow ambient breathing behind the stage
   late final AnimationController _reveal;   // one-shot bloom when the answer lands
@@ -78,6 +82,7 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
   void dispose() {
     _gen++;
     _tts.stop();
+    _keepAlive.dispose();
     _pulse.dispose();
     _reveal.dispose();
     _countdown.dispose();
@@ -146,6 +151,7 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
 
   void _play() {
     setState(() => _playing = true);
+    _keepAlive.start(); // before the first utterance, so the gaps are covered
     final gen = ++_gen;
     _loop(gen);
   }
@@ -153,6 +159,7 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
   void _pause() {
     _gen++; // invalidate the running loop
     _tts.stop();
+    _keepAlive.stop(); // paused means idle: let iOS suspend us and save battery
     _countdown.stop();
     _spokenKey = ''; // re-announce the key on the first question after resuming
     setState(() { _playing = false; _phase = 0; });
@@ -161,6 +168,7 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
   void _exit() {
     _gen++;
     _tts.stop();
+    _keepAlive.stop();
     widget.onExit();
   }
 
@@ -216,8 +224,14 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
       if (mounted) setState(() => _index++);
     }
     if (mounted && gen == _gen) {
-      _tts.speak('Session complete.');
+      const outro = 'Session complete.';
+      _tts.speak(outro);
       setState(() { _playing = false; _finished = true; _phase = 0; });
+      // Hold the keep-alive until the closing line has actually been spoken —
+      // dropping it straight away lets iOS suspend us mid-sentence. The guard
+      // matters because the user may hit play again during those two seconds.
+      await _wait(_speechMs(outro) + 400, gen);
+      if (gen == _gen) _keepAlive.stop();
     }
   }
 

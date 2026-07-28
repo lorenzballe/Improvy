@@ -31,6 +31,12 @@ dependencies:
   # iOS/Android/web; iOS keeps speaking with the screen locked via the
   # playback audio category + the `audio` background mode (see Info.plist).
   flutter_tts: ^4.2.2
+  # Pocket Mode's background keep-alive. iOS only leaves a backgrounded app
+  # running while audio is actually FLOWING — an active session with nothing
+  # playing gets suspended, which froze the loop during its silent gaps. This
+  # plays an inaudible track on repeat for the whole session so the output
+  # never goes idle. See lib/services/keep_alive_audio.dart.
+  audioplayers: ^6.1.0
 
 dev_dependencies:
   flutter_test:
@@ -42,6 +48,7 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/audio/
 
   fonts:
     - family: NotoMusic
