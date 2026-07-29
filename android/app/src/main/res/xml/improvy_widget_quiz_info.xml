@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 2×2 by default, resizable up to a full row. updatePeriodMillis is the
+     floor Android allows (30 min); the app also pushes an update whenever it
+     runs, and the question itself only turns on the hour. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="150dp"
+    android:minHeight="110dp"
+    android:targetCellWidth="2"
+    android:targetCellHeight="2"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="70dp"
+    android:updatePeriodMillis="1800000"
+    android:initialLayout="@layout/widget_quiz"
+    android:previewLayout="@layout/widget_quiz"
+    android:previewImage="@mipmap/ic_launcher"
+    android:description="@string/widget_quiz_description"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen" />

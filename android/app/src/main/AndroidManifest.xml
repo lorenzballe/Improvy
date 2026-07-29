@@ -43,6 +43,31 @@
                 <action android:name="android.intent.action.QUICKBOOT_POWERON"/>
             </intent-filter>
         </receiver>
+        <!-- Home-screen widgets (see ImprovyWidgets.kt). Both are exported so
+             the launcher can host them; they read only the data the app
+             publishes for them. -->
+        <receiver
+            android:name=".ImprovyQuizWidgetProvider"
+            android:label="@string/widget_quiz_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/improvy_widget_quiz_info" />
+        </receiver>
+        <receiver
+            android:name=".ImprovyDailyWidgetProvider"
+            android:label="@string/widget_daily_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/improvy_widget_daily_info" />
+        </receiver>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

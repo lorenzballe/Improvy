@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- The app writes the widget payload into this shared container; the
+	     widget extension reads it. Must match WidgetService.iOSAppGroupId in
+	     Dart and Improvy.appGroupId in the widget's Swift.
+
+	     Xcode only honours this file once it is set as CODE_SIGN_ENTITLEMENTS
+	     on the Runner target — see ios/ImprovyWidget/SETUP.md. -->
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.com.improvy.app.widget</string>
+	</array>
+</dict>
+</plist>

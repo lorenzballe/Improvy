@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Today's challenge at a glance: the key to play in, or the score once it's
+     done, with the streak always in sight — the streak is the thing that
+     brings people back. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/daily_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_bg_gold"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/daily_label"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/widget_daily_label"
+            android:textColor="#FCD34D"
+            android:textSize="9sp"
+            android:letterSpacing="0.18"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:fontFamily="@font/lexend_black" />
+
+        <TextView
+            android:id="@+id/daily_streak"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/widget_chip_gold"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="3dp"
+            android:paddingBottom="3dp"
+            android:text="@string/widget_daily_streak_placeholder"
+            android:textColor="#FCD34D"
+            android:textSize="10sp"
+            android:maxLines="1"
+            android:fontFamily="@font/lexend_black" />
+    </LinearLayout>
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <TextView
+        android:id="@+id/daily_headline"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/widget_daily_placeholder"
+        android:textColor="#FFFFFFFF"
+        android:textSize="22sp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:fontFamily="@font/lexend_black" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <TextView
+        android:id="@+id/daily_sub"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/widget_daily_sub_placeholder"
+        android:textColor="#8CFFFFFF"
+        android:textSize="11sp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:fontFamily="@font/lexend_semibold" />
+</LinearLayout>

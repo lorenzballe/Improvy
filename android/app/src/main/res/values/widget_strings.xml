@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Placeholder text only: everything a user actually reads is written by the
+     app (see lib/services/widget_service.dart), already formatted for their
+     notation. These strings are what the widget picker preview shows, and what
+     a freshly-added widget shows for the instant before the first update. -->
+<resources>
+    <string name="widget_quiz_name">Improvy · Question</string>
+    <string name="widget_quiz_description">A scale degree to answer, refreshed every hour. Tap to reveal it in the app.</string>
+    <string name="widget_quiz_label">TODAY\'S QUESTION</string>
+    <string name="widget_quiz_placeholder">♭3 of E♭</string>
+    <string name="widget_quiz_hint">Tap to reveal the answer</string>
+
+    <string name="widget_daily_name">Improvy · Daily Challenge</string>
+    <string name="widget_daily_description">The key of the day, your score and your streak.</string>
+    <string name="widget_daily_label">DAILY CHALLENGE</string>
+    <string name="widget_daily_placeholder">Key of B♭</string>
+    <string name="widget_daily_key">Key of %1$s</string>
+    <string name="widget_daily_sub_placeholder">10 questions · one attempt</string>
+    <string name="widget_daily_streak_placeholder">🔥 0</string>
+    <string name="widget_daily_done">Done</string>
+    <string name="widget_daily_done_sub">Next challenge tomorrow</string>
+</resources>

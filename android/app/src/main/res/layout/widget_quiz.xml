@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "The little question": a flashcard on the home screen. The answer is
+     deliberately withheld — the curiosity gap is what makes it a widget worth
+     keeping, and the tap that resolves it lands inside the app. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/quiz_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_bg"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/quiz_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/widget_quiz_label"
+        android:textColor="#FCD34D"
+        android:textSize="9sp"
+        android:letterSpacing="0.18"
+        android:maxLines="1"
+        android:fontFamily="@font/lexend_black" />
+
+    <!-- Pushes the question to the optical centre at every widget height. -->
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <TextView
+        android:id="@+id/quiz_question"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/widget_quiz_placeholder"
+        android:textColor="#FFFFFFFF"
+        android:textSize="24sp"
+        android:lineSpacingMultiplier="1.05"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:fontFamily="@font/lexend_black" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <TextView
+        android:id="@+id/quiz_hint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/widget_quiz_hint"
+        android:textColor="#73FFFFFF"
+        android:textSize="11sp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:fontFamily="@font/lexend_semibold" />
+</LinearLayout>

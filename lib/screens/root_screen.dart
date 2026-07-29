@@ -20,6 +20,8 @@ import '../constants/app_colors.dart';
 import '../services/purchase_service.dart';
 import '../services/analytics_service.dart';
 import '../services/review_service.dart';
+import '../services/widget_service.dart';
+import '../widgets/quiz_reveal_modal.dart';
 
 class RootScreen extends StatefulWidget {
   const RootScreen({super.key});
@@ -28,12 +30,16 @@ class RootScreen extends StatefulWidget {
   State<RootScreen> createState() => _RootScreenState();
 }
 
-class _RootScreenState extends State<RootScreen> {
+class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
   int _currentTab = 0;
   Map<String, dynamic>? _finishedSession;
   bool _showPaywall = false;
   TrainingMode? _pendingSetup; // which setup screen to show
   PocketConfig? _pocketConfig; // non-null while Pocket Mode is running
+
+  // Set when the home-screen Question widget is tapped: the question it was
+  // showing, its answer, and the key to offer training in.
+  Map<String, String>? _quizReveal;
 
   // Rainbow frame-glow flag: true for one 3s colour cycle after a PERFECT
   // session, driving the [_RainbowGlowOverlay] that haloes the screen edges.
@@ -69,6 +75,55 @@ class _RootScreenState extends State<RootScreen> {
     super.initState();
     _confettiCtrl = ConfettiController(duration: const Duration(seconds: 3));
     _perfectCtrl = ConfettiController(duration: const Duration(seconds: 3));
+    WidgetsBinding.instance.addObserver(this);
+    WidgetService.instance.pendingAction.addListener(_onWidgetAction);
+    // A tap that cold-started the app is already waiting when we get here.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _onWidgetAction());
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Coming back to the app is the moment its widgets are most likely stale
+    // (a day turned over, a challenge was played on another device…).
+    if (state == AppLifecycleState.resumed && _observedProvider != null) {
+      WidgetService.instance.sync(_observedProvider!);
+    }
+  }
+
+  /// Handles a tap on a home-screen widget.
+  ///
+  /// `improvy://quiz?s=<slot>` — the slot is absolute and the question is a
+  /// pure function of it, so the app rebuilds exactly what the widget was
+  /// showing without anything having to be stored or passed along.
+  /// `improvy://daily` — straight into today's challenge.
+  void _onWidgetAction() {
+    final uri = WidgetService.instance.pendingAction.value;
+    if (uri == null || !mounted) return;
+    WidgetService.instance.pendingAction.value = null;
+
+    final provider = Provider.of<AppProvider>(context, listen: false);
+    // Never interrupt a run in progress; the tap has served its purpose by
+    // opening the app.
+    if (provider.activeMode != null || _pocketConfig != null) return;
+
+    // Android delivers improvy://quiz as host='quiz'; be lenient about the
+    // shape rather than silently dropping a tap.
+    final action = uri.host.isNotEmpty ? uri.host : uri.path.replaceAll('/', '');
+    if (action == 'quiz') {
+      final slot = int.tryParse(uri.queryParameters['s'] ?? '');
+      if (slot == null) return;
+      AnalyticsService.instance.capture('widget_tapped', {'widget': 'quiz'});
+      setState(() =>
+          _quizReveal = WidgetService.instance.questionForSlot(slot, provider.notation));
+    } else if (action == 'daily') {
+      AnalyticsService.instance.capture('widget_tapped', {'widget': 'daily'});
+      if (provider.todayDailyResult == null) {
+        provider.startDailyChallenge();
+      } else {
+        // Already played: land on Home, where the card shows today's score.
+        _switchTab(0);
+      }
+    }
   }
 
   static const _tabNames = ['home', 'stats', 'settings'];
@@ -121,6 +176,8 @@ class _RootScreenState extends State<RootScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    WidgetService.instance.pendingAction.removeListener(_onWidgetAction);
     _observedProvider?.removeListener(_onProviderUpdate);
     _pageController.dispose();
     _confettiCtrl.dispose();
@@ -268,6 +325,10 @@ class _RootScreenState extends State<RootScreen> {
       AnalyticsService.instance.capture('perfect_session', {'mode': data['mode'], 'key': data['key']});
       _triggerPerfectCelebration();
     }
+
+    // The home-screen widgets show the streak and today's daily state — both
+    // may have just changed.
+    WidgetService.instance.sync(provider);
   }
 
   /// Fires the rainbow frame-glow + confetti burst. Shared by real perfect
@@ -402,6 +463,8 @@ class _RootScreenState extends State<RootScreen> {
                   setState(() { _finishedSession = null; _perfectGlow = false; });
                   provider.deselectKey();
                   provider.exitTrainer();
+                  // The Daily widget flips to "done" with today's score.
+                  WidgetService.instance.sync(provider);
                   // 10/10 on the daily is the other genuine peak in the app.
                   if (wasPerfect) ReviewService.instance.maybeAsk(trigger: 'daily_perfect');
                 },
@@ -554,6 +617,21 @@ class _RootScreenState extends State<RootScreen> {
             controller: _confettiCtrl,
             color: _confettiColor ?? Colors.white,
           ),
+          // Tapped the Question widget on the home screen — resolve it.
+          if (_quizReveal != null)
+            Positioned.fill(
+              child: QuizRevealModal(
+                question: _quizReveal!['q'] ?? '',
+                answer: _quizReveal!['a'] ?? '',
+                musicalKey: _quizReveal!['k'] ?? 'C',
+                onClose: () => setState(() => _quizReveal = null),
+                onTrainKey: () {
+                  final key = _quizReveal!['k'] ?? 'C';
+                  setState(() => _quizReveal = null);
+                  provider.selectKey(key);
+                },
+              ),
+            ),
           // Pre-permission priming — shown once after the first finished game.
           if (provider.showNotifPrompt)
             Positioned.fill(

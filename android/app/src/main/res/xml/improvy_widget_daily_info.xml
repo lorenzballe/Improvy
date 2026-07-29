@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Wider than the quiz widget by default (4×2): the headline it carries is a
+     sentence, not two symbols. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="250dp"
+    android:minHeight="110dp"
+    android:targetCellWidth="4"
+    android:targetCellHeight="2"
+    android:minResizeWidth="150dp"
+    android:minResizeHeight="70dp"
+    android:updatePeriodMillis="1800000"
+    android:initialLayout="@layout/widget_daily"
+    android:previewLayout="@layout/widget_daily"
+    android:previewImage="@mipmap/ic_launcher"
+    android:description="@string/widget_daily_description"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen" />

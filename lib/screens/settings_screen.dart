@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'dart:math' as math;
-import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, kDebugMode, kIsWeb, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -37,6 +38,107 @@ class SettingsScreen extends StatelessWidget {
       ),
     );
   }
+
+  /// Widgets are added from the OS home screen, not from inside an app — there
+  /// is no API to place one. All the app can do is say where the button is,
+  /// which is exactly what people look for after reading that widgets exist.
+  static void _showWidgetHelp(BuildContext context) {
+    final ios = defaultTargetPlatform == TargetPlatform.iOS;
+    final steps = ios
+        ? const [
+            'Touch and hold an empty spot on your home screen',
+            'Tap the + in the top corner',
+            'Search for Improvy and pick a widget',
+          ]
+        : const [
+            'Touch and hold an empty spot on your home screen',
+            'Tap Widgets',
+            'Find Improvy and drag a widget out',
+          ];
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black.withAlpha(160),
+      builder: (ctx) => Dialog(
+        backgroundColor: const Color(0xFF1A1625),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 32),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(26),
+          side: const BorderSide(color: Color(0x33FBBF24)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 26, 24, 14),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Center(
+                child: Text('TWO WIDGETS',
+                    style: TextStyle(
+                        fontSize: 10, fontWeight: FontWeight.w900,
+                        letterSpacing: 2, color: Color(0xFFFCD34D))),
+              ),
+              const SizedBox(height: 16),
+              _widgetBlurb('Question',
+                  'A scale degree waiting for an answer, a new one every hour. '
+                  'Tap it to reveal the answer.'),
+              const SizedBox(height: 10),
+              _widgetBlurb('Daily Challenge',
+                  'The key of the day, your score once you have played, and '
+                  'your streak.'),
+              const SizedBox(height: 20),
+              Text('HOW TO ADD ONE',
+                  style: TextStyle(
+                      fontSize: 10, fontWeight: FontWeight.w900,
+                      letterSpacing: 1.6, color: Colors.white.withAlpha(90))),
+              const SizedBox(height: 10),
+              for (var i = 0; i < steps.length; i++)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text('${i + 1}',
+                        style: const TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w900,
+                            color: Color(0xFFFBBF24))),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(steps[i],
+                          style: TextStyle(
+                              fontSize: 13, height: 1.4,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white.withAlpha(190))),
+                    ),
+                  ]),
+                ),
+              const SizedBox(height: 4),
+              Center(
+                child: TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: const Text('Got it',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w800, color: Color(0xFFFBBF24))),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  static Widget _widgetBlurb(String title, String body) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title,
+              style: const TextStyle(
+                  fontSize: 14, fontWeight: FontWeight.w800, color: Colors.white)),
+          const SizedBox(height: 2),
+          Text(body,
+              style: TextStyle(
+                  fontSize: 12, height: 1.45,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white.withAlpha(140))),
+        ],
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -528,6 +630,71 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
+
+              // HOME SCREEN — widgets can only be placed from the launcher, so
+              // this row explains rather than acts.
+              if (!kIsWeb) ...[
+                _sectionLabel('HOME SCREEN'),
+                const SizedBox(height: 12),
+                GestureDetector(
+                  onTap: () => _showWidgetHelp(context),
+                  child: _blurCard(
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 32, height: 32,
+                          decoration: BoxDecoration(
+                            color: const Color(0x3322D3EE),
+                            border: Border.all(color: const Color(0x3322D3EE)),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(Icons.widgets_rounded,
+                              color: Color(0xFF22D3EE), size: 16),
+                        ),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  'Widgets',
+                                  maxLines: 1,
+                                  softWrap: false,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                    letterSpacing: 0.4,
+                                  ),
+                                ),
+                              ),
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  'A question an hour, right on your home screen',
+                                  maxLines: 1,
+                                  softWrap: false,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF22D3EE),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(Icons.chevron_right_rounded, color: Colors.white.withAlpha(51)),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
 
               // SUPPORT
               _sectionLabel('SUPPORT'),

@@ -7,6 +7,7 @@ import 'services/storage_service.dart';
 import 'services/purchase_service.dart';
 import 'services/analytics_service.dart';
 import 'services/notification_service.dart';
+import 'services/widget_service.dart';
 import 'screens/root_screen.dart';
 
 void main() async {
@@ -37,6 +38,12 @@ void main() async {
   await PurchaseService.instance.init();
   await AnalyticsService.instance.init();
   AnalyticsService.instance.capture('app_open');
+
+  // Home-screen widgets: pick up the tap that launched us (if any), then push
+  // the current state out. Both are best-effort — a widget must never be able
+  // to hold up the app starting.
+  await WidgetService.instance.listenForTaps();
+  WidgetService.instance.sync(provider);
 
   runApp(
     ChangeNotifierProvider.value(

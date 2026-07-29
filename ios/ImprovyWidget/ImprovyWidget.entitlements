@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Must match WidgetService.iOSAppGroupId (Dart) and Improvy.appGroupId
+	     (Swift), and be enabled on the Runner target too — the app writes into
+	     this container and the widget reads from it. -->
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.com.improvy.app.widget</string>
+	</array>
+</dict>
+</plist>

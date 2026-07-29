@@ -73,6 +73,7 @@ SIX TRAINING MODES
 BUILT TO KEEP YOU TRAINING
 
 ✓ DAILY CHALLENGE — one key, 10 questions, one attempt: the same challenge for the whole world, every day. Keep the streak, share the grid.
+✓ HOME SCREEN WIDGETS — a scale degree waiting for an answer, a new one every hour, plus your daily challenge and streak at a glance
 ✓ 8 ANIMAL LEVELS — climb from 🐌 Snail to 🐆 Cheetah as your mastery grows
 ✓ ADAPTIVE DIFFICULTY — the challenge tightens as you get faster
 ✓ DEEP ANALYTICS — accuracy, response time and streaks for every key
@@ -381,6 +382,9 @@ App Data
 - [ ] `kAppStoreId` in `lib/constants/app_info.dart` filled with the Apple ID
       from App Store Connect → App Information (the "Rate Improvy" row in
       Settings stays hidden on iOS until it is)
+- [ ] iOS widget extension target added in Xcode — see
+      `ios/ImprovyWidget/SETUP.md` (Android widgets need nothing; they build
+      with the app)
 - [ ] All screenshots are correct dimensions
 - [ ] All screenshots have proper overlays/text
 - [ ] Description pasted (this file), keywords pasted
