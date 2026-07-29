@@ -69,7 +69,7 @@ class PurchaseService {
     }
   }
 
-  /// Localized price of the lifetime PRO product (e.g. "€16,99"), straight from
+  /// Localized price of the lifetime PRO product (e.g. "€19,99"), straight from
   /// the store via RevenueCat. Null until an offering with a package exists.
   Future<String?> proPriceString() async {
     final offerings = await getOfferings();

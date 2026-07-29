@@ -1,31 +1,11 @@
 # 🎵 Improvy Store Assets - iOS App Store & Google Play
 
-> ## ⚠ REWRITE NEEDED BEFORE SUBMITTING
->
-> The listing copy below still sells the original product — an interval
-> ear-trainer. The app that exists trains *mental* scale-degree recall across
-> 12 keys; it does not test your ear on intervals and does not teach perfect
-> pitch. Submitting as-is risks rejection under App Store Review 2.3
-> (accurate metadata) and refund claims. Each item below is checked against
-> the code.
->
-> | Where | Says | Actually |
-> |---|---|---|
-> | Subtitle | "Ear Training for Musicians" | not an ear trainer |
-> | Description title | "Master Ear Training & Music Intervals" | scale-degree recall |
-> | Opening line | "Perfect pitch is rare… teaches your ear to recognize musical intervals, scales, and chords" | no interval recognition, no pitch training |
-> | Modes | 3 modes, all framed as interval training | 6 modes: Diatonic, Chromatic, Custom, Note to Number, …Of What?, Pocket Mode (`lib/models/training_mode.dart`) |
-> | "12 ANIMAL LEVELS (Mouse → Octopus → Phoenix)" | 12 levels, those animals | 8 levels: Snail, Turtle, Penguin, Rabbit, Fox, Horse, Falcon, Cheetah (`lib/constants/levels.dart`) |
-> | "HOW IT WORKS" | "Listen to an interval (two notes played in sequence) → identify which interval" | not the interaction the app has |
-> | "Scientifically Grounded" | "proven to accelerate pitch recognition development (source: music theory research)" | unsourced efficacy claim — drop it or cite something real |
-> | Closing lines | "pitch-perfect ear", "Your ear training companion" | — |
-> | iOS + Android keywords | "ear training, perfect pitch, relative pitch, interval recognition" | none of these describe the app |
-> | Age-rating answer | "contains music → instrumental ear training" | the app uses TTS, not instrument samples — re-check the answer |
->
-> The site and the Terms already carry accurate wording to reuse:
-> *"a music-training application that helps you master where every scale degree
-> lives across all 12 keys — building the instant recall used for
-> improvisation, transposition, and composition."*
+> ✅ **This copy matches the shipped app.** Every claim below is checked against
+> the code: 6 modes (`lib/models/training_mode.dart`), 8 animal levels
+> Snail → Cheetah (`lib/constants/levels.dart`), spoken TTS prompts
+> (`lib/services/tts_service.dart`), no accounts / anonymous analytics
+> (`lib/services/analytics_service.dart`), lifetime one-time Pro at €19,99
+> (`lib/widgets/paywall_modal.dart`). If the app changes, change this file.
 
 ## App Store Metadata
 
@@ -35,9 +15,20 @@
 ✓ Ready
 
 ### Subtitle (iOS only)
-**Current**: Ear Training for Musicians  
-**Length**: 26 characters (max 30)  
+**Current**: Know Every Key by Heart  
+**Length**: 23 characters (max 30)  
 ✓ Ready
+
+### Promotional Text (iOS only, 170 chars, editable without review)
+```
+Train the map in your head: every scale degree, all 12 keys, instant recall. New: Pocket Mode — hands-free audio training with the screen off.
+```
+
+### Short Description (Google Play, 80 chars)
+```
+Instant scale-degree recall in all 12 keys. Think faster, improvise freer.
+```
+**Length**: 74 characters ✓
 
 ---
 
@@ -46,102 +37,100 @@
 ### Full Description (for store listing)
 
 ```
-🎵 IMPROVY — Master Ear Training & Music Intervals
+🎵 IMPROVY — Know Every Key by Heart
 
-Perfect pitch is rare, but relative pitch can be learned. Improvy teaches your ear to recognize musical intervals, scales, and chords in just minutes a day.
+Great improvisers don't calculate — they know. Improvy trains instant recall of scale degrees in all 12 major keys: what the ♭3 of E♭ is, which degree B is in the key of G, and where every note lives — without stopping to think.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-FEATURES
-
-✓ DIATONIC MODE
-Learn intervals within a single key. Perfect for beginners building foundational ear training skills in a familiar context.
-
-✓ CHROMATIC MODE
-Recognize intervals across all 12 semitones. For advancing musicians who want to develop absolute accuracy across the entire spectrum.
-
-✓ CUSTOM MODE
-Create your own interval set. Practice exactly what you need — perfect for targeting weak spots or preparing for specific musical challenges.
-
-✓ ADAPTIVE DIFFICULTY
-The app learns from your performance and adjusts challenge in real-time. Struggling? It makes intervals wider. Crushing it? It narrows the gaps.
-
-✓ STATISTICS & STREAKS
-Track your accuracy, response time, and daily streaks. See exactly where you're improving and where to focus.
-
-✓ 12 ANIMAL LEVELS
-Progress through iconic animals (Mouse → Octopus → Phoenix) as you climb 12 levels of mastery. Celebrate milestones with confetti and rewards.
-
-✓ BEAUTIFUL DESIGN
-Dark mode optimized for practice sessions. Smooth animations, haptic feedback, and notation support (C-D-E or Do-Re-Mi).
+That mental map is the foundation under improvisation, transposition, sight-reading and composition. Improvy builds it the way athletes build reflexes: short daily reps, measured speed, rising difficulty.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 HOW IT WORKS
 
-1. Listen to an interval (two notes played in sequence)
-2. Identify which interval it is (unison, minor 2nd, major 2nd, etc)
-3. Get instant feedback
-4. Build muscle memory and intuition over time
+1. Improvy asks: "the flat three of C"
+2. You answer on the note pad: E♭
+3. Instant feedback — right or wrong, and how fast
+4. Weak keys and degrees come back more often, until they're automatic
 
-For musicians at any level:
-• Beginners: Start with wide intervals and diatonic mode
-• Intermediate: Progress to chromatic and custom modes
-• Advanced: Chase perfect streaks and animal levels
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SIX TRAINING MODES
+
+✓ DIATONIC — the seven scale degrees of any major key. The foundation.
+
+✓ CHROMATIC — all twelve degrees, ♭2 through 7, across every key.
+
+✓ NOTE TO NUMBER — the reverse direction: see the note, name the degree.
+
+✓ …OF WHAT? — "E is the third of what key?" Reverse-engineer the key itself.
+
+✓ CUSTOM — pick exactly the keys and degrees you want to drill.
+
+✓ POCKET MODE — hands-free audio training. A voice asks, pauses, then speaks the answer. Keeps running with the screen locked: train while walking, commuting, warming up.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BUILT TO KEEP YOU TRAINING
+
+✓ 8 ANIMAL LEVELS — climb from 🐌 Snail to 🐆 Cheetah as your mastery grows
+✓ ADAPTIVE DIFFICULTY — the challenge tightens as you get faster
+✓ DEEP ANALYTICS — accuracy, response time and streaks for every key
+✓ DAILY STREAKS & REMINDERS — a few minutes a day is the whole method
+✓ YOUR NOTATION — C-D-E or Do-Re-Mi
+✓ WORKS OFFLINE — no connection needed to train
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 IMPROVY PRO
 
-Unlock unlimited sessions and advanced training modes with a one-time lifetime purchase. No ads, no subscriptions.
+Free to download and start training. One single purchase unlocks everything forever — Chromatic, Note to Number, Custom, …Of What? extensions, Adaptive Difficulty and Deep Analytics. No subscription. No recurring fees. No ads.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-✅ Privacy First
-Anonymous usage only. No account, no email, no personal data collected.
+PRIVACY FIRST
 
-✅ Offline Ready
-Download once, train anywhere.
-
-✅ Scientifically Grounded
-Interval ear training is proven to accelerate pitch recognition development (source: music theory research).
+No account. No sign-up. No personal data collected — only anonymous usage statistics to improve the app.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Start your ear training journey today. From casual musician to pitch-perfect ear — Improvy gets you there.
+For every musician tired of counting on their fingers: guitarists, pianists, horn players, singers, songwriters, students of jazz and theory.
 
-IMPROVY. Your ear training companion.
+Stop calculating. Start knowing.
+
+IMPROVY — Every key. Every degree. Instant.
 
 ---
 
 Support: thebalecompany@gmail.com
 Privacy: lorenzballe.github.io/Improvyapp/#privacy
+Terms: lorenzballe.github.io/Improvyapp/#terms
 ```
 
-**Character Count**: ~2,100 / 4,000 (App Store) or 4,000 (Google Play)  
+**Character Count**: ~2,400 / 4,000 (both stores)  
 ✓ Fits both platforms
 
 ---
 
 ## Keywords/Tags
 
+> Honest by design: no "ear training" / "perfect pitch" terms — the app doesn't
+> train the ear, and irrelevant keywords violate App Store Review 2.3.7.
+
 ### For iOS (100 characters max)
 ```
-ear training, music theory, intervals, pitch, relative pitch, training
+music theory,scale degrees,improvisation,jazz,transposition,solfege,piano,guitar,nashville numbers
 ```
-**Count**: 94 characters  
+**Count**: 98 characters (no spaces after commas — they waste the budget)  
 ✓ Ready
 
-### For Android (max 30 keywords)
+### For Android (keyword themes — Play indexes the listing text, not a keyword field)
 ```
-ear training, music theory, intervals, pitch recognition, 
-relative pitch, music training, interval training, 
-perfect pitch, music ear, pitch training, music ear training,
-scale training, interval recognition, music practice, 
-musicians, music learning, music education, 
-music ear development, audio training, sound training
+music theory trainer, scale degrees, all 12 keys, improvisation practice,
+transposition, jazz theory, nashville number system, solfege, do re mi,
+circle of fifths, music practice, music education, songwriting,
+key signatures, music student, guitar theory, piano theory
 ```
-✓ Ready
+✓ Woven into the description above
 
 ---
 
@@ -163,6 +152,19 @@ music ear development, audio training, sound training
 
 ---
 
+## Pricing
+
+| Item | Value |
+|------|-------|
+| Download | Free |
+| Improvy Pro (`improvy_pro_lifetime`) | **€19,99** one-time, non-consumable |
+
+> Set the price in App Store Connect (tier for €19,99) **and** Play Console.
+> The app reads the live localized price via RevenueCat; the hard-coded
+> `€19,99` in `paywall_modal.dart` is only the fallback while the store loads.
+
+---
+
 ## Screenshots (Required)
 
 ### iOS App Store
@@ -181,76 +183,67 @@ music ear development, audio training, sound training
 
 ### Screenshot Sequence (Same Order for Both)
 
-#### Screenshot 1: HOME SCREEN - "Your Daily Ear Training"
+#### Screenshot 1: HOME — "Your practice, at a glance"
 ```
-Focus: Hero content showing streak, animal level, stats
+Focus: streak, animal level, progress ring
 Text Overlay:
   "IMPROVY"
-  "Master your ear in minutes a day"
-  (Show: Current level icon, day streak counter, progress bar)
+  "Know every key by heart"
+  (Show: current animal level, day streak counter, progress)
 ```
 
-#### Screenshot 2: TRAINING SESSION - "Listen & Identify"
+#### Screenshot 2: TRAINER — "A few minutes a day"
 ```
-Focus: Active training interface
+Focus: a live question mid-session
 Text Overlay:
-  "Listen to intervals"
-  "Tap the answer"
-  (Show: Question counter 5/10, speaker icon, chromatic keyboard)
+  "♭3 of C?"
+  "Answer before it becomes thinking"
+  (Show: question, note pad, question counter)
 ```
 
-#### Screenshot 3: STATISTICS - "Track Your Progress"
+#### Screenshot 3: STATS — "Watch yourself get faster"
 ```
-Focus: Analytics dashboard
+Focus: analytics dashboard
 Text Overlay:
-  "See your growth"
-  "Accuracy, response time, streaks"
-  (Show: Accuracy chart, best streak, response time graph)
+  "Accuracy, speed, streaks"
+  "For every key"
+  (Show: accuracy chart, response time, per-key analytics)
 ```
 
-#### Screenshot 4: MODES - "Choose Your Challenge"
+#### Screenshot 4: MODES — "Six ways to drill it in"
 ```
-Focus: 3 training modes displayed
+Focus: mode selection
 Text Overlay:
   "Diatonic • Chromatic • Custom"
-  "Adapt to your level"
-  (Show: Mode selection cards with difficulty indicators)
+  "Note to Number • …Of What? • Pocket"
+  (Show: the mode cards)
 ```
 
-#### Screenshot 5: CUSTOMIZATION - "Train What You Need"
+#### Screenshot 5: POCKET MODE — "Train with the screen off"
 ```
-Focus: Custom mode configuration
+Focus: hands-free audio session
 Text Overlay:
-  "Build your own intervals"
-  "Practice your weaknesses"
-  (Show: Interval selection, difficulty slider, custom settings)
+  "A voice asks. You answer. It confirms."
+  "Walk, commute, warm up"
+  (Show: pocket mode running)
 ```
 
-#### Screenshot 6 (Optional): PAYWALL - "Go Unlimited"
+#### Screenshot 6: LEVELS — "Climb from Snail to Cheetah"
 ```
-Focus: PRO features
+Focus: the 8-animal progression
 Text Overlay:
-  "Unlock Improvy PRO"
-  "One-time lifetime purchase"
-  (Show: Feature list, price, purchase button)
+  "🐌 → 🐢 → 🐧 → 🐰 → 🦊 → 🐴 → 🦅 → 🐆"
+  "8 levels of mastery"
+  (Show: level-up moment or level list)
 ```
 
-#### Screenshot 7 (Optional): DARK MODE - "Practice Anytime"
+#### Screenshot 7 (Optional): PRO — "One purchase. Forever."
 ```
-Focus: Night mode beauty
+Focus: the paywall
 Text Overlay:
-  "Dark mode optimized"
-  "Train without eye strain"
-  (Show: Beautiful dark theme, animations)
-```
-
-#### Screenshot 8 (Optional): ANIMALS - "Level Up Through 12 Stages"
-```
-Focus: Animal progression system
-Text Overlay:
-  "Mouse to Phoenix"
-  "Master 12 levels"
-  (Show: Animal icons with progression indicators)
+  "No subscription"
+  "€19,99 once, yours for life"
+  (Show: the Pro membership card)
 ```
 
 ---
@@ -270,21 +263,22 @@ flutter drive --target=test_driver/app.dart --driver=test_driver/app_test.dart
 4. Crop to required dimensions in Preview/Photoshop
 5. Add text overlay in Figma/Canva (optional but recommended)
 
-### Option 3: Screenshot Mock Service
-- Use: Localazy, Screenshots.pro, or Firebase TestLab
-- Upload APK/IPA
-- Service generates automatically
+> The repo already has screenshot entrypoints: `lib/main_screenshot.dart`,
+> `main_pocket_screenshot.dart`, `main_ofwhat_screenshot.dart`,
+> `main_notif_screenshot.dart`.
 
 ---
 
 ## Category Selection
 
 ### iOS App Store
-- **Category**: Music
-- **Subcategory**: Music Lessons / Music Apps
+- **Primary**: Music
+- **Secondary**: Education
 
 ### Google Play
-- **Category**: Music & Audio
+- **Category**: Education (better discovery for trainers than Music & Audio,
+  which is dominated by players/streaming)
+- **Tags**: Music, Music theory
 - **Content Rating**: Everyone / PEGI 3
 
 ---
@@ -300,8 +294,9 @@ flutter drive --target=test_driver/app.dart --driver=test_driver/app_test.dart
 - Does your app allow social interaction? → NO
 - Does your app have social networking? → NO
 - Does your app contain user-generated content? → NO
-- Does your app contain music? → YES (instrumental ear training)
-- Does the music contain profanity? → NO
+- Does your app contain music? → NO (prompts are a spoken text-to-speech
+  voice; there are no songs or instrumental recordings)
+- Digital purchases? → YES (in-app purchase)
 
 **Rating Result**: 4+ (iOS) / 3+ (Android)
 
@@ -372,10 +367,10 @@ App Data
 
 ### Pre-Upload Checklist
 
+- [ ] Pro price set to €19,99 in App Store Connect AND Play Console
 - [ ] All screenshots are correct dimensions
 - [ ] All screenshots have proper overlays/text
-- [ ] Description is compelling and accurate
-- [ ] Keywords are relevant and populated
+- [ ] Description pasted (this file), keywords pasted
 - [ ] Privacy Policy link is accessible
 - [ ] Terms of Service link is accessible
 - [ ] Support email is monitored
@@ -406,10 +401,10 @@ App Data
 | Asset | iOS | Android | Status |
 |-------|-----|---------|--------|
 | App Name | 30 chars | 50 chars | ✓ Ready |
-| Subtitle | 30 chars | N/A | ✓ Ready |
-| Short Desc | 80 chars | 80 chars | ✓ Ready |
-| Full Desc | 4000 chars | 4000 chars | ✓ Ready |
-| Keywords | 100 chars | 30 items | ✓ Ready |
+| Subtitle | 23/30 chars | N/A | ✓ Ready |
+| Short Desc | N/A | 74/80 chars | ✓ Ready |
+| Full Desc | ~2,400/4,000 | ~2,400/4,000 | ✓ Ready |
+| Keywords | 98/100 chars | in description | ✓ Ready |
 | Screenshots | 5-8 × 1170×2532px | 4-8 × 1080×1920px | ⏳ Create |
 | Support URL | Required | Required | ✓ Ready |
 | Privacy URL | Required | Required | ✓ Ready |
@@ -420,15 +415,16 @@ App Data
 ## Next Steps
 
 1. Create screenshots (manual or automated)
-2. Upload to App Store Connect (iOS)
-3. Upload to Play Console (Android)
-4. Fill out compliance forms (privacy manifest, data safety)
-5. Submit for review
+2. Set the €19,99 price on both stores
+3. Upload to App Store Connect (iOS)
+4. Upload to Play Console (Android)
+5. Fill out compliance forms (privacy manifest, data safety)
+6. Submit for review
 
 **Timeline**: 2-3 hours for screenshot creation + form filling
 **Review Time**: 1-2 weeks per store
 
 ---
 
-**Last Updated**: July 8, 2026
-**Status**: Ready for implementation
+**Last Updated**: July 29, 2026
+**Status**: Copy ready — screenshots pending
