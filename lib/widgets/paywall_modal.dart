@@ -40,7 +40,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
   static const _gold = Color(0xFFFBBF24);
   static const _goldSoft = Color(0xFFFCD34D);
   static const _goldDeep = Color(0xFFF59E0B);
-  static const _fallbackPrice = '€16,99';
+  static const _fallbackPrice = '€19,99';
   String? _livePrice;
 
   @override
