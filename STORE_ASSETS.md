@@ -378,6 +378,9 @@ App Data
 ### Pre-Upload Checklist
 
 - [ ] Pro price set to €19,99 in App Store Connect AND Play Console
+- [ ] `kAppStoreId` in `lib/constants/app_info.dart` filled with the Apple ID
+      from App Store Connect → App Information (the "Rate Improvy" row in
+      Settings stays hidden on iOS until it is)
 - [ ] All screenshots are correct dimensions
 - [ ] All screenshots have proper overlays/text
 - [ ] Description pasted (this file), keywords pasted

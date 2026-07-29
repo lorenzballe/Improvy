@@ -19,6 +19,7 @@ import '../widgets/level_up_modal.dart';
 import '../constants/app_colors.dart';
 import '../services/purchase_service.dart';
 import '../services/analytics_service.dart';
+import '../services/review_service.dart';
 
 class RootScreen extends StatefulWidget {
   const RootScreen({super.key});
@@ -132,6 +133,21 @@ class _RootScreenState extends State<RootScreen> {
     setState(() => _showPaywall = true);
   }
 
+  /// Dismissing the level-up modal is the single best moment this app has to
+  /// ask for a rating: the user just climbed an animal, the confetti is still
+  /// falling. ReviewService decides whether it's actually allowed to ask.
+  void _closeLevelUp() {
+    setState(() => _levelUpLevel = null);
+    ReviewService.instance.maybeAsk(trigger: 'level_up');
+  }
+
+  /// Closing the paywall without buying is the emotional opposite — hold the
+  /// rating prompt back for a while after it.
+  void _closePaywall() {
+    ReviewService.instance.noteFrictionMoment();
+    setState(() => _showPaywall = false);
+  }
+
   void _showPurchaseError(PurchaseOutcome outcome) {
     final detail = PurchaseService.instance.lastPurchaseError;
     final (title, message) = switch (outcome) {
@@ -208,7 +224,7 @@ class _RootScreenState extends State<RootScreen> {
   // configuration intact underneath).
   Widget _paywallOverlay(AppProvider provider) => Positioned.fill(
     child: PaywallModal(
-      onClose: () => setState(() => _showPaywall = false),
+      onClose: _closePaywall,
       onPurchase: () async {
         final outcome = await PurchaseService.instance.purchasePro();
         if (!mounted) return;
@@ -216,6 +232,7 @@ class _RootScreenState extends State<RootScreen> {
           provider.setIsPro(true);
           setState(() => _showPaywall = false);
         } else if (outcome != PurchaseOutcome.cancelled) {
+          ReviewService.instance.noteFrictionMoment();
           // Keep the paywall open and tell the user what went wrong —
           // a silent dead button is the worst possible outcome.
           _showPurchaseError(outcome);
@@ -380,9 +397,13 @@ class _RootScreenState extends State<RootScreen> {
             children: [
               DailyResultsScreen(
                 onDone: () {
+                  // Read before exitTrainer — it clears the active challenge.
+                  final wasPerfect = provider.activeDailyResult?.perfect ?? false;
                   setState(() { _finishedSession = null; _perfectGlow = false; });
                   provider.deselectKey();
                   provider.exitTrainer();
+                  // 10/10 on the daily is the other genuine peak in the app.
+                  if (wasPerfect) ReviewService.instance.maybeAsk(trigger: 'daily_perfect');
                 },
               ),
               _RainbowGlowOverlay(visible: _perfectGlow),
@@ -392,7 +413,7 @@ class _RootScreenState extends State<RootScreen> {
                   child: LevelUpModal(
                     key: ValueKey(_levelUpLevel!.level),
                     animal: _levelUpLevel!,
-                    onClose: () => setState(() => _levelUpLevel = null),
+                    onClose: _closeLevelUp,
                   ),
                 ),
               _ConfettiOverlay(
@@ -432,7 +453,7 @@ class _RootScreenState extends State<RootScreen> {
                 child: LevelUpModal(
                   key: ValueKey(_levelUpLevel!.level),
                   animal: _levelUpLevel!,
-                  onClose: () => setState(() => _levelUpLevel = null),
+                  onClose: _closeLevelUp,
                 ),
               ),
             _ConfettiOverlay(
@@ -522,7 +543,7 @@ class _RootScreenState extends State<RootScreen> {
               child: LevelUpModal(
                 key: ValueKey(_levelUpLevel!.level),
                 animal: _levelUpLevel!,
-                onClose: () => setState(() => _levelUpLevel = null),
+                onClose: _closeLevelUp,
               ),
             ),
           // Perfect-session celebration also renders here so it can fire from the

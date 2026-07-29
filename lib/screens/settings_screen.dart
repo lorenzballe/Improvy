@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../providers/app_provider.dart';
 import '../constants/app_info.dart';
 import '../services/purchase_service.dart';
+import '../services/review_service.dart';
 import 'legal_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -531,6 +532,67 @@ class SettingsScreen extends StatelessWidget {
               // SUPPORT
               _sectionLabel('SUPPORT'),
               const SizedBox(height: 12),
+              // Hidden until the store listing is reachable (iOS needs
+              // kAppStoreId) — a row that goes nowhere is worse than no row.
+              if (ReviewService.instance.canOpenStoreListing) ...[
+                GestureDetector(
+                  onTap: () => ReviewService.instance.openStoreListing(),
+                  child: _blurCard(
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 32, height: 32,
+                          decoration: BoxDecoration(
+                            color: const Color(0x33FBBF24),
+                            border: Border.all(color: const Color(0x33FBBF24)),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(Icons.star_rounded, color: Color(0xFFFBBF24), size: 18),
+                        ),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  'Rate Improvy',
+                                  maxLines: 1,
+                                  softWrap: false,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                    letterSpacing: 0.4,
+                                  ),
+                                ),
+                              ),
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  'A rating is how other musicians find it',
+                                  maxLines: 1,
+                                  softWrap: false,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFFFBBF24),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(Icons.chevron_right_rounded, color: Colors.white.withAlpha(51)),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+              ],
               GestureDetector(
                 onTap: () => _contactSupport(context),
                 child: _blurCard(

@@ -7,6 +7,7 @@ import '../models/training_mode.dart';
 import '../services/storage_service.dart';
 import '../services/analytics_service.dart';
 import '../services/notification_service.dart';
+import '../services/review_service.dart';
 import '../constants/levels.dart';
 import '../constants/music_constants.dart';
 
@@ -806,6 +807,9 @@ class AppProvider extends ChangeNotifier {
     // the prompt — the next good one asks instead.
     final accuracy = newSession.total > 0 ? newSession.correct / newSession.total : 0.0;
     if (accuracy >= 0.7) _ensureNotifPermission();
+    // Feeds the "has seen enough of the app to have an opinion" gate; the
+    // rating prompt itself only fires at a peak (see ReviewService).
+    ReviewService.instance.recordSession();
     resyncNotifications();
     notifyListeners();
   }

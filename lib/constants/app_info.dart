@@ -14,3 +14,12 @@ const String kWebsiteUrl = 'https://lorenzballe.github.io/Improvyapp/';
 /// below — change one, change the other.
 const String kPrivacyPolicyUrl = '${kWebsiteUrl}#privacy';
 const String kTermsUrl = '${kWebsiteUrl}#terms';
+
+/// Apple's numeric ID for the app, from App Store Connect → App Information
+/// ("Apple ID", e.g. '6501234567'). Needed to open the store listing on iOS —
+/// Android finds itself from the package name.
+///
+/// **Fill this in once the app is created in App Store Connect.** While it is
+/// empty the "Rate Improvy" row simply hides itself on iOS rather than opening
+/// a broken page; nothing else depends on it.
+const String kAppStoreId = '';

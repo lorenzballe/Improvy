@@ -41,6 +41,9 @@ dependencies:
   url_launcher: ^6.3.1
   # Native share sheet for the Daily Challenge result (Wordle-style text grid).
   share_plus: ^10.1.0
+  # Native store-rating sheet, asked only at a peak moment — see
+  # lib/services/review_service.dart.
+  in_app_review: ^2.0.9
 
 dev_dependencies:
   flutter_test:
