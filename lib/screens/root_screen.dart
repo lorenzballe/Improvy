@@ -10,6 +10,7 @@ import 'stats_screen.dart';
 import 'settings_screen.dart';
 import 'trainer_screen.dart';
 import 'session_summary_screen.dart';
+import 'daily_results_screen.dart';
 import 'onboarding_screen.dart';
 import 'setup_screen.dart';
 import 'pocket_mode_screen.dart';
@@ -372,6 +373,35 @@ class _RootScreenState extends State<RootScreen> {
 
     if (provider.activeMode != null) {
       if (_finishedSession != null) {
+        // Daily Challenge gets its own stage — score, streak calendar, share.
+        // No retry: one attempt per day is the whole point.
+        if (provider.dailyChallengeActive) {
+          return Stack(
+            children: [
+              DailyResultsScreen(
+                onDone: () {
+                  setState(() { _finishedSession = null; _perfectGlow = false; });
+                  provider.deselectKey();
+                  provider.exitTrainer();
+                },
+              ),
+              _RainbowGlowOverlay(visible: _perfectGlow),
+              _PerfectRainOverlay(controller: _perfectCtrl),
+              if (_levelUpLevel != null)
+                Positioned.fill(
+                  child: LevelUpModal(
+                    key: ValueKey(_levelUpLevel!.level),
+                    animal: _levelUpLevel!,
+                    onClose: () => setState(() => _levelUpLevel = null),
+                  ),
+                ),
+              _ConfettiOverlay(
+                controller: _confettiCtrl,
+                color: _levelUpLevel?.color ?? Colors.white,
+              ),
+            ],
+          );
+        }
         return Stack(
           children: [
             SessionSummaryScreen(
@@ -417,20 +447,28 @@ class _RootScreenState extends State<RootScreen> {
         mode: provider.activeMode!,
         selectedKey: provider.selectedKey ?? 'C',
         fixedNote: provider.fixedNote,
-        difficulty: provider.activeMode == TrainingMode.diatonic
-            ? provider.diatonicDifficulty
-            : (provider.customDifficulty ?? provider.chromaticDifficulty),
+        // The daily runs at fixed difficulty 1 — identical conditions for
+        // everyone is what makes the shared score comparable.
+        difficulty: provider.dailyChallengeActive
+            ? 1
+            : provider.activeMode == TrainingMode.diatonic
+                ? provider.diatonicDifficulty
+                : (provider.customDifficulty ?? provider.chromaticDifficulty),
         numberOfQuestions: provider.customQuestions,
         customDegrees: provider.customDegrees,
         isReverse: provider.isReverse,
-        adaptiveDifficulty: provider.adaptiveDifficulty,
+        adaptiveDifficulty: provider.dailyChallengeActive ? false : provider.adaptiveDifficulty,
         sessionHistory: provider.stats.sessionHistory,
         notation: provider.notation,
         keyboardFromTonic: provider.keyboardFromTonic,
+        questionSequence: provider.dailyChallengeActive ? provider.activeDailyDegrees : null,
+        isDaily: provider.dailyChallengeActive,
         onExit: () {
           final mode = provider.activeMode;
           final isSpecial = mode == TrainingMode.noteToNumber || mode == TrainingMode.custom || mode == TrainingMode.ofWhat;
-          if (isSpecial) provider.deselectKey();
+          // The daily borrowed selectedKey for its run — release it, or the
+          // home tab would come back showing that key's detail screen.
+          if (isSpecial || provider.dailyChallengeActive) provider.deselectKey();
           provider.exitTrainer();
         },
         onAnswer: (isCorrect, rt, details) {
@@ -459,7 +497,11 @@ class _RootScreenState extends State<RootScreen> {
               if (i != _currentTab) { setState(() => _currentTab = i); _trackTab(i); }
             },
             children: [
-              _KeepAlivePage(child: HomeScreen(onShowPaywall: _showPaywallSheet, onOpenSetup: _openSetup)),
+              _KeepAlivePage(child: HomeScreen(
+                onShowPaywall: _showPaywallSheet,
+                onOpenSetup: _openSetup,
+                onStartDaily: provider.startDailyChallenge,
+              )),
               _KeepAlivePage(child: StatsScreen(onShowPaywall: _showPaywallSheet)),
               _KeepAlivePage(child: SettingsScreen(onShowPaywall: _showPaywallSheet, onSimulatePerfect: _triggerPerfectCelebration)),
             ],

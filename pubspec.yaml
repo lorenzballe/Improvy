@@ -2,7 +2,7 @@
 description: "Improvy - Music Interval Trainer"
 publish_to: 'none'
 
-version: 1.0.20+26
+version: 1.1.0+27
 
 environment:
   sdk: ^3.12.0
@@ -39,6 +39,8 @@ dependencies:
   audioplayers: ^6.1.0
   # Opens the user's mail app from Contact Support (see constants/app_info.dart).
   url_launcher: ^6.3.1
+  # Native share sheet for the Daily Challenge result (Wordle-style text grid).
+  share_plus: ^10.1.0
 
 dev_dependencies:
   flutter_test:

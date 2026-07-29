@@ -8,14 +8,21 @@ import '../models/key_progress.dart';
 import '../constants/app_colors.dart';
 import '../constants/levels.dart';
 import '../services/haptics_service.dart';
+import '../widgets/daily_challenge_card.dart';
 import '../widgets/note_text.dart';
 import '../widgets/animal_icon.dart';
 
 class HomeScreen extends StatelessWidget {
   final void Function([String? reason]) onShowPaywall;
   final void Function(TrainingMode mode) onOpenSetup;
+  final VoidCallback onStartDaily;
 
-  const HomeScreen({super.key, required this.onShowPaywall, required this.onOpenSetup});
+  const HomeScreen({
+    super.key,
+    required this.onShowPaywall,
+    required this.onOpenSetup,
+    required this.onStartDaily,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +40,7 @@ class HomeScreen extends StatelessWidget {
           return SlideTransition(position: slideAnim, child: FadeTransition(opacity: anim, child: child));
         },
         child: provider.selectedKey == null
-            ? _HomeMain(key: const ValueKey('main'), onShowPaywall: onShowPaywall, onOpenSetup: onOpenSetup)
+            ? _HomeMain(key: const ValueKey('main'), onShowPaywall: onShowPaywall, onOpenSetup: onOpenSetup, onStartDaily: onStartDaily)
             : _KeyDetail(key: const ValueKey('detail'), onShowPaywall: onShowPaywall, onOpenSetup: onOpenSetup),
       ),
     );
@@ -45,7 +52,8 @@ class HomeScreen extends StatelessWidget {
 class _HomeMain extends StatelessWidget {
   final void Function([String? reason]) onShowPaywall;
   final void Function(TrainingMode mode) onOpenSetup;
-  const _HomeMain({super.key, required this.onShowPaywall, required this.onOpenSetup});
+  final VoidCallback onStartDaily;
+  const _HomeMain({super.key, required this.onShowPaywall, required this.onOpenSetup, required this.onStartDaily});
 
   @override
   Widget build(BuildContext context) {
@@ -120,8 +128,14 @@ class _HomeMain extends StatelessWidget {
 
             // ── Progress card ──
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
               child: RepaintBoundary(child: _ProgressCard(animalLevel: animalLevel, totalProgress: totalProgress)),
+            ),
+
+            // ── Daily Challenge ── (today's appointment — right under the hero)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
+              child: RepaintBoundary(child: DailyChallengeCard(onStart: onStartDaily)),
             ),
 
             // ── All Keys Mastery ──

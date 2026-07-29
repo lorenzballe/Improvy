@@ -1,10 +1,13 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../models/daily_challenge.dart';
 import '../models/key_progress.dart';
 import '../models/stats.dart';
 
 class StorageService {
   static const _progressKey = 'musical_journey_progress';
+  static const _dailyResultsKey = 'daily_challenge_results';
+  static const _dailyStartedKey = 'daily_challenge_started_date';
   static const _statsKey = 'musical_journey_stats';
   static const _lastSessionKey = 'musical_journey_last_session';
   static const _adaptiveDiffKey = 'musical_journey_adaptive_difficulty';
@@ -107,6 +110,32 @@ class StorageService {
     await _prefs.remove(_lastSessionKey);
   }
 
+  // Daily Challenge — one result per date key, kept forever (a year of play is
+  // a few tens of KB; the calendar and the streak both read from it).
+  Map<String, DailyResult> loadDailyResults() {
+    final raw = _prefs.getString(_dailyResultsKey);
+    if (raw == null) return {};
+    try {
+      final map = jsonDecode(raw) as Map<String, dynamic>;
+      return map.map((k, v) => MapEntry(k, DailyResult.fromJson(v as Map<String, dynamic>)));
+    } catch (_) {
+      return {};
+    }
+  }
+
+  Future<void> saveDailyResults(Map<String, DailyResult> results) async {
+    await _prefs.setString(
+        _dailyResultsKey, jsonEncode(results.map((k, v) => MapEntry(k, v.toJson()))));
+  }
+
+  // Set the moment a daily run starts, cleared when its result lands. If the
+  // app is killed mid-run, launch finds it and burns the attempt from the
+  // pending answers — force-quitting must not grant a second try.
+  String? loadDailyAttemptStarted() => _prefs.getString(_dailyStartedKey);
+  Future<void> saveDailyAttemptStarted(String dateKey) =>
+      _prefs.setString(_dailyStartedKey, dateKey);
+  Future<void> removeDailyAttemptStarted() => _prefs.remove(_dailyStartedKey);
+
   // Settings
   bool loadAdaptiveDifficulty() => _prefs.getBool(_adaptiveDiffKey) ?? false;
   Future<void> saveAdaptiveDifficulty(bool v) => _prefs.setBool(_adaptiveDiffKey, v);
@@ -148,5 +177,7 @@ class StorageService {
     await _prefs.remove(_adaptiveDiffKey);
     await _prefs.remove(_tutorialKey);
     await _prefs.remove(_pendingKey);
+    await _prefs.remove(_dailyResultsKey);
+    await _prefs.remove(_dailyStartedKey);
   }
 }

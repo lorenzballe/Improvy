@@ -21,7 +21,7 @@
 
 ### Promotional Text (iOS only, 170 chars, editable without review)
 ```
-Train the map in your head: every scale degree, all 12 keys, instant recall. New: Pocket Mode — hands-free audio training with the screen off.
+New: the Daily Challenge — one key, 10 questions, one attempt, the same for everyone in the world. Keep your streak alive and share your grid.
 ```
 
 ### Short Description (Google Play, 80 chars)
@@ -72,6 +72,7 @@ SIX TRAINING MODES
 
 BUILT TO KEEP YOU TRAINING
 
+✓ DAILY CHALLENGE — one key, 10 questions, one attempt: the same challenge for the whole world, every day. Keep the streak, share the grid.
 ✓ 8 ANIMAL LEVELS — climb from 🐌 Snail to 🐆 Cheetah as your mastery grows
 ✓ ADAPTIVE DIFFICULTY — the challenge tightens as you get faster
 ✓ DEEP ANALYTICS — accuracy, response time and streaks for every key
@@ -228,7 +229,16 @@ Text Overlay:
   (Show: pocket mode running)
 ```
 
-#### Screenshot 6: LEVELS — "Climb from Snail to Cheetah"
+#### Screenshot 6: DAILY CHALLENGE — "Everyone plays the same one"
+```
+Focus: the daily results screen (score, grid, streak calendar)
+Text Overlay:
+  "One key. 10 questions. One attempt."
+  "Keep the streak. Share the grid."
+  (Show: result screen with a strong score and a lit calendar)
+```
+
+#### Screenshot 7: LEVELS — "Climb from Snail to Cheetah"
 ```
 Focus: the 8-animal progression
 Text Overlay:
@@ -237,7 +247,7 @@ Text Overlay:
   (Show: level-up moment or level list)
 ```
 
-#### Screenshot 7 (Optional): PRO — "One purchase. Forever."
+#### Screenshot 8 (Optional): PRO — "One purchase. Forever."
 ```
 Focus: the paywall
 Text Overlay:
@@ -375,7 +385,7 @@ App Data
 - [ ] Terms of Service link is accessible
 - [ ] Support email is monitored
 - [ ] App icon (1024x1024) is uploaded
-- [ ] Version number bumped (1.0.19)
+- [ ] Version number bumped (1.1.0)
 - [ ] Build is signed with production certificates
 
 ### iOS Specific

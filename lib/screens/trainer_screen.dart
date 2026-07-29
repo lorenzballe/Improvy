@@ -23,6 +23,10 @@ class TrainerScreen extends StatefulWidget {
   final List<dynamic> sessionHistory;
   final String notation;
   final bool keyboardFromTonic;
+  // Daily Challenge: a predetermined degree sequence (question i asks
+  // sequence[i] — no randomness, no adaptive picking) and tailored exit copy.
+  final List<String>? questionSequence;
+  final bool isDaily;
   final VoidCallback onExit;
   final void Function(bool isCorrect, int responseTime, AnswerRecord details) onAnswer;
   final void Function(Map<String, dynamic> data) onFinish;
@@ -40,6 +44,8 @@ class TrainerScreen extends StatefulWidget {
     required this.sessionHistory,
     required this.notation,
     this.keyboardFromTonic = false,
+    this.questionSequence,
+    this.isDaily = false,
     required this.onExit,
     required this.onAnswer,
     required this.onFinish,
@@ -184,6 +190,12 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
     final currentDeg = _actualIsReverse ? _correctAnswer : _fullDegree;
     String next;
 
+    // Daily Challenge: the sequence is scripted by the date — everyone in the
+    // world answers the same question i. Randomness would break comparability.
+    if (widget.questionSequence != null && widget.questionSequence!.isNotEmpty) {
+      final seq = widget.questionSequence!;
+      next = seq[_attempts < seq.length ? _attempts : seq.length - 1];
+    } else
     // Adaptive picking kicks in as soon as there is enough recorded data for
     // this key+mode (see _pickAdaptiveDegree) — a returning player gets a
     // personalised question 1, not five warm-up randoms every session.
@@ -474,7 +486,11 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
               const Text('End this session?',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white)),
               const SizedBox(height: 8),
-              Text('You are $_attempts/$_questionsPerKey in — the run ends here if you leave.',
+              Text(
+                  widget.isDaily
+                      ? 'One attempt per day — if you leave now, '
+                          '$_attempts/$_questionsPerKey is your score until tomorrow.'
+                      : 'You are $_attempts/$_questionsPerKey in — the run ends here if you leave.',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 13, height: 1.5, color: Colors.white.withAlpha(150))),
               const SizedBox(height: 20),

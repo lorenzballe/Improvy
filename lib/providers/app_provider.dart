@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/foundation.dart';
+import '../models/daily_challenge.dart';
 import '../models/key_progress.dart';
 import '../models/stats.dart';
 import '../models/training_mode.dart';
@@ -57,9 +58,19 @@ class AppProvider extends ChangeNotifier {
   // degree rotates and the root is the answer).
   String? fixedNote;
 
+  // ── Daily Challenge state ──────────────────────────────────────────────────
+  // One attempt per local date; results keyed like dailyHistory (YYYY-MM-DD).
+  Map<String, DailyResult> dailyResults = {};
+  bool dailyChallengeActive = false;
+  // Captured at start so a run that crosses midnight is still recorded under
+  // the day (and the questions) it was started with.
+  DailyChallenge? _activeDailyChallenge;
+  DailyChallenge? _cachedChallenge;
+
   Future<void> init() async {
     progressData = _storage.loadProgress();
     stats = _storage.loadStats();
+    dailyResults = _storage.loadDailyResults();
     isPro = _storage.loadIsPro();
     adaptiveDifficulty = _storage.loadAdaptiveDifficulty();
     tutorialCompleted = _storage.loadTutorialCompleted();
@@ -137,6 +148,11 @@ class AppProvider extends ChangeNotifier {
 
     final weak = _weakSpotMessage();
     if (weak != null) msgs.add(('Target practice 🎯', weak));
+
+    if (!dailyResults.containsKey(_dateKey(DateTime.now()))) {
+      msgs.add(('Daily Challenge 🏆',
+          "Today's challenge is in ${todayChallenge.key} major — one attempt, make it count."));
+    }
 
     for (var i = 0; i < 5; i++) {
       final key = kKeys[rng.nextInt(kKeys.length)];
@@ -234,6 +250,7 @@ class AppProvider extends ChangeNotifier {
   // finalised with the same rule as a manual abandon.
   void _recoverPendingSession() {
     final p = _storage.loadPending();
+    _recoverDailyAttempt(p);
     if (p == null) return;
     final answers = (p['currentSessionAnswers'] as List?)
             ?.map((a) => AnswerRecord.fromJson(a as Map<String, dynamic>))
@@ -325,6 +342,148 @@ class AppProvider extends ChangeNotifier {
   }
 
   String _dateKey(DateTime d) => '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+  // ── Daily Challenge ────────────────────────────────────────────────────────
+
+  DailyChallenge get todayChallenge {
+    final key = _dateKey(DateTime.now());
+    if (_cachedChallenge?.dateKey != key) {
+      _cachedChallenge = DailyChallenge.forDate(DateTime.now());
+    }
+    return _cachedChallenge!;
+  }
+
+  /// The degree sequence of the run in progress (or of today, before a start).
+  List<String> get activeDailyDegrees => (_activeDailyChallenge ?? todayChallenge).degrees;
+
+  DailyResult? get todayDailyResult => dailyResults[_dateKey(DateTime.now())];
+
+  /// The result of the run just played — survives a run that crossed midnight,
+  /// where [todayDailyResult] would already be looking at the next day.
+  DailyResult? get activeDailyResult =>
+      dailyResults[(_activeDailyChallenge ?? todayChallenge).dateKey];
+
+  /// Consecutive days with a played challenge. Today still counts as "alive"
+  /// while unplayed (the streak breaks at midnight, not at breakfast).
+  int get dailyStreak {
+    var check = DateTime.now();
+    if (!dailyResults.containsKey(_dateKey(check))) {
+      check = check.subtract(const Duration(days: 1));
+    }
+    var count = 0;
+    while (dailyResults.containsKey(_dateKey(check))) {
+      count++;
+      check = check.subtract(const Duration(days: 1));
+    }
+    return count;
+  }
+
+  /// Enters today's challenge: a 10-question diatonic run in the key of the
+  /// day, fixed difficulty 1 (6s clock — same conditions for everyone; speed
+  /// still separates the fast from the sure). No-op if today was played.
+  void startDailyChallenge() {
+    final c = todayChallenge;
+    if (dailyResults.containsKey(c.dateKey)) return;
+    _activeDailyChallenge = c;
+    dailyChallengeActive = true;
+    selectedKey = c.key;
+    diatonicDifficulty = 1; // harmless: selectKey() recomputes it per key
+    customQuestions = c.degrees.length;
+    activeMode = TrainingMode.diatonic;
+    // Survives an OS kill — launch turns it into a burned attempt (see
+    // _recoverDailyAttempt), so force-quitting is never a free retry.
+    _storage.saveDailyAttemptStarted(c.dateKey);
+    AnalyticsService.instance.capture('daily_challenge_started', {
+      'key': c.key,
+      'streak': dailyStreak,
+    });
+    notifyListeners();
+  }
+
+  /// App killed mid-daily: the start flag survived, the answers live in the
+  /// pending snapshot. Burn the attempt with what was answered — force-quitting
+  /// must not be a free retry. (Killed before the first answer? No snapshot
+  /// exists, so — like an in-app quit at question zero — the attempt survives.)
+  void _recoverDailyAttempt(Map<String, dynamic>? p) {
+    final started = _storage.loadDailyAttemptStarted();
+    if (started == null) return;
+    _storage.removeDailyAttemptStarted();
+    if (dailyResults.containsKey(started)) return;
+    final answersRaw = (p?['currentSessionAnswers'] as List?) ?? const [];
+    if (answersRaw.isEmpty) return;
+    DateTime d;
+    try {
+      d = DateTime.parse(started);
+    } catch (_) {
+      return;
+    }
+    final c = DailyChallenge.forDate(d);
+    final relevant = answersRaw
+        .map((a) => AnswerRecord.fromJson(a as Map<String, dynamic>))
+        .where((a) => a.mode == TrainingMode.diatonic.storageKey && a.tonality == c.key)
+        .toList();
+    if (relevant.isEmpty) return;
+    final flags = [for (final a in relevant) a.isCorrect];
+    final timeMs = relevant.fold<int>(0, (s, a) => s + a.responseTime);
+    final completed = flags.length >= c.degrees.length;
+    while (flags.length < c.degrees.length) {
+      flags.add(false);
+    }
+    dailyResults = {
+      ...dailyResults,
+      started: DailyResult(
+        dateKey: started,
+        key: c.key,
+        answers: flags,
+        timeMs: timeMs,
+        completed: completed,
+        timestamp: DateTime.now().millisecondsSinceEpoch,
+      ),
+    };
+    _storage.saveDailyResults(dailyResults);
+    AnalyticsService.instance.capture('daily_challenge_finished', {
+      'correct': relevant.where((a) => a.isCorrect).length,
+      'total': c.degrees.length,
+      'completed': completed,
+      'recovered': true,
+    });
+  }
+
+  /// Freezes the run into today's (single) result. Called from finishSession
+  /// (completed run) and exitTrainer (abandoned run) — the first call wins,
+  /// and a run with zero answers doesn't burn the attempt.
+  void _recordDailyResult() {
+    if (!dailyChallengeActive) return;
+    final c = _activeDailyChallenge ?? todayChallenge;
+    if (dailyResults.containsKey(c.dateKey)) return;
+    final answers = stats.currentSessionAnswers;
+    if (answers.isEmpty) return;
+    final flags = [for (final a in answers) a.isCorrect];
+    final timeMs = answers.fold<int>(0, (s, a) => s + a.responseTime);
+    final completed = flags.length >= c.degrees.length;
+    while (flags.length < c.degrees.length) {
+      flags.add(false); // unanswered questions are misses — the grid stays 10 wide
+    }
+    dailyResults = {
+      ...dailyResults,
+      c.dateKey: DailyResult(
+        dateKey: c.dateKey,
+        key: c.key,
+        answers: flags,
+        timeMs: timeMs,
+        completed: completed,
+        timestamp: DateTime.now().millisecondsSinceEpoch,
+      ),
+    };
+    _storage.saveDailyResults(dailyResults);
+    _storage.removeDailyAttemptStarted();
+    AnalyticsService.instance.capture('daily_challenge_finished', {
+      'correct': flags.where((f) => f).length,
+      'total': c.degrees.length,
+      'completed': completed,
+      'streak': dailyStreak,
+    });
+  }
 
   // Actions
   void deselectKey() {
@@ -476,6 +635,14 @@ class AppProvider extends ChangeNotifier {
   }
 
   void exitTrainer() {
+    // Order matters: the daily result reads currentSessionAnswers, which the
+    // flush below clears. Recording twice is impossible (first call wins).
+    _recordDailyResult();
+    // A zero-answer daily exit leaves no result — the attempt survives, so
+    // the kill-recovery flag must not linger and burn it on next launch.
+    if (dailyChallengeActive) _storage.removeDailyAttemptStarted();
+    dailyChallengeActive = false;
+    _activeDailyChallenge = null;
     _flushCurrentSession();
     activeMode = null;
     customDegrees = null;
@@ -599,6 +766,9 @@ class AppProvider extends ChangeNotifier {
   }
 
   void finishSession() {
+    // A finished daily run freezes its result now, while the session answers
+    // are still in place (they're cleared a few lines down).
+    _recordDailyResult();
     final today = _dateKey(DateTime.now());
     final todayStats = stats.dailyHistory[today] ?? DayStats();
     final newDailyHistory = Map<String, DayStats>.from(stats.dailyHistory);
@@ -697,6 +867,9 @@ class AppProvider extends ChangeNotifier {
     _storage.resetAll();
     progressData = _storage.loadProgress();
     stats = AppStats();
+    dailyResults = {};
+    dailyChallengeActive = false;
+    _activeDailyChallenge = null;
     lastSession = null;
     adaptiveDifficulty = false;
     tutorialCompleted = false;
