@@ -58,7 +58,7 @@ SIX TRAINING MODES
 
 ✓ DIATONIC — the seven scale degrees of any major key. The foundation.
 
-✓ CHROMATIC — all twelve degrees, ♭2 through 7, across every key.
+✓ CHROMATIC — all twelve degrees across every key, asked by every name they go by: ♭2 or ♭9, ♯4 or ♯11, ♭6 or ♭13 — the names real charts print.
 
 ✓ NOTE TO NUMBER — the reverse direction: see the note, name the degree.
 

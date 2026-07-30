@@ -18,6 +18,19 @@ const List<String> kChromaticDegreesSplit = [
   '1', '♭2', '2', '♯2', '♭3', '3', '4', '♯4', '♭5', '5', '♯5', '♭6', '6', '♭7', '7'
 ];
 
+// The upper-structure name for the chromatic degrees that have one: the same
+// note an octave up (2↔9, 4↔11, 6↔13, plus the altered ♭9/♯9/♯11/♭13), and the
+// name a chart actually prints — A♭9, E7♯11, C7♭13. The trainer asks a degree
+// by either of its names at random so both become instant, while the answer
+// note is always computed from the base degree and is identical either way.
+//
+// Degrees with no extension name in practice (1, 3, 5, ♭7, 7 — nobody calls a
+// third a tenth) are simply absent. Used by the tap trainer and Pocket Mode.
+const Map<String, String> kChromaticExtensionOf = {
+  '♭2': '♭9', '2': '9', '♭3/♯2': '♯9',
+  '4': '11', '♯4/♭5': '♯11', '♭6/♯5': '♭13', '6': '13',
+};
+
 // Slash degree → its two split spellings (sharp-of-lower first, then flat-of-higher).
 const Map<String, List<String>> kDegreeSplitMap = {
   '♭3/♯2': ['♯2', '♭3'],

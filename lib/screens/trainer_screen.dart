@@ -228,10 +228,10 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
         final idx = int.tryParse(next);
         _correctAnswer = idx != null && idx >= 1 && idx <= 7 ? _scale[idx - 1] : _scale[0];
       } else {
-        // Chromatic forward: the QUESTION asks a single spelling — never the
-        // "♭3/♯2" slash form. The two enharmonic spellings split the degree's
-        // probability; the enharmonic note button still shows both names.
-        _degreeLabel = _singleSpelling(next);
+        // Chromatic forward: the QUESTION asks by ONE of the degree's names —
+        // never the "♭3/♯2" slash form. Each enharmonic spelling and each
+        // upper-structure name (9, ♯11, ♭13…) splits the probability.
+        _degreeLabel = _askedName(next);
         _correctAnswer = getNoteFromChromaticDegree(next, _scale, _currentKey);
       }
     });
@@ -240,12 +240,17 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
     _startTimers();
   }
 
-  // Pick one enharmonic spelling (e.g. '♭3/♯2' → '♭3' or '♯2') so the asked
-  // degree never shows a slash; 50/50 between the two spellings.
-  String _singleSpelling(String deg) {
-    if (!deg.contains('/')) return deg;
-    final parts = deg.split('/');
-    return parts[Random().nextInt(parts.length)];
+  // Pick the name to ASK a chromatic degree by, so the question never shows a
+  // slash. Two kinds of alias are in play, and both are the same note:
+  //   • enharmonic spellings — '♭3/♯2' asks as ♭3 or ♯2;
+  //   • upper-structure names — 2 also asks as 9, ♯4 as ♯11, ♭6 as ♭13…
+  //     the names a chart actually prints (A♭9, E7♯11, C7♭13).
+  // Every name gets an equal share, so recall is trained for all of them.
+  // Pocket Mode does the same with its voice (kChromaticExtensionOf).
+  String _askedName(String deg) {
+    final ext = kChromaticExtensionOf[deg];
+    final names = [...deg.split('/'), if (ext != null) ext];
+    return names.length == 1 ? names.first : names[Random().nextInt(names.length)];
   }
 
   // Leftmost white-key semitone for the in-game keyboard. With the

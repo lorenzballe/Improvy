@@ -97,15 +97,6 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
     '9': 'nine', '11': 'eleven', '13': 'thirteen',
   };
 
-  // A degree and the upper-structure extension that names the SAME note an
-  // octave up (2↔9, 4↔11, 6↔13, plus the altered ♭9/♯9/♯11/♭13). In-game the
-  // voice asks either name at random, so both must feel familiar; the answer
-  // note is identical either way, so it's always computed from the base degree.
-  static const _extensionOf = {
-    '♭2': '♭9', '2': '9', '♭3/♯2': '♯9',
-    '4': '11', '♯4/♭5': '♯11', '♭6/♯5': '♭13', '6': '13',
-  };
-
   // Notes are named in the app's chosen notation (C D E… or Do Re Mi…) for
   // both the voice and the screen, then accidentals become spoken words.
   String _spokenNote(String n) => formatNoteForDisplay(n, widget.notation)
@@ -188,7 +179,7 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
       final degree = _pickDegree();
       // For degrees with an octave-up name (6/13, 2/9, …) the voice asks either
       // form at random; the answer note is the same, computed from the base.
-      final ext = _extensionOf[degree];
+      final ext = kChromaticExtensionOf[degree];
       final presented = (ext != null && _rng.nextBool()) ? ext : degree;
       final scale = calculateMajorScale(key);
       final answer = getNoteFromChromaticDegree(degree, scale, key);
