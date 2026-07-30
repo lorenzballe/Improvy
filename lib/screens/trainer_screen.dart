@@ -27,6 +27,10 @@ class TrainerScreen extends StatefulWidget {
   // sequence[i] — no randomness, no adaptive picking) and tailored exit copy.
   final List<String>? questionSequence;
   final bool isDaily;
+  // When set, ONE clock covers the whole run instead of a per-question limit:
+  // no question can time out on its own, and the session ends the moment this
+  // budget is spent. Used by the Daily Challenge (10 questions, 60 seconds).
+  final int? totalTimeMs;
   final VoidCallback onExit;
   final void Function(bool isCorrect, int responseTime, AnswerRecord details) onAnswer;
   final void Function(Map<String, dynamic> data) onFinish;
@@ -46,6 +50,7 @@ class TrainerScreen extends StatefulWidget {
     this.keyboardFromTonic = false,
     this.questionSequence,
     this.isDaily = false,
+    this.totalTimeMs,
     required this.onExit,
     required this.onAnswer,
     required this.onFinish,
@@ -72,10 +77,16 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
 
   Timer? _autoTimer;
   Timer? _feedbackTimer;
-  Timer? _timerTick;
   DateTime _questionStart = DateTime.now();
   final DateTime _sessionStart = DateTime.now();
-  int _remainingMs = 6000;
+
+  // Whole-run clock (Daily Challenge). Null elsewhere.
+  Timer? _totalTick;
+  int _totalRemainingMs = 0;
+  // Set once the session has been handed off, so a clock expiring in the same
+  // frame as the last answer can't finish the run twice.
+  bool _finished = false;
+  bool _exitDialogOpen = false;
 
   late AnimationController _haloController;
   late Animation<double> _haloAnim;
@@ -121,19 +132,41 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
     // (selectedKey is meaningless there — the mode has no tonality).
     _currentKey = _isOfWhat ? _fixedNote : widget.selectedKey;
     _scale = calculateMajorScale(_currentKey);
-    _remainingMs = _timeLimit;
 
     _haloController = AnimationController(vsync: this, duration: const Duration(milliseconds: 350));
     _haloAnim = CurvedAnimation(parent: _haloController, curve: Curves.easeOut);
 
+    if (widget.totalTimeMs != null) {
+      _totalRemainingMs = widget.totalTimeMs!;
+      _startTotalTimer();
+    }
+
     _generateChallenge();
+  }
+
+  /// The whole-run clock. Deliberately measured against [_sessionStart] rather
+  /// than accumulated per tick, so it stays truthful across dropped frames —
+  /// and it keeps running through answer feedback: sixty seconds means sixty
+  /// seconds, and a wrong answer costing you its own pause is part of the game.
+  void _startTotalTimer() {
+    final budget = widget.totalTimeMs!;
+    _totalTick = Timer.periodic(const Duration(milliseconds: 100), (t) {
+      if (!mounted) { t.cancel(); return; }
+      final elapsed = DateTime.now().difference(_sessionStart).inMilliseconds;
+      final remaining = (budget - elapsed).clamp(0, budget);
+      setState(() => _totalRemainingMs = remaining);
+      if (remaining == 0) {
+        t.cancel();
+        _finishSession();
+      }
+    });
   }
 
   @override
   void dispose() {
     _autoTimer?.cancel();
     _feedbackTimer?.cancel();
-    _timerTick?.cancel();
+    _totalTick?.cancel();
     _haloController.dispose();
     super.dispose();
   }
@@ -177,7 +210,6 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
 
   void _generateChallenge() {
     _autoTimer?.cancel();
-    _timerTick?.cancel();
 
     final possibleDegrees = _isOfWhat
         ? _ofWhatPool()
@@ -213,7 +245,6 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
     setState(() {
       _showFeedback = false;
       _lastSelected = null;
-      _remainingMs = _timeLimit;
       _fullDegree = next; // logical degree (incl. slash) — used for de-dup
       if (_isOfWhat) {
         // Question: fixed note + this degree. Answer: the root for which the
@@ -380,23 +411,20 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
   );
 
   void _startTimers() {
-    // Auto-fail timer
+    // Under a whole-run clock there is no per-question limit: you spend the
+    // budget where you want, and only the total can run out.
+    if (widget.totalTimeMs != null) return;
+
+    // Auto-fail timer. There is no per-question countdown on screen in these
+    // modes — the limit is felt, not watched.
     _autoTimer = Timer(Duration(milliseconds: _timeLimit), () {
       if (!_showFeedback) _handleAnswer('');
-    });
-
-    // Visual countdown
-    _timerTick = Timer.periodic(const Duration(milliseconds: 50), (t) {
-      if (_showFeedback) { t.cancel(); return; }
-      final elapsed = DateTime.now().difference(_questionStart).inMilliseconds;
-      setState(() => _remainingMs = (_timeLimit - elapsed).clamp(0, _timeLimit));
     });
   }
 
   void _handleAnswer(String selected) {
     if (_showFeedback) return;
     _autoTimer?.cancel();
-    _timerTick?.cancel();
 
     final responseTime = DateTime.now().difference(_questionStart).inMilliseconds;
     final isCorrect = _actualIsReverse
@@ -441,6 +469,9 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
     // Correct answers advance faster (shorter "CORRECT" flash) so the game
     // feels snappier; wrong answers stay up long enough to read the solution.
     _feedbackTimer = Timer(Duration(milliseconds: isCorrect ? 380 : 1800), () {
+      // A whole-run clock can expire during this pause; if it did, the run is
+      // already over and must not roll on to another question.
+      if (_finished) return;
       if (_attempts >= _questionsPerKey) {
         _finishSession();
       } else {
@@ -469,9 +500,11 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
       return;
     }
     _autoTimer?.cancel();
-    _timerTick?.cancel();
     _feedbackTimer?.cancel();
     HapticsService.impactLight();
+    // The whole-run clock is NOT paused here: pausing it would make this dialog
+    // a free timeout on a one-attempt challenge.
+    _exitDialogOpen = true;
     showDialog<bool>(
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.6),
@@ -493,7 +526,7 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
               const SizedBox(height: 8),
               Text(
                   widget.isDaily
-                      ? 'One attempt per day — if you leave now, '
+                      ? 'One attempt per day, and the clock keeps running — if you leave now, '
                           '$_attempts/$_questionsPerKey is your score until tomorrow.'
                       : 'You are $_attempts/$_questionsPerKey in — the run ends here if you leave.',
                   textAlign: TextAlign.center,
@@ -523,11 +556,14 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
         ),
       ),
     ).then((quit) {
+      _exitDialogOpen = false;
       if (!mounted) return;
       if (quit == true) {
         widget.onExit();
         return;
       }
+      // The run may have ended under the dialog (whole-run clock expired).
+      if (_finished) return;
       // Resume where we paused: mid-feedback → advance; mid-question → fresh clock.
       if (_showFeedback) {
         if (_attempts >= _questionsPerKey) {
@@ -536,14 +572,26 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
           _generateChallenge();
         }
       } else {
+        // Mid-question: the answer clock restarts from now, so the seconds
+        // spent reading the dialog aren't charged to the question.
         _questionStart = DateTime.now();
-        setState(() => _remainingMs = _timeLimit);
         _startTimers();
       }
     });
   }
 
   void _finishSession() {
+    // The whole-run clock and the last answer's feedback can land together;
+    // whichever arrives first ends the run, the other is a no-op.
+    if (_finished) return;
+    _finished = true;
+    _autoTimer?.cancel();
+    _feedbackTimer?.cancel();
+    _totalTick?.cancel();
+    // The clock can expire while the quit confirmation is up (it keeps running
+    // there on purpose — otherwise the dialog would be a free pause). Take the
+    // dialog down so the results screen isn't left behind it.
+    if (_exitDialogOpen && mounted) Navigator.of(context).pop(false);
     final elapsed = DateTime.now().difference(_sessionStart).inSeconds;
     widget.onFinish({
       'key': _currentKey, // in …Of What? this is the fixed note
@@ -581,7 +629,6 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
     // cluster slightly (mirrors the web's isNoteToNumberChromatic offset).
     final isN2NChromatic = widget.mode == TrainingMode.noteToNumber && notes.length > 7;
     final progress = _questionsPerKey > 0 ? _attempts / _questionsPerKey : 0.0;
-    final timerPct = _remainingMs / _timeLimit;
     final sw = MediaQuery.of(context).size.width;
     final sh = MediaQuery.of(context).size.height;
     // Single reserved height for the input zone — identical for the grid and the
@@ -667,8 +714,8 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
                   _TopBar(
                     onExit: _requestExit,
                     progress: progress,
-                    timerPct: timerPct,
-                    timeLimit: _timeLimit,
+                    totalRemainingMs: widget.totalTimeMs == null ? null : _totalRemainingMs,
+                    totalTimeMs: widget.totalTimeMs,
                     currentKey: _currentKey,
                     contextLabel: _isOfWhat ? 'NOTE' : 'KEY',
                     // Only …Of What? tints the badge: the fixed note is the
@@ -938,8 +985,10 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
 class _TopBar extends StatelessWidget {
   final VoidCallback onExit;
   final double progress;
-  final double timerPct;
-  final int timeLimit;
+  // Whole-run clock (Daily Challenge). Null in the other modes, which have a
+  // per-question limit instead and show no countdown.
+  final int? totalRemainingMs;
+  final int? totalTimeMs;
   final String currentKey;
   final String contextLabel; // 'KEY' normally, 'NOTE' in …Of What?
   final Color? badgeColor; // tonal tint for the badge (…Of What? only)
@@ -955,8 +1004,8 @@ class _TopBar extends StatelessWidget {
   const _TopBar({
     required this.onExit,
     required this.progress,
-    required this.timerPct,
-    required this.timeLimit,
+    this.totalRemainingMs,
+    this.totalTimeMs,
     required this.currentKey,
     this.contextLabel = 'KEY',
     this.badgeColor,
@@ -1071,6 +1120,10 @@ class _TopBar extends StatelessWidget {
               ),
             ],
           ),
+          if (totalTimeMs != null && totalRemainingMs != null) ...[
+            const SizedBox(height: 12),
+            _TotalTimerBar(remainingMs: totalRemainingMs!, totalMs: totalTimeMs!),
+          ],
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -1095,6 +1148,76 @@ class _TopBar extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// The whole-run clock, for the Daily Challenge: seconds left plus a bar that
+/// drains. It shifts green → amber → red as the budget goes, so the pressure is
+/// felt peripherally without having to read the number mid-question.
+class _TotalTimerBar extends StatelessWidget {
+  final int remainingMs;
+  final int totalMs;
+  const _TotalTimerBar({required this.remainingMs, required this.totalMs});
+
+  @override
+  Widget build(BuildContext context) {
+    final pct = totalMs > 0 ? (remainingMs / totalMs).clamp(0.0, 1.0) : 0.0;
+    final colour = pct > 0.5
+        ? const Color(0xFF22C55E)
+        : pct > 0.2
+            ? const Color(0xFFF59E0B)
+            : const Color(0xFFEF4444);
+    // Ceil, so the bar and the digits agree: a clock reading 0 must mean over.
+    final secs = (remainingMs / 1000).ceil();
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.timer_outlined, size: 13, color: colour.withValues(alpha: 0.9)),
+            const SizedBox(width: 5),
+            Text(
+              '0:${secs.toString().padLeft(2, '0')}',
+              maxLines: 1,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w900,
+                color: colour,
+                letterSpacing: 0.5,
+                // Tabular figures: the countdown must not wobble every second.
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 5),
+        LayoutBuilder(builder: (ctx, box) {
+          return Stack(children: [
+            Container(
+              height: 5,
+              width: box.maxWidth,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.07),
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ),
+            // No implicit animation: the tick already arrives every 100ms, and
+            // tweening on top of that makes the drain lag behind the digits.
+            Container(
+              height: 5,
+              width: box.maxWidth * pct,
+              decoration: BoxDecoration(
+                color: colour,
+                borderRadius: BorderRadius.circular(3),
+                boxShadow: [
+                  BoxShadow(color: colour.withValues(alpha: 0.5), blurRadius: 10),
+                ],
+              ),
+            ),
+          ]);
+        }),
+      ],
     );
   }
 }

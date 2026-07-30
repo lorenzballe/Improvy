@@ -532,9 +532,9 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
         mode: provider.activeMode!,
         selectedKey: provider.selectedKey ?? 'C',
         fixedNote: provider.fixedNote,
-        // The daily runs at a fixed medium difficulty (a 4s clock) — identical
-        // conditions for everyone is what makes the shared score comparable,
-        // and the timer is the point. See DailyChallenge.difficulty.
+        // The daily is timed as a whole (see totalTimeMs below), so this only
+        // fixes the tier its answers are recorded under — identical for
+        // everyone, which is what makes the shared score comparable.
         difficulty: provider.dailyChallengeActive
             ? DailyChallenge.difficulty
             : provider.activeMode == TrainingMode.diatonic
@@ -549,6 +549,9 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
         keyboardFromTonic: provider.keyboardFromTonic,
         questionSequence: provider.dailyChallengeActive ? provider.activeDailyDegrees : null,
         isDaily: provider.dailyChallengeActive,
+        // One clock for the whole run instead of a per-question limit: ten
+        // degrees in sixty seconds, spent however you like.
+        totalTimeMs: provider.dailyChallengeActive ? DailyChallenge.totalTimeMs : null,
         onExit: () {
           final mode = provider.activeMode;
           final isSpecial = mode == TrainingMode.noteToNumber || mode == TrainingMode.custom || mode == TrainingMode.ofWhat;

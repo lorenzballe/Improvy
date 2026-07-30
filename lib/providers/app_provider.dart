@@ -66,6 +66,10 @@ class AppProvider extends ChangeNotifier {
   // Captured at start so a run that crosses midnight is still recorded under
   // the day (and the questions) it was started with.
   DailyChallenge? _activeDailyChallenge;
+  // Wall-clock start of the active run. The daily is timed as a whole, so the
+  // number worth reporting is how long it actually took — not the sum of
+  // response times, which quietly omits the feedback pauses between them.
+  DateTime? _dailyStartedAt;
   DailyChallenge? _cachedChallenge;
 
   Future<void> init() async {
@@ -387,6 +391,7 @@ class AppProvider extends ChangeNotifier {
     final c = todayChallenge;
     if (dailyResults.containsKey(c.dateKey)) return;
     _activeDailyChallenge = c;
+    _dailyStartedAt = DateTime.now();
     dailyChallengeActive = true;
     selectedKey = c.key;
     // Keep the recorded difficulty in step with the trainer's: the daily runs
@@ -466,7 +471,14 @@ class AppProvider extends ChangeNotifier {
     final answers = stats.currentSessionAnswers;
     if (answers.isEmpty) return;
     final flags = [for (final a in answers) a.isCorrect];
-    final timeMs = answers.fold<int>(0, (s, a) => s + a.responseTime);
+    // Wall clock from the start of the run, never over the budget — a run the
+    // clock ended reads exactly 60s rather than something suspiciously under it.
+    final timeMs = _dailyStartedAt == null
+        ? answers.fold<int>(0, (s, a) => s + a.responseTime)
+        : DateTime.now()
+            .difference(_dailyStartedAt!)
+            .inMilliseconds
+            .clamp(0, DailyChallenge.totalTimeMs);
     final completed = flags.length >= c.degrees.length;
     while (flags.length < c.degrees.length) {
       flags.add(false); // unanswered questions are misses — the grid stays 10 wide
@@ -650,6 +662,7 @@ class AppProvider extends ChangeNotifier {
     if (dailyChallengeActive) _storage.removeDailyAttemptStarted();
     dailyChallengeActive = false;
     _activeDailyChallenge = null;
+    _dailyStartedAt = null;
     _flushCurrentSession();
     activeMode = null;
     customDegrees = null;
@@ -880,6 +893,7 @@ class AppProvider extends ChangeNotifier {
     dailyResults = {};
     dailyChallengeActive = false;
     _activeDailyChallenge = null;
+    _dailyStartedAt = null;
     lastSession = null;
     adaptiveDifficulty = false;
     tutorialCompleted = false;

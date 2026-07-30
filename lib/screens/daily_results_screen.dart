@@ -67,7 +67,8 @@ class _DailyResultsScreenState extends State<DailyResultsScreen> {
 
   static String _verdict(DailyResult r) {
     if (r.perfect) return 'FLAWLESS';
-    if (!r.completed) return 'RUN ENDED EARLY';
+    // Under a 60-second budget, an unfinished run means the clock won.
+    if (!r.completed) return 'OUT OF TIME';
     if (r.correct >= 8) return 'SHARP';
     if (r.correct >= 6) return 'SOLID';
     if (r.correct >= 4) return 'WARMING UP';

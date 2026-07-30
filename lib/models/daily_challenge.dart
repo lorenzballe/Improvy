@@ -21,12 +21,18 @@ class DailyChallenge {
 
   static const int questionCount = 10;
 
-  /// The daily always runs at the **medium** tier (a 4-second clock in the
-  /// trainer). Deliberately fixed and identical for everyone: the shared score
-  /// only means something if the pressure is the same for all — and medium is
-  /// the honest middle, tense enough to reward quick recall without the panic
-  /// misses the hardest 2-second tier produces. The single source of truth for
-  /// the daily's difficulty, read by the trainer wiring.
+  /// **One clock for the whole run**, not a per-question limit like the other
+  /// modes: ten degrees in sixty seconds. That is the shape of a challenge —
+  /// you spend the budget how you like, lingering on a hard key costs you the
+  /// easy ones later, and "10 questions, 60 seconds" is a rule you can say out
+  /// loud. Identical for everyone, which is what makes a shared score mean
+  /// something. When it runs out the run ends where it stands and the
+  /// unanswered questions count as misses.
+  static const int totalTimeMs = 60000;
+
+  /// Mastery tier the daily's answers are filed under (medium). The daily has
+  /// no per-question clock, so this no longer sets a countdown — it only keeps
+  /// the recorded difficulty honest, since key mastery is tracked per tier.
   static const int difficulty = 2;
 
   factory DailyChallenge.forDate(DateTime date) {
