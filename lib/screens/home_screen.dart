@@ -1581,14 +1581,18 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                     keyName: keyName,
                     title: 'Chromatic',
                     description: 'Challenge yourself with all 12 semitones.',
-                    // A keyboard, drawn exactly like the Diatonic card's note:
-                    // same size, same weight, same tile. It used to be a ♯ and
-                    // a ♭ from the music font at mismatched sizes, dragged 6px
-                    // together to keep the flat in the box — small, overlapping
-                    // and illegible, and the glyph clipped its own tile at any
-                    // size that read clearly. A keyboard is what twelve
-                    // semitones look like, and it is already the icon the
-                    // paywall uses for Chromatic Mode.
+                    // ♯ and ♭, each scaled into its own box.
+                    //
+                    // Setting them as text never worked: Noto Music draws the
+                    // accidentals small inside a tall em box, so a size that
+                    // filled the tile also hung the glyph outside it, and the
+                    // old fix was a ♯ at 30 beside a ♭ at 36 dragged 6px left
+                    // to stop the flat escaping — mismatched, touching, and
+                    // held together by a nudge that only worked at that exact
+                    // size. Giving each glyph a box and letting it fill that
+                    // box takes the font's metrics out of the argument: the two
+                    // end up the same height, evenly spaced, and centred, at
+                    // the weight of the Diatonic card's note beside it.
                     iconWidget: Container(
                       width: 54, height: 54,
                       decoration: BoxDecoration(
@@ -1596,7 +1600,28 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: const Color(0xFFFF69B4).withAlpha(120)),
                       ),
-                      child: const Icon(Icons.piano_rounded, color: Colors.white, size: 32),
+                      child: const Center(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(
+                              width: 18, height: 34,
+                              child: FittedBox(
+                                fit: BoxFit.contain,
+                                child: _ThickGlyph('♯', 30, stroke: 1.6),
+                              ),
+                            ),
+                            SizedBox(width: 5),
+                            SizedBox(
+                              width: 16, height: 34,
+                              child: FittedBox(
+                                fit: BoxFit.contain,
+                                child: _ThickGlyph('♭', 30, stroke: 1.6),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                     accentColor: const Color(0xFFA855F7),
                     borderColor: const Color(0xFFA855F7).withAlpha(80),
@@ -2220,7 +2245,10 @@ class _ThickGlyph extends StatelessWidget {
   /// Gap between glyphs when more than one is drawn — Noto Music sets the
   /// accidentals tight, and ♯♭ reads as one smudge without it.
   final double letterSpacing;
-  const _ThickGlyph(this.glyph, this.size, {this.letterSpacing = 0});
+  /// Width of the faux-bold stroke. Needs raising when the glyph is scaled
+  /// down afterwards, or the extra weight is scaled away with it.
+  final double stroke;
+  const _ThickGlyph(this.glyph, this.size, {this.letterSpacing = 0, this.stroke = 1.1});
 
   @override
   Widget build(BuildContext context) {
@@ -2235,7 +2263,7 @@ class _ThickGlyph extends StatelessWidget {
           fontFamilyFallback: const ['NotoMusic'],
           foreground: Paint()
             ..style = PaintingStyle.stroke
-            ..strokeWidth = 1.1
+            ..strokeWidth = stroke
             ..strokeJoin = StrokeJoin.round
             ..color = Colors.white,
         )),
