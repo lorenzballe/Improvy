@@ -1,0 +1,419 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:improvy/constants/levels.dart';
+import 'package:improvy/models/stats.dart';
+import 'package:improvy/models/training_mode.dart';
+import 'package:improvy/providers/app_provider.dart';
+import 'package:improvy/screens/daily_results_screen.dart';
+import 'package:improvy/screens/home_screen.dart';
+import 'package:improvy/screens/key_analytics_screen.dart';
+import 'package:improvy/screens/legal_screen.dart';
+import 'package:improvy/screens/onboarding_screen.dart';
+import 'package:improvy/screens/session_summary_screen.dart';
+import 'package:improvy/screens/settings_screen.dart';
+import 'package:improvy/screens/setup_screen.dart';
+import 'package:improvy/screens/stats_screen.dart';
+import 'package:improvy/screens/trainer_screen.dart';
+import 'package:improvy/services/storage_service.dart';
+import 'package:improvy/widgets/daily_challenge_card.dart';
+import 'package:improvy/widgets/level_up_modal.dart';
+import 'package:improvy/widgets/paywall_modal.dart';
+import 'package:improvy/widgets/quiz_reveal_modal.dart';
+
+/// Does every screen actually lay out?
+///
+/// Release builds swallow layout errors, so a RenderFlex overflow ships
+/// invisible and only shows as a clipped, yellow-striped widget on someone's
+/// phone. Under `flutter test` the assertions are live: a screen that
+/// overflows, throws, or divides by zero fails here.
+///
+/// The small viewport is the point — 320×568 is an iPhone SE, the tightest
+/// screen the app has to survive, and the one every layout bug appears on
+/// first.
+const _small = Size(320, 568);
+const _phone = Size(390, 844);
+
+Future<AppProvider> providerWith({bool populated = false}) async {
+  SharedPreferences.setMockInitialValues({});
+  final storage = StorageService();
+  await storage.init();
+  final p = AppProvider(storage);
+  await p.init();
+  p.completeTutorial();
+  if (populated) {
+    // A handful of real games, some wrong, one timed out — enough for every
+    // chart, average and confusion row to have something to draw.
+    for (final key in ['C', 'G', 'B♭']) {
+      p.selectKey(key);
+      p.startMode(TrainingMode.diatonic, overrideKey: key);
+      for (var i = 0; i < 8; i++) {
+        final correct = i % 3 != 0;
+        p.recordAnswer(
+          isCorrect: correct,
+          responseTime: 900 + i * 120,
+          answerDetails: AnswerRecord(
+            degree: '${(i % 7) + 1}',
+            note: 'E',
+            // An empty selection is how a timed-out question is recorded.
+            selectedNote: i == 5 ? '' : (correct ? 'E' : 'F'),
+            tonality: key,
+            mode: 'diatonic',
+            isReverse: false,
+            difficulty: 1,
+            responseTime: 900 + i * 120,
+            isCorrect: correct,
+            timestamp: DateTime.now().millisecondsSinceEpoch,
+          ),
+        );
+      }
+      p.finishSession();
+      p.exitTrainer();
+    }
+  }
+  return p;
+}
+
+extension on WidgetTester {
+  /// Pumps [child] at [size] inside the app's real theme and provider.
+  Future<void> show(Widget child, AppProvider provider, Size size) async {
+    view.physicalSize = size;
+    view.devicePixelRatio = 1.0;
+    addTearDown(view.resetPhysicalSize);
+    addTearDown(view.resetDevicePixelRatio);
+
+    await pumpWidget(
+      ChangeNotifierProvider<AppProvider>.value(
+        value: provider,
+        child: MaterialApp(
+          theme: ThemeData(
+            colorScheme: const ColorScheme.dark(surface: Color(0xFF0F0A1A)),
+            scaffoldBackgroundColor: const Color(0xFF0F0A1A),
+            useMaterial3: true,
+            fontFamily: 'Lexend',
+          ),
+          home: child,
+        ),
+      ),
+    );
+    // Entrance animations run on real controllers; settle them without waiting
+    // on the ones that repeat forever.
+    await pump(const Duration(milliseconds: 700));
+  }
+}
+
+/// Without this the test runner measures every glyph in its own uniform-width
+/// stand-in font, and the widths it reports are fiction: real screens are
+/// reported as overflowing and real overflows are hidden. Every face the app
+/// actually ships has to be loaded for a layout test to mean anything.
+Future<void> loadRealFonts() async {
+  Future<void> family(String name, List<String> files) async {
+    final loader = FontLoader(name);
+    for (final f in files) {
+      loader.addFont(rootBundle.load('assets/fonts/$f'));
+    }
+    await loader.load();
+  }
+
+  await family('Lexend', [
+    'Lexend-Light.ttf', 'Lexend-Regular.ttf', 'Lexend-Medium.ttf',
+    'Lexend-SemiBold.ttf', 'Lexend-Bold.ttf', 'Lexend-ExtraBold.ttf',
+    'Lexend-Black.ttf',
+  ]);
+  await family('Outfit', [
+    'Outfit-Light.ttf', 'Outfit-Regular.ttf', 'Outfit-Medium.ttf',
+    'Outfit-SemiBold.ttf', 'Outfit-Bold.ttf',
+  ]);
+  await family('NotoMusic', ['NotoMusic-Regular.ttf']);
+}
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  setUpAll(loadRealFonts);
+
+  for (final size in [_small, _phone]) {
+    final label = '${size.width.toInt()}x${size.height.toInt()}';
+
+    group('$label · empty state', () {
+      testWidgets('home', (t) async {
+        await t.show(
+          HomeScreen(onShowPaywall: ([_]) {}, onOpenSetup: (_) {}, onStartDaily: () {}),
+          await providerWith(),
+          size,
+        );
+      });
+
+      testWidgets('stats', (t) async {
+        await t.show(const StatsScreen(), await providerWith(), size);
+      });
+
+      testWidgets('settings', (t) async {
+        await t.show(
+          SettingsScreen(onShowPaywall: ([_]) {}, onSimulatePerfect: () {}),
+          await providerWith(),
+          size,
+        );
+      });
+    });
+
+    group('$label · with history', () {
+      testWidgets('home', (t) async {
+        await t.show(
+          HomeScreen(onShowPaywall: ([_]) {}, onOpenSetup: (_) {}, onStartDaily: () {}),
+          await providerWith(populated: true),
+          size,
+        );
+      });
+
+      testWidgets('stats', (t) async {
+        await t.show(const StatsScreen(), await providerWith(populated: true), size);
+      });
+
+      testWidgets('key analytics', (t) async {
+        final p = await providerWith(populated: true);
+        await t.show(
+          KeyAnalyticsScreen(keyName: 'C', onBack: () {}, onShowPaywall: ([_]) {}),
+          p,
+          size,
+        );
+      });
+    });
+
+    group('$label · in play', () {
+      testWidgets('trainer, diatonic', (t) async {
+        final p = await providerWith();
+        await t.show(
+          TrainerScreen(
+            mode: TrainingMode.diatonic,
+            selectedKey: 'C',
+            difficulty: 1,
+            adaptiveDifficulty: false,
+            sessionHistory: const [],
+            notation: 'CDE',
+            onExit: () {},
+            onAnswer: (_, __, ___) {},
+            onFinish: (_) {},
+          ),
+          p,
+          size,
+        );
+      });
+
+      testWidgets('trainer, chromatic — the widest labels', (t) async {
+        final p = await providerWith();
+        await t.show(
+          TrainerScreen(
+            mode: TrainingMode.chromatic,
+            selectedKey: 'F♯',
+            difficulty: 3,
+            adaptiveDifficulty: false,
+            sessionHistory: const [],
+            notation: 'DoReMi',
+            onExit: () {},
+            onAnswer: (_, __, ___) {},
+            onFinish: (_) {},
+          ),
+          p,
+          size,
+        );
+      });
+
+      testWidgets('trainer, the Daily Challenge with its clock', (t) async {
+        final p = await providerWith();
+        p.startDailyChallenge();
+        await t.show(
+          TrainerScreen(
+            mode: TrainingMode.diatonic,
+            selectedKey: p.todayChallenge.key,
+            difficulty: 2,
+            numberOfQuestions: 10,
+            adaptiveDifficulty: false,
+            sessionHistory: const [],
+            notation: 'CDE',
+            questionSequence: p.activeDailyDegrees,
+            isDaily: true,
+            totalTimeMs: 40000,
+            onExit: () {},
+            onAnswer: (_, __, ___) {},
+            onFinish: (_) {},
+          ),
+          p,
+          size,
+        );
+      });
+
+      testWidgets('trainer, note to number — fifteen answer buttons', (t) async {
+        final p = await providerWith();
+        await t.show(
+          TrainerScreen(
+            mode: TrainingMode.noteToNumber,
+            selectedKey: 'D♭',
+            difficulty: 1,
+            adaptiveDifficulty: false,
+            sessionHistory: const [],
+            notation: 'CDE',
+            onExit: () {},
+            onAnswer: (_, __, ___) {},
+            onFinish: (_) {},
+          ),
+          p,
+          size,
+        );
+      });
+    });
+
+    group('$label · setup screens', () {
+      testWidgets('custom mode', (t) async {
+        await t.show(
+          CustomModeSetup(initialKey: 'F♯', onCancel: () {}, onStart: (_, __, ___, ____, _____) {}),
+          await providerWith(),
+          size,
+        );
+      });
+
+      testWidgets('note to number', (t) async {
+        await t.show(
+          NoteToNumberSetup(initialKey: 'B♭', onCancel: () {}, onStart: (_, __, ___) {}),
+          await providerWith(),
+          size,
+        );
+      });
+
+      testWidgets('…Of What?, free — the locked extensions', (t) async {
+        await t.show(
+          OfWhatSetup(isPro: false, onShowPaywall: () {}, onCancel: () {}, onStart: (_, __, ___, ____) {}),
+          await providerWith(),
+          size,
+        );
+      });
+
+      testWidgets('pocket mode, Pro — every degree unlocked', (t) async {
+        await t.show(
+          PocketModeSetup(
+            initialKey: 'D♭', isPro: true, onShowPaywall: () {},
+            onCancel: () {}, onStart: (_) {},
+          ),
+          await providerWith(),
+          size,
+        );
+      });
+    });
+
+    group('$label · results and modals', () {
+      testWidgets('session summary, a perfect run', (t) async {
+        final p = await providerWith(populated: true);
+        await t.show(
+          SessionSummaryScreen(
+            sessionData: const {
+              'key': 'C',
+              'mode': 'diatonic',
+              'accuracy': 100,
+              'correct': 30,
+              'total': 30,
+              'time': 92,
+              'difficulty': 1,
+            },
+            progressData: p.progressData,
+            onRetry: () {},
+            onBack: () {},
+            onNextDifficulty: (_) {},
+          ),
+          p,
+          size,
+        );
+      });
+
+      testWidgets('daily results, out of time', (t) async {
+        final p = await providerWith();
+        p.startDailyChallenge();
+        for (var i = 0; i < 4; i++) {
+          p.recordAnswer(
+            isCorrect: i.isEven,
+            responseTime: 1400,
+            answerDetails: AnswerRecord(
+              degree: '5', note: 'G', selectedNote: 'G',
+              tonality: p.todayChallenge.key, mode: 'diatonic',
+              isReverse: false, difficulty: 2, responseTime: 1400,
+              isCorrect: i.isEven,
+              timestamp: DateTime.now().millisecondsSinceEpoch,
+            ),
+          );
+        }
+        p.finishSession();
+        await t.show(DailyResultsScreen(onDone: () {}), p, size);
+      });
+
+      testWidgets('the daily card, before and after playing', (t) async {
+        final p = await providerWith();
+        await t.show(
+          Scaffold(body: Center(child: DailyChallengeCard(onStart: () {}))),
+          p,
+          size,
+        );
+        p.startDailyChallenge();
+        p.recordAnswer(
+          isCorrect: true, responseTime: 1000,
+          answerDetails: AnswerRecord(
+            degree: '3', note: 'E', selectedNote: 'E',
+            tonality: p.todayChallenge.key, mode: 'diatonic',
+            isReverse: false, difficulty: 2, responseTime: 1000,
+            isCorrect: true, timestamp: DateTime.now().millisecondsSinceEpoch,
+          ),
+        );
+        p.finishSession();
+        await t.pump(const Duration(milliseconds: 400));
+      });
+
+      testWidgets('the widget reveal card', (t) async {
+        await t.show(
+          QuizRevealModal(
+            question: '♯11 of A♭',
+            answer: 'D',
+            musicalKey: 'A♭',
+            onClose: () {},
+            onTrainKey: () {},
+          ),
+          await providerWith(),
+          size,
+        );
+        // The answer lands on its own beat; make sure that state lays out too.
+        await t.pump(const Duration(milliseconds: 1200));
+      });
+
+      testWidgets('onboarding', (t) async {
+        await t.show(
+          OnboardingScreen(onComplete: () {}),
+          await providerWith(),
+          size,
+        );
+      });
+
+      testWidgets('level up, the longest animal name', (t) async {
+        await t.show(
+          LevelUpModal(animal: getAnimalLevel(100), onClose: () {}),
+          await providerWith(),
+          size,
+        );
+      });
+
+      testWidgets('the paywall', (t) async {
+        await t.show(
+          PaywallModal(onClose: () {}, onPurchase: () async {}),
+          await providerWith(),
+          size,
+        );
+      });
+
+      testWidgets('legal text', (t) async {
+        await t.show(
+          const LegalScreen(title: 'Privacy Policy', body: kPrivacyPolicyBody),
+          await providerWith(),
+          size,
+        );
+      });
+    });
+  }
+}

@@ -679,20 +679,27 @@ class _StatCard extends StatelessWidget {
           children: [
             Text(label, style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.white.withAlpha(102), letterSpacing: 1.5)),
             const SizedBox(height: 8),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
-              children: [
-                if (prefix != null)
-                  Text(prefix!, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white.withAlpha(102))),
-                Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -1, height: 1)),
-                if (suffix != null)
-                  Text(suffix!, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white.withAlpha(102))),
-                if (trendUp) ...[
-                  const SizedBox(width: 2),
-                  const Icon(Icons.trending_up_rounded, size: 14, color: Color(0xFF22C55E)),
+            // "#12/12" with a trend arrow is the widest this card ever gets,
+            // and it ran past the edge on a 320dp phone. Scaling the whole
+            // figure keeps the suffix — which is what makes a rank a rank.
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  if (prefix != null)
+                    Text(prefix!, maxLines: 1, softWrap: false, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white.withAlpha(102))),
+                  Text(value, maxLines: 1, softWrap: false, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -1, height: 1)),
+                  if (suffix != null)
+                    Text(suffix!, maxLines: 1, softWrap: false, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white.withAlpha(102))),
+                  if (trendUp) ...[
+                    const SizedBox(width: 2),
+                    const Icon(Icons.trending_up_rounded, size: 14, color: Color(0xFF22C55E)),
+                  ],
                 ],
-              ],
+              ),
             ),
           ],
         ),

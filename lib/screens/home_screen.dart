@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -346,18 +347,24 @@ class _LogoGlowState extends State<_LogoGlow> with TickerProviderStateMixin {
   late final AnimationController _inner; // 2s half-cycle → 4s full pulse
   late final AnimationController _outer; // 3s half-cycle → 6s full breath
 
+  // The outer halo starts a beat after the inner one so the two pulses never
+  // line up. Held as a cancellable timer rather than a bare Future.delayed:
+  // that kept work queued for a second after the screen was gone.
+  Timer? _outerStart;
+
   @override
   void initState() {
     super.initState();
     _inner = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat(reverse: true);
     _outer = AnimationController(vsync: this, duration: const Duration(seconds: 3));
-    Future.delayed(const Duration(seconds: 1), () {
+    _outerStart = Timer(const Duration(seconds: 1), () {
       if (mounted) _outer.repeat(reverse: true);
     });
   }
 
   @override
   void dispose() {
+    _outerStart?.cancel();
     _inner.dispose();
     _outer.dispose();
     super.dispose();
@@ -1368,8 +1375,20 @@ class _MiniStatCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(label,
-                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0x80FFFFFF), letterSpacing: 1)),
+                  // The longest label ("GAMES PLAYED") overran the card next to
+                  // the icon — by 37px on a 320dp phone and still by 2 on a
+                  // 390. Let it take the room that's left and shrink to fit.
+                  Flexible(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(label,
+                        maxLines: 1,
+                        softWrap: false,
+                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0x80FFFFFF), letterSpacing: 1)),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
                   Icon(icon, size: 18, color: accentColor.withAlpha(204)),
                 ],
               ),
@@ -2209,8 +2228,12 @@ class _ThickGlyph extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
+        // ♯ and ♭ aren't in the UI font. Every other place that draws them
+        // falls back to the bundled Noto Music; without it these two cards
+        // showed tofu on CanvasKit web, which has no automatic system fallback.
         Text(glyph, style: TextStyle(
           fontSize: size, fontWeight: FontWeight.w900, height: 1,
+          fontFamilyFallback: const ['NotoMusic'],
           foreground: Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 1.1
@@ -2219,6 +2242,7 @@ class _ThickGlyph extends StatelessWidget {
         )),
         Text(glyph, style: TextStyle(
           fontSize: size, fontWeight: FontWeight.w900, height: 1, color: Colors.white,
+          fontFamilyFallback: const ['NotoMusic'],
         )),
       ],
     );

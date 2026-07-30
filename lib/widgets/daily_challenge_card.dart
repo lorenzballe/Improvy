@@ -176,20 +176,31 @@ class _DailyChallengeCardState extends State<DailyChallengeCard> {
       const SizedBox(width: 14),
       Expanded(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            const Text('DAILY CHALLENGE',
-                style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 2,
-                    color: _goldSoft)),
-            if (streak > 0) ...[
-              const SizedBox(width: 8),
-              Text('🔥 $streak',
-                  style: const TextStyle(
-                      fontSize: 11, fontWeight: FontWeight.w900, color: _goldSoft)),
-            ],
-          ]),
+          // The label plus a streak chip is a few pixels too wide on a 320dp
+          // phone; scaling the pair keeps both readable instead of clipping the
+          // streak, which is the half people look for.
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Row(children: [
+              const Text('DAILY CHALLENGE',
+                  maxLines: 1,
+                  softWrap: false,
+                  style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 2,
+                      color: _goldSoft)),
+              if (streak > 0) ...[
+                const SizedBox(width: 8),
+                Text('🔥 $streak',
+                    maxLines: 1,
+                    softWrap: false,
+                    style: const TextStyle(
+                        fontSize: 11, fontWeight: FontWeight.w900, color: _goldSoft)),
+              ],
+            ]),
+          ),
           const SizedBox(height: 6),
           Row(
             crossAxisAlignment: CrossAxisAlignment.baseline,
