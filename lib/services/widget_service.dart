@@ -101,6 +101,9 @@ class WidgetService {
             'daily_score', result == null ? '' : '${result.correct}/${result.total}'),
         HomeWidget.saveWidgetData<String>(
             'daily_grid', result == null ? '' : _grid(result)),
+        // The rule in words, derived from the challenge constants — so the
+        // widgets can never advertise a budget the run no longer uses.
+        HomeWidget.saveWidgetData<String>('daily_sub', DailyChallenge.rule),
         HomeWidget.saveWidgetData<int>('daily_streak', provider.dailyStreak),
 
         // ── Progress ──────────────────────────────────────────────────────

@@ -21,14 +21,32 @@ class DailyChallenge {
 
   static const int questionCount = 10;
 
+  /// Seconds of budget each question is worth. Not a per-question limit — the
+  /// clock below is pooled — but the honest way to size the pool: it is the
+  /// same 4 seconds the trainer's medium tier gives a single question, so the
+  /// budget is derived from the game rather than picked to sound round.
+  ///
+  /// 4s a question is tense on purpose. A confident answer takes about 2s, and
+  /// a wrong one costs its own 1.8s of feedback on top, so a clean run lands
+  /// with a few seconds spare while a hesitant one genuinely runs out.
+  static const int msPerQuestion = 4000;
+
   /// **One clock for the whole run**, not a per-question limit like the other
-  /// modes: ten degrees in sixty seconds. That is the shape of a challenge —
-  /// you spend the budget how you like, lingering on a hard key costs you the
-  /// easy ones later, and "10 questions, 60 seconds" is a rule you can say out
-  /// loud. Identical for everyone, which is what makes a shared score mean
-  /// something. When it runs out the run ends where it stands and the
-  /// unanswered questions count as misses.
-  static const int totalTimeMs = 60000;
+  /// modes. That is the shape of a challenge — you spend the budget how you
+  /// like, so lingering on a hard degree costs you the easy ones later.
+  /// Identical for everyone, which is what makes a shared score mean something.
+  /// When it runs out the run ends where it stands and the unanswered questions
+  /// count as misses.
+  ///
+  /// Scales with [questionCount] by construction: change the number of
+  /// questions and the budget follows instead of silently becoming wrong.
+  static const int totalTimeMs = questionCount * msPerQuestion;
+
+  /// The rule, in words, for every surface that states it — the card, both home
+  /// screen widgets, the store listing. Built from the constants above so the
+  /// promise can never drift from the clock the run actually uses.
+  static String get rule =>
+      '$questionCount questions · ${totalTimeMs ~/ 1000} seconds';
 
   /// Mastery tier the daily's answers are filed under (medium). The daily has
   /// no per-question clock, so this no longer sets a countdown — it only keeps

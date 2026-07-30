@@ -550,7 +550,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
         questionSequence: provider.dailyChallengeActive ? provider.activeDailyDegrees : null,
         isDaily: provider.dailyChallengeActive,
         // One clock for the whole run instead of a per-question limit: ten
-        // degrees in sixty seconds, spent however you like.
+        // degrees in one pooled budget, spent however you like.
         totalTimeMs: provider.dailyChallengeActive ? DailyChallenge.totalTimeMs : null,
         onExit: () {
           final mode = provider.activeMode;

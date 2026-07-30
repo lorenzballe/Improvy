@@ -138,8 +138,12 @@ class ImprovyDailyWidgetProvider : HomeWidgetProvider() {
                     if (key.isEmpty()) context.getString(R.string.widget_daily_placeholder)
                     else context.getString(R.string.widget_daily_key, key)
                 )
+                // The rule comes from the app (derived from the challenge
+                // constants); the XML string is only the picker preview.
+                val sub = widgetData.getString("daily_sub", null)
                 views.setTextViewText(R.id.daily_sub,
-                    context.getString(R.string.widget_daily_sub_placeholder))
+                    if (sub.isNullOrEmpty()) context.getString(R.string.widget_daily_sub_placeholder)
+                    else sub)
                 views.setInt(R.id.daily_root, "setBackgroundResource", R.drawable.widget_bg_gold)
             }
             views.setTextViewText(R.id.daily_streak, "🔥 $streak")

@@ -29,7 +29,7 @@ class TrainerScreen extends StatefulWidget {
   final bool isDaily;
   // When set, ONE clock covers the whole run instead of a per-question limit:
   // no question can time out on its own, and the session ends the moment this
-  // budget is spent. Used by the Daily Challenge (10 questions, 60 seconds).
+  // budget is spent. Used by the Daily Challenge (10 questions, 40 seconds).
   final int? totalTimeMs;
   final VoidCallback onExit;
   final void Function(bool isCorrect, int responseTime, AnswerRecord details) onAnswer;
@@ -146,8 +146,8 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
 
   /// The whole-run clock. Deliberately measured against [_sessionStart] rather
   /// than accumulated per tick, so it stays truthful across dropped frames —
-  /// and it keeps running through answer feedback: sixty seconds means sixty
-  /// seconds, and a wrong answer costing you its own pause is part of the game.
+  /// and it keeps running through answer feedback, because a wrong answer
+  /// costing you its own pause is part of the game.
   void _startTotalTimer() {
     final budget = widget.totalTimeMs!;
     _totalTick = Timer.periodic(const Duration(milliseconds: 100), (t) {
@@ -1021,6 +1021,21 @@ class _TopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Under a whole-run clock the shared label/bar report time left instead of
+    // questions done; everywhere else they behave exactly as before.
+    final timed = totalTimeMs != null && totalRemainingMs != null && totalTimeMs! > 0;
+    final timePct = timed ? (totalRemainingMs! / totalTimeMs!).clamp(0.0, 1.0) : 0.0;
+    final fillPct = timed ? timePct : progress.clamp(0.0, 1.0);
+    // Rounded up, so a clock reading 0:00 always means the run is over.
+    final secs = timed ? (totalRemainingMs! / 1000).ceil() : 0;
+    final barColour = timed
+        ? (timePct > 0.5
+            ? const Color(0xFF22C55E)
+            : timePct > 0.2
+                ? const Color(0xFFF59E0B)
+                : const Color(0xFFEF4444))
+        : Colors.white;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       child: Column(
@@ -1044,16 +1059,52 @@ class _TopBar extends StatelessWidget {
               Expanded(
                 child: Column(
                   children: [
-                    const Center(
+                    // The Daily Challenge's clock takes over the label and the
+                    // bar that already sit here rather than adding a row of its
+                    // own. Two things make that free: this row's height is set
+                    // by the 48px circles either side, so the label can grow
+                    // without moving anything below it — the answer pad stays
+                    // exactly where muscle memory expects it — and how far
+                    // through the run you are is already spelled out as
+                    // CORRECT n/10 in the pill underneath, so the bar showing
+                    // time instead of progress loses nothing.
+                    Center(
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
-                        child: Text('PROGRESS', maxLines: 1, softWrap: false, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white70, letterSpacing: 4)),
+                        child: timed
+                            ? Row(mainAxisSize: MainAxisSize.min, children: [
+                                Icon(Icons.timer_outlined, size: 14, color: barColour),
+                                const SizedBox(width: 5),
+                                Text(
+                                  '0:${secs.toString().padLeft(2, '0')}',
+                                  maxLines: 1,
+                                  softWrap: false,
+                                  style: TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w900,
+                                    color: barColour,
+                                    letterSpacing: 0.5,
+                                    height: 1.15,
+                                    // The countdown must not wobble each second.
+                                    fontFeatures: const [FontFeature.tabularFigures()],
+                                  ),
+                                ),
+                              ])
+                            : const Text('PROGRESS',
+                                maxLines: 1,
+                                softWrap: false,
+                                style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white70,
+                                    letterSpacing: 4)),
                       ),
                     ),
                     const SizedBox(height: 3),
-                    // Progress bar — gradient fill like web app
+                    // Progress bar — gradient fill like web app; the whole-run
+                    // clock drains this same bar in one threshold colour.
                     LayoutBuilder(builder: (ctx, box) {
-                      final filled = (box.maxWidth * progress.clamp(0.0, 1.0));
+                      final filled = (box.maxWidth * fillPct);
                       return Container(
                         height: 6,
                         width: box.maxWidth,
@@ -1074,10 +1125,19 @@ class _TopBar extends StatelessWidget {
                               width: filled,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(3),
-                                gradient: const LinearGradient(
-                                  colors: [Color(0xFF60A5FA), Color(0xFFA855F7), Color(0xFFEC4899)],
-                                ),
-                                boxShadow: const [BoxShadow(color: Color(0x66A855F7), blurRadius: 12)],
+                                color: timed ? barColour : null,
+                                gradient: timed
+                                    ? null
+                                    : const LinearGradient(
+                                        colors: [Color(0xFF60A5FA), Color(0xFFA855F7), Color(0xFFEC4899)],
+                                      ),
+                                boxShadow: [
+                                  BoxShadow(
+                                      color: timed
+                                          ? barColour.withValues(alpha: 0.45)
+                                          : const Color(0x66A855F7),
+                                      blurRadius: 12),
+                                ],
                               ),
                             ),
                           ),
@@ -1120,10 +1180,6 @@ class _TopBar extends StatelessWidget {
               ),
             ],
           ),
-          if (totalTimeMs != null && totalRemainingMs != null) ...[
-            const SizedBox(height: 12),
-            _TotalTimerBar(remainingMs: totalRemainingMs!, totalMs: totalTimeMs!),
-          ],
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -1148,76 +1204,6 @@ class _TopBar extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-/// The whole-run clock, for the Daily Challenge: seconds left plus a bar that
-/// drains. It shifts green → amber → red as the budget goes, so the pressure is
-/// felt peripherally without having to read the number mid-question.
-class _TotalTimerBar extends StatelessWidget {
-  final int remainingMs;
-  final int totalMs;
-  const _TotalTimerBar({required this.remainingMs, required this.totalMs});
-
-  @override
-  Widget build(BuildContext context) {
-    final pct = totalMs > 0 ? (remainingMs / totalMs).clamp(0.0, 1.0) : 0.0;
-    final colour = pct > 0.5
-        ? const Color(0xFF22C55E)
-        : pct > 0.2
-            ? const Color(0xFFF59E0B)
-            : const Color(0xFFEF4444);
-    // Ceil, so the bar and the digits agree: a clock reading 0 must mean over.
-    final secs = (remainingMs / 1000).ceil();
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.timer_outlined, size: 13, color: colour.withValues(alpha: 0.9)),
-            const SizedBox(width: 5),
-            Text(
-              '0:${secs.toString().padLeft(2, '0')}',
-              maxLines: 1,
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w900,
-                color: colour,
-                letterSpacing: 0.5,
-                // Tabular figures: the countdown must not wobble every second.
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 5),
-        LayoutBuilder(builder: (ctx, box) {
-          return Stack(children: [
-            Container(
-              height: 5,
-              width: box.maxWidth,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.07),
-                borderRadius: BorderRadius.circular(3),
-              ),
-            ),
-            // No implicit animation: the tick already arrives every 100ms, and
-            // tweening on top of that makes the drain lag behind the digits.
-            Container(
-              height: 5,
-              width: box.maxWidth * pct,
-              decoration: BoxDecoration(
-                color: colour,
-                borderRadius: BorderRadius.circular(3),
-                boxShadow: [
-                  BoxShadow(color: colour.withValues(alpha: 0.5), blurRadius: 10),
-                ],
-              ),
-            ),
-          ]);
-        }),
-      ],
     );
   }
 }

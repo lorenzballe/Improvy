@@ -21,7 +21,7 @@
 
 ### Promotional Text (iOS only, 170 chars, editable without review)
 ```
-New: the Daily Challenge — one key, 10 questions, 60 seconds, one attempt, the same for everyone in the world. Keep your streak and share your grid.
+New: the Daily Challenge — one key, 10 questions, 40 seconds, one attempt, the same for everyone in the world. Keep your streak and share your grid.
 ```
 
 ### Short Description (Google Play, 80 chars)
@@ -72,7 +72,7 @@ SIX TRAINING MODES
 
 BUILT TO KEEP YOU TRAINING
 
-✓ DAILY CHALLENGE — one key, 10 questions, 60 seconds, one attempt: the same challenge for the whole world, every day. Keep the streak, share the grid.
+✓ DAILY CHALLENGE — one key, 10 questions, 40 seconds, one attempt: the same challenge for the whole world, every day. Keep the streak, share the grid.
 ✓ HOME SCREEN WIDGETS — a scale degree waiting for an answer, a new one every hour, plus your daily challenge and streak at a glance
 ✓ 8 ANIMAL LEVELS — climb from 🐌 Snail to 🐆 Cheetah as your mastery grows
 ✓ ADAPTIVE DIFFICULTY — the challenge tightens as you get faster
@@ -234,7 +234,7 @@ Text Overlay:
 ```
 Focus: the daily results screen (score, grid, streak calendar)
 Text Overlay:
-  "One key. 10 questions. 60 seconds."
+  "One key. 10 questions. 40 seconds."
   "Keep the streak. Share the grid."
   (Show: result screen with a strong score and a lit calendar)
 ```

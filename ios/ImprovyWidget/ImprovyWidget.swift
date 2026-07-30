@@ -203,11 +203,15 @@ struct DailyEntry: TimelineEntry {
     let score: String
     let grid: String
     let streak: Int
+    /// "10 questions · 40 seconds", written by the app from the challenge
+    /// constants so the widget never advertises a stale budget.
+    let rule: String
 }
 
 struct DailyProvider: TimelineProvider {
     func placeholder(in context: Context) -> DailyEntry {
-        DailyEntry(date: Date(), played: false, key: "B♭", score: "", grid: "", streak: 0)
+        DailyEntry(date: Date(), played: false, key: "B♭", score: "", grid: "",
+                   streak: 0, rule: "10 questions · 40 seconds")
     }
 
     func getSnapshot(in context: Context, completion: @escaping (DailyEntry) -> Void) {
@@ -235,7 +239,8 @@ struct DailyProvider: TimelineProvider {
         let state = current()
         let entries = dates.map {
             DailyEntry(date: $0, played: state.played, key: state.key,
-                       score: state.score, grid: state.grid, streak: state.streak)
+                       score: state.score, grid: state.grid, streak: state.streak,
+                       rule: state.rule)
         }
         completion(Timeline(entries: entries.isEmpty ? [state] : entries, policy: .atEnd))
     }
@@ -247,7 +252,8 @@ struct DailyProvider: TimelineProvider {
             key: Improvy.string("daily_key") ?? "",
             score: Improvy.string("daily_score") ?? "",
             grid: Improvy.string("daily_grid") ?? "",
-            streak: Improvy.int("daily_streak")
+            streak: Improvy.int("daily_streak"),
+            rule: Improvy.string("daily_sub") ?? ""
         )
     }
 }
@@ -264,7 +270,8 @@ struct DailyWidgetView: View {
         if entry.played {
             return entry.grid.isEmpty ? "Next challenge tomorrow" : entry.grid
         }
-        return "10 questions · 60 seconds"
+        // The rule comes from the app, derived from the challenge constants.
+        return entry.rule.isEmpty ? "10 questions" : entry.rule
     }
 
     var body: some View {
