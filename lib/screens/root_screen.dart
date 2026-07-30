@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:confetti/confetti.dart';
 import '../providers/app_provider.dart';
+import '../models/daily_challenge.dart';
 import '../models/training_mode.dart';
 import '../constants/levels.dart';
 import 'home_screen.dart';
@@ -531,10 +532,11 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
         mode: provider.activeMode!,
         selectedKey: provider.selectedKey ?? 'C',
         fixedNote: provider.fixedNote,
-        // The daily runs at fixed difficulty 1 — identical conditions for
-        // everyone is what makes the shared score comparable.
+        // The daily runs at a fixed medium difficulty (a 4s clock) — identical
+        // conditions for everyone is what makes the shared score comparable,
+        // and the timer is the point. See DailyChallenge.difficulty.
         difficulty: provider.dailyChallengeActive
-            ? 1
+            ? DailyChallenge.difficulty
             : provider.activeMode == TrainingMode.diatonic
                 ? provider.diatonicDifficulty
                 : (provider.customDifficulty ?? provider.chromaticDifficulty),

@@ -11,7 +11,7 @@ import '../services/haptics_service.dart';
 import 'note_text.dart';
 
 /// Home-screen hero for the Daily Challenge. Two states:
-///  • not played — key of the day, "10 questions · one attempt", gold CTA feel;
+///  • not played — key of the day, "10 questions · beat the clock", gold CTA feel;
 ///  • played — today's score with the ✓/✗ dot row, the countdown to midnight,
 ///    and a share button (same Wordle-style text as the results screen).
 ///
@@ -205,7 +205,7 @@ class _DailyChallengeCardState extends State<DailyChallengeCard> {
             ],
           ),
           const SizedBox(height: 4),
-          Text('10 questions · one attempt · same for everyone',
+          Text('10 questions · beat the clock · one attempt',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(

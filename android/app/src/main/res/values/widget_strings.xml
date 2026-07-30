@@ -15,7 +15,7 @@
     <string name="widget_daily_label">DAILY CHALLENGE</string>
     <string name="widget_daily_placeholder">Key of B♭</string>
     <string name="widget_daily_key">Key of %1$s</string>
-    <string name="widget_daily_sub_placeholder">10 questions · one attempt</string>
+    <string name="widget_daily_sub_placeholder">10 questions · beat the clock</string>
     <string name="widget_daily_streak_placeholder">🔥 0</string>
     <string name="widget_daily_done">Done</string>
     <string name="widget_daily_done_sub">Next challenge tomorrow</string>

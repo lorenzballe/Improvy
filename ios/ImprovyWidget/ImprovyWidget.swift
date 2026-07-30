@@ -264,7 +264,7 @@ struct DailyWidgetView: View {
         if entry.played {
             return entry.grid.isEmpty ? "Next challenge tomorrow" : entry.grid
         }
-        return "10 questions · one attempt"
+        return "10 questions · beat the clock"
     }
 
     var body: some View {

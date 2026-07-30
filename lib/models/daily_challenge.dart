@@ -21,6 +21,14 @@ class DailyChallenge {
 
   static const int questionCount = 10;
 
+  /// The daily always runs at the **medium** tier (a 4-second clock in the
+  /// trainer). Deliberately fixed and identical for everyone: the shared score
+  /// only means something if the pressure is the same for all — and medium is
+  /// the honest middle, tense enough to reward quick recall without the panic
+  /// misses the hardest 2-second tier produces. The single source of truth for
+  /// the daily's difficulty, read by the trainer wiring.
+  static const int difficulty = 2;
+
   factory DailyChallenge.forDate(DateTime date) {
     final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
     final rng = _Lcg(_fnv1a(dateKey));

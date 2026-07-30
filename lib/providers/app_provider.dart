@@ -380,15 +380,21 @@ class AppProvider extends ChangeNotifier {
   }
 
   /// Enters today's challenge: a 10-question diatonic run in the key of the
-  /// day, fixed difficulty 1 (6s clock — same conditions for everyone; speed
-  /// still separates the fast from the sure). No-op if today was played.
+  /// day, at a fixed medium difficulty (a 4s clock — the timer is the point,
+  /// and the same conditions for everyone are what make the score comparable).
+  /// No-op if today was played.
   void startDailyChallenge() {
     final c = todayChallenge;
     if (dailyResults.containsKey(c.dateKey)) return;
     _activeDailyChallenge = c;
     dailyChallengeActive = true;
     selectedKey = c.key;
-    diatonicDifficulty = 1; // harmless: selectKey() recomputes it per key
+    // Keep the recorded difficulty in step with the trainer's: the daily runs
+    // at DailyChallenge.difficulty (medium), and recordAnswer credits key
+    // mastery against diatonicDifficulty — misaligning them would file a 4s
+    // run's answers under the 6s level. A real diatonic run still feeds
+    // mastery, exactly as before.
+    diatonicDifficulty = DailyChallenge.difficulty;
     customQuestions = c.degrees.length;
     activeMode = TrainingMode.diatonic;
     // Survives an OS kill — launch turns it into a burned attempt (see
