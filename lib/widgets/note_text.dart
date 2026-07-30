@@ -12,7 +12,23 @@ class NoteText extends StatelessWidget {
   final String note;
   final TextStyle? style;
 
-  const NoteText({super.key, required this.note, this.style});
+  /// How far above the baseline the accidental is lifted, and how large it is,
+  /// both as fractions of the text size.
+  ///
+  /// The defaults are tuned for a note name at button size, where the
+  /// accidental trails a letter. A leading accidental set very large — the
+  /// trainer's ♯4 — needs more: Noto Music hangs the sharp well below its
+  /// baseline, so at 150px the default lift left it dipping under the digit.
+  final double accidentalLift;
+  final double accidentalScale;
+
+  const NoteText({
+    super.key,
+    required this.note,
+    this.style,
+    this.accidentalLift = 0.14,
+    this.accidentalScale = 0.78,
+  });
 
   static final _pattern = RegExp('(𝄪|𝄫|♯|♭|#|b)', unicode: true);
 
@@ -24,7 +40,7 @@ class NoteText extends StatelessWidget {
     }
 
     final baseSize = baseStyle.fontSize ?? 16;
-    final accSize = baseSize * 0.78;
+    final accSize = baseSize * accidentalScale;
     final accColor = baseStyle.color ?? Colors.white;
     // Noto Music ships one (light) weight. Next to heavy display type the bare
     // glyph looks spindly, so we thicken it with a subtle same-color stroke
@@ -61,9 +77,9 @@ class NoteText extends StatelessWidget {
         alignment: PlaceholderAlignment.baseline,
         baseline: TextBaseline.alphabetic,
         child: Transform.translate(
-          // Lift the accidental into superscript position. Fixed fraction of
-          // the letter size → same optics on every device.
-          offset: Offset(0, -baseSize * 0.14),
+          // Lift the accidental into superscript position. A fraction of the
+          // letter size → same optics on every device and at every size.
+          offset: Offset(0, -baseSize * accidentalLift),
           child: Stack(children: [
             Text(acc, style: accStroke),
             Text(acc, style: accFill),

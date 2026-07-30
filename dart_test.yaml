@@ -1,0 +1,14 @@
+# Golden tests compare rendered pixels, and text rasterisation differs between
+# machines and OS versions — an image recorded on one build agent fails on the
+# next for reasons that have nothing to do with the app. They are kept as a tool
+# for looking at a screen, not as a gate, so a plain `flutter test` (what CI
+# runs) skips them.
+#
+# To look at the screens, or to re-record them after changing one:
+#
+#   flutter test --tags golden --run-skipped --update-goldens
+#
+# The images land in test/goldens/.
+tags:
+  golden:
+    skip: "visual reference only — see dart_test.yaml to run and re-record"

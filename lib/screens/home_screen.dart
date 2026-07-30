@@ -1581,6 +1581,14 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                     keyName: keyName,
                     title: 'Chromatic',
                     description: 'Challenge yourself with all 12 semitones.',
+                    // A keyboard, drawn exactly like the Diatonic card's note:
+                    // same size, same weight, same tile. It used to be a ♯ and
+                    // a ♭ from the music font at mismatched sizes, dragged 6px
+                    // together to keep the flat in the box — small, overlapping
+                    // and illegible, and the glyph clipped its own tile at any
+                    // size that read clearly. A keyboard is what twelve
+                    // semitones look like, and it is already the icon the
+                    // paywall uses for Chromatic Mode.
                     iconWidget: Container(
                       width: 54, height: 54,
                       decoration: BoxDecoration(
@@ -1588,20 +1596,7 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: const Color(0xFFFF69B4).withAlpha(120)),
                       ),
-                      child: Center(child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const _ThickGlyph('♯', 30),
-                          // The flat sits wide of its advance box and poked past
-                          // the right edge of the icon; pull it left, snug to the
-                          // sharp. Transform doesn't change layout, so the pair
-                          // stays centred — the flat just moves inward.
-                          Transform.translate(
-                            offset: const Offset(-6, 0),
-                            child: const _ThickGlyph('♭', 36),
-                          ),
-                        ],
-                      )),
+                      child: const Icon(Icons.piano_rounded, color: Colors.white, size: 32),
                     ),
                     accentColor: const Color(0xFFA855F7),
                     borderColor: const Color(0xFFA855F7).withAlpha(80),
@@ -2222,7 +2217,10 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
 class _ThickGlyph extends StatelessWidget {
   final String glyph;
   final double size;
-  const _ThickGlyph(this.glyph, this.size);
+  /// Gap between glyphs when more than one is drawn — Noto Music sets the
+  /// accidentals tight, and ♯♭ reads as one smudge without it.
+  final double letterSpacing;
+  const _ThickGlyph(this.glyph, this.size, {this.letterSpacing = 0});
 
   @override
   Widget build(BuildContext context) {
@@ -2233,6 +2231,7 @@ class _ThickGlyph extends StatelessWidget {
         // showed tofu on CanvasKit web, which has no automatic system fallback.
         Text(glyph, style: TextStyle(
           fontSize: size, fontWeight: FontWeight.w900, height: 1,
+          letterSpacing: letterSpacing,
           fontFamilyFallback: const ['NotoMusic'],
           foreground: Paint()
             ..style = PaintingStyle.stroke
@@ -2242,6 +2241,7 @@ class _ThickGlyph extends StatelessWidget {
         )),
         Text(glyph, style: TextStyle(
           fontSize: size, fontWeight: FontWeight.w900, height: 1, color: Colors.white,
+          letterSpacing: letterSpacing,
           fontFamilyFallback: const ['NotoMusic'],
         )),
       ],

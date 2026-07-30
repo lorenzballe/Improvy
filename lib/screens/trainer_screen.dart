@@ -1263,18 +1263,27 @@ class _QuestionDisplay extends StatelessWidget {
               height: 1.0,
             ),
           )
-        : Text(
-            label,
-            maxLines: 1,
+        // Also NoteText, not a plain Text with a font fallback. Noto Music sets
+        // ♯ and ♭ low in their box, so a bare fallback dropped the accidental
+        // below the digit beside it — "♯4" read as a 4 with something sunk in
+        // front of it. NoteText is the app's answer to exactly that: it lifts
+        // the accidental into superscript position by a fixed fraction of the
+        // size, the same treatment the note buttons and every other accidental
+        // in the app already get.
+        : NoteText(
+            note: label,
+            // Lifted much further and set smaller than a note name would be.
+            // Here the accidental leads a digit at ~185px: the default lift
+            // left the sharp sunk beside the number, and merely centring it
+            // still read as an afterthought. At this size it belongs where a
+            // score puts it — riding the top of the figure.
+            accidentalLift: 0.36,
+            accidentalScale: 0.66,
             style: TextStyle(
               fontSize: fontSize,
               fontWeight: FontWeight.w900,
               color: Colors.white,
               height: 1.0,
-              // Chromatic degrees carry ♭/♯, which the UI font lacks — fall back
-              // to the bundled Noto Music so they render everywhere (CanvasKit
-              // web has no automatic system-font fallback and would show tofu).
-              fontFamilyFallback: const ['NotoMusic'],
               shadows: const [Shadow(color: Colors.black54, blurRadius: 80, offset: Offset(0, 20))],
             ),
           );
