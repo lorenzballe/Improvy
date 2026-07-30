@@ -181,10 +181,12 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
     while (mounted && gen == _gen && (total == 0 || _index < total)) {
       final key = widget.config.shuffleKeys ? kAllKeys[_rng.nextInt(kAllKeys.length)] : widget.config.key;
       final degree = _pickDegree();
-      // For degrees with an octave-up name (6/13, 2/9, …) the voice asks either
-      // form at random; the answer note is the same, computed from the base.
-      final ext = kChromaticExtensionOf[degree];
-      final presented = (ext != null && _rng.nextBool()) ? ext : degree;
+      // The voice asks by one of the degree's names at random — an enharmonic
+      // spelling or its upper-structure form (6/13, ♯4/♯11, …) — exactly as the
+      // tap trainer does. The answer note is the same either way and is always
+      // computed from the base degree below.
+      final names = chromaticDegreeNames(degree);
+      final presented = names[_rng.nextInt(names.length)];
       final scale = calculateMajorScale(key);
       final answer = getNoteFromChromaticDegree(degree, scale, key);
       if (gen != _gen || !mounted) return;

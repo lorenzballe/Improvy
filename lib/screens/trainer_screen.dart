@@ -279,8 +279,7 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
   // Every name gets an equal share, so recall is trained for all of them.
   // Pocket Mode does the same with its voice (kChromaticExtensionOf).
   String _askedName(String deg) {
-    final ext = kChromaticExtensionOf[deg];
-    final names = [...deg.split('/'), ?ext];
+    final names = chromaticDegreeNames(deg);
     return names.length == 1 ? names.first : names[Random().nextInt(names.length)];
   }
 

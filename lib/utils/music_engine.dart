@@ -173,6 +173,19 @@ String formatNoteText(String note) {
   return note.replaceAll('♯', '#').replaceAll('♭', 'b');
 }
 
+/// Every name a chromatic degree can legitimately be asked by: its enharmonic
+/// spellings, plus the upper-structure name a chart would print.
+///
+///   '2'      → ['2', '9']
+///   '♭3/♯2'  → ['♭3', '♯2', '♯9']
+///   '5'      → ['5']            (no extension name exists for it)
+///
+/// All of them resolve to the same note, so the answer is always computed from
+/// the base degree. Shared by the tap trainer and Pocket Mode's voice, which
+/// used to decide this separately and could have drifted apart.
+List<String> chromaticDegreeNames(String degree) =>
+    [...degree.split('/'), ?kChromaticExtensionOf[degree]];
+
 String normalizeExtension(String degree) {
   const map = {
     '9': '2', '♭9': '♭2', '♯9': '♯2',
