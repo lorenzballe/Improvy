@@ -1588,7 +1588,7 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: const Color(0xFFFF69B4).withAlpha(120)),
                       ),
-                      child: const Center(child: _SharpFlatMark(inkHeight: 34)),
+                      child: const Center(child: _SharpFlatMark(inkHeight: 40)),
                     ),
                     accentColor: const Color(0xFFA855F7),
                     borderColor: const Color(0xFFA855F7).withAlpha(80),
@@ -2226,12 +2226,12 @@ class _SharpFlatMark extends StatelessWidget {
   final double inkHeight;
   const _SharpFlatMark({required this.inkHeight});
 
-  // Measured from the rendered glyphs, as fractions of the font size. The
-  // height is taken a little generously: antialiasing puts a faint pixel or two
-  // past the measured edge, and the faux-bold stroke adds half its width again.
-  static const _inkH = 0.86;
-  static const _sharpW = 0.33, _sharpTop = 0.25;
-  static const _flatW = 0.30, _flatTop = 0.15;
+  // Fractions of the font size, measured off the rendered tile rather than
+  // taken from the font: the lift is what actually lands the ink at the top of
+  // its box, which is a little more than the glyph's own bearing suggests.
+  static const _inkH = 0.80;
+  static const _sharpW = 0.33, _sharpTop = 0.48;
+  static const _flatW = 0.30, _flatTop = 0.38;
 
   @override
   Widget build(BuildContext context) {
