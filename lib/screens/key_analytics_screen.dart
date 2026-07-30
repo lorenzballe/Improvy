@@ -131,18 +131,9 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
     final hasToneData = toneStat.$2 > 0;
     final avgResp = toneStat.$4 > 0 ? (toneStat.$3 / toneStat.$4).round() : 0;
 
-    // Rank among the 12 keys (accuracy desc, then avg response asc)
-    final ranked = [...kKeys]..sort((a, b) {
-        final sa = tonalityStats[a] ?? (0, 0, 0, 0);
-        final sb = tonalityStats[b] ?? (0, 0, 0, 0);
-        final accA = sa.$2 > 0 ? sa.$1 / sa.$2 : 0.0;
-        final accB = sb.$2 > 0 ? sb.$1 / sb.$2 : 0.0;
-        if (accB != accA) return accB.compareTo(accA);
-        final rA = sa.$4 > 0 ? sa.$3 / sa.$4 : 999999.0;
-        final rB = sb.$4 > 0 ? sb.$3 / sb.$4 : 999999.0;
-        return rA.compareTo(rB);
-      });
-    final rank = ranked.indexOf(tone) + 1;
+    // Rank comes from the provider — the same computation the Skill Mastery
+    // list uses, so tapping a key can't change its rank.
+    final rank = provider.keyRanks[tone] ?? 0;
 
     // Chromatic degree mastery — all 15 degree spellings, enharmonics distinct
     final chromDegrees = kRomanDegrees.map((label) {

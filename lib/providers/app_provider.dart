@@ -105,7 +105,7 @@ class AppProvider extends ChangeNotifier {
       hour: notifHour,
       minute: notifMinute,
       comebackOn: notifComebackOn,
-      playedToday: (stats.dailyHistory[today]?.attempts ?? 0) > 0,
+      playedToday: _trainedOn(today),
       lastPlayedMs: stats.sessionHistory.isNotEmpty ? stats.sessionHistory.first.timestamp : null,
       streak: streak,
       dailyMessages: _dailyMessages(),
@@ -185,7 +185,7 @@ class AppProvider extends ChangeNotifier {
   // tonight unless the user plays. Null otherwise (nothing to protect).
   ReminderMessage? _streakSaveMessage() {
     final today = _dateKey(DateTime.now());
-    final playedToday = (stats.dailyHistory[today]?.attempts ?? 0) > 0;
+    final playedToday = _trainedOn(today);
     final s = streak;
     if (s >= 2 && !playedToday) {
       return ("Don't break your streak! 🔥",
@@ -305,13 +305,22 @@ class AppProvider extends ChangeNotifier {
 
   AnimalLevel get animalLevel => getAnimalLevel(totalProgress);
 
+  /// Did the user train on this day? Answers count, and so does a Pocket Mode
+  /// drill — which has no answers by design, only a session (see
+  /// [recordPocketPractice]). Reading attempts alone is what used to make a
+  /// week of hands-free training look like a week off.
+  bool _trainedOn(String dateKey) {
+    final d = stats.dailyHistory[dateKey];
+    if (d == null) return false;
+    return d.attempts > 0 || d.sessions > 0;
+  }
+
   int get streak {
-    final history = stats.dailyHistory;
     final today = _dateKey(DateTime.now());
     final yesterday = _dateKey(DateTime.now().subtract(const Duration(days: 1)));
 
-    final todayHasData = (history[today]?.attempts ?? 0) > 0;
-    final yesterdayHasData = (history[yesterday]?.attempts ?? 0) > 0;
+    final todayHasData = _trainedOn(today);
+    final yesterdayHasData = _trainedOn(yesterday);
 
     if (!todayHasData && !yesterdayHasData) return 0;
 
@@ -319,14 +328,9 @@ class AppProvider extends ChangeNotifier {
     var checkDate = DateTime.now();
     if (!todayHasData) checkDate = checkDate.subtract(const Duration(days: 1));
 
-    while (true) {
-      final key = _dateKey(checkDate);
-      if ((history[key]?.attempts ?? 0) > 0) {
-        count++;
-        checkDate = checkDate.subtract(const Duration(days: 1));
-      } else {
-        break;
-      }
+    while (_trainedOn(_dateKey(checkDate))) {
+      count++;
+      checkDate = checkDate.subtract(const Duration(days: 1));
     }
     return count;
   }
@@ -341,9 +345,57 @@ class AppProvider extends ChangeNotifier {
     return (correct / total * 100).round();
   }
 
-  int get averageResponseTime {
-    if (stats.totalAttempts == 0) return 0;
-    return (stats.totalResponseTime / stats.totalAttempts).round();
+  // A lifetime `averageResponseTime` used to live here. Nothing displayed it,
+  // and it counted timed-out answers — whose response time is just the
+  // difficulty's limit — so anyone wiring it up would have shown a speed that
+  // tracked the chosen difficulty rather than the player. The response-time
+  // chart on the Stats screen is the real figure, and it excludes timeouts.
+
+  /// How the 12 keys stack up: 1 is strongest, 0 means never played (unranked).
+  ///
+  /// Accuracy first, then average response time as the tie-break — knowing a
+  /// key means getting it right, and speed only separates keys you know equally
+  /// well. Timed-out answers count against accuracy but carry no speed
+  /// information (their response time is just the difficulty's limit), so they
+  /// are left out of the average.
+  ///
+  /// Lives here, once, because two screens show this number: the Skill Mastery
+  /// row and the key's own analytics page. They used to compute it separately —
+  /// one by speed alone over two modes, the other by accuracy over four — so
+  /// the same key could read #3 in the list and #7 when you opened it.
+  ///
+  /// "…Of What?" is excluded: it stores a fixed melody note in `tonality`,
+  /// which is not a key context at all.
+  Map<String, int> get keyRanks {
+    final agg = <String, ({int correct, int total, int rt, int rtCount})>{};
+    for (final s in stats.sessionHistory) {
+      for (final a in s.answers) {
+        if (a.mode == TrainingMode.ofWhat.storageKey) continue;
+        final cur = agg[a.tonality] ?? (correct: 0, total: 0, rt: 0, rtCount: 0);
+        final timed = a.selectedNote.isNotEmpty;
+        agg[a.tonality] = (
+          correct: cur.correct + (a.isCorrect ? 1 : 0),
+          total: cur.total + 1,
+          rt: cur.rt + (timed ? a.responseTime : 0),
+          rtCount: cur.rtCount + (timed ? 1 : 0),
+        );
+      }
+    }
+
+    final played = kDefaultKeyOrder.where((k) => (agg[k]?.total ?? 0) > 0).toList()
+      ..sort((a, b) {
+        final sa = agg[a]!, sb = agg[b]!;
+        final accA = sa.correct / sa.total, accB = sb.correct / sb.total;
+        if (accA != accB) return accB.compareTo(accA);
+        final rtA = sa.rtCount > 0 ? sa.rt / sa.rtCount : double.maxFinite;
+        final rtB = sb.rtCount > 0 ? sb.rt / sb.rtCount : double.maxFinite;
+        if (rtA != rtB) return rtA.compareTo(rtB);
+        return a.compareTo(b);
+      });
+
+    return {
+      for (final k in kDefaultKeyOrder) k: played.indexOf(k) + 1,
+    };
   }
 
   String _dateKey(DateTime d) => '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
@@ -637,6 +689,40 @@ class AppProvider extends ChangeNotifier {
       'degrees': degrees.length,
     });
     activeMode = TrainingMode.ofWhat;
+    notifyListeners();
+  }
+
+  /// A finished Pocket Mode drill counts as practice for the day.
+  ///
+  /// It asks for no answers, so there is nothing to be right or wrong about and
+  /// nothing is added to attempts, correct, or the game history the accuracy
+  /// charts read — inventing a score would poison them. What it does add is the
+  /// day's session count, which is what the streak and the reminders actually
+  /// read: before this, training hands-free every day left the streak at zero
+  /// and still fired "don't break your streak" that evening.
+  ///
+  /// [questionsHeard] guards it: opening Pocket Mode and leaving is not a day
+  /// trained. Lifetime and per-day session counts move together, keeping the
+  /// invariant that one is the sum of the other.
+  void recordPocketPractice(int questionsHeard) {
+    if (questionsHeard <= 0) return;
+    final today = _dateKey(DateTime.now());
+    final todayStats = stats.dailyHistory[today] ?? DayStats();
+    stats = stats.copyWith(
+      totalSessions: stats.totalSessions + 1,
+      dailyHistory: {
+        ...stats.dailyHistory,
+        today: DayStats(
+          attempts: todayStats.attempts,
+          correct: todayStats.correct,
+          responseTime: todayStats.responseTime,
+          sessions: todayStats.sessions + 1,
+        ),
+      },
+    );
+    _storage.saveStats(stats);
+    AnalyticsService.instance.capture('pocket_session_finished', {'questions': questionsHeard});
+    resyncNotifications();
     notifyListeners();
   }
 

@@ -18,7 +18,10 @@ class _HostState extends State<_Host> {
   @override
   Widget build(BuildContext context) {
     if (_config != null) {
-      return PocketModeScreen(config: _config!, onExit: () => setState(() => _config = null));
+      // The question count the real app records as practice is irrelevant to a
+      // screenshot host.
+      return PocketModeScreen(
+          config: _config!, onExit: (_) => setState(() => _config = null));
     }
     return PocketModeSetup(
       initialKey: 'C',

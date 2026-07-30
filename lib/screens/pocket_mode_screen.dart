@@ -33,7 +33,11 @@ class PocketConfig {
 class PocketModeScreen extends StatefulWidget {
   final PocketConfig config;
   final String notation; // app's note-naming setting, for the key badge
-  final VoidCallback onExit;
+  /// Reports how many questions were actually spoken, so a drill that ran
+  /// counts as practice for the day while opening and immediately leaving does
+  /// not. Pocket Mode asks for no answers, so there is nothing to score — but
+  /// a day spent training hands-free is still a day trained.
+  final void Function(int questionsHeard) onExit;
   const PocketModeScreen({super.key, required this.config, this.notation = 'CDE', required this.onExit});
 
   @override
@@ -160,7 +164,7 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
     _gen++;
     _tts.stop();
     _keepAlive.stop();
-    widget.onExit();
+    widget.onExit(_index);
   }
 
   // Generous estimate of how long an utterance takes at the configured rate.

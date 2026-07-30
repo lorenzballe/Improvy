@@ -374,7 +374,13 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       return PocketModeScreen(
         config: _pocketConfig!,
         notation: provider.notation,
-        onExit: () { provider.deselectKey(); setState(() => _pocketConfig = null); },
+        onExit: (questionsHeard) {
+          // A drill that actually ran counts as practice for the day, so the
+          // streak survives a week of hands-free training.
+          provider.recordPocketPractice(questionsHeard);
+          provider.deselectKey();
+          setState(() => _pocketConfig = null);
+        },
       );
     }
 

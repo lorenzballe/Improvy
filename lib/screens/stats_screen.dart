@@ -130,37 +130,9 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
     final validRt = displayRt.where((t) => t > 0);
     final avgRt = validRt.isEmpty ? 0 : validRt.reduce((a, b) => a + b) ~/ validRt.length;
 
-    // ── Per-key rank (web parity): rank by total average response time across
-    // diatonic + chromatic; keys with no data are unranked (rank 0 → faded). ──
-    final modeTimes = <String, List<int>>{}; // key -> [dCount, dTime, cCount, cTime]
-    for (final s in stats.sessionHistory) {
-      for (final a in s.answers) {
-        if (a.selectedNote.isEmpty) continue; // timeout — no speed information
-        final mi = a.mode == 'diatonic' ? 0 : (a.mode == 'chromatic' ? 2 : -1);
-        if (mi < 0) continue;
-        final m = modeTimes.putIfAbsent(a.tonality, () => [0, 0, 0, 0]);
-        m[mi] += 1;
-        m[mi + 1] += a.responseTime;
-      }
-    }
-    double rankScore(String key) {
-      final m = modeTimes[key];
-      if (m == null) return 200000;
-      final dAvg = m[0] > 0 ? m[1] / m[0] : 100000.0;
-      final cAvg = m[2] > 0 ? m[3] / m[2] : 100000.0;
-      return dAvg + cAvg;
-    }
-    final rankedKeys = provider.progressData.map((k) => k.key).toList()
-      ..sort((a, b) {
-        final sa = rankScore(a), sb = rankScore(b);
-        return sa == sb ? a.compareTo(b) : sa.compareTo(sb);
-      });
-    final keyRanks = <String, int>{
-      for (final k in provider.progressData)
-        k.key: (modeTimes[k.key] != null && (modeTimes[k.key]![0] > 0 || modeTimes[k.key]![2] > 0))
-            ? rankedKeys.indexOf(k.key) + 1
-            : 0,
-    };
+    // Per-key rank comes from the provider so this list and the key's own
+    // analytics page can never disagree about the same number.
+    final keyRanks = provider.keyRanks;
 
     // Sessions per day (last 7d)
     final weeklySessions = List.generate(7, (i) {
