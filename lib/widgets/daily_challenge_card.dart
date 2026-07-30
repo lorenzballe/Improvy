@@ -205,7 +205,11 @@ class _DailyChallengeCardState extends State<DailyChallengeCard> {
             ],
           ),
           const SizedBox(height: 4),
-          Text('${DailyChallenge.rule} · one attempt',
+          // Just the rule: adding "· one attempt" overflowed the card on a
+          // 412dp phone and got ellipsised mid-word. The single attempt is
+          // stated where it actually bites — the quit dialog — and the card
+          // turning to its "done" state says it plainly enough.
+          Text(DailyChallenge.rule,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(

@@ -12,8 +12,8 @@ const String kWebsiteUrl = 'https://lorenzballe.github.io/Improvyapp/';
 /// Public copies of the two legal texts. The store listings need addresses a
 /// reviewer can open, and these must keep saying the same thing as the bodies
 /// below — change one, change the other.
-const String kPrivacyPolicyUrl = '${kWebsiteUrl}#privacy';
-const String kTermsUrl = '${kWebsiteUrl}#terms';
+const String kPrivacyPolicyUrl = '$kWebsiteUrl#privacy';
+const String kTermsUrl = '$kWebsiteUrl#terms';
 
 /// Apple's numeric ID for the app, from App Store Connect → App Information
 /// ("Apple ID", e.g. '6501234567'). Needed to open the store listing on iOS —

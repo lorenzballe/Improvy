@@ -280,7 +280,7 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
   // Pocket Mode does the same with its voice (kChromaticExtensionOf).
   String _askedName(String deg) {
     final ext = kChromaticExtensionOf[deg];
-    final names = [...deg.split('/'), if (ext != null) ext];
+    final names = [...deg.split('/'), ?ext];
     return names.length == 1 ? names.first : names[Random().nextInt(names.length)];
   }
 
