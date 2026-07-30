@@ -1581,18 +1581,6 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                     keyName: keyName,
                     title: 'Chromatic',
                     description: 'Challenge yourself with all 12 semitones.',
-                    // ♯ and ♭, each scaled into its own box.
-                    //
-                    // Setting them as text never worked: Noto Music draws the
-                    // accidentals small inside a tall em box, so a size that
-                    // filled the tile also hung the glyph outside it, and the
-                    // old fix was a ♯ at 30 beside a ♭ at 36 dragged 6px left
-                    // to stop the flat escaping — mismatched, touching, and
-                    // held together by a nudge that only worked at that exact
-                    // size. Giving each glyph a box and letting it fill that
-                    // box takes the font's metrics out of the argument: the two
-                    // end up the same height, evenly spaced, and centred, at
-                    // the weight of the Diatonic card's note beside it.
                     iconWidget: Container(
                       width: 54, height: 54,
                       decoration: BoxDecoration(
@@ -1600,28 +1588,7 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: const Color(0xFFFF69B4).withAlpha(120)),
                       ),
-                      child: const Center(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SizedBox(
-                              width: 18, height: 34,
-                              child: FittedBox(
-                                fit: BoxFit.contain,
-                                child: _ThickGlyph('♯', 30, stroke: 1.6),
-                              ),
-                            ),
-                            SizedBox(width: 5),
-                            SizedBox(
-                              width: 16, height: 34,
-                              child: FittedBox(
-                                fit: BoxFit.contain,
-                                child: _ThickGlyph('♭', 30, stroke: 1.6),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      child: const Center(child: _SharpFlatMark(inkHeight: 34)),
                     ),
                     accentColor: const Color(0xFFA855F7),
                     borderColor: const Color(0xFFA855F7).withAlpha(80),
@@ -2232,6 +2199,83 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
             ),
           ]),
         ),
+    );
+  }
+}
+
+/// The ♯♭ mark on the Chromatic tile: both accidentals at one height, set
+/// close, and guaranteed to sit inside whatever holds them.
+///
+/// Every earlier attempt fought the font and lost. Noto Music places the
+/// accidentals inside a tall em box with a lot of air, and not the same amount
+/// for each, so nothing a widget can see says where the mark actually is:
+/// sizing by font size made the two different heights, and scaling by layout
+/// box pushed the ink out through the bottom of the tile.
+///
+/// So the ink was measured instead. At font size N the sharp's mark is 0.33N
+/// wide and 0.80N tall, starting 0.25N below the top of its line box; the flat
+/// is 0.30N wide and 0.79N tall, starting 0.15N down. Two facts fall out: the
+/// same font size gives both the same height — the old code's 30-and-36 pairing
+/// was correcting a difference that was never there — and the flat sits a tenth
+/// of a size higher, which is the misalignment no amount of nudging fixed.
+///
+/// Each glyph is therefore given a box the size of its own ink and slid up by
+/// its own offset, so the box holds exactly the mark and nothing else. Size the
+/// pair by [inkHeight]: that is the height they will really be.
+class _SharpFlatMark extends StatelessWidget {
+  final double inkHeight;
+  const _SharpFlatMark({required this.inkHeight});
+
+  // Measured from the rendered glyphs, as fractions of the font size. The
+  // height is taken a little generously: antialiasing puts a faint pixel or two
+  // past the measured edge, and the faux-bold stroke adds half its width again.
+  static const _inkH = 0.86;
+  static const _sharpW = 0.33, _sharpTop = 0.25;
+  static const _flatW = 0.30, _flatTop = 0.15;
+
+  @override
+  Widget build(BuildContext context) {
+    final fs = inkHeight / _inkH;
+
+    Widget mark(String glyph, double widthFactor, double topFactor) => SizedBox(
+          width: fs * widthFactor,
+          height: inkHeight,
+          child: OverflowBox(
+            maxWidth: double.infinity,
+            maxHeight: double.infinity,
+            alignment: Alignment.topLeft,
+            child: Transform.translate(
+              offset: Offset(0, -fs * topFactor),
+              child: Stack(children: [
+                // Faux-bold: a stroke under the fill, scaled with the mark so
+                // the weight holds at any size.
+                Text(glyph,
+                    style: TextStyle(
+                      fontSize: fs, height: 1,
+                      fontFamilyFallback: const ['NotoMusic'],
+                      foreground: Paint()
+                        ..style = PaintingStyle.stroke
+                        ..strokeWidth = fs * 0.035
+                        ..strokeJoin = StrokeJoin.round
+                        ..color = Colors.white,
+                    )),
+                Text(glyph,
+                    style: TextStyle(
+                      fontSize: fs, height: 1, color: Colors.white,
+                      fontFamilyFallback: const ['NotoMusic'],
+                    )),
+              ]),
+            ),
+          ),
+        );
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        mark('♯', _sharpW, _sharpTop),
+        SizedBox(width: fs * 0.06),
+        mark('♭', _flatW, _flatTop),
+      ],
     );
   }
 }
