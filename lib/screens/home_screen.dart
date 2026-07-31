@@ -1550,7 +1550,9 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                 ],
               ),
             ),
-            const SizedBox(height: 2),
+            // The key itself, named once here inside a slowly turning rainbow
+            // halo — so neither mode card has to repeat it.
+            _KeyHalo(keyName: keyName, notation: provider.notation),
 
             Expanded(
               child: LayoutBuilder(builder: (context, constraints) {
@@ -1882,6 +1884,122 @@ class _LockedSheet extends StatelessWidget {
 
 // ─── BIG MODE CARD (key detail) ──────────────────────────────────────────────
 
+/// The selected key, set inside a slowly turning rainbow halo — two blurred
+/// spectrum rings behind a dark disc. Sizes itself off the viewport height so
+/// it never squeezes the two mode cards below it off a short screen.
+class _KeyHalo extends StatefulWidget {
+  final String keyName;
+  final String notation;
+  const _KeyHalo({required this.keyName, required this.notation});
+
+  @override
+  State<_KeyHalo> createState() => _KeyHaloState();
+}
+
+class _KeyHaloState extends State<_KeyHalo> with SingleTickerProviderStateMixin {
+  late final AnimationController _spin;
+
+  // The design's spectrum, looping back to the first colour so the sweep has
+  // no seam where it turns.
+  static const _spectrum = <Color>[
+    Color(0xFFFF3B30), Color(0xFFFF9500), Color(0xFFFFCC00), Color(0xFF4CD964),
+    Color(0xFF5AC8FA), Color(0xFF007AFF), Color(0xFF5856D6), Color(0xFFAF52DE),
+    Color(0xFFFF2D55), Color(0xFFFF3B30),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _spin = AnimationController(vsync: this, duration: const Duration(seconds: 10))..repeat();
+  }
+
+  @override
+  void dispose() {
+    _spin.dispose();
+    super.dispose();
+  }
+
+  Widget _ring(double size, double opacity, double blur) => ImageFiltered(
+    imageFilter: ImageFilter.blur(sigmaX: blur, sigmaY: blur, tileMode: TileMode.decal),
+    child: Opacity(
+      opacity: opacity,
+      child: Container(
+        width: size, height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: SweepGradient(colors: _spectrum),
+        ),
+      ),
+    ),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    // 150 on a tall phone, shrinking on shorter ones — the cards below keep
+    // their room instead of being pushed into the scrolling fallback.
+    final h = MediaQuery.of(context).size.height;
+    final size = (h * 0.19).clamp(104.0, 150.0);
+    final inset1 = size * 0.042; // design: inset-2 of a 192 box
+    final disc = size - size * 0.083 * 2; // design: inset-4
+
+    return SizedBox(
+      height: size,
+      child: Center(
+        child: SizedBox(
+          width: size, height: size,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Only the rings turn; the disc and its letter stay upright, so
+              // the motion reads as light travelling around the key.
+              RepaintBoundary(
+                child: AnimatedBuilder(
+                  animation: _spin,
+                  builder: (_, child) => Transform.rotate(
+                    angle: _spin.value * 2 * math.pi,
+                    child: child,
+                  ),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      _ring(size, 0.30, size * 0.10),
+                      _ring(size - inset1 * 2, 0.50, size * 0.05),
+                    ],
+                  ),
+                ),
+              ),
+              Container(
+                width: disc, height: disc,
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0xFF16121F),
+                ),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: disc * 0.14),
+                    child: NoteText(
+                      note: formatNoteForDisplay(widget.keyName, widget.notation),
+                      style: TextStyle(
+                        fontSize: disc * 0.52,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        letterSpacing: -1.5,
+                        height: 1,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _BigModeCard extends StatefulWidget {
   final String keyName;
   final String title;
@@ -2138,22 +2256,16 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
+                      // Just the mode name — the key is named once, in the halo
+                      // above both cards, instead of being repeated on each.
                       Expanded(child: FittedBox(
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.centerLeft,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.baseline,
-                          textBaseline: TextBaseline.alphabetic,
-                          children: [
-                            NoteText(
-                              note: formatNoteForDisplay(widget.keyName,
-                                  context.select<AppProvider, String>((p) => p.notation)),
-                              style: const TextStyle(fontSize: 33, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.8)),
-                            const SizedBox(width: 7),
-                            Text(widget.title,
-                              style: const TextStyle(fontSize: 33, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.8)),
-                          ],
-                        ),
+                        // height: 1 — without the key beside it the title no
+                        // longer gets scaled down, so its default leading would
+                        // push the card's column past the available height.
+                        child: Text(widget.title,
+                          style: const TextStyle(fontSize: 33, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.8, height: 1)),
                       )),
                       const SizedBox(width: 10),
                       // Best-score badge (replaces the old LEVEL badge): the
