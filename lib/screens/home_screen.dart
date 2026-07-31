@@ -1540,13 +1540,6 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                       const SizedBox(width: 48),
                     ],
                   ),
-                  const SizedBox(height: 2),
-                  Transform.translate(
-                    offset: const Offset(0, -3),
-                    child: const Text('Select how you want to train today',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF94A3B8))),
-                  ),
                 ],
               ),
             ),
@@ -1606,44 +1599,20 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                       provider.startMode(TrainingMode.chromatic);
                     },
                 );
-                // Both cards need ~300dp of content at the narrowest width. If
-                // they fit, fill the screen (the reference look); otherwise scroll
-                // so nothing is ever clipped on short / high-density screens.
-                //
-                // "Fit" has to be measured against the flex layout actually used
-                // below — Spacer(1) + card(11) + gap + card(11) + Spacer(2) — so
-                // a card gets 11/25 of whatever is left after the gap. Comparing
-                // against the raw height instead let a viewport just over 2×300
-                // take the filled branch and squeeze each card to ~260dp, which
-                // overflowed the card's own column.
-                const cardMinH = 300.0, cardGap = 30.0, cardFlex = 11.0, flexTotal = 25.0;
-                final fits =
-                    (constraints.maxHeight - cardGap) * cardFlex / flexTotal >= cardMinH;
-                final content = Padding(
+                // Choose Mode never scrolls: the two cards always share the
+                // height that is left, and each one squeezes its own contents to
+                // whatever it is given (see _BigModeCardState._k). The gap
+                // shrinks first, so on a short phone the cards keep as much of
+                // their own room as possible before their type starts scaling.
+                final gap = (constraints.maxHeight * 0.035).clamp(10.0, 30.0);
+                return Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                  child: fits
-                      // Slight top/bottom breathing room so both cards sit a
-                      // touch shorter than full height. To restore the original
-                      // fill-the-screen look, remove the two Spacers and change
-                      // the cards back to `Expanded(child: …)` (or revert the
-                      // dedicated commit that introduced this).
-                      ? Column(children: [
-                          // Smaller top gap + larger bottom gap nudges the pair
-                          // upward (first card sits a touch higher); the wider
-                          // middle SizedBox spaces the two cards further apart.
-                          const Spacer(flex: 1),
-                          Expanded(flex: cardFlex ~/ 1, child: diatonicCard),
-                          const SizedBox(height: cardGap),
-                          Expanded(flex: cardFlex ~/ 1, child: chromaticCard),
-                          const Spacer(flex: 2),
-                        ])
-                      : Column(children: [
-                          SizedBox(height: cardMinH, child: diatonicCard),
-                          const SizedBox(height: 16),
-                          SizedBox(height: cardMinH, child: chromaticCard),
-                        ]),
+                  child: Column(children: [
+                    Expanded(child: diatonicCard),
+                    SizedBox(height: gap),
+                    Expanded(child: chromaticCard),
+                  ]),
                 );
-                return fits ? content : SingleChildScrollView(child: content);
               }),
             ),
           ]),
@@ -1946,7 +1915,7 @@ class _KeyHaloState extends State<_KeyHalo> with SingleTickerProviderStateMixin 
     // 150 on a tall phone, shrinking on shorter ones — the cards below keep
     // their room instead of being pushed into the scrolling fallback.
     final h = MediaQuery.of(context).size.height;
-    final size = (h * 0.16).clamp(92.0, 126.0);
+    final size = (h * 0.16).clamp(76.0, 126.0);
     final inset1 = size * 0.042; // design: inset-2 of a 192 box
     final disc = size - size * 0.083 * 2; // design: inset-4
 
@@ -2039,7 +2008,10 @@ class _StartButton extends StatefulWidget {
   final bool isLocked;
   final Color accentColor;
   final VoidCallback onTap;
-  const _StartButton({required this.isLocked, required this.accentColor, required this.onTap});
+  /// 1.0 on a tall phone, less when the card had to be squeezed — see
+  /// [_BigModeCardState._k].
+  final double k;
+  const _StartButton({required this.isLocked, required this.accentColor, required this.onTap, this.k = 1.0});
 
   @override
   State<_StartButton> createState() => _StartButtonState();
@@ -2078,7 +2050,7 @@ class _StartButtonState extends State<_StartButton> {
         duration: const Duration(milliseconds: 100),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: EdgeInsets.symmetric(vertical: 16 * widget.k),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [widget.accentColor, widget.accentColor.withValues(alpha:0.75)],
@@ -2089,12 +2061,12 @@ class _StartButtonState extends State<_StartButton> {
               BoxShadow(color: widget.accentColor.withValues(alpha:0.38), blurRadius: 28, offset: const Offset(0, 8)),
             ],
           ),
-          child: const Row(
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.play_arrow_rounded, color: Colors.white, size: 20),
-              SizedBox(width: 8),
-              Text('START', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 3, color: Colors.white)),
+              Icon(Icons.play_arrow_rounded, color: Colors.white, size: 20 * widget.k),
+              SizedBox(width: 8 * widget.k),
+              Text('START', style: TextStyle(fontSize: 13 * widget.k, fontWeight: FontWeight.w900, letterSpacing: 3, color: Colors.white)),
             ],
           ),
         ),
@@ -2104,6 +2076,18 @@ class _StartButtonState extends State<_StartButton> {
 }
 
 class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderStateMixin {
+  /// How much the card had to be squeezed to fit the height it was given.
+  /// 1.0 when it has its natural room; smaller on short screens, where every
+  /// fixed dimension below scales with it so the card keeps its proportions
+  /// instead of overflowing (Choose Mode never scrolls).
+  double _k = 1.0;
+  /// The card's content is part scalable and part not: roughly [_scalableH] of
+  /// padding, notes, type and the START bar all follow [_k], while [_fixedH]
+  /// (line-height rounding, borders, the locked badge) does not. Solving for k
+  /// against the height actually granted is what lets Choose Mode fit two full
+  /// cards on a 568pt phone without scrolling.
+  static const _scalableH = 225.0;
+  static const _fixedH = 52.0;
   late final AnimationController _pulseCtrl;
   late final Animation<double> _scaleAnim;
 
@@ -2187,15 +2171,25 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
                   ),
                 ),
               ),
-            Padding(
-              padding: const EdgeInsets.all(20),
+            LayoutBuilder(builder: (context, c) {
+            _k = c.maxHeight.isFinite
+                ? ((c.maxHeight - _fixedH) / _scalableH).clamp(0.55, 1.0)
+                : 1.0;
+            final k = _k;
+            return Padding(
+              padding: EdgeInsets.all(20 * k),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      widget.iconWidget,
+                      // The caller hands over a fixed-size tile; scale the space
+                      // it takes so the top row shrinks with the rest.
+                      SizedBox(
+                        width: 54 * k, height: 54 * k,
+                        child: FittedBox(fit: BoxFit.scaleDown, child: widget.iconWidget),
+                      ),
                       const Spacer(),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
@@ -2212,13 +2206,13 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
                             // (or perfected); it is dimmed only if never attempted.
                             // The selected one is brighter and larger (below).
                             Widget noteWidget = SizedBox(
-                              width: 54, height: 54,
+                              width: 54 * k, height: 54 * k,
                               child: Center(
                                 child: Icon(Icons.music_note_rounded,
                                   color: isPerfect
                                       ? const Color(0xFFfacc15)
                                       : (played ? diffColors[i] : Colors.white.withValues(alpha:0.22)),
-                                  size: 32),
+                                  size: 32 * k),
                               ),
                             );
 
@@ -2228,9 +2222,9 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
                                 builder: (context, _) => Transform.scale(
                                   scale: _scaleAnim.value,
                                   child: SizedBox(
-                                    width: 54, height: 54,
+                                    width: 54 * k, height: 54 * k,
                                     child: Center(
-                                      child: Icon(Icons.music_note_rounded, color: selColor, size: 44),
+                                      child: Icon(Icons.music_note_rounded, color: selColor, size: 44 * k),
                                     ),
                                   ),
                                 ),
@@ -2249,10 +2243,10 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
                               child: noteWidget,
                             );
                           })),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4 * k),
                           Text(diffLabels[widget.currentDifficulty - 1].toUpperCase(),
                             style: TextStyle(
-                              fontSize: 14, fontWeight: FontWeight.w900, letterSpacing: 1.6,
+                              fontSize: 14 * k, fontWeight: FontWeight.w900, letterSpacing: 1.6,
                               color: widget.levels[widget.currentDifficulty - 1] >= caps[widget.currentDifficulty - 1]
                                   ? const Color(0xFFfacc15) : diffColors[widget.currentDifficulty - 1],
                             )),
@@ -2273,7 +2267,7 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
                         // longer gets scaled down, so its default leading would
                         // push the card's column past the available height.
                         child: Text(widget.title,
-                          style: const TextStyle(fontSize: 33, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.8, height: 1)),
+                          style: TextStyle(fontSize: 33 * k, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.8, height: 1)),
                       )),
                       const SizedBox(width: 10),
                       // Best-score badge (replaces the old LEVEL badge): the
@@ -2284,20 +2278,20 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text('$bestPct%',
-                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, height: 1, letterSpacing: -0.5, color: bestColor)),
-                          const SizedBox(height: 3),
+                            style: TextStyle(fontSize: 20 * k, fontWeight: FontWeight.w900, height: 1, letterSpacing: -0.5, color: bestColor)),
+                          SizedBox(height: 3 * k),
                           Text('$bestScore/$bestCap BEST',
-                            style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 1, color: Colors.white.withAlpha(90))),
+                            style: TextStyle(fontSize: 9 * k, fontWeight: FontWeight.w900, letterSpacing: 1, color: Colors.white.withAlpha(90))),
                         ],
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10 * k),
                   Text(widget.description,
                     maxLines: 2, overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 14, color: Colors.white60, height: 1.5)),
+                    style: TextStyle(fontSize: 14 * k, color: Colors.white60, height: 1.5)),
                   if (widget.isLocked) ...[
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10 * k),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(20)),
@@ -2313,10 +2307,12 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
                     isLocked: widget.isLocked,
                     accentColor: widget.accentColor,
                     onTap: widget.onTap,
+                    k: k,
                   ),
                 ],
               ),
-            ),
+            );
+            }),
           ]),
         ),
     );

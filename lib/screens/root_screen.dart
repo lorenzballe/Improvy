@@ -71,6 +71,10 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
   // Provider listener for debug-button level-up detection
   AppProvider? _observedProvider;
 
+  // One-shot: the app fades up as the onboarding poster lifts away, so the two
+  // halves of that handover meet instead of cutting.
+  bool _arriving = false;
+
   @override
   void initState() {
     super.initState();
@@ -360,6 +364,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
         // the nav index to match so the indicator and the page can't desync
         // (e.g. Training shown while the bar still highlights Settings).
         _currentTab = 0;
+        _arriving = true;
         AnalyticsService.instance.capture('onboarding_completed');
         provider.completeTutorial();
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -577,7 +582,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       );
     }
 
-    return Scaffold(
+    final home = Scaffold(
       backgroundColor: AppColors.background,
       body: Stack(
         children: [
@@ -653,6 +658,21 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
             ),
         ],
       ),
+    );
+
+    if (!_arriving) return home;
+    // Plays once, right after the onboarding poster has lifted away.
+    return TweenAnimationBuilder<double>(
+      key: const ValueKey('arrive'),
+      tween: Tween(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 520),
+      curve: Curves.easeOutCubic,
+      onEnd: () { if (mounted) setState(() => _arriving = false); },
+      builder: (_, v, child) => Opacity(
+        opacity: v,
+        child: Transform.scale(scale: 0.985 + 0.015 * v, child: child),
+      ),
+      child: home,
     );
   }
 }

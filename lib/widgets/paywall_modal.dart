@@ -123,12 +123,17 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
       builder: (_, child) {
         // Arriving, the backdrop snaps in over the first 30% so the staggered
         // content lands on a solid screen. Leaving, the fade spreads over the
-        // whole rewind.
+        // whole rewind. The slight rise and swell make it read as a panel
+        // coming up to meet you rather than a screen being switched.
         final t = _enter.value;
         final v = (_closing ? t : t / 0.3).clamp(0.0, 1.0);
+        final eased = Curves.easeOutCubic.transform(v);
         return Opacity(
           opacity: v,
-          child: Transform.scale(scale: 0.965 + 0.035 * v, child: child),
+          child: Transform.translate(
+            offset: Offset(0, (1 - eased) * 26),
+            child: Transform.scale(scale: 0.955 + 0.045 * eased, child: child),
+          ),
         );
       },
       child: Material(

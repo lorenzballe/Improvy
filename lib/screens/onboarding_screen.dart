@@ -23,6 +23,10 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _enter;
+  // True from the moment START is pressed: the entrance is then played in
+  // reverse, and the poster lifts towards the viewer as it goes, so handing over
+  // to the app reads as stepping through the poster rather than a hard cut.
+  bool _leaving = false;
 
   @override
   void initState() {
@@ -30,6 +34,14 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     _enter = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 1100))
       ..forward();
+  }
+
+  Future<void> _finish() async {
+    if (_leaving) return;
+    setState(() => _leaving = true);
+    await _enter.animateBack(0.0,
+        duration: const Duration(milliseconds: 460), curve: Curves.easeInCubic);
+    if (mounted) widget.onComplete();
   }
 
   @override
@@ -59,32 +71,49 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     final inset = MediaQuery.paddingOf(context);
     return Scaffold(
       backgroundColor: _bg,
-      body: LayoutBuilder(
-        builder: (context, c) {
-          final free = c.maxHeight - inset.top - inset.bottom;
-          final s = math.min(c.maxWidth / 390, free / _designHeight)
-              .clamp(0.5, 1.0);
-          // The poster is sized to fit, but text metrics vary by platform and
-          // by the user's font scale, so keep a scroll view underneath it: a
-          // few points of disagreement scroll instead of overflowing.
-          return SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: c.maxHeight),
-              child: IntrinsicHeight(
-                child: _Poster(
-                  s: s,
-                  inset: inset,
-                  stagger: _in,
-                  onStart: widget.onComplete,
-                  onLegal: (title, body) => Navigator.of(context).push(
-                      MaterialPageRoute(
-                          builder: (_) =>
-                              LegalScreen(title: title, body: body))),
-                ),
-              ),
+      body: AnimatedBuilder(
+        animation: _enter,
+        builder: (_, child) {
+          // Arriving, the poster settles in over the first third while the
+          // staggered pieces land on top of it. Leaving, the same value runs
+          // back to zero and the whole poster lifts towards the viewer.
+          final t = _enter.value;
+          final v = (_leaving ? t : t / 0.34).clamp(0.0, 1.0);
+          return Opacity(
+            opacity: v,
+            child: Transform.scale(
+              scale: _leaving ? 1.0 + (1 - v) * 0.06 : 0.98 + 0.02 * v,
+              child: child,
             ),
           );
         },
+        child: LayoutBuilder(
+          builder: (context, c) {
+            final free = c.maxHeight - inset.top - inset.bottom;
+            final s = math.min(c.maxWidth / 390, free / _designHeight)
+                .clamp(0.5, 1.0);
+            // The poster is sized to fit, but text metrics vary by platform and
+            // by the user's font scale, so keep a scroll view underneath it: a
+            // few points of disagreement scroll instead of overflowing.
+            return SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: c.maxHeight),
+                child: IntrinsicHeight(
+                  child: _Poster(
+                    s: s,
+                    inset: inset,
+                    stagger: _in,
+                    onStart: _finish,
+                    onLegal: (title, body) => Navigator.of(context).push(
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                LegalScreen(title: title, body: body))),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
       ),
     );
   }
