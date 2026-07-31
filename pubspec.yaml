@@ -2,7 +2,7 @@
 description: "Improvy - Music Interval Trainer"
 publish_to: 'none'
 
-version: 1.3.2+33
+version: 1.4.0+34
 
 environment:
   sdk: ^3.12.0
@@ -27,10 +27,10 @@ dependencies:
   # conditional import keeps the web build compiling with a no-op stub.
   flutter_local_notifications: ^18.0.1
   timezone: ">=0.9.0 <0.11.0"
-  # Text-to-speech for Pocket Mode (hands-free audio training). Works on
-  # iOS/Android/web; iOS keeps speaking with the screen locked via the
-  # playback audio category + the `audio` background mode (see Info.plist).
-  flutter_tts: ^4.2.2
+  # Pocket Mode speaks with recorded clips of the author's own voice (see
+  # lib/services/voice_service.dart), not a synthesised one — so audioplayers
+  # below covers both the speech and the keep-alive.
+  #
   # Pocket Mode's background keep-alive. iOS only leaves a backgrounded app
   # running while audio is actually FLOWING — an active session with nothing
   # playing gets suspended, which froze the loop during its silent gaps. This
@@ -60,6 +60,7 @@ flutter:
   assets:
     - assets/images/
     - assets/audio/
+    - assets/audio/voice/
 
   fonts:
     - family: NotoMusic

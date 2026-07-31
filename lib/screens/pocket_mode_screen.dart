@@ -4,7 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/music_constants.dart';
-import '../services/tts_service.dart';
+import '../services/voice_service.dart';
 import '../services/keep_alive_audio.dart';
 import '../services/haptics_service.dart';
 import '../utils/music_engine.dart';
@@ -47,7 +47,7 @@ class PocketModeScreen extends StatefulWidget {
 class _PocketModeScreenState extends State<PocketModeScreen> with TickerProviderStateMixin {
   static const _accent = Color(0xFF6366F1); // indigo — Pocket Mode's colour
 
-  final TtsService _tts = TtsService();
+  final VoiceService _voice = VoiceService();
   // Runs for as long as the session is playing: without audio actually flowing
   // iOS suspends the app during the silent gaps and the loop stops dead.
   final KeepAliveAudio _keepAlive = KeepAliveAudio();
@@ -77,7 +77,7 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
     _pulse = AnimationController(vsync: this, duration: const Duration(milliseconds: 2600))..repeat(reverse: true);
     _reveal = AnimationController(vsync: this, duration: const Duration(milliseconds: 820));
     _countdown = AnimationController(vsync: this, duration: const Duration(seconds: 1), value: 0);
-    _tts.warmUp(); // init the audio session/voice before the first question
+    _voice.warmUp(); // spin the decoder up before the first question
     // Auto-start: the user already pressed Start on the setup screen.
     WidgetsBinding.instance.addPostFrameCallback((_) => _play());
   }
@@ -85,40 +85,13 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
   @override
   void dispose() {
     _gen++;
-    _tts.stop();
+    _voice.dispose();
     _keepAlive.dispose();
     _pulse.dispose();
     _reveal.dispose();
     _countdown.dispose();
     super.dispose();
   }
-
-  // ── Speech text ────────────────────────────────────────────────────────────
-
-  static const _numberWords = {
-    '1': 'one', '2': 'two', '3': 'three', '4': 'four',
-    '5': 'five', '6': 'six', '7': 'seven',
-    '9': 'nine', '11': 'eleven', '13': 'thirteen',
-  };
-
-  // Notes are named in the app's chosen notation (C D E… or Do Re Mi…) for
-  // both the voice and the screen, then accidentals become spoken words.
-  String _spokenNote(String n) => formatNoteForDisplay(n, widget.notation)
-      .replaceAll('♭', ' flat')
-      .replaceAll('♯', ' sharp')
-      .trim();
-
-  String _spokenDegree(String d) {
-    var s = d.split('/').first;
-    final flat = s.contains('♭');
-    final sharp = s.contains('♯');
-    s = s.replaceAll('♭', '').replaceAll('♯', '');
-    final word = _numberWords[s] ?? s;
-    return '${flat ? 'flat ' : sharp ? 'sharp ' : ''}$word';
-  }
-
-  String _questionSpeech(String degree, String key) =>
-      '${_spokenDegree(degree)} of ${_spokenNote(key)}';
 
   // ── Loop control ───────────────────────────────────────────────────────────
 
@@ -153,7 +126,7 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
 
   void _pause() {
     _gen++; // invalidate the running loop
-    _tts.stop();
+    _voice.stop();
     _keepAlive.stop(); // paused means idle: let iOS suspend us and save battery
     _countdown.stop();
     _spokenKey = ''; // re-announce the key on the first question after resuming
@@ -162,18 +135,9 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
 
   void _exit() {
     _gen++;
-    _tts.stop();
+    _voice.stop();
     _keepAlive.stop();
     widget.onExit(_index);
-  }
-
-  // Generous estimate of how long an utterance takes at the configured rate.
-  // The loop paces itself off this instead of waiting for the engine to report
-  // completion — some web/TTS engines never fire that event, which would freeze
-  // the loop. Better a touch long (a natural pause) than cut off.
-  int _speechMs(String phrase) {
-    final n = phrase.split(' ').where((w) => w.isNotEmpty).length;
-    return 500 + n * 480;
   }
 
   Future<void> _loop(int gen) async {
@@ -195,13 +159,18 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
       // first question, or after a resume) and then speaks just the degree, so
       // it isn't repeating "of C" every time. Shuffling always names the key.
       final sameKeyContext = !widget.config.shuffleKeys && key == _spokenKey;
-      final qText = sameKeyContext ? _spokenDegree(presented) : _questionSpeech(presented, key);
+      // Two clips back to back — the degree, then the key ("flat three · C").
+      // On a fixed key the key clip is dropped after the first question.
+      final qClips = <String?>[
+        VoiceService.degreeClip(presented),
+        if (!sameKeyContext) VoiceService.noteClip(key),
+      ];
       _spokenKey = key;
       // Speech is fired without awaiting completion; _wait drives the pace so
       // the loop can never stall on an engine that never reports "done".
       setState(() { _key = key; _degree = degree; _presented = presented; _answer = ''; _phase = 1; });
-      _tts.speak(qText);
-      if (!await _wait(_speechMs(qText), gen)) return;
+      _voice.say(qClips);
+      if (!await _wait(VoiceService.phraseMs(qClips), gen)) return;
 
       // Think — a smooth 1→0 ring sweep over the delay (60fps, not stepped).
       setState(() => _phase = 2);
@@ -210,25 +179,22 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
       if (!await _wait(widget.config.delayMs, gen)) return;
 
       // Reveal on screen + speak the answer.
-      final aText = _spokenNote(answer);
+      final aClips = <String?>[VoiceService.noteClip(answer)];
       setState(() { _answer = answer; _phase = 3; });
       _reveal.forward(from: 0); // bloom ripple
       HapticsService.impactLight();
-      _tts.speak(aText);
-      if (!await _wait(_speechMs(aText) + 800, gen)) return;
+      _voice.say(aClips);
+      if (!await _wait(VoiceService.phraseMs(aClips) + 800, gen)) return;
 
       _prevDegree = degree;
       if (mounted) setState(() => _index++);
     }
     if (mounted && gen == _gen) {
-      const outro = 'Session complete.';
-      _tts.speak(outro);
+      // The recorded voice only knows degrees and notes, so the session ends on
+      // the screen and a haptic rather than a spoken line.
+      HapticsService.impactMedium();
       setState(() { _playing = false; _finished = true; _phase = 0; });
-      // Hold the keep-alive until the closing line has actually been spoken —
-      // dropping it straight away lets iOS suspend us mid-sentence. The guard
-      // matters because the user may hit play again during those two seconds.
-      await _wait(_speechMs(outro) + 400, gen);
-      if (gen == _gen) _keepAlive.stop();
+      _keepAlive.stop();
     }
   }
 

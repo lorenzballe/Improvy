@@ -29,7 +29,7 @@ class KeepAliveAudio {
     _running = true;
     try {
       if (!_configured) {
-        // Match the category flutter_tts sets, so neither one downgrades the
+        // Match the category the voice player uses, so neither one downgrades the
         // shared session to something that can't play in the background.
         await AudioPlayer.global.setAudioContext(
           AudioContext(

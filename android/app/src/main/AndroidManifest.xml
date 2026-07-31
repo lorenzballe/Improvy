@@ -2,6 +2,10 @@
     <!-- Local reminders (flutter_local_notifications): runtime permission on
          Android 13+, and boot receiver so scheduled reminders survive reboots. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- Pocket Mode runs with the screen off: the keep-alive player asks for
+         stayAwake, which silently does nothing without this permission — the
+         system then dozes the app between questions and the loop stops. -->
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <application
         android:label="improvy"
