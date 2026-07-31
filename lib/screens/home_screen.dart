@@ -1604,18 +1604,19 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                       provider.startMode(TrainingMode.chromatic);
                     },
                 );
-                // Choose Mode never scrolls: the two cards always share the
-                // height that is left, and each one squeezes its own contents to
-                // whatever it is given (see _BigModeCardState._k). The gap
-                // shrinks first, so on a short phone the cards keep as much of
-                // their own room as possible before their type starts scaling.
-                final gap = (constraints.maxHeight * 0.035).clamp(10.0, 30.0);
                 return Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  // Breathing room above and below the pair, and a wide gap
+                  // between them, so the cards sit shorter than the screen
+                  // rather than filling it. The smaller top gap nudges the pair
+                  // upward. Never scrolls: on a short phone each card squeezes
+                  // its own contents instead (see _BigModeCardState._k).
                   child: Column(children: [
-                    Expanded(child: diatonicCard),
-                    SizedBox(height: gap),
-                    Expanded(child: chromaticCard),
+                    const Spacer(flex: 1),
+                    Expanded(flex: 11, child: diatonicCard),
+                    const SizedBox(height: 30),
+                    Expanded(flex: 11, child: chromaticCard),
+                    const Spacer(flex: 2),
                   ]),
                 );
               }),
@@ -1976,7 +1977,7 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
   /// against the height actually granted is what lets Choose Mode fit two full
   /// cards on a 568pt phone without scrolling.
   static const _scalableH = 225.0;
-  static const _fixedH = 52.0;
+  static const _fixedH = 57.0;
   late final AnimationController _pulseCtrl;
   late final Animation<double> _scaleAnim;
 
