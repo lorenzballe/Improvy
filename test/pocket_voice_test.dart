@@ -54,6 +54,28 @@ void main() {
     }
   });
 
+  test('rarer spellings are spoken as themselves, not as their twin', () {
+    // These were the last gaps in the recordings; each now has its own clip, so
+    // a ♯2 question is heard as "sharp two" and not as "flat three".
+    final own = {
+      '♭5': VoiceService.degreeClip('♯4'),
+      '♯2': VoiceService.degreeClip('♭3'),
+    };
+    own.forEach((spelling, twin) {
+      expect(VoiceService.degreeClip(spelling), isNot(twin),
+          reason: '$spelling still borrows its enharmonic twin');
+    });
+
+    final notes = {'A♯': 'B♭', 'B♯': 'C', 'C♭': 'B', 'D♯': 'E♭', 'E♯': 'F', 'B𝄫': 'A', 'E𝄫': 'D'};
+    notes.forEach((spelling, twin) {
+      final clip = VoiceService.noteClip(spelling);
+      expect(clip, isNotNull, reason: 'no clip for $spelling');
+      expect(files, contains(clip), reason: 'clip $clip missing on disk');
+      expect(clip, isNot(VoiceService.noteClip(twin)),
+          reason: '$spelling still borrows $twin');
+    });
+  });
+
   test('a phrase is as long as its clips plus the gaps between them', () {
     final degree = VoiceService.degreeClip('♭3');
     final note = VoiceService.noteClip('C');
