@@ -139,9 +139,6 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
           const Positioned.fill(
             child: IgnorePointer(child: ColoredBox(color: Color(0x590C0616))),
           ),
-          // Rainbow hairline pinned to the very top edge (above the status bar).
-          const Positioned(top: 0, left: 0, right: 0, child: _RainbowStrip()),
-
           SafeArea(
             child: LayoutBuilder(
               builder: (context, c) {
@@ -157,7 +154,9 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
                     child: SizedBox(
                       width: c.maxWidth,
                       child: Padding(
-                        padding: EdgeInsets.fromLTRB(26, 14 * k, 26, 10 * k),
+                        // Sits a little higher now that the rainbow strip that
+                        // used to cap the screen is gone.
+                        padding: EdgeInsets.fromLTRB(26, 4 * k, 26, 10 * k),
                         child: Column(mainAxisSize: MainAxisSize.min, children: [
                           _in(0.0, 0.45, child: _brandRow()),
                           SizedBox(height: 24 * k),
@@ -418,28 +417,6 @@ class _FitLine extends StatelessWidget {
   Widget build(BuildContext context) => SizedBox(
     width: double.infinity,
     child: FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: child),
-  );
-}
-
-// ── Top rainbow hairline ──────────────────────────────────────────────────────
-
-class _RainbowStrip extends StatelessWidget {
-  const _RainbowStrip();
-
-  @override
-  Widget build(BuildContext context) => const IgnorePointer(
-    child: SizedBox(
-      height: 5,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(colors: [
-            Color(0xFFEF4444), Color(0xFFF97316), Color(0xFFEAB308),
-            Color(0xFF22C55E), Color(0xFF06B6D4), Color(0xFF3B82F6),
-            Color(0xFFA855F7), Color(0xFFEC4899),
-          ]),
-        ),
-      ),
-    ),
   );
 }
 

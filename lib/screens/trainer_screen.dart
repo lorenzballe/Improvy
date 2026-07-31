@@ -283,14 +283,18 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
     return names.length == 1 ? names.first : names[Random().nextInt(names.length)];
   }
 
-  // Leftmost white-key semitone for the in-game keyboard. With the
-  // "keyboard from tonic" setting on it's the tonic's own white key — or the
-  // white key just below the tonic when the tonic is a black key. Otherwise C.
-  int get _keyboardStartSemitone {
-    if (!widget.keyboardFromTonic) return 0;
+  // With "keyboard from tonic" ON the octave is anchored at its TOP, on the 7th
+  // degree: the tonic is then the first key of the keyboard and the 7th the
+  // last, ascending 1 → 7 left to right. A black tonic sits on the left edge as
+  // a half key, over an untappable sliver of the white key below it.
+  //
+  // Anchoring at the bottom instead (the old behaviour) had to fall back to the
+  // white key *below* a black tonic, which pushed the 7th degree round to the
+  // far left — the lowest key on screen instead of the highest.
+  int? get _keyboardTopSemitone {
+    if (!widget.keyboardFromTonic) return null;
     final tonic = kNoteToSemitone[_currentKey] ?? 0;
-    const whites = {0, 2, 4, 5, 7, 9, 11};
-    return whites.contains(tonic) ? tonic : tonic - 1;
+    return (tonic + 11) % 12;
   }
 
   // True when a recorded answer's degree is (one spelling of) [candidate].
@@ -767,11 +771,13 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
                       lastSelected: _lastSelected,
                       notation: widget.notation,
                       height: inputH - 32,
-                      startWhiteSemitone: _keyboardStartSemitone,
                       // "…Of What?": the held melody note is the keyboard's
                       // highest key (far right, permanently lit) — every root
                       // the user can answer with sits below it.
-                      topSemitone: _isOfWhat ? kNoteToSemitone[_fixedNote] : null,
+                      topSemitone: _isOfWhat
+                          ? kNoteToSemitone[_fixedNote]
+                          : _keyboardTopSemitone,
+                      fixedSemitone: _isOfWhat ? kNoteToSemitone[_fixedNote] : null,
                       chromaticTonic:
                           widget.mode == TrainingMode.chromatic ? _currentKey : null,
                       onSelect: _handleAnswer,
@@ -1826,10 +1832,15 @@ class _PianoKeyboard extends StatelessWidget {
   final String notation;
   final double height;
   final int startWhiteSemitone; // semitone of the leftmost white key (0 = C)
-  // Non-null in "…Of What?": the octave is anchored at the TOP instead — this
-  // semitone becomes the rightmost (highest) key, permanently lit in its tonal
-  // colour, so every possible root sits below the held melody note.
+  // Non-null to anchor the octave at the TOP: this semitone becomes the
+  // rightmost (highest) key. "…Of What?" anchors on the held melody note;
+  // "keyboard from tonic" anchors on the 7th degree, so the tonic starts the
+  // keyboard and the 7th ends it.
   final int? topSemitone;
+  // Non-null in "…Of What?" only: the key held lit in its tonal colour for the
+  // whole question. Separate from [topSemitone] — anchoring the octave must not
+  // by itself light anything up.
+  final int? fixedSemitone;
   // Non-null in CHROMATIC mode: key labels are then spelled by relative degree
   // (1 ♭2 2 ♭3 3 4 ♯4 5 ♭6 6 ♭7 7 of this tonic) instead of the button names.
   final String? chromaticTonic;
@@ -1844,6 +1855,7 @@ class _PianoKeyboard extends StatelessWidget {
     required this.height,
     this.startWhiteSemitone = 0,
     this.topSemitone,
+    this.fixedSemitone,
     this.chromaticTonic,
     required this.onSelect,
   });
@@ -2026,7 +2038,7 @@ class _PianoKeyboard extends StatelessWidget {
                                 active: active.contains(whites[i].semitone),
                                 isCorrect: correctSemi == whites[i].semitone,
                                 isSelected: selectedSemi == whites[i].semitone,
-                                isFixed: topSemitone == whites[i].semitone,
+                                isFixed: fixedSemitone == whites[i].semitone,
                                 showFeedback: showFeedback,
                                 notation: notation,
                                 onTap: () => onSelect(whites[i].name),
@@ -2064,7 +2076,7 @@ class _PianoKeyboard extends StatelessWidget {
                                 active: active.contains(k.semitone),
                                 isCorrect: correctSemi == k.semitone,
                                 isSelected: selectedSemi == k.semitone,
-                                isFixed: topSemitone == k.semitone,
+                                isFixed: fixedSemitone == k.semitone,
                                 showFeedback: showFeedback,
                                 notation: notation,
                                 onTap: () => onSelect(k.name),

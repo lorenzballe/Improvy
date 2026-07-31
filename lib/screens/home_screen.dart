@@ -1609,8 +1609,16 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                 // Both cards need ~300dp of content at the narrowest width. If
                 // they fit, fill the screen (the reference look); otherwise scroll
                 // so nothing is ever clipped on short / high-density screens.
-                const cardMinH = 300.0;
-                final fits = constraints.maxHeight >= cardMinH * 2 + 16;
+                //
+                // "Fit" has to be measured against the flex layout actually used
+                // below — Spacer(1) + card(11) + gap + card(11) + Spacer(2) — so
+                // a card gets 11/25 of whatever is left after the gap. Comparing
+                // against the raw height instead let a viewport just over 2×300
+                // take the filled branch and squeeze each card to ~260dp, which
+                // overflowed the card's own column.
+                const cardMinH = 300.0, cardGap = 30.0, cardFlex = 11.0, flexTotal = 25.0;
+                final fits =
+                    (constraints.maxHeight - cardGap) * cardFlex / flexTotal >= cardMinH;
                 final content = Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   child: fits
@@ -1624,9 +1632,9 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                           // upward (first card sits a touch higher); the wider
                           // middle SizedBox spaces the two cards further apart.
                           const Spacer(flex: 1),
-                          Expanded(flex: 11, child: diatonicCard),
-                          const SizedBox(height: 30),
-                          Expanded(flex: 11, child: chromaticCard),
+                          Expanded(flex: cardFlex ~/ 1, child: diatonicCard),
+                          const SizedBox(height: cardGap),
+                          Expanded(flex: cardFlex ~/ 1, child: chromaticCard),
                           const Spacer(flex: 2),
                         ])
                       : Column(children: [
@@ -1938,7 +1946,7 @@ class _KeyHaloState extends State<_KeyHalo> with SingleTickerProviderStateMixin 
     // 150 on a tall phone, shrinking on shorter ones — the cards below keep
     // their room instead of being pushed into the scrolling fallback.
     final h = MediaQuery.of(context).size.height;
-    final size = (h * 0.19).clamp(104.0, 150.0);
+    final size = (h * 0.16).clamp(92.0, 126.0);
     final inset1 = size * 0.042; // design: inset-2 of a 192 box
     final disc = size - size * 0.083 * 2; // design: inset-4
 
