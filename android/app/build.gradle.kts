@@ -45,6 +45,21 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("release")
+            // R8 renamed androidx.work's generated Room database, which Room then
+            // could not find by name — the app died at launch on every device,
+            // in release only, before any Dart ran:
+            //
+            //   Unable to get provider androidx.startup.InitializationProvider
+            //   Caused by: Failed to create an instance of
+            //              androidx.work.impl.WorkDatabase
+            //
+            // (WorkManager comes in with home_widget.) Shrinking buys a Flutter
+            // app very little — the Dart is already AOT-compiled, so R8 only
+            // touches the Java/Kotlin glue — and it puts every plugin that
+            // resolves a class by name one missing keep rule away from the same
+            // crash. Not worth the megabyte.
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }

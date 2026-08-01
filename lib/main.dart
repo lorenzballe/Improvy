@@ -22,27 +22,40 @@ void main() async {
     systemNavigationBarContrastEnforced: false,
   ));
 
+  // Nothing between here and runApp may take the app down. Every one of these
+  // talks to a platform plugin, and a device that refuses one of them (an old
+  // Android, a revoked permission, a store that will not answer) must cost that
+  // one feature — not the launch. Without this an exception here left the app
+  // opening and vanishing a second later, with no screen ever shown.
+  Future<void> attempt(String what, Future<void> Function() run) async {
+    try {
+      await run();
+    } catch (e, s) {
+      debugPrint('[startup] $what failed: $e\n$s');
+    }
+  }
+
   final storage = StorageService();
-  await storage.init();
+  await attempt('storage', storage.init);
 
   // Local reminders — must be ready BEFORE provider.init(), which resyncs
   // the pending notifications from the loaded stats. No-op stub on web.
-  await NotificationService.init();
+  await attempt('notifications', NotificationService.init);
 
   final provider = AppProvider(storage);
-  await provider.init();
+  await attempt('provider', provider.init);
 
   // Production services. RevenueCat keeps provider.isPro in sync with the user's
   // real entitlements (purchase / restore / remote updates); PostHog = analytics.
   PurchaseService.instance.onProChanged = provider.setIsPro;
-  await PurchaseService.instance.init();
-  await AnalyticsService.instance.init();
+  await attempt('purchases', PurchaseService.instance.init);
+  await attempt('analytics', AnalyticsService.instance.init);
   AnalyticsService.instance.capture('app_open');
 
   // Home-screen widgets: pick up the tap that launched us (if any), then push
   // the current state out. Both are best-effort — a widget must never be able
   // to hold up the app starting.
-  await WidgetService.instance.listenForTaps();
+  await attempt('widgets', WidgetService.instance.listenForTaps);
   WidgetService.instance.sync(provider);
 
   runApp(

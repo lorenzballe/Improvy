@@ -147,42 +147,41 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
           SafeArea(
             child: LayoutBuilder(
               builder: (context, c) {
+                // The column FILLS the screen rather than sitting at its
+                // natural height in the top corner, which left a dead band
+                // under the footer on a tall phone. Spare height is shared out
+                // between the blocks by the flexible gaps below — the pitch
+                // spreads, and the CTA and its links stay at the bottom edge.
                 _k = (c.maxHeight / 800).clamp(0.60, 1.0);
                 final k = _k;
-                return SizedBox(
-                  width: c.maxWidth,
-                  height: c.maxHeight,
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.topCenter,
-                    clipBehavior: Clip.none,
-                    child: SizedBox(
-                      width: c.maxWidth,
-                      child: Padding(
-                        // Sits a little higher now that the rainbow strip that
-                        // used to cap the screen is gone.
-                        padding: EdgeInsets.fromLTRB(26, 4 * k, 26, 10 * k),
-                        child: Column(mainAxisSize: MainAxisSize.min, children: [
-                          _in(0.0, 0.45, child: _brandRow()),
-                          SizedBox(height: 24 * k),
-                          _in(0.10, 0.55, child: _headline()),
-                          SizedBox(height: 20 * k),
-                          _in(0.20, 0.68, child: _priceCard()),
-                          SizedBox(height: 18 * k),
-                          _in(0.30, 0.80, child: _featureList()),
-                          SizedBox(height: 20 * k),
-                          _in(0.40, 0.90, child: _BuyButton(
-                            label: 'Unlock lifetime access',
-                            busy: _purchasing,
-                            height: (60 * k).clamp(50.0, 60.0),
-                            onTap: _buy,
-                          )),
-                          SizedBox(height: 16 * k),
-                          _in(0.48, 0.96, child: _footerLinks()),
-                        ]),
-                      ),
-                    ),
-                  ),
+                // A gap is a fixed minimum plus a share of whatever height is
+                // spare. Weighted so most of the slack falls between the
+                // features and the CTA — the header keeps its tight rhythm and
+                // the button lands near the bottom edge, where a thumb is.
+                List<Widget> gap(int flex, double min) => [
+                  SizedBox(height: min),
+                  Spacer(flex: flex),
+                ];
+                return Padding(
+                  padding: EdgeInsets.fromLTRB(26, 6 * k, 26, 14 * k),
+                  child: Column(children: [
+                    _in(0.0, 0.45, child: _brandRow()),
+                    ...gap(2, 20 * k),
+                    _in(0.10, 0.55, child: _headline()),
+                    ...gap(2, 16 * k),
+                    _in(0.20, 0.68, child: _priceCard()),
+                    ...gap(2, 14 * k),
+                    _in(0.30, 0.80, child: _featureList()),
+                    ...gap(9, 16 * k),
+                    _in(0.40, 0.90, child: _BuyButton(
+                      label: 'Unlock lifetime access',
+                      busy: _purchasing,
+                      height: (60 * k).clamp(50.0, 60.0),
+                      onTap: _buy,
+                    )),
+                    SizedBox(height: 12 * k),
+                    _in(0.48, 0.96, child: _footerLinks()),
+                  ]),
                 );
               },
             ),
@@ -202,10 +201,10 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
 
   Widget _brandRow() => Row(children: [
     Container(
-      width: 56, height: 56,
+      width: 56 * _k, height: 56 * _k,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(17),
+        borderRadius: BorderRadius.circular(17 * _k),
         color: Colors.black.withValues(alpha: 0.5),
         boxShadow: [
           BoxShadow(color: Colors.black.withValues(alpha: 0.6),
@@ -215,7 +214,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
       child: Image.asset('assets/images/improvy_logo.png',
           fit: BoxFit.cover, filterQuality: FilterQuality.high),
     ),
-    const SizedBox(width: 14),
+    SizedBox(width: 14 * _k),
     Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -224,24 +223,24 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
           // Scales down (never up) so the wordmark can't overflow the row on a
           // narrow phone, where 26px "Improvy Pro" is wider than the space left
           // beside the icon and the close button.
-          const FittedBox(
+          FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
             child: Row(mainAxisSize: MainAxisSize.min, children: [
               Text('Improvy ',
                 maxLines: 1, softWrap: false,
-                style: TextStyle(fontSize: 26, fontWeight: FontWeight.w600,
+                style: TextStyle(fontSize: 26 * _k, fontWeight: FontWeight.w600,
                   letterSpacing: -0.6, height: 1, color: Colors.white)),
               Text('Pro',
                 maxLines: 1, softWrap: false,
-                style: TextStyle(fontSize: 26, fontWeight: FontWeight.w600,
+                style: TextStyle(fontSize: 26 * _k, fontWeight: FontWeight.w600,
                   letterSpacing: -0.6, height: 1, color: _gold)),
             ]),
           ),
           const SizedBox(height: 5),
           Text('Lifetime licence',
             maxLines: 1, overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400,
+            style: TextStyle(fontSize: 12 * _k, fontWeight: FontWeight.w400,
               color: Colors.white.withValues(alpha: 0.55))),
         ],
       ),
@@ -254,10 +253,10 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
   Widget _headline() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const _FitLine(
+      _FitLine(
         child: Text.rich(
           TextSpan(
-            style: TextStyle(fontSize: 34, fontWeight: FontWeight.w600,
+            style: TextStyle(fontSize: 34 * _k, fontWeight: FontWeight.w600,
               height: 1.16, letterSpacing: -1.2, color: Colors.white),
             children: [
               TextSpan(text: 'Every '),
@@ -270,13 +269,13 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
           maxLines: 1, softWrap: false,
         ),
       ),
-      const Text('Forever.',
+      Text('Forever.',
         maxLines: 1, softWrap: false,
-        style: TextStyle(fontSize: 34, fontWeight: FontWeight.w600,
+        style: TextStyle(fontSize: 34 * _k, fontWeight: FontWeight.w600,
           height: 1.16, letterSpacing: -1.2, color: _gold)),
       SizedBox(height: 14 * _k),
       Text('One payment. Nothing to renew, nothing to cancel.',
-        style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w300, height: 1.55,
+        style: TextStyle(fontSize: 14.5 * _k, fontWeight: FontWeight.w300, height: 1.55,
           color: Colors.white.withValues(alpha: 0.60))),
     ],
   );
@@ -313,7 +312,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
               Flexible(
                 child: Text(_livePrice ?? _fallbackPrice,
                   maxLines: 1, softWrap: false, overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 42, fontWeight: FontWeight.w600,
+                  style: TextStyle(fontSize: 42 * _k, fontWeight: FontWeight.w600,
                     letterSpacing: -1.9, height: 0.9, color: _goldSoft)),
               ),
               const SizedBox(width: 11),
@@ -333,8 +332,8 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
             color: _gold,
             borderRadius: BorderRadius.circular(999),
           ),
-          child: const Text('Lifetime',
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: _ink)),
+          child: Text('Lifetime',
+            style: TextStyle(fontSize: 11 * _k, fontWeight: FontWeight.w600, color: _ink)),
         ),
       ]),
     ),
@@ -346,12 +345,12 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Text('What you unlock',
-        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w400,
+        style: TextStyle(fontSize: 13 * _k, fontWeight: FontWeight.w400,
           color: Colors.white.withValues(alpha: 0.50))),
       SizedBox(height: 12 * _k),
       for (final f in _features)
         Container(
-          height: (44 * _k).clamp(38.0, 44.0),
+          height: (44 * _k).clamp(30.0, 44.0),
           padding: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
@@ -361,24 +360,24 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
           ),
           child: Row(children: [
             Container(
-              width: 28, height: 28,
+              width: 28 * _k, height: 28 * _k,
               decoration: BoxDecoration(
                 color: f.$4,
                 borderRadius: BorderRadius.circular(9),
               ),
-              child: Icon(f.$3, size: 16, color: f.$5),
+              child: Icon(f.$3, size: 16 * _k, color: f.$5),
             ),
             const SizedBox(width: 13),
             Expanded(
               child: Text(f.$1,
                 maxLines: 1, overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w400,
+                style: TextStyle(fontSize: 14.5 * _k, fontWeight: FontWeight.w400,
                   color: Colors.white)),
             ),
             const SizedBox(width: 8),
             Text(f.$2,
               maxLines: 1, softWrap: false,
-              style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w400,
+              style: TextStyle(fontSize: 11.5 * _k, fontWeight: FontWeight.w400,
                 color: Colors.white.withValues(alpha: 0.45))),
           ]),
         ),

@@ -23,37 +23,55 @@ class NotificationService {
     iOS: DarwinNotificationDetails(),
   );
 
+  // Nothing in here may throw: this is awaited from main() before runApp, so an
+  // exception on a device the plugin doesn't get on with would take the whole
+  // app down at launch rather than merely costing it its reminders.
   static Future<void> init() async {
-    tzdata.initializeTimeZones();
-    const settings = InitializationSettings(
-      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
-      // Permission is asked explicitly at a meaningful moment (after the
-      // first finished game), never as a cold-start popup.
-      iOS: DarwinInitializationSettings(
-        requestAlertPermission: false,
-        requestBadgePermission: false,
-        requestSoundPermission: false,
-      ),
-    );
-    _ready = await _plugin.initialize(settings) ?? false;
+    try {
+      tzdata.initializeTimeZones();
+      const settings = InitializationSettings(
+        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        // Permission is asked explicitly at a meaningful moment (after the
+        // first finished game), never as a cold-start popup.
+        iOS: DarwinInitializationSettings(
+          requestAlertPermission: false,
+          requestBadgePermission: false,
+          requestSoundPermission: false,
+        ),
+      );
+      _ready = await _plugin.initialize(settings) ?? false;
+    } catch (_) {
+      _ready = false; // reminders are off; the app still starts
+    }
   }
 
   static Future<bool> requestPermission() async {
-    final android = _plugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
-    if (android != null) {
-      return await android.requestNotificationsPermission() ?? false;
-    }
-    final ios = _plugin
-        .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
-    if (ios != null) {
-      return await ios.requestPermissions(alert: true, badge: true, sound: true) ?? false;
-    }
+    try {
+      final android = _plugin
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+      if (android != null) {
+        return await android.requestNotificationsPermission() ?? false;
+      }
+      final ios = _plugin
+          .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
+      if (ios != null) {
+        return await ios.requestPermissions(alert: true, badge: true, sound: true) ?? false;
+      }
+    } catch (_) {}
     return false;
   }
 
+  // Also never throws: it is fired without awaiting from the provider, and a
+  // scheduling limit or a revoked permission must cost the reminders, nothing
+  // more.
   static Future<void> resync(ReminderPlan plan) async {
     if (!_ready) return;
+    try {
+      await _rebuild(plan);
+    } catch (_) {}
+  }
+
+  static Future<void> _rebuild(ReminderPlan plan) async {
     await _plugin.cancelAll();
     final now = DateTime.now();
 
@@ -94,7 +112,9 @@ class NotificationService {
   /// the exact look of a reminder can be checked without waiting for a slot.
   static Future<void> showTestNow(ReminderMessage msg) async {
     if (!_ready) return;
-    await _plugin.show(999, msg.$1, msg.$2, _details);
+    try {
+      await _plugin.show(999, msg.$1, msg.$2, _details);
+    } catch (_) {}
   }
 
   static Future<void> _schedule(int id, String title, String body, DateTime when) {
