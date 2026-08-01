@@ -402,6 +402,13 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
   static const _pcNatural = {0: 'C', 2: 'D', 4: 'E', 5: 'F', 7: 'G', 9: 'A', 11: 'B'};
   static const _pcBlack = {1: 'D♭', 3: 'E♭', 6: 'G♭', 8: 'A♭', 10: 'B♭'};
 
+  // Keys are named by their degree in the current key, not by letter: the whole
+  // point of the exercise is where a degree lives, and on a hands-free screen
+  // the letter would say nothing about the key being drilled.
+  static const _degreeLabels = [
+    '1', '♭2', '2', '♭3', '3', '4', '♯4', '5', '♯5', '6', '♭7', '7',
+  ];
+
   // One octave that BEGINS on the exercise note: 12 semitones, so all 12 notes
   // are present exactly once — the answer always lights up, and the root is NOT
   // repeated at the right edge (same as the in-game keyboard, which lays out a
@@ -410,15 +417,18 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
   Widget _keyboard() {
     final rootKey = widget.config.shuffleKeys ? 'C' : (widget.config.key.isNotEmpty ? widget.config.key : 'C');
     final rootPc = kNoteToSemitone[rootKey] ?? 0;
-    final notes = <({String name, bool black, int off})>[];
+    final notes = <({String name, String label, bool black, int off})>[];
     for (int s = 0; s < 12; s++) {
       final pc = (rootPc + s) % 12;
-      if (_pcNatural.containsKey(pc)) {
-        notes.add((name: _pcNatural[pc]!, black: false, off: s));
-      } else {
-        // Spell a black-note root the way the exercise does (F♯ vs G♭).
-        notes.add((name: s == 0 ? rootKey : _pcBlack[pc]!, black: true, off: s));
-      }
+      final natural = _pcNatural.containsKey(pc);
+      notes.add((
+        // The letter still drives the colour and the answer match; only what is
+        // printed on the key changes.
+        name: natural ? _pcNatural[pc]! : (s == 0 ? rootKey : _pcBlack[pc]!),
+        label: _degreeLabels[s],
+        black: !natural,
+        off: s,
+      ));
     }
     final whites = [for (final k in notes) if (!k.black) k];
     final blacks = [for (final k in notes) if (k.black) k];
@@ -442,21 +452,51 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
               child: LayoutBuilder(builder: (ctx, c) {
                 final w = c.maxWidth;
                 final h = c.maxHeight;
-                final whiteW = w / nW;
+                // A black key at either end (a black tonic starts the octave, a
+                // black 7th ends it) gets a slot of its own, exactly as the
+                // in-game keyboard does. Clamping it against the rim instead
+                // squashed it out of position; here the whites give up ~5% on
+                // that side and the key sits on the true octave boundary.
+                const edgeInset = 4.0;
+                final hasLead = notes.first.black;
+                final hasTrail = notes.last.black;
+                final sides = (hasLead ? 1 : 0) + (hasTrail ? 1 : 0);
+                final whiteW = (w - sides * edgeInset) / (nW + 0.31 * sides);
                 final blackW = whiteW * 0.62;
                 final blackH = h * 0.62;
+                final leadReserve = hasLead ? edgeInset + blackW / 2 : 0.0;
+                final whiteAreaRight = leadReserve + nW * whiteW;
                 return Stack(children: [
+                  // The sliver of the cut-off white key an edge black rests on.
+                  // Not a key — nothing here can be played; it only keeps the
+                  // black key off the dark rim.
+                  if (hasLead)
+                    Positioned(left: 0, top: 0, width: leadReserve, height: h,
+                        child: const ColoredBox(color: Colors.white)),
+                  if (hasTrail)
+                    Positioned(left: whiteAreaRight, top: 0, width: w - whiteAreaRight, height: h,
+                        child: const ColoredBox(color: Colors.white)),
                   for (int j = 0; j < nW; j++)
-                    Positioned(left: j * whiteW, top: 0, width: whiteW, height: h, child: _pianoKey(whites[j].name, false)),
+                    Positioned(
+                        left: leadReserve + j * whiteW, top: 0, width: whiteW, height: h,
+                        child: _pianoKey(whites[j].name, whites[j].label, false)),
                   for (int j = 1; j < nW; j++)
-                    Positioned(left: j * whiteW - 0.5, top: 0, width: 1, height: h, child: const ColoredBox(color: Color(0xFFCBD5E1))),
-                  // Each black key sits after however many white keys precede it;
-                  // clamped so a root black key at either end stays fully visible.
+                    Positioned(left: leadReserve + j * whiteW - 0.5, top: 0, width: 1, height: h,
+                        child: const ColoredBox(color: Color(0xFFCBD5E1))),
+                  if (hasLead)
+                    Positioned(left: leadReserve - 0.5, top: 0, width: 1, height: h,
+                        child: const ColoredBox(color: Color(0xFFCBD5E1))),
+                  if (hasTrail)
+                    Positioned(left: whiteAreaRight - 0.5, top: 0, width: 1, height: h,
+                        child: const ColoredBox(color: Color(0xFFCBD5E1))),
+                  // Each black key sits after however many white keys precede it.
                   for (final b in blacks)
                     Positioned(
-                      left: (whites.where((wk) => wk.off < b.off).length * whiteW - blackW / 2).clamp(0.0, w - blackW),
+                      left: leadReserve +
+                          whites.where((wk) => wk.off < b.off).length * whiteW -
+                          blackW / 2,
                       top: 0, width: blackW, height: blackH,
-                      child: _pianoKey(b.name, true),
+                      child: _pianoKey(b.name, b.label, true),
                     ),
                 ]);
               }),
@@ -467,7 +507,7 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
     );
   }
 
-  Widget _pianoKey(String name, bool black) {
+  Widget _pianoKey(String name, String label, bool black) {
     final nc = AppColors.noteColors[name] ?? Colors.white;
     final isAns = _phase == 3 && _answer.isNotEmpty && areEnharmonicEquivalent(name, _answer);
     final bg = isAns ? nc : (black ? const Color(0xFF1E293B) : Colors.white);
@@ -482,7 +522,7 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
       ),
       child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [
         NoteText(
-          note: formatNoteForDisplay(name, widget.notation),
+          note: label,
           style: TextStyle(fontSize: black ? 11 : 15, fontWeight: FontWeight.w900, color: isAns ? Colors.white : nc),
         ),
         SizedBox(height: black ? 9 : 12),

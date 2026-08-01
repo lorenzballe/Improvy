@@ -166,13 +166,13 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
                   padding: EdgeInsets.fromLTRB(26, 6 * k, 26, 14 * k),
                   child: Column(children: [
                     _in(0.0, 0.45, child: _brandRow()),
-                    ...gap(2, 20 * k),
+                    ...gap(3, 18 * k),
                     _in(0.10, 0.55, child: _headline()),
-                    ...gap(2, 16 * k),
+                    ...gap(3, 16 * k),
                     _in(0.20, 0.68, child: _priceCard()),
-                    ...gap(2, 14 * k),
+                    ...gap(3, 14 * k),
                     _in(0.30, 0.80, child: _featureList()),
-                    ...gap(9, 16 * k),
+                    ...gap(4, 16 * k),
                     _in(0.40, 0.90, child: _BuyButton(
                       label: 'Unlock lifetime access',
                       busy: _purchasing,
@@ -339,40 +339,42 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
     ),
   );
 
-  // ── Feature list: tinted rows, one per unlocked capability ─────────────────
+  // ── Feature list: one quiet row per unlocked capability ────────────────────
+  //
+  // The rows used to carry a tinted gradient each, which — over an aurora, next
+  // to a spectrum-ringed price and a gold CTA — was the noisiest thing on the
+  // screen. The colour now lives only in the small icon tile, and the rows are
+  // separated by hairlines instead of blocks of tint.
 
   Widget _featureList() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Text('What you unlock',
-        style: TextStyle(fontSize: 13 * _k, fontWeight: FontWeight.w400,
-          color: Colors.white.withValues(alpha: 0.50))),
-      SizedBox(height: 12 * _k),
+        style: TextStyle(fontSize: 11 * _k, fontWeight: FontWeight.w600,
+          letterSpacing: 1.4,
+          color: Colors.white.withValues(alpha: 0.38))),
+      SizedBox(height: 10 * _k),
       for (final f in _features)
         Container(
-          height: (44 * _k).clamp(30.0, 44.0),
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            gradient: LinearGradient(
-              colors: [f.$4.withValues(alpha: 0.20), f.$4.withValues(alpha: 0.0)],
-            ),
+          height: (42 * _k).clamp(30.0, 42.0),
+          decoration: f == _features.first ? null : BoxDecoration(
+            border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.06))),
           ),
           child: Row(children: [
             Container(
-              width: 28 * _k, height: 28 * _k,
+              width: 26 * _k, height: 26 * _k,
               decoration: BoxDecoration(
-                color: f.$4,
-                borderRadius: BorderRadius.circular(9),
+                color: f.$4.withValues(alpha: 0.16),
+                borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(f.$3, size: 16 * _k, color: f.$5),
+              child: Icon(f.$3, size: 15 * _k, color: f.$4),
             ),
-            const SizedBox(width: 13),
+            SizedBox(width: 12 * _k),
             Expanded(
               child: Text(f.$1,
                 maxLines: 1, overflow: TextOverflow.ellipsis,
                 style: TextStyle(fontSize: 14.5 * _k, fontWeight: FontWeight.w400,
-                  color: Colors.white)),
+                  color: Colors.white.withValues(alpha: 0.92))),
             ),
             const SizedBox(width: 8),
             Text(f.$2,

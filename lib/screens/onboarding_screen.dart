@@ -92,10 +92,13 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             final free = c.maxHeight - inset.top - inset.bottom;
             final s = math.min(c.maxWidth / 390, free / _designHeight)
                 .clamp(0.5, 1.0);
-            // The poster is sized to fit, but text metrics vary by platform and
-            // by the user's font scale, so keep a scroll view underneath it: a
-            // few points of disagreement scroll instead of overflowing.
+            // The poster is a fixed composition scaled to fit, so it does not
+            // scroll — it is one screen, and dragging it was never meant to do
+            // anything. The scroll view stays as the measuring frame (and as a
+            // guard against a few points of platform text-metric disagreement),
+            // with its physics off.
             return SingleChildScrollView(
+              physics: const NeverScrollableScrollPhysics(),
               child: ConstrainedBox(
                 constraints: BoxConstraints(minHeight: c.maxHeight),
                 child: IntrinsicHeight(
