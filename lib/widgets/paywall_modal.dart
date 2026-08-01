@@ -5,12 +5,13 @@ import '../services/purchase_service.dart';
 
 /// Full-screen "Improvy Pro" paywall.
 ///
-/// Built to the Stitch concept: a rainbow hairline across the very top, six
-/// aurora glows bleeding in from the edges, then a compact column — brand row,
-/// three-colour headline, a price card ringed by a slowly spinning spectrum,
-/// the six unlocked features as tinted rows, and one gold CTA over the legal
-/// links. No scrolling: on short viewports the vertical rhythm compresses
-/// (factor [_k]) instead of the whole thing scaling down.
+/// Six aurora glows bleed in from the edges; over them the page runs in three
+/// zones. The pitch (brand, headline, promise) and the action (CTA, legal
+/// links) each take the height they need at the top and the bottom, and the
+/// feature list takes everything left between them, dividing that space among
+/// its own rows. Nothing is positioned by a spacer weight tuned by eye, so the
+/// page has no dead bands to tidy up and never needs to scroll: on a short
+/// viewport the whole rhythm compresses by [_k] instead.
 class PaywallModal extends StatefulWidget {
   final VoidCallback onClose;
   final Future<void> Function() onPurchase;
@@ -146,33 +147,26 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
           SafeArea(
             child: LayoutBuilder(
               builder: (context, c) {
-                // The column FILLS the screen rather than sitting at its
-                // natural height in the top corner, which left a dead band
-                // under the footer on a tall phone. Spare height is shared out
-                // between the blocks by the flexible gaps below — the pitch
-                // spreads, and the CTA and its links stay at the bottom edge.
+                // Three zones, not a stack of guessed gaps: the pitch at the
+                // top and the action at the bottom take the height they need,
+                // and the list between them takes everything that is left,
+                // spreading its own rows through it. Nothing on the page is
+                // sized by a spacer whose weight had to be tuned by eye.
                 _k = (c.maxHeight / 800).clamp(0.60, 1.0);
                 final k = _k;
-                // A gap is a fixed minimum plus a share of whatever height is
-                // spare. Weighted so most of the slack falls between the
-                // features and the CTA — the header keeps its tight rhythm and
-                // the button lands near the bottom edge, where a thumb is.
-                List<Widget> gap(int flex, double min) => [
-                  SizedBox(height: min),
-                  Spacer(flex: flex),
-                ];
                 return Padding(
-                  padding: EdgeInsets.fromLTRB(26, 6 * k, 26, 14 * k),
+                  padding: EdgeInsets.fromLTRB(26, 8 * k, 26, 14 * k),
                   child: Column(children: [
                     _in(0.0, 0.45, child: _brandRow()),
-                    ...gap(3, 20 * k),
+                    SizedBox(height: 26 * k),
                     _in(0.10, 0.55, child: _headline()),
-                    ...gap(5, 22 * k),
-                    _in(0.26, 0.78, child: _featureList()),
-                    ...gap(3, 22 * k),
-                    // The price used to sit in a card of its own above the
-                    // list; it belongs on the button you press to pay it, which
-                    // gives the whole middle of the screen back to the pitch.
+                    SizedBox(height: 20 * k),
+                    // The body. Its rows share this zone evenly, so the page
+                    // never shows a dead band and never has to be scrolled.
+                    Expanded(child: _in(0.26, 0.78, child: _featureList())),
+                    SizedBox(height: 16 * k),
+                    // The price belongs on the button you press to pay it —
+                    // that is what freed the middle of the screen for the list.
                     _in(0.40, 0.90, child: _BuyButton(
                       label: 'Unlock lifetime access',
                       price: '${_livePrice ?? _fallbackPrice} · one-time payment',
@@ -296,37 +290,46 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
           letterSpacing: 1.6,
           color: Colors.white.withValues(alpha: 0.42))),
       SizedBox(height: 14 * _k),
-      // Rows stand apart on their own air now instead of being buttoned
-      // together by hairlines — easier to take in at a glance, and it lets the
-      // spectrum of the icon tiles read as a sequence.
-      for (final f in _features) ...[
-        if (f != _features.first) SizedBox(height: 9 * _k),
-        SizedBox(
-          height: (40 * _k).clamp(28.0, 40.0),
-          child: Row(children: [
-            Container(
-              width: 34 * _k, height: 34 * _k,
-              decoration: BoxDecoration(
-                color: f.$4.withValues(alpha: 0.18),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(f.$3, size: 19 * _k, color: f.$4),
-            ),
-            SizedBox(width: 14 * _k),
-            Expanded(
-              child: Text(f.$1,
-                maxLines: 1, overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 16 * _k, fontWeight: FontWeight.w500,
-                  color: Colors.white.withValues(alpha: 0.94))),
-            ),
-            const SizedBox(width: 8),
-            Text(f.$2,
-              maxLines: 1, softWrap: false,
-              style: TextStyle(fontSize: 12.5 * _k, fontWeight: FontWeight.w400,
-                color: Colors.white.withValues(alpha: 0.45))),
-          ]),
-        ),
-      ],
+      // The rows divide what is actually left under the label — measured, not
+      // estimated, so the list can never be a pixel taller than its zone.
+      // Capped so a tall phone spaces them generously rather than absurdly.
+      Expanded(
+        child: LayoutBuilder(builder: (context, c) {
+          final rowH = (c.maxHeight / _features.length).clamp(28.0, 80.0);
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              for (final f in _features)
+                SizedBox(
+                  height: rowH,
+                  child: Row(children: [
+                Container(
+                  width: 34 * _k, height: 34 * _k,
+                  decoration: BoxDecoration(
+                    color: f.$4.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(f.$3, size: 19 * _k, color: f.$4),
+                ),
+                SizedBox(width: 14 * _k),
+                Expanded(
+                  child: Text(f.$1,
+                    maxLines: 1, overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 16 * _k, fontWeight: FontWeight.w500,
+                      color: Colors.white.withValues(alpha: 0.94))),
+                ),
+                const SizedBox(width: 8),
+                Text(f.$2,
+                  maxLines: 1, softWrap: false,
+                  style: TextStyle(fontSize: 12.5 * _k, fontWeight: FontWeight.w400,
+                    color: Colors.white.withValues(alpha: 0.45))),
+                  ]),
+                ),
+            ],
+          );
+        }),
+      ),
     ],
   );
 
