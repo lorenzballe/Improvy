@@ -402,13 +402,6 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
   static const _pcNatural = {0: 'C', 2: 'D', 4: 'E', 5: 'F', 7: 'G', 9: 'A', 11: 'B'};
   static const _pcBlack = {1: 'D♭', 3: 'E♭', 6: 'G♭', 8: 'A♭', 10: 'B♭'};
 
-  // Keys are named by their degree in the current key, not by letter: the whole
-  // point of the exercise is where a degree lives, and on a hands-free screen
-  // the letter would say nothing about the key being drilled.
-  static const _degreeLabels = [
-    '1', '♭2', '2', '♭3', '3', '4', '♯4', '5', '♯5', '6', '♭7', '7',
-  ];
-
   // One octave that BEGINS on the exercise note: 12 semitones, so all 12 notes
   // are present exactly once — the answer always lights up, and the root is NOT
   // repeated at the right edge (same as the in-game keyboard, which lays out a
@@ -417,15 +410,20 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
   Widget _keyboard() {
     final rootKey = widget.config.shuffleKeys ? 'C' : (widget.config.key.isNotEmpty ? widget.config.key : 'C');
     final rootPc = kNoteToSemitone[rootKey] ?? 0;
+    // Every key is named as that note is spelled IN THIS KEY — F♯ major reads
+    // F♯ G♯ A♯ B C♯ D♯ E♯, not the generic flats. Same source the in-game
+    // chromatic keyboard uses, so the two never disagree about a note's name.
+    final keyNames = chromaticKeyboardNoteNames(rootKey);
     final notes = <({String name, String label, bool black, int off})>[];
     for (int s = 0; s < 12; s++) {
       final pc = (rootPc + s) % 12;
       final natural = _pcNatural.containsKey(pc);
+      // The generic name still drives the colour and the answer match; only
+      // what is printed on the key follows the key's own spelling.
+      final generic = natural ? _pcNatural[pc]! : (s == 0 ? rootKey : _pcBlack[pc]!);
       notes.add((
-        // The letter still drives the colour and the answer match; only what is
-        // printed on the key changes.
-        name: natural ? _pcNatural[pc]! : (s == 0 ? rootKey : _pcBlack[pc]!),
-        label: _degreeLabels[s],
+        name: generic,
+        label: keyNames[pc] ?? generic,
         black: !natural,
         off: s,
       ));
@@ -522,7 +520,7 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
       ),
       child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [
         NoteText(
-          note: label,
+          note: formatNoteForDisplay(label, widget.notation),
           style: TextStyle(fontSize: black ? 11 : 15, fontWeight: FontWeight.w900, color: isAns ? Colors.white : nc),
         ),
         SizedBox(height: black ? 9 : 12),

@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
 import '../screens/legal_screen.dart';
@@ -25,7 +23,6 @@ class PaywallModal extends StatefulWidget {
 
 class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMixin {
   late final AnimationController _enter;
-  late final AnimationController _spin; // spectrum ring around the price card
 
   bool _purchasing = false;
   bool _restoring = false;
@@ -52,7 +49,6 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
   void initState() {
     super.initState();
     _enter = AnimationController(vsync: this, duration: const Duration(milliseconds: 700))..forward();
-    _spin = AnimationController(vsync: this, duration: const Duration(seconds: 4))..repeat();
     // Live, store-localized price; falls back to the static one until (or
     // unless) RevenueCat returns the real product.
     PurchaseService.instance.proPriceString().then((p) {
@@ -63,7 +59,6 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
   @override
   void dispose() {
     _enter.dispose();
-    _spin.dispose();
     super.dispose();
   }
 
@@ -166,17 +161,19 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
                   padding: EdgeInsets.fromLTRB(26, 6 * k, 26, 14 * k),
                   child: Column(children: [
                     _in(0.0, 0.45, child: _brandRow()),
-                    ...gap(3, 18 * k),
+                    ...gap(3, 20 * k),
                     _in(0.10, 0.55, child: _headline()),
-                    ...gap(3, 16 * k),
-                    _in(0.20, 0.68, child: _priceCard()),
-                    ...gap(3, 14 * k),
-                    _in(0.30, 0.80, child: _featureList()),
-                    ...gap(4, 16 * k),
+                    ...gap(5, 22 * k),
+                    _in(0.26, 0.78, child: _featureList()),
+                    ...gap(3, 22 * k),
+                    // The price used to sit in a card of its own above the
+                    // list; it belongs on the button you press to pay it, which
+                    // gives the whole middle of the screen back to the pitch.
                     _in(0.40, 0.90, child: _BuyButton(
                       label: 'Unlock lifetime access',
+                      price: '${_livePrice ?? _fallbackPrice} · one-time payment',
                       busy: _purchasing,
-                      height: (60 * k).clamp(50.0, 60.0),
+                      height: (74 * k).clamp(62.0, 74.0),
                       onTap: _buy,
                     )),
                     SizedBox(height: 12 * k),
@@ -280,65 +277,6 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
     ],
   );
 
-  // ── Price card: spectrum ring around a warm glass panel ────────────────────
-
-  Widget _priceCard() => AnimatedBuilder(
-    animation: _spin,
-    builder: (_, child) => Container(
-      padding: const EdgeInsets.all(2),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(22),
-        gradient: SweepGradient(
-          transform: GradientRotation(_spin.value * 2 * math.pi),
-          colors: _kRainbow,
-        ),
-      ),
-      child: child,
-    ),
-    child: Container(
-      padding: EdgeInsets.fromLTRB(19, 15 * _k, 19, 15 * _k),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft, end: Alignment.bottomRight,
-          colors: [Color(0xE63A2410), Color(0xE622122A)],
-        ),
-      ),
-      child: Row(children: [
-        Expanded(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Flexible(
-                child: Text(_livePrice ?? _fallbackPrice,
-                  maxLines: 1, softWrap: false, overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 42 * _k, fontWeight: FontWeight.w600,
-                    letterSpacing: -1.9, height: 0.9, color: _goldSoft)),
-              ),
-              const SizedBox(width: 11),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Text('one-time\npayment',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, height: 1.4,
-                    color: Colors.white.withValues(alpha: 0.60))),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 10),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-          decoration: BoxDecoration(
-            color: _gold,
-            borderRadius: BorderRadius.circular(999),
-          ),
-          child: Text('Lifetime',
-            style: TextStyle(fontSize: 11 * _k, fontWeight: FontWeight.w600, color: _ink)),
-        ),
-      ]),
-    ),
-  );
-
   // ── Feature list: one quiet row per unlocked capability ────────────────────
   //
   // The rows used to carry a tinted gradient each, which — over an aurora, next
@@ -356,7 +294,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
       SizedBox(height: 10 * _k),
       for (final f in _features)
         Container(
-          height: (42 * _k).clamp(30.0, 42.0),
+          height: (48 * _k).clamp(32.0, 48.0),
           decoration: f == _features.first ? null : BoxDecoration(
             border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.06))),
           ),
@@ -490,21 +428,17 @@ class _CloseButton extends StatelessWidget {
   );
 }
 
-// The app's signature rainbow — used for the price card's rotating ring.
-const _kRainbow = <Color>[
-  Color(0xFFEF4444), Color(0xFFF97316), Color(0xFFEAB308),
-  Color(0xFF22C55E), Color(0xFF06B6D4), Color(0xFF3B82F6),
-  Color(0xFFA855F7), Color(0xFFEC4899), Color(0xFFEF4444),
-];
-
 // ── CTA: champagne→amber gold bar with a slow light sweep ─────────────────────
 
 class _BuyButton extends StatefulWidget {
   final String label;
+  /// Sits under the label, inside the button: what you are about to pay, on
+  /// the thing you press to pay it.
+  final String price;
   final bool busy;
   final double height;
   final VoidCallback onTap;
-  const _BuyButton({required this.label, required this.busy, required this.height, required this.onTap});
+  const _BuyButton({required this.label, required this.price, required this.busy, required this.height, required this.onTap});
 
   @override
   State<_BuyButton> createState() => _BuyButtonState();
@@ -585,11 +519,21 @@ class _BuyButtonState extends State<_BuyButton> with SingleTickerProviderStateMi
                     key: ValueKey('spinner'),
                     width: 22, height: 22,
                     child: CircularProgressIndicator(strokeWidth: 2.6, color: _ink))
-                : Text(widget.label,
+                : Column(
                     key: const ValueKey('label'),
-                    maxLines: 1, softWrap: false, overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 17.5, fontWeight: FontWeight.w600,
-                      color: _ink, height: 1.1)),
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(widget.label,
+                          maxLines: 1, softWrap: false, overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 17.5, fontWeight: FontWeight.w600,
+                              color: _ink, height: 1.1)),
+                      const SizedBox(height: 3),
+                      Text(widget.price,
+                          maxLines: 1, softWrap: false, overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600,
+                              color: _ink.withValues(alpha: 0.66), height: 1.1)),
+                    ],
+                  ),
             ),
           ),
         ]),
