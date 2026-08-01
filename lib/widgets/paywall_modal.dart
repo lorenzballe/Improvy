@@ -36,12 +36,16 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
   String? _livePrice;
 
   // label · trailing meta · icon · chip colour · icon ink
+  //
+  // Ordered by hue, so the list reads down the spectrum — amber, green, cyan,
+  // purple, fuchsia, pink. Each mode keeps the colour it wears everywhere else
+  // in the app, so the row still points at the thing it unlocks.
   static const _features = <(String, String, IconData, Color, Color)>[
-    ('Chromatic Mode', '12 notes', Icons.piano_rounded, Color(0xFFA855F7), Color(0xFF1E0736)),
-    ('Note to Number', 'reverse', Icons.tag_rounded, Color(0xFF34D399), Color(0xFF04301F)),
-    ('Custom Mode', 'any degree', Icons.tune_rounded, Color(0xFFD857EC), Color(0xFF2E0733)),
-    ('…Of What? extensions', '9 11 13', Icons.auto_awesome_rounded, Color(0xFF22D3EE), Color(0xFF04262B)),
     ('Adaptive difficulty', 'auto', Icons.trending_up_rounded, Color(0xFFF59E0B), Color(0xFF2A1B04)),
+    ('Note to Number', 'reverse', Icons.tag_rounded, Color(0xFF34D399), Color(0xFF04301F)),
+    ('…Of What? extensions', '9 11 13', Icons.auto_awesome_rounded, Color(0xFF22D3EE), Color(0xFF04262B)),
+    ('Chromatic Mode', '12 notes', Icons.piano_rounded, Color(0xFFA855F7), Color(0xFF1E0736)),
+    ('Custom Mode', 'any degree', Icons.tune_rounded, Color(0xFFD857EC), Color(0xFF2E0733)),
     ('Deep analytics', 'per key', Icons.insights_rounded, Color(0xFFF472B6), Color(0xFF3B0A24)),
   ];
 
@@ -198,10 +202,10 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
 
   Widget _brandRow() => Row(children: [
     Container(
-      width: 56 * _k, height: 56 * _k,
+      width: 74 * _k, height: 74 * _k,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(17 * _k),
+        borderRadius: BorderRadius.circular(21 * _k),
         color: Colors.black.withValues(alpha: 0.5),
         boxShadow: [
           BoxShadow(color: Colors.black.withValues(alpha: 0.6),
@@ -226,18 +230,18 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
             child: Row(mainAxisSize: MainAxisSize.min, children: [
               Text('Improvy ',
                 maxLines: 1, softWrap: false,
-                style: TextStyle(fontSize: 26 * _k, fontWeight: FontWeight.w600,
-                  letterSpacing: -0.6, height: 1, color: Colors.white)),
+                style: TextStyle(fontSize: 31 * _k, fontWeight: FontWeight.w600,
+                  letterSpacing: -0.7, height: 1, color: Colors.white)),
               Text('Pro',
                 maxLines: 1, softWrap: false,
-                style: TextStyle(fontSize: 26 * _k, fontWeight: FontWeight.w600,
-                  letterSpacing: -0.6, height: 1, color: _gold)),
+                style: TextStyle(fontSize: 31 * _k, fontWeight: FontWeight.w600,
+                  letterSpacing: -0.7, height: 1, color: _gold)),
             ]),
           ),
           const SizedBox(height: 5),
           Text('Lifetime licence',
             maxLines: 1, overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 12 * _k, fontWeight: FontWeight.w400,
+            style: TextStyle(fontSize: 13 * _k, fontWeight: FontWeight.w400,
               color: Colors.white.withValues(alpha: 0.55))),
         ],
       ),
@@ -253,8 +257,8 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
       _FitLine(
         child: Text.rich(
           TextSpan(
-            style: TextStyle(fontSize: 34 * _k, fontWeight: FontWeight.w600,
-              height: 1.16, letterSpacing: -1.2, color: Colors.white),
+            style: TextStyle(fontSize: 37 * _k, fontWeight: FontWeight.w600,
+              height: 1.14, letterSpacing: -1.3, color: Colors.white),
             children: [
               TextSpan(text: 'Every '),
               TextSpan(text: 'key', style: TextStyle(color: Color(0xFF22D3EE))),
@@ -268,11 +272,11 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
       ),
       Text('Forever.',
         maxLines: 1, softWrap: false,
-        style: TextStyle(fontSize: 34 * _k, fontWeight: FontWeight.w600,
-          height: 1.16, letterSpacing: -1.2, color: _gold)),
+        style: TextStyle(fontSize: 37 * _k, fontWeight: FontWeight.w600,
+          height: 1.14, letterSpacing: -1.3, color: _gold)),
       SizedBox(height: 14 * _k),
       Text('One payment. Nothing to renew, nothing to cancel.',
-        style: TextStyle(fontSize: 14.5 * _k, fontWeight: FontWeight.w300, height: 1.55,
+        style: TextStyle(fontSize: 15 * _k, fontWeight: FontWeight.w300, height: 1.5,
           color: Colors.white.withValues(alpha: 0.60))),
     ],
   );
@@ -288,39 +292,41 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Text('What you unlock',
-        style: TextStyle(fontSize: 11 * _k, fontWeight: FontWeight.w600,
-          letterSpacing: 1.4,
-          color: Colors.white.withValues(alpha: 0.38))),
-      SizedBox(height: 10 * _k),
-      for (final f in _features)
-        Container(
-          height: (48 * _k).clamp(32.0, 48.0),
-          decoration: f == _features.first ? null : BoxDecoration(
-            border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.06))),
-          ),
+        style: TextStyle(fontSize: 12.5 * _k, fontWeight: FontWeight.w600,
+          letterSpacing: 1.6,
+          color: Colors.white.withValues(alpha: 0.42))),
+      SizedBox(height: 14 * _k),
+      // Rows stand apart on their own air now instead of being buttoned
+      // together by hairlines — easier to take in at a glance, and it lets the
+      // spectrum of the icon tiles read as a sequence.
+      for (final f in _features) ...[
+        if (f != _features.first) SizedBox(height: 9 * _k),
+        SizedBox(
+          height: (40 * _k).clamp(28.0, 40.0),
           child: Row(children: [
             Container(
-              width: 26 * _k, height: 26 * _k,
+              width: 34 * _k, height: 34 * _k,
               decoration: BoxDecoration(
-                color: f.$4.withValues(alpha: 0.16),
-                borderRadius: BorderRadius.circular(8),
+                color: f.$4.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(f.$3, size: 15 * _k, color: f.$4),
+              child: Icon(f.$3, size: 19 * _k, color: f.$4),
             ),
-            SizedBox(width: 12 * _k),
+            SizedBox(width: 14 * _k),
             Expanded(
               child: Text(f.$1,
                 maxLines: 1, overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 14.5 * _k, fontWeight: FontWeight.w400,
-                  color: Colors.white.withValues(alpha: 0.92))),
+                style: TextStyle(fontSize: 16 * _k, fontWeight: FontWeight.w500,
+                  color: Colors.white.withValues(alpha: 0.94))),
             ),
             const SizedBox(width: 8),
             Text(f.$2,
               maxLines: 1, softWrap: false,
-              style: TextStyle(fontSize: 11.5 * _k, fontWeight: FontWeight.w400,
+              style: TextStyle(fontSize: 12.5 * _k, fontWeight: FontWeight.w400,
                 color: Colors.white.withValues(alpha: 0.45))),
           ]),
         ),
+      ],
     ],
   );
 
