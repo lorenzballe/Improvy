@@ -152,7 +152,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
                 // and the list between them takes everything that is left,
                 // spreading its own rows through it. Nothing on the page is
                 // sized by a spacer whose weight had to be tuned by eye.
-                _k = (c.maxHeight / 800).clamp(0.60, 1.0);
+                _k = (c.maxHeight / 880).clamp(0.55, 1.0);
                 final k = _k;
                 return Padding(
                   padding: EdgeInsets.fromLTRB(26, 8 * k, 26, 14 * k),
@@ -194,86 +194,82 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
 
   // ── Brand row: app icon + "Improvy Pro" + licence line ─────────────────────
 
-  Widget _brandRow() => Row(children: [
+  // Centred and large: on a page asking you to pay, the mark is the first thing
+  // you should see, not a header pinned to a corner.
+  Widget _brandRow() => Column(children: [
     Container(
-      width: 74 * _k, height: 74 * _k,
+      width: 92 * _k, height: 92 * _k,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(21 * _k),
+        borderRadius: BorderRadius.circular(26 * _k),
         color: Colors.black.withValues(alpha: 0.5),
         boxShadow: [
           BoxShadow(color: Colors.black.withValues(alpha: 0.6),
-            blurRadius: 28, offset: const Offset(0, 12), spreadRadius: -8),
+            blurRadius: 34, offset: const Offset(0, 14), spreadRadius: -8),
         ],
       ),
       child: Image.asset('assets/images/improvy_logo.png',
           fit: BoxFit.cover, filterQuality: FilterQuality.high),
     ),
-    SizedBox(width: 14 * _k),
-    Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Scales down (never up) so the wordmark can't overflow the row on a
-          // narrow phone, where 26px "Improvy Pro" is wider than the space left
-          // beside the icon and the close button.
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Row(mainAxisSize: MainAxisSize.min, children: [
-              Text('Improvy ',
-                maxLines: 1, softWrap: false,
-                style: TextStyle(fontSize: 31 * _k, fontWeight: FontWeight.w600,
-                  letterSpacing: -0.7, height: 1, color: Colors.white)),
-              Text('Pro',
-                maxLines: 1, softWrap: false,
-                style: TextStyle(fontSize: 31 * _k, fontWeight: FontWeight.w600,
-                  letterSpacing: -0.7, height: 1, color: _gold)),
-            ]),
-          ),
-          const SizedBox(height: 5),
-          Text('Lifetime licence',
-            maxLines: 1, overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 13 * _k, fontWeight: FontWeight.w400,
-              color: Colors.white.withValues(alpha: 0.55))),
-        ],
-      ),
+    SizedBox(height: 12 * _k),
+    // Scales down (never up) so the wordmark can't overflow on a narrow phone.
+    FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        Text('Improvy ',
+          maxLines: 1, softWrap: false,
+          style: TextStyle(fontSize: 34 * _k, fontWeight: FontWeight.w600,
+            letterSpacing: -0.8, height: 1, color: Colors.white)),
+        Text('Pro',
+          maxLines: 1, softWrap: false,
+          style: TextStyle(fontSize: 34 * _k, fontWeight: FontWeight.w600,
+            letterSpacing: -0.8, height: 1, color: _gold)),
+      ]),
     ),
-    const SizedBox(width: 48), // keeps the row clear of the close button
+    SizedBox(height: 6 * _k),
+    Text('Lifetime licence',
+      maxLines: 1, overflow: TextOverflow.ellipsis,
+      style: TextStyle(fontSize: 13.5 * _k, fontWeight: FontWeight.w400,
+        letterSpacing: 0.4,
+        color: Colors.white.withValues(alpha: 0.55))),
   ]);
 
   // ── Headline: "Every key. Every mode. / Forever." ──────────────────────────
 
-  Widget _headline() => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      _FitLine(
-        child: Text.rich(
-          TextSpan(
-            style: TextStyle(fontSize: 37 * _k, fontWeight: FontWeight.w600,
-              height: 1.14, letterSpacing: -1.3, color: Colors.white),
-            children: [
-              TextSpan(text: 'Every '),
-              TextSpan(text: 'key', style: TextStyle(color: Color(0xFF22D3EE))),
-              TextSpan(text: '. Every '),
-              TextSpan(text: 'mode', style: TextStyle(color: Color(0xFFF472B6))),
-              TextSpan(text: '.'),
-            ],
-          ),
-          maxLines: 1, softWrap: false,
-        ),
+  Widget _headline() {
+    // One phrase per line, each scaled to the full width: the promise is the
+    // loudest thing on the page, and three stacked lines carry it further than
+    // one long one squeezed to fit.
+    final style = TextStyle(fontSize: 46 * _k, fontWeight: FontWeight.w600,
+        height: 1.06, letterSpacing: -1.6, color: Colors.white);
+    Widget line(List<InlineSpan> spans) => SizedBox(
+      width: double.infinity,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.center,
+        child: Text.rich(TextSpan(style: style, children: spans),
+            maxLines: 1, softWrap: false),
       ),
-      Text('Forever.',
-        maxLines: 1, softWrap: false,
-        style: TextStyle(fontSize: 37 * _k, fontWeight: FontWeight.w600,
-          height: 1.14, letterSpacing: -1.3, color: _gold)),
-      SizedBox(height: 14 * _k),
+    );
+    return Column(children: [
+      line([
+        const TextSpan(text: 'Every '),
+        const TextSpan(text: 'key', style: TextStyle(color: Color(0xFF22D3EE))),
+        const TextSpan(text: '.'),
+      ]),
+      line([
+        const TextSpan(text: 'Every '),
+        const TextSpan(text: 'mode', style: TextStyle(color: Color(0xFFF472B6))),
+        const TextSpan(text: '.'),
+      ]),
+      line([TextSpan(text: 'Forever.', style: TextStyle(color: _gold))]),
+      SizedBox(height: 16 * _k),
       Text('One payment. Nothing to renew, nothing to cancel.',
-        style: TextStyle(fontSize: 15 * _k, fontWeight: FontWeight.w300, height: 1.5,
+        textAlign: TextAlign.center,
+        style: TextStyle(fontSize: 14.5 * _k, fontWeight: FontWeight.w300, height: 1.45,
           color: Colors.white.withValues(alpha: 0.60))),
-    ],
-  );
+    ]);
+  }
 
   // ── Feature list: one quiet row per unlocked capability ────────────────────
   //
