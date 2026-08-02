@@ -22,6 +22,8 @@ import 'package:improvy/services/storage_service.dart';
 import 'package:improvy/widgets/daily_challenge_card.dart';
 import 'package:improvy/widgets/level_up_modal.dart';
 import 'package:improvy/widgets/paywall_modal.dart';
+import 'package:improvy/widgets/whats_new_modal.dart';
+import 'package:improvy/constants/release_notes.dart';
 import 'package:improvy/widgets/quiz_reveal_modal.dart';
 
 /// Does every screen actually lay out?
@@ -410,6 +412,18 @@ void main() {
       testWidgets('legal text', (t) async {
         await t.show(
           const LegalScreen(title: 'Privacy Policy', body: kPrivacyPolicyBody),
+          await providerWith(),
+          size,
+        );
+      });
+
+      testWidgets("what's new, the current release", (t) async {
+        await t.show(
+          WhatsNewModal(
+            release: kReleases.first,
+            onDismiss: () {},
+            onRead: () {},
+          ),
           await providerWith(),
           size,
         );

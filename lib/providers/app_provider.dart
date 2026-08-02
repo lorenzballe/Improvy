@@ -10,6 +10,7 @@ import '../services/notification_service.dart';
 import '../services/review_service.dart';
 import '../constants/levels.dart';
 import '../constants/music_constants.dart';
+import '../constants/release_notes.dart';
 
 class AppProvider extends ChangeNotifier {
   final StorageService _storage;
@@ -38,6 +39,13 @@ class AppProvider extends ChangeNotifier {
   // first finished game). The UI reads it and asks the OS only if the user opts
   // in, so a "Don't Allow" never blindly burns the one-shot iOS permission.
   bool showNotifPrompt = false;
+
+  // True while the What's New sheet should be shown (an update was installed),
+  // and true for as long as the badge on Settings has not been cleared. The
+  // sheet auto-opens once; the badge survives a dismissal so the notes stay
+  // reachable from Settings until actually read.
+  bool showWhatsNew = false;
+  bool hasUnseenRelease = false;
 
   String? selectedKey;
   // True while a single-key analytics sub-screen (inside Stats) is open, so the
@@ -86,8 +94,57 @@ class AppProvider extends ChangeNotifier {
     notifHour = _storage.loadNotifHour();
     notifMinute = _storage.loadNotifMinute();
     lastSession = _storage.loadLastSession();
+    _initReleaseNotes();
     _recoverPendingSession();
     resyncNotifications();
+    notifyListeners();
+  }
+
+  // ── What's New ─────────────────────────────────────────────────────────────
+
+  /// Decides whether this launch follows an update.
+  ///
+  /// A first install must NOT be greeted with release notes — there is nothing
+  /// "new" about an app you have never seen. The tell is [tutorialCompleted]:
+  /// a device with no stored version that has already been through onboarding
+  /// is an upgrade from a build that predates this feature, while one that has
+  /// not is genuinely fresh. Either way the current version is recorded, so the
+  /// question is only ever asked once per release.
+  void _initReleaseNotes() {
+    if (kReleases.isEmpty) return;
+    final current = kReleases.first.version;
+    final seen = _storage.loadLastSeenVersion();
+    if (seen == current) return;
+
+    final isFreshInstall = seen == null && !tutorialCompleted;
+    if (isFreshInstall) {
+      _storage.saveLastSeenVersion(current);
+      return;
+    }
+    showWhatsNew = true;
+    hasUnseenRelease = true;
+  }
+
+  /// Closes the sheet. The badge stays lit — dismissing is not reading.
+  void dismissWhatsNew() {
+    if (!showWhatsNew) return;
+    showWhatsNew = false;
+    notifyListeners();
+  }
+
+  /// Opens the sheet on demand (from the Settings card).
+  void openWhatsNew() {
+    if (kReleases.isEmpty) return;
+    showWhatsNew = true;
+    notifyListeners();
+  }
+
+  /// Marks the current release as read: clears the badge for good.
+  void markReleaseSeen() {
+    if (kReleases.isEmpty) return;
+    _storage.saveLastSeenVersion(kReleases.first.version);
+    showWhatsNew = false;
+    hasUnseenRelease = false;
     notifyListeners();
   }
 

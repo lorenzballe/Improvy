@@ -23,6 +23,8 @@ import '../services/analytics_service.dart';
 import '../services/review_service.dart';
 import '../services/widget_service.dart';
 import '../widgets/quiz_reveal_modal.dart';
+import '../widgets/whats_new_modal.dart';
+import '../constants/release_notes.dart';
 
 class RootScreen extends StatefulWidget {
   const RootScreen({super.key});
@@ -615,6 +617,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
               child: _FloatingNav(
                 currentIndex: _currentTab,
                 onTap: _switchTab,
+                badgeIndex: provider.hasUnseenRelease ? 2 : null,
               ),
             ),
           if (_levelUpLevel != null)
@@ -654,6 +657,17 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
               child: _NotifPrimingModal(
                 onEnable: provider.acceptNotifPrompt,
                 onDismiss: provider.dismissNotifPrompt,
+              ),
+            ),
+          // Release notes — auto-opens once after an update, and again whenever
+          // Settings asks for it. Last in the stack so it sits above the
+          // priming sheet on the launch where both would want the screen.
+          if (provider.showWhatsNew && kReleases.isNotEmpty)
+            Positioned.fill(
+              child: WhatsNewModal(
+                release: kReleases.first,
+                onDismiss: provider.dismissWhatsNew,
+                onRead: provider.markReleaseSeen,
               ),
             ),
         ],
@@ -1021,7 +1035,14 @@ class _FloatingNav extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
-  const _FloatingNav({required this.currentIndex, required this.onTap});
+  /// Tab carrying an unread marker, if any (unread release notes → Settings).
+  final int? badgeIndex;
+
+  const _FloatingNav({
+    required this.currentIndex,
+    required this.onTap,
+    this.badgeIndex,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1108,10 +1129,41 @@ class _FloatingNav extends StatelessWidget {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
-                                icon,
-                                color: isActive ? Colors.white : const Color(0xFF94A3B8),
-                                size: 16,
+                              Stack(
+                                clipBehavior: Clip.none,
+                                children: [
+                                  Icon(
+                                    icon,
+                                    color: isActive ? Colors.white : const Color(0xFF94A3B8),
+                                    size: 16,
+                                  ),
+                                  // Unread marker. Ringed in the pill's own
+                                  // colour so it reads as a dot ON the icon
+                                  // rather than a stray pixel beside it.
+                                  if (badgeIndex == i)
+                                    Positioned(
+                                      top: -3,
+                                      right: -4,
+                                      child: Container(
+                                        width: 8,
+                                        height: 8,
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFEF4444),
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: const Color(0xFF1A1625),
+                                            width: 1.5,
+                                          ),
+                                          boxShadow: const [
+                                            BoxShadow(
+                                              color: Color(0x99EF4444),
+                                              blurRadius: 6,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               ),
                               const SizedBox(width: 6),
                               Flexible(

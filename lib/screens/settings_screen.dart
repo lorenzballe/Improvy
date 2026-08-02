@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../providers/app_provider.dart';
 import '../constants/app_info.dart';
+import '../constants/release_notes.dart';
 import '../services/purchase_service.dart';
 import '../services/review_service.dart';
 import 'legal_screen.dart';
@@ -443,6 +444,94 @@ class SettingsScreen extends StatelessWidget {
               // NEWS & UPDATES
               _sectionLabel('NEWS & UPDATES'),
               const SizedBox(height: 12),
+              // Release notes for the version actually installed. Sits above the
+              // "coming soon" teasers: what shipped outranks what might.
+              if (kReleases.isNotEmpty) ...[
+                GestureDetector(
+                  onTap: provider.openWhatsNew,
+                  behavior: HitTestBehavior.opaque,
+                  child: _card(
+                    shadow: const [BoxShadow(color: Color(0x4D000000), blurRadius: 32, offset: Offset(0, 8))],
+                    child: Row(
+                      children: [
+                        Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Container(
+                              width: 48, height: 48,
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFF2563EB), Color(0xFFA855F7)],
+                                ),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 24),
+                            ),
+                            if (provider.hasUnseenRelease)
+                              Positioned(
+                                top: -3, right: -3,
+                                child: Container(
+                                  width: 12, height: 12,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFEF4444),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: const Color(0xFF1A1625), width: 2),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Flexible(
+                                    child: Text(
+                                      "What's new",
+                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withAlpha(20),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      'v${kReleases.first.version}',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w800,
+                                        color: Colors.white.withAlpha(140),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                kReleases.first.headline,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.white.withAlpha(128),
+                                  height: 18 / 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Icon(Icons.chevron_right_rounded, color: Colors.white.withAlpha(90), size: 22),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+              ],
               _card(
                 shadow: const [BoxShadow(color: Color(0x4D000000), blurRadius: 32, offset: Offset(0, 8))],
                 child: Row(

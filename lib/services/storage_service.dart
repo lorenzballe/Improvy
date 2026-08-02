@@ -154,6 +154,13 @@ class StorageService {
 
   // Notifications — whether the OS permission prompt (via our priming sheet)
   // was already shown, plus the user's reminder preferences (default ON).
+  /// Version whose What's New sheet the user has already read. Null on a device
+  /// that has never run a build carrying this key — which is both a fresh
+  /// install and an upgrade from an older build, so the caller distinguishes
+  /// the two by whether there is any history (see AppProvider.initReleaseNotes).
+  String? loadLastSeenVersion() => _prefs.getString('last_seen_version');
+  Future<void> saveLastSeenVersion(String v) => _prefs.setString('last_seen_version', v);
+
   bool loadNotifPermAsked() => _prefs.getBool('notif_perm_asked') ?? false;
   Future<void> saveNotifPermAsked(bool v) => _prefs.setBool('notif_perm_asked', v);
 
