@@ -48,6 +48,45 @@ private fun currentSlot(): Long =
     localEpochDay() * 24L + Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
 
 /**
+ * Reads a number the Dart side wrote, whatever primitive it actually landed as.
+ *
+ * `HomeWidget.saveWidgetData<int>` stores a Dart int with `putInt`, so reading
+ * it back with `getLong` throws ClassCastException — and see [guarded] for what
+ * a throw in here costs. The width is the plugin's business, not ours, so read
+ * the raw value and coerce rather than betting on one type.
+ */
+private fun SharedPreferences.number(key: String, fallback: Long = 0L): Long =
+    when (val v = all[key]) {
+        is Long -> v
+        is Int -> v.toLong()
+        is Float -> v.toLong()
+        is Double -> v.toLong()
+        is String -> v.toLongOrNull() ?: fallback
+        else -> fallback
+    }
+
+/**
+ * Runs a widget update, swallowing anything it throws.
+ *
+ * An exception escaping `onUpdate` does not merely break the widget: the system
+ * kills the whole app process for it —
+ *
+ *   Unable to start receiver com.improvy.improvy.ImprovyDailyWidgetProvider:
+ *   java.lang.ClassCastException: Integer cannot be cast to Long
+ *
+ * — and since a launch triggers an update, the app died a second after opening,
+ * every single time, with no way back in. A home-screen widget is a nicety; it
+ * must never be able to take the app down with it. Worst case here is a widget
+ * that keeps its previous contents.
+ */
+private inline fun guarded(block: () -> Unit) {
+    try {
+        block()
+    } catch (_: Throwable) {
+    }
+}
+
+/**
  * "The little question" — a flashcard on the home screen.
  *
  * The answer is withheld on purpose: the unresolved question is what makes the
@@ -61,7 +100,7 @@ class ImprovyQuizWidgetProvider : HomeWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray,
         widgetData: SharedPreferences
-    ) {
+    ) = guarded {
         appWidgetIds.forEach { id ->
             val views = RemoteViews(context.packageName, R.layout.widget_quiz)
 
@@ -73,7 +112,7 @@ class ImprovyQuizWidgetProvider : HomeWidgetProvider() {
                     val list = JSONArray(raw)
                     val length = list.length()
                     if (length > 0) {
-                        val base = widgetData.getLong("quiz_base_slot", 0L)
+                        val base = widgetData.number("quiz_base_slot")
                         // A phone left alone past the end of the written week
                         // wraps rather than going blank; the next launch
                         // rewrites the rotation anyway.
@@ -115,7 +154,7 @@ class ImprovyDailyWidgetProvider : HomeWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray,
         widgetData: SharedPreferences
-    ) {
+    ) = guarded {
         appWidgetIds.forEach { id ->
             val views = RemoteViews(context.packageName, R.layout.widget_daily)
 
@@ -123,7 +162,7 @@ class ImprovyDailyWidgetProvider : HomeWidgetProvider() {
             val key = widgetData.getString("daily_key", "") ?: ""
             val score = widgetData.getString("daily_score", "") ?: ""
             val grid = widgetData.getString("daily_grid", "") ?: ""
-            val streak = widgetData.getLong("daily_streak", 0L)
+            val streak = widgetData.number("daily_streak")
 
             if (played) {
                 views.setTextViewText(R.id.daily_headline,
