@@ -166,7 +166,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
                     _in(0.0, 0.45, child: _brandRow()),
                     SizedBox(height: 20 * k),
                     _in(0.10, 0.55, child: _headline()),
-                    SizedBox(height: 14 * k),
+                    SizedBox(height: 24 * k),
                     // The body. Its rows share this zone evenly, so the page
                     // never shows a dead band and never has to be scrolled.
                     Expanded(child: _in(0.26, 0.78, child: _featureList())),
@@ -243,21 +243,22 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
   // ── Headline: "Every key. Every mode. / Forever." ──────────────────────────
 
   Widget _headline() {
-    // One phrase per line, each scaled to the full width: the promise is the
-    // loudest thing on the page, and three stacked lines carry it further than
-    // one long one squeezed to fit.
+    // One phrase per line, ranged left and each scaled to the full width: the
+    // promise is the loudest thing on the page, and three stacked lines carry
+    // it further than one long one squeezed to fit. Left-ranged under a centred
+    // mark gives the block an edge to start from, which centred type lacks.
     final style = TextStyle(fontSize: 46 * _k, fontWeight: FontWeight.w600,
         height: 1.06, letterSpacing: -1.6, color: Colors.white);
     Widget line(List<InlineSpan> spans) => SizedBox(
       width: double.infinity,
       child: FittedBox(
         fit: BoxFit.scaleDown,
-        alignment: Alignment.center,
+        alignment: Alignment.centerLeft,
         child: Text.rich(TextSpan(style: style, children: spans),
             maxLines: 1, softWrap: false),
       ),
     );
-    return Column(children: [
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       line([
         const TextSpan(text: 'Every '),
         const TextSpan(text: 'key', style: TextStyle(color: Color(0xFF22D3EE))),
@@ -269,11 +270,6 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
         const TextSpan(text: '.'),
       ]),
       line([TextSpan(text: 'Forever.', style: TextStyle(color: _gold))]),
-      SizedBox(height: 14 * _k),
-      Text('One payment. Nothing to renew, nothing to cancel.',
-        textAlign: TextAlign.center,
-        style: TextStyle(fontSize: 15.5 * _k, fontWeight: FontWeight.w300, height: 1.4,
-          color: Colors.white.withValues(alpha: 0.60))),
     ]);
   }
 
@@ -297,7 +293,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
       // Capped so a tall phone spaces them generously rather than absurdly.
       Expanded(
         child: LayoutBuilder(builder: (context, c) {
-          final rowH = (c.maxHeight / _features.length).clamp(24.0, 80.0);
+          final rowH = (c.maxHeight / _features.length).clamp(24.0, 92.0);
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -489,12 +485,12 @@ class _BuyButtonState extends State<_BuyButton> with SingleTickerProviderStateMi
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           gradient: const LinearGradient(
-            colors: [Color(0xFFFCE7A6), Color(0xFFF7C955), Color(0xFFE8A22B)],
-            stops: [0.0, 0.5, 1.0],
+            begin: Alignment.topCenter, end: Alignment.bottomCenter,
+            colors: [Color(0xFFF6CE6A), Color(0xFFEDB43C)],
           ),
           boxShadow: [
-            BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: widget.busy ? 0.25 : 0.60),
-              blurRadius: 32, offset: const Offset(0, 14), spreadRadius: -12),
+            BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: widget.busy ? 0.16 : 0.34),
+              blurRadius: 26, offset: const Offset(0, 10), spreadRadius: -12),
           ],
         ),
         child: Stack(children: [
@@ -512,7 +508,7 @@ class _BuyButtonState extends State<_BuyButton> with SingleTickerProviderStateMi
                         end: Alignment(-2.0 + p * 5.6, 0.4),
                         colors: [
                           Colors.transparent,
-                          Colors.white.withValues(alpha: 0.32),
+                          Colors.white.withValues(alpha: 0.20),
                           Colors.transparent,
                         ],
                       ).createShader(b),
