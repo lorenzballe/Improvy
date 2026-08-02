@@ -148,7 +148,11 @@ class DailyResult {
 
 /// Wordle-style share text — pasteable anywhere, renders as a story without
 /// needing an image: date, key, score, time, the coloured grid, the streak.
-String buildDailyShareText(DailyResult r, int streak) {
+///
+/// [installUrl] is the address the reader can install from — callers pass
+/// `installUrlFor(defaultTargetPlatform, isWeb: kIsWeb)` so this stays pure.
+/// Defaults to the site, which is right for every platform and never dead.
+String buildDailyShareText(DailyResult r, int streak, {String? installUrl}) {
   DateTime d;
   try {
     d = DateTime.parse(r.dateKey);
@@ -163,5 +167,5 @@ String buildDailyShareText(DailyResult r, int streak) {
   return 'Improvy Daily · $date\n'
       'Key of ${r.key} major · ${r.correct}/${r.total} · $time\n'
       '$grid$flame\n\n'
-      '$kWebsiteUrl';
+      '${installUrl ?? kWebsiteUrl}';
 }

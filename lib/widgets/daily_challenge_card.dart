@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../constants/app_info.dart';
 import '../models/daily_challenge.dart';
 import '../providers/app_provider.dart';
 import '../services/analytics_service.dart';
@@ -66,7 +68,8 @@ class _DailyChallengeCardState extends State<DailyChallengeCard> {
       'total': result.total,
       'from': 'home_card',
     });
-    final text = buildDailyShareText(result, streak);
+    final text = buildDailyShareText(result, streak,
+        installUrl: installUrlFor(defaultTargetPlatform, isWeb: kIsWeb));
     try {
       await Share.share(text);
     } catch (_) {

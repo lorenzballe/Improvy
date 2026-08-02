@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- "The little question": a flashcard on the home screen. The answer is
      deliberately withheld — the curiosity gap is what makes it a widget worth
-     keeping, and the tap that resolves it lands inside the app. -->
+     keeping, and the tap that resolves it lands inside the app.
+
+     The weighted FrameLayouts below are spacers, and they are FrameLayouts
+     rather than the obvious <Space> on purpose: RemoteViews inflates only the
+     handful of classes tagged @RemoteView, and Space is not among them. It
+     compiles, it previews fine in Android Studio, and then on the device it
+     throws "Class not allowed to be inflated" — which kills the whole widget,
+     not just the spacer. Same rule applies to any view added here later. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/quiz_root"
     android:layout_width="match_parent"
@@ -22,7 +29,7 @@
         android:fontFamily="@font/lexend_black" />
 
     <!-- Pushes the question to the optical centre at every widget height. -->
-    <Space
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />
@@ -39,7 +46,7 @@
         android:ellipsize="end"
         android:fontFamily="@font/lexend_black" />
 
-    <Space
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />

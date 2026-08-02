@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:intl/intl.dart';
@@ -6,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../constants/app_colors.dart';
+import '../constants/app_info.dart';
 import '../models/daily_challenge.dart';
 import '../providers/app_provider.dart';
 import '../services/analytics_service.dart';
@@ -81,7 +83,8 @@ class _DailyResultsScreenState extends State<DailyResultsScreen> {
       'correct': r.correct,
       'total': r.total,
     });
-    final text = buildDailyShareText(r, streak);
+    final text = buildDailyShareText(r, streak,
+        installUrl: installUrlFor(defaultTargetPlatform, isWeb: kIsWeb));
     try {
       await Share.share(text);
     } catch (_) {

@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart' show TargetPlatform;
+
 /// Single source of truth for the details the app shows the outside world.
 /// The marketing site publishes the same address — they must not drift apart.
 const String kSupportEmail = 'thebalecompany@gmail.com';
@@ -23,3 +25,33 @@ const String kTermsUrl = '$kWebsiteUrl#terms';
 /// empty the "Rate Improvy" row simply hides itself on iOS rather than opening
 /// a broken page; nothing else depends on it.
 const String kAppStoreId = '';
+
+/// Play Console → the listing's own address. Must match `applicationId` in
+/// android/app/build.gradle.kts — the id in the URL is what Play resolves, not
+/// the namespace the Kotlin lives under.
+const String kAndroidPackageId = 'com.improvy.app';
+const String kPlayStoreUrl =
+    'https://play.google.com/store/apps/details?id=$kAndroidPackageId';
+
+/// Public listing on the App Store, once [kAppStoreId] is known.
+String get kAppStoreUrl =>
+    kAppStoreId.isEmpty ? '' : 'https://apps.apple.com/app/id$kAppStoreId';
+
+/// Where to send someone who wants to *install* Improvy.
+///
+/// Prefers the reader's own store and falls back to the site, which is the
+/// only address that is always right: it outlives a store that has not
+/// approved us yet, and it is what a desktop browser can open. [platform] is
+/// injected so this stays a pure function — callers pass
+/// `defaultTargetPlatform`, tests pass whatever they are proving.
+String installUrlFor(TargetPlatform platform, {bool isWeb = false}) {
+  if (isWeb) return kWebsiteUrl;
+  switch (platform) {
+    case TargetPlatform.android:
+      return kPlayStoreUrl;
+    case TargetPlatform.iOS:
+      return kAppStoreUrl.isEmpty ? kWebsiteUrl : kAppStoreUrl;
+    default:
+      return kWebsiteUrl;
+  }
+}
