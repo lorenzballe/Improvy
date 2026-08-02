@@ -127,7 +127,14 @@ class PurchaseService {
         return PurchaseOutcome.cancelled;
       }
       if (kDebugMode) debugPrint('[PurchaseService] purchase error: $code');
-      lastPurchaseError = '${code.name}: ${e.message ?? 'unknown store error'}';
+      // Several RevenueCat codes — configurationError above all — say only
+      // "check the underlying error for more details". That detail is the one
+      // thing that identifies the misconfiguration (wrong package name, missing
+      // Play credentials, product not found), so surface it instead of the
+      // category alone.
+      final detail = _underlying(e);
+      lastPurchaseError = '${code.name}: ${e.message ?? 'unknown store error'}'
+          '${detail == null ? '' : '\n\n$detail'}';
       AnalyticsService.instance.capture('pro_purchase_error', {'code': code.name});
       return PurchaseOutcome.error;
     } catch (e) {
@@ -190,6 +197,21 @@ class PurchaseService {
   }
 
   // ── internals ──────────────────────────────────────────────────────────────
+
+  /// Digs the store's own explanation out of a RevenueCat [PlatformException].
+  /// The native SDKs put it under `underlyingErrorMessage`; the key has been
+  /// spelled both ways across versions, and `details` is not always a Map, so
+  /// this stays defensive and returns null rather than throwing inside an
+  /// error handler.
+  static String? _underlying(PlatformException e) {
+    final details = e.details;
+    if (details is! Map) return null;
+    for (final key in const ['underlyingErrorMessage', 'underlying_error_message']) {
+      final value = details[key];
+      if (value is String && value.trim().isNotEmpty) return value.trim();
+    }
+    return null;
+  }
 
   Future<void> _refresh({bool force = false}) async {
     try {
