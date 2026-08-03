@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Wider than the quiz widget by default (4×2): the headline it carries is a
-     sentence, not two symbols. -->
+<!-- 4x2. updatePeriodMillis is the floor Android allows (30 min); the app
+     also pushes an update whenever it runs, which is what actually keeps these
+     fresh. previewLayout draws the real thing in the picker — an unset preview
+     shows a grey box, and a grey box in the picker is a widget nobody adds. -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-    android:minWidth="250dp"
-    android:minHeight="110dp"
+    android:minWidth="270dp"
+    android:minHeight="130dp"
     android:targetCellWidth="4"
     android:targetCellHeight="2"
-    android:minResizeWidth="150dp"
-    android:minResizeHeight="70dp"
+    android:minResizeWidth="200dp"
+    android:minResizeHeight="60dp"
     android:updatePeriodMillis="1800000"
     android:initialLayout="@layout/widget_daily"
     android:previewLayout="@layout/widget_daily"

@@ -135,6 +135,28 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
         // Already played: land on Home, where the card shows today's score.
         _switchTab(0);
       }
+    } else if (action == 'key') {
+      // The weakest-key widget: open that key's training straight away, which
+      // is the whole reason the widget is worth a slot on someone's home screen.
+      final key = uri.queryParameters['k'];
+      AnalyticsService.instance.capture('widget_tapped', {'widget': 'weakest'});
+      _switchTab(0);
+      if (key != null && key.isNotEmpty) provider.selectKey(key);
+    } else if (action == 'pocket' || action == 'chromatic' || action == 'custom') {
+      AnalyticsService.instance.capture('widget_tapped', {'widget': action});
+      _switchTab(0);
+      final mode = switch (action) {
+        'pocket' => TrainingMode.pocket,
+        'chromatic' => TrainingMode.chromatic,
+        _ => TrainingMode.custom,
+      };
+      _openSetup(mode);
+    } else if (action == 'stats') {
+      AnalyticsService.instance.capture('widget_tapped', {'widget': 'stats'});
+      _switchTab(1);
+    } else if (action == 'train' || action == 'theory') {
+      AnalyticsService.instance.capture('widget_tapped', {'widget': action});
+      _switchTab(0);
     }
   }
 

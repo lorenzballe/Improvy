@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Design 8 (Weakest key 2x2).
+     RemoteViews only inflates the classes tagged @RemoteView: no Space,
+     no plain View, no ConstraintLayout, no custom drawing. Weighted
+     FrameLayouts are the spacers. Colour that varies per key or per mode
+     is a setColorFilter on widget_tile_white / widget_square_white,
+     because a background drawable cannot be recoloured from here. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/weak_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_bg"
+    android:padding="14dp">
+
+    <TextView
+        android:id="@+id/weak_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/widget_weak_label"
+        android:textColor="#FCD34D"
+        android:textSize="9sp"
+        android:letterSpacing="0.18"
+        android:maxLines="1"
+        android:fontFamily="@font/lexend_semibold" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center_vertical">
+
+        <FrameLayout
+            android:layout_width="52dp"
+            android:layout_height="52dp">
+
+            <ImageView
+                android:id="@+id/weak_key_bg"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/widget_square_white"
+                android:importantForAccessibility="no" />
+
+            <TextView
+                android:id="@+id/weak_key_letter"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="@string/widget_daily_key_placeholder"
+                android:textColor="#FF4D94"
+                android:textSize="20sp"
+                android:maxLines="1"
+                android:fontFamily="@font/outfit_semibold" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/weak_pct"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="10dp"
+            android:text="@string/widget_level_pct_placeholder"
+            android:textColor="#FF4D94"
+            android:textSize="24sp"
+            android:maxLines="1"
+            android:fontFamily="@font/outfit_semibold" />
+
+        <TextView
+            android:id="@+id/weak_sub"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="5dp"
+            android:text="@string/widget_weak_sub_placeholder"
+            android:textColor="#73FFFFFF"
+            android:textSize="10.5sp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:fontFamily="@font/lexend_medium" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/widget_weak_hint"
+        android:textColor="#73FFFFFF"
+        android:textSize="10sp"
+        android:maxLines="1"
+        android:fontFamily="@font/lexend_medium" />
+</LinearLayout>

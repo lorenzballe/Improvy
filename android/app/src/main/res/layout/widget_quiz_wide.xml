@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Design 8 (Question 4x2).
+     RemoteViews only inflates the classes tagged @RemoteView: no Space,
+     no plain View, no ConstraintLayout, no custom drawing. Weighted
+     FrameLayouts are the spacers. Colour that varies per key or per mode
+     is a setColorFilter on widget_tile_white / widget_square_white,
+     because a background drawable cannot be recoloured from here. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/quizw_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_bg"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/quizw_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/widget_quiz_label"
+        android:textColor="#FCD34D"
+        android:textSize="9sp"
+        android:letterSpacing="0.18"
+        android:maxLines="1"
+        android:fontFamily="@font/lexend_semibold" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingTop="6dp">
+
+        <TextView
+            android:id="@+id/quizw_degree"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/widget_quiz_degree_placeholder"
+            android:textColor="#FFFF4D"
+            android:textSize="50sp"
+            android:maxLines="1"
+            android:fontFamily="@font/outfit_semibold" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingStart="18dp"
+            android:paddingEnd="0dp">
+
+            <TextView
+                android:id="@+id/quizw_of"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/widget_quiz_of_placeholder"
+                android:textColor="#B8FFFFFF"
+                android:textSize="17sp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:fontFamily="@font/lexend_semibold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="6dp"
+                android:text="@string/widget_quiz_wide_sub"
+                android:textColor="#73FFFFFF"
+                android:textSize="12sp"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:fontFamily="@font/lexend_medium" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/widget_quiz_hint"
+        android:textColor="#66FFFFFF"
+        android:textSize="10sp"
+        android:maxLines="1"
+        android:fontFamily="@font/lexend_medium" />
+</LinearLayout>

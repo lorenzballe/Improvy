@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Design 8 (Streak 2x1).
+     RemoteViews only inflates the classes tagged @RemoteView: no Space,
+     no plain View, no ConstraintLayout, no custom drawing. Weighted
+     FrameLayouts are the spacers. Colour that varies per key or per mode
+     is a setColorFilter on widget_tile_white / widget_square_white,
+     because a background drawable cannot be recoloured from here. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/streak_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="@drawable/widget_bg"
+    android:paddingStart="14dp"
+    android:paddingEnd="14dp"
+    android:paddingTop="12dp"
+    android:paddingBottom="12dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/widget_flame_glyph"
+        android:textSize="25sp"
+        android:maxLines="1" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:paddingStart="12dp"
+        android:paddingEnd="0dp">
+
+        <TextView
+            android:id="@+id/streak_count"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/widget_zero"
+            android:textColor="#FFFFFFFF"
+            android:textSize="25sp"
+            android:maxLines="1"
+            android:fontFamily="@font/outfit_semibold" />
+
+        <TextView
+            android:id="@+id/streak_caption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="3dp"
+            android:text="@string/widget_streak_caption"
+            android:textColor="#73FFFFFF"
+            android:textSize="10sp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:fontFamily="@font/lexend_medium" />
+    </LinearLayout>
+</LinearLayout>

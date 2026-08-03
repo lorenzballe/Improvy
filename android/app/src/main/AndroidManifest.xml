@@ -47,9 +47,9 @@
                 <action android:name="android.intent.action.QUICKBOOT_POWERON"/>
             </intent-filter>
         </receiver>
-        <!-- Home-screen widgets (see ImprovyWidgets.kt). Both are exported so
-             the launcher can host them; they read only the data the app
-             publishes for them. -->
+        <!-- Home-screen widgets (see ImprovyWidgets.kt). Exported so the
+             launcher can host them; they read only what the app publishes
+             for them and never write anything back. -->
         <receiver
             android:name=".ImprovyQuizWidgetProvider"
             android:label="@string/widget_quiz_name"
@@ -62,6 +62,17 @@
                 android:resource="@xml/improvy_widget_quiz_info" />
         </receiver>
         <receiver
+            android:name=".ImprovyQuizWideWidgetProvider"
+            android:label="@string/widget_quiz_wide_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/improvy_widget_quiz_wide_info" />
+        </receiver>
+        <receiver
             android:name=".ImprovyDailyWidgetProvider"
             android:label="@string/widget_daily_name"
             android:exported="true">
@@ -71,6 +82,105 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/improvy_widget_daily_info" />
+        </receiver>
+        <receiver
+            android:name=".ImprovyLevelWidgetProvider"
+            android:label="@string/widget_level_widget_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/improvy_widget_level_info" />
+        </receiver>
+        <receiver
+            android:name=".ImprovyMapWidgetProvider"
+            android:label="@string/widget_map_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/improvy_widget_map_info" />
+        </receiver>
+        <receiver
+            android:name=".ImprovyMapTallWidgetProvider"
+            android:label="@string/widget_map_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/improvy_widget_map_tall_info" />
+        </receiver>
+        <receiver
+            android:name=".ImprovyStreakWidgetProvider"
+            android:label="@string/widget_streak_widget_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/improvy_widget_streak_info" />
+        </receiver>
+        <receiver
+            android:name=".ImprovyStreakTallWidgetProvider"
+            android:label="@string/widget_streak_widget_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/improvy_widget_streak_tall_info" />
+        </receiver>
+        <receiver
+            android:name=".ImprovyWeakestWidgetProvider"
+            android:label="@string/widget_weak_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/improvy_widget_weak_info" />
+        </receiver>
+        <receiver
+            android:name=".ImprovyLauncherWidgetProvider"
+            android:label="@string/widget_launcher_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/improvy_widget_launcher_info" />
+        </receiver>
+        <receiver
+            android:name=".ImprovyPocketWidgetProvider"
+            android:label="@string/widget_pocket_widget_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/improvy_widget_pocket_info" />
+        </receiver>
+        <receiver
+            android:name=".ImprovyTheoryWidgetProvider"
+            android:label="@string/widget_theory_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/improvy_widget_theory_info" />
         </receiver>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

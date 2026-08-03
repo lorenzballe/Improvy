@@ -11,9 +11,9 @@
     android:minResizeWidth="60dp"
     android:minResizeHeight="60dp"
     android:updatePeriodMillis="1800000"
-    android:initialLayout="@layout/widget_quiz"
-    android:previewLayout="@layout/widget_quiz"
+    android:initialLayout="@layout/widget_streak_tall"
+    android:previewLayout="@layout/widget_streak_tall"
     android:previewImage="@mipmap/ic_launcher"
-    android:description="@string/widget_quiz_description"
+    android:description="@string/widget_streak_description"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen" />

@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Design 8 (Quick launch 4x1).
+     RemoteViews only inflates the classes tagged @RemoteView: no Space,
+     no plain View, no ConstraintLayout, no custom drawing. Weighted
+     FrameLayouts are the spacers. Colour that varies per key or per mode
+     is a setColorFilter on widget_tile_white / widget_square_white,
+     because a background drawable cannot be recoloured from here. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/launcher_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="@drawable/widget_bg"
+    android:paddingStart="8dp"
+    android:paddingEnd="8dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp">
+
+        <LinearLayout
+            android:id="@+id/launch_daily"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <FrameLayout
+                android:layout_width="34dp"
+                android:layout_height="34dp">
+
+                <ImageView
+                    android:id="@+id/launch_daily_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_tile_white"
+                    android:importantForAccessibility="no" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="@string/widget_bolt_glyph"
+                    android:textSize="15sp"
+                    android:maxLines="1" />
+            </FrameLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingTop="6dp"
+                android:text="@string/widget_launch_daily"
+                android:textColor="#C7FFFFFF"
+                android:textSize="10sp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:fontFamily="@font/lexend_medium" />
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/launch_pocket"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <FrameLayout
+                android:layout_width="34dp"
+                android:layout_height="34dp">
+
+                <ImageView
+                    android:id="@+id/launch_pocket_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_tile_white"
+                    android:importantForAccessibility="no" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="@string/widget_pocket_glyph"
+                    android:textSize="15sp"
+                    android:maxLines="1" />
+            </FrameLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingTop="6dp"
+                android:text="@string/widget_pocket_label"
+                android:textColor="#C7FFFFFF"
+                android:textSize="10sp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:fontFamily="@font/lexend_medium" />
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/launch_chromatic"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <FrameLayout
+                android:layout_width="34dp"
+                android:layout_height="34dp">
+
+                <ImageView
+                    android:id="@+id/launch_chromatic_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_tile_white"
+                    android:importantForAccessibility="no" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="@string/widget_chromatic_glyph"
+                    android:textSize="15sp"
+                    android:maxLines="1" />
+            </FrameLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingTop="6dp"
+                android:text="@string/widget_launch_chromatic"
+                android:textColor="#C7FFFFFF"
+                android:textSize="10sp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:fontFamily="@font/lexend_medium" />
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/launch_custom"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <FrameLayout
+                android:layout_width="34dp"
+                android:layout_height="34dp">
+
+                <ImageView
+                    android:id="@+id/launch_custom_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_tile_white"
+                    android:importantForAccessibility="no" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="@string/widget_tune_glyph"
+                    android:textSize="15sp"
+                    android:maxLines="1" />
+            </FrameLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingTop="6dp"
+                android:text="@string/widget_launch_custom"
+                android:textColor="#C7FFFFFF"
+                android:textSize="10sp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:fontFamily="@font/lexend_medium" />
+        </LinearLayout>
+</LinearLayout>

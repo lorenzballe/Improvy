@@ -29,4 +29,58 @@
     <string name="widget_daily_done">Done</string>
     <string name="widget_daily_done_sub">Next challenge tomorrow</string>
     <string name="widget_play_glyph">▶</string>
+
+    <string name="widget_level_widget_name">Improvy · Level</string>
+    <string name="widget_level_description">Your animal, your rank, and how far through you are.</string>
+    <string name="widget_level_label">YOUR LEVEL</string>
+    <string name="widget_level_mastery">Mastery</string>
+    <string name="widget_level_emoji_placeholder">🐌</string>
+    <string name="widget_level_name_placeholder">Snail</string>
+    <string name="widget_level_rank_placeholder">Level 1 of 8</string>
+    <string name="widget_level_rank">Level %1$d of %2$d</string>
+    <string name="widget_level_pct_placeholder">0%</string>
+    <string name="widget_level_quote_placeholder">Slow and steady wins!</string>
+
+    <string name="widget_streak_widget_name">Improvy · Streak</string>
+    <string name="widget_streak_description">Days in a row, and a warning before you lose them.</string>
+    <string name="widget_streak_label">STREAK</string>
+    <string name="widget_streak_caption">day streak</string>
+    <!-- Shown only while today is still unplayed: the one number here worth
+         interrupting someone for is the one they are about to lose. -->
+    <string name="widget_streak_at_risk">Play today to keep it</string>
+    <string name="widget_flame_glyph">🔥</string>
+    <string name="widget_zero">0</string>
+    <string name="widget_dash">—</string>
+
+    <string name="widget_map_name">Improvy · Key mastery</string>
+    <string name="widget_map_description">Twelve keys, lit by how well you know them.</string>
+    <string name="widget_map_label">KEY MASTERY</string>
+
+    <string name="widget_weak_name">Improvy · Weakest key</string>
+    <string name="widget_weak_description">The key worth practising, one tap from training it.</string>
+    <string name="widget_weak_label">WEAKEST KEY</string>
+    <string name="widget_weak_hint">Tap to train it</string>
+    <string name="widget_weak_sub_placeholder">Nothing played yet</string>
+    <string name="widget_weak_empty">Play a key to find out</string>
+
+    <string name="widget_launcher_name">Improvy · Quick launch</string>
+    <string name="widget_launcher_description">Straight into the daily, Pocket, Chromatic or Custom.</string>
+    <string name="widget_launch_daily">Daily</string>
+    <string name="widget_launch_chromatic">Chromatic</string>
+    <string name="widget_launch_custom">Custom</string>
+    <string name="widget_bolt_glyph">⚡</string>
+    <string name="widget_chromatic_glyph">♯♭</string>
+    <string name="widget_tune_glyph">🎛</string>
+
+    <string name="widget_pocket_widget_name">Improvy · Pocket Mode</string>
+    <string name="widget_pocket_description">One tap into the hands-free drill.</string>
+    <string name="widget_pocket_glyph">🎧</string>
+    <string name="widget_pocket_label">Pocket Mode</string>
+
+    <string name="widget_theory_name">Improvy · Theory of the day</string>
+    <string name="widget_theory_description">One scale degree a day, and what it actually does.</string>
+    <string name="widget_theory_label">THEORY OF THE DAY</string>
+    <string name="widget_theory_hint">Tap for the full card</string>
+    <string name="widget_theory_degree_placeholder">♭7</string>
+    <string name="widget_theory_text_placeholder">The note that turns a major chord into a dominant.</string>
 </resources>

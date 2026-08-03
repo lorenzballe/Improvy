@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Design 8 (Streak 2x2).
+     RemoteViews only inflates the classes tagged @RemoteView: no Space,
+     no plain View, no ConstraintLayout, no custom drawing. Weighted
+     FrameLayouts are the spacers. Colour that varies per key or per mode
+     is a setColorFilter on widget_tile_white / widget_square_white,
+     because a background drawable cannot be recoloured from here. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/streakt_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_bg"
+    android:padding="14dp">
+
+    <TextView
+        android:id="@+id/streakt_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/widget_streak_label"
+        android:textColor="#FCD34D"
+        android:textSize="9sp"
+        android:letterSpacing="0.18"
+        android:maxLines="1"
+        android:fontFamily="@font/lexend_semibold" />
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/widget_flame_glyph"
+        android:textSize="34sp"
+        android:maxLines="1" />
+
+    <TextView
+        android:id="@+id/streakt_count"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingTop="6dp"
+        android:text="@string/widget_zero"
+        android:textColor="#FFFFFFFF"
+        android:textSize="40sp"
+        android:maxLines="1"
+        android:fontFamily="@font/outfit_semibold" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <TextView
+        android:id="@+id/streakt_caption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/widget_streak_caption"
+        android:textColor="#73FFFFFF"
+        android:textSize="10.5sp"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:fontFamily="@font/lexend_medium" />
+</LinearLayout>

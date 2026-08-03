@@ -1,0 +1,581 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Design 8 (Key mastery 4x4).
+     RemoteViews only inflates the classes tagged @RemoteView: no Space,
+     no plain View, no ConstraintLayout, no custom drawing. Weighted
+     FrameLayouts are the spacers. Colour that varies per key or per mode
+     is a setColorFilter on widget_tile_white / widget_square_white,
+     because a background drawable cannot be recoloured from here. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/map_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_bg"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+    <TextView
+        android:id="@+id/map_label"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:text="@string/widget_map_label"
+        android:textColor="#FCD34D"
+        android:textSize="9sp"
+        android:letterSpacing="0.18"
+        android:maxLines="1"
+        android:fontFamily="@font/lexend_semibold" />
+
+        <TextView
+            android:id="@+id/map_total"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/widget_level_pct_placeholder"
+            android:textColor="#FFFFFFFF"
+            android:textSize="17sp"
+            android:maxLines="1"
+            android:fontFamily="@font/outfit_semibold" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:paddingTop="10dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="3dp"
+            android:orientation="horizontal">
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:layout_marginStart="3dp"
+                android:layout_marginEnd="3dp">
+
+                <ImageView
+                    android:id="@+id/map_tile_0"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_tile_white"
+                    android:importantForAccessibility="no" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/map_key_0"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/widget_dash"
+                        android:textColor="#FFFFFFFF"
+                        android:textSize="14sp"
+                        android:maxLines="1"
+                        android:fontFamily="@font/outfit_semibold" />
+
+                    <TextView
+                        android:id="@+id/map_pct_0"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/widget_dash"
+                        android:textColor="#8CFFFFFF"
+                        android:textSize="9sp"
+                        android:maxLines="1"
+                        android:fontFamily="@font/lexend_medium" />
+                </LinearLayout>
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:layout_marginStart="3dp"
+                android:layout_marginEnd="3dp">
+
+                <ImageView
+                    android:id="@+id/map_tile_1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_tile_white"
+                    android:importantForAccessibility="no" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/map_key_1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/widget_dash"
+                        android:textColor="#FFFFFFFF"
+                        android:textSize="14sp"
+                        android:maxLines="1"
+                        android:fontFamily="@font/outfit_semibold" />
+
+                    <TextView
+                        android:id="@+id/map_pct_1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/widget_dash"
+                        android:textColor="#8CFFFFFF"
+                        android:textSize="9sp"
+                        android:maxLines="1"
+                        android:fontFamily="@font/lexend_medium" />
+                </LinearLayout>
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:layout_marginStart="3dp"
+                android:layout_marginEnd="3dp">
+
+                <ImageView
+                    android:id="@+id/map_tile_2"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_tile_white"
+                    android:importantForAccessibility="no" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/map_key_2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/widget_dash"
+                        android:textColor="#FFFFFFFF"
+                        android:textSize="14sp"
+                        android:maxLines="1"
+                        android:fontFamily="@font/outfit_semibold" />
+
+                    <TextView
+                        android:id="@+id/map_pct_2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/widget_dash"
+                        android:textColor="#8CFFFFFF"
+                        android:textSize="9sp"
+                        android:maxLines="1"
+                        android:fontFamily="@font/lexend_medium" />
+                </LinearLayout>
+            </FrameLayout>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="3dp"
+            android:orientation="horizontal">
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:layout_marginStart="3dp"
+                android:layout_marginEnd="3dp">
+
+                <ImageView
+                    android:id="@+id/map_tile_3"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_tile_white"
+                    android:importantForAccessibility="no" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/map_key_3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/widget_dash"
+                        android:textColor="#FFFFFFFF"
+                        android:textSize="14sp"
+                        android:maxLines="1"
+                        android:fontFamily="@font/outfit_semibold" />
+
+                    <TextView
+                        android:id="@+id/map_pct_3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/widget_dash"
+                        android:textColor="#8CFFFFFF"
+                        android:textSize="9sp"
+                        android:maxLines="1"
+                        android:fontFamily="@font/lexend_medium" />
+                </LinearLayout>
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:layout_marginStart="3dp"
+                android:layout_marginEnd="3dp">
+
+                <ImageView
+                    android:id="@+id/map_tile_4"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_tile_white"
+                    android:importantForAccessibility="no" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/map_key_4"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/widget_dash"
+                        android:textColor="#FFFFFFFF"
+                        android:textSize="14sp"
+                        android:maxLines="1"
+                        android:fontFamily="@font/outfit_semibold" />
+
+                    <TextView
+                        android:id="@+id/map_pct_4"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/widget_dash"
+                        android:textColor="#8CFFFFFF"
+                        android:textSize="9sp"
+                        android:maxLines="1"
+                        android:fontFamily="@font/lexend_medium" />
+                </LinearLayout>
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:layout_marginStart="3dp"
+                android:layout_marginEnd="3dp">
+
+                <ImageView
+                    android:id="@+id/map_tile_5"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_tile_white"
+                    android:importantForAccessibility="no" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/map_key_5"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/widget_dash"
+                        android:textColor="#FFFFFFFF"
+                        android:textSize="14sp"
+                        android:maxLines="1"
+                        android:fontFamily="@font/outfit_semibold" />
+
+                    <TextView
+                        android:id="@+id/map_pct_5"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/widget_dash"
+                        android:textColor="#8CFFFFFF"
+                        android:textSize="9sp"
+                        android:maxLines="1"
+                        android:fontFamily="@font/lexend_medium" />
+                </LinearLayout>
+            </FrameLayout>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="3dp"
+            android:orientation="horizontal">
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:layout_marginStart="3dp"
+                android:layout_marginEnd="3dp">
+
+                <ImageView
+                    android:id="@+id/map_tile_6"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_tile_white"
+                    android:importantForAccessibility="no" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/map_key_6"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/widget_dash"
+                        android:textColor="#FFFFFFFF"
+                        android:textSize="14sp"
+                        android:maxLines="1"
+                        android:fontFamily="@font/outfit_semibold" />
+
+                    <TextView
+                        android:id="@+id/map_pct_6"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/widget_dash"
+                        android:textColor="#8CFFFFFF"
+                        android:textSize="9sp"
+                        android:maxLines="1"
+                        android:fontFamily="@font/lexend_medium" />
+                </LinearLayout>
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:layout_marginStart="3dp"
+                android:layout_marginEnd="3dp">
+
+                <ImageView
+                    android:id="@+id/map_tile_7"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_tile_white"
+                    android:importantForAccessibility="no" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/map_key_7"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/widget_dash"
+                        android:textColor="#FFFFFFFF"
+                        android:textSize="14sp"
+                        android:maxLines="1"
+                        android:fontFamily="@font/outfit_semibold" />
+
+                    <TextView
+                        android:id="@+id/map_pct_7"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/widget_dash"
+                        android:textColor="#8CFFFFFF"
+                        android:textSize="9sp"
+                        android:maxLines="1"
+                        android:fontFamily="@font/lexend_medium" />
+                </LinearLayout>
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:layout_marginStart="3dp"
+                android:layout_marginEnd="3dp">
+
+                <ImageView
+                    android:id="@+id/map_tile_8"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_tile_white"
+                    android:importantForAccessibility="no" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/map_key_8"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/widget_dash"
+                        android:textColor="#FFFFFFFF"
+                        android:textSize="14sp"
+                        android:maxLines="1"
+                        android:fontFamily="@font/outfit_semibold" />
+
+                    <TextView
+                        android:id="@+id/map_pct_8"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/widget_dash"
+                        android:textColor="#8CFFFFFF"
+                        android:textSize="9sp"
+                        android:maxLines="1"
+                        android:fontFamily="@font/lexend_medium" />
+                </LinearLayout>
+            </FrameLayout>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="3dp"
+            android:orientation="horizontal">
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:layout_marginStart="3dp"
+                android:layout_marginEnd="3dp">
+
+                <ImageView
+                    android:id="@+id/map_tile_9"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_tile_white"
+                    android:importantForAccessibility="no" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/map_key_9"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/widget_dash"
+                        android:textColor="#FFFFFFFF"
+                        android:textSize="14sp"
+                        android:maxLines="1"
+                        android:fontFamily="@font/outfit_semibold" />
+
+                    <TextView
+                        android:id="@+id/map_pct_9"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/widget_dash"
+                        android:textColor="#8CFFFFFF"
+                        android:textSize="9sp"
+                        android:maxLines="1"
+                        android:fontFamily="@font/lexend_medium" />
+                </LinearLayout>
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:layout_marginStart="3dp"
+                android:layout_marginEnd="3dp">
+
+                <ImageView
+                    android:id="@+id/map_tile_10"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_tile_white"
+                    android:importantForAccessibility="no" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/map_key_10"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/widget_dash"
+                        android:textColor="#FFFFFFFF"
+                        android:textSize="14sp"
+                        android:maxLines="1"
+                        android:fontFamily="@font/outfit_semibold" />
+
+                    <TextView
+                        android:id="@+id/map_pct_10"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/widget_dash"
+                        android:textColor="#8CFFFFFF"
+                        android:textSize="9sp"
+                        android:maxLines="1"
+                        android:fontFamily="@font/lexend_medium" />
+                </LinearLayout>
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:layout_marginStart="3dp"
+                android:layout_marginEnd="3dp">
+
+                <ImageView
+                    android:id="@+id/map_tile_11"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/widget_tile_white"
+                    android:importantForAccessibility="no" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/map_key_11"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/widget_dash"
+                        android:textColor="#FFFFFFFF"
+                        android:textSize="14sp"
+                        android:maxLines="1"
+                        android:fontFamily="@font/outfit_semibold" />
+
+                    <TextView
+                        android:id="@+id/map_pct_11"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/widget_dash"
+                        android:textColor="#8CFFFFFF"
+                        android:textSize="9sp"
+                        android:maxLines="1"
+                        android:fontFamily="@font/lexend_medium" />
+                </LinearLayout>
+            </FrameLayout>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>
