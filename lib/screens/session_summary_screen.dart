@@ -7,6 +7,7 @@ import '../constants/app_colors.dart';
 import '../constants/levels.dart';
 import '../widgets/note_text.dart';
 import '../widgets/animal_icon.dart';
+import '../constants/app_scroll.dart';
 
 class SessionSummaryScreen extends StatelessWidget {
   final Map<String, dynamic> sessionData;
@@ -119,6 +120,7 @@ class SessionSummaryScreen extends StatelessWidget {
 
             Expanded(
               child: SingleChildScrollView(
+                physics: kAppScrollPhysics,
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                 child: Column(children: [
                   const SizedBox(height: 36),

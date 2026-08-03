@@ -13,6 +13,7 @@ import '../providers/app_provider.dart';
 import '../services/analytics_service.dart';
 import '../services/haptics_service.dart';
 import '../widgets/note_text.dart';
+import '../constants/app_scroll.dart';
 
 /// Result screen for the Daily Challenge — the once-a-day moment, so it gets
 /// its own stage instead of the standard session summary: verdict + score,
@@ -139,6 +140,7 @@ class _DailyResultsScreenState extends State<DailyResultsScreen> {
           child: result == null
               ? _fallback()
               : SingleChildScrollView(
+                physics: kAppScrollPhysics,
                   padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,

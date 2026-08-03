@@ -7,6 +7,7 @@ import '../models/stats.dart';
 import '../constants/app_colors.dart';
 import '../constants/music_constants.dart';
 import '../widgets/note_text.dart';
+import '../constants/app_scroll.dart';
 
 // Roman labels for the 12 semitones (0..11), flat spellings only — used for
 // the note the user actually tapped, where the keyboard gives no enharmonic
@@ -199,6 +200,7 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
     }
 
     final content = SingleChildScrollView(
+      physics: kAppScrollPhysics,
           padding: EdgeInsets.fromLTRB(20, 4, 20, 28 + MediaQuery.of(context).padding.bottom),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

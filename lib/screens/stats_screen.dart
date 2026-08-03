@@ -9,6 +9,7 @@ import '../constants/music_constants.dart';
 import '../widgets/note_text.dart';
 import '../widgets/animal_icon.dart';
 import 'key_analytics_screen.dart';
+import '../constants/app_scroll.dart';
 
 // ─── DEGREE DATA ─────────────────────────────────────────────────────────────
 
@@ -165,6 +166,7 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
       backgroundColor: const Color(0xFF0F0A1A),
       body: SafeArea(
         child: SingleChildScrollView(
+          physics: kAppScrollPhysics,
           padding: EdgeInsets.only(bottom: 140 + MediaQuery.of(context).padding.bottom),
           child: Column(
             children: [
@@ -205,13 +207,12 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
                           Column(mainAxisSize: MainAxisSize.min, children: [
                             FittedBox(
                               fit: BoxFit.scaleDown,
-                              child: ShaderMask(
-                                shaderCallback: (b) => const LinearGradient(
-                                  colors: [Color(0xFF22D3EE), Color(0xFF818CF8), Color(0xFFF472B6)],
-                                ).createShader(b),
-                                child: Text('${p.round()}%',
-                                  style: const TextStyle(fontSize: 60, fontWeight: FontWeight.w900, color: Colors.white, height: 1, letterSpacing: -3)),
-                              ),
+                              // Plain white on purpose. The ring around it is
+                              // already the rainbow; tinting the number too made
+                              // the two compete. Training keeps its coloured
+                              // figure — there the number IS the celebration.
+                              child: Text('${p.round()}%',
+                                style: const TextStyle(fontSize: 60, fontWeight: FontWeight.w900, color: Colors.white, height: 1, letterSpacing: -3)),
                             ),
                             const SizedBox(height: 6),
                             FittedBox(
@@ -530,6 +531,9 @@ class _ResponseTimeCardState extends State<_ResponseTimeCard> {
 
   @override
   Widget build(BuildContext context) {
+    // A zero is a game that was played but never answered in time; only a card
+    // with no positive reading at all is genuinely empty.
+    final hasData = widget.displayTimes.any((t) => t > 0);
     final showDragValue = _isDragging && _selectedIndex != null && _selectedIndex! < widget.displayTimes.length;
     final int valueToShow = showDragValue ? widget.displayTimes[_selectedIndex!] : widget.avgMs;
     
@@ -584,6 +588,11 @@ class _ResponseTimeCardState extends State<_ResponseTimeCard> {
               ),
             ]),
             const SizedBox(height: 16),
+            // Nothing has been timed yet: a blank frame with two axis labels
+            // reads as something broken. Say what will fill it instead.
+            if (!hasData)
+              const _SpeedEmptyState()
+            else ...[
             // Avg time — gradient text. Before any game is recorded there is
             // nothing to show; the SizedBox keeps the card height stable.
             if (valueToShow == 0)
@@ -633,8 +642,59 @@ class _ResponseTimeCardState extends State<_ResponseTimeCard> {
               Text('LATEST',
                 style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white.withAlpha(77))),
             ]),
+            ],
           ]),
         ),
+      ),
+    );
+  }
+}
+
+/// Stands in for the speed chart until there is a first answer to time.
+///
+/// Occupies roughly the height the chart would, so the card does not jump the
+/// moment the first session lands.
+class _SpeedEmptyState extends StatelessWidget {
+  const _SpeedEmptyState();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 150,
+      width: double.infinity,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: const Color(0xFF60A5FA).withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFF60A5FA).withValues(alpha: 0.22)),
+            ),
+            child: const Icon(Icons.bolt_rounded, color: Color(0xFF60A5FA), size: 24),
+          ),
+          const SizedBox(height: 14),
+          const Text(
+            'Your speed lives here',
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Colors.white),
+          ),
+          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Text(
+              'Play a session and watch every answer get quicker.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12,
+                height: 1.45,
+                fontWeight: FontWeight.w500,
+                color: Colors.white.withValues(alpha: 0.5),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

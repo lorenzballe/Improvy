@@ -283,11 +283,40 @@ class AppProvider extends ChangeNotifier {
         '10 questions to nail it?';
   }
 
-  // First finished game → show the priming sheet once. The OS permission dialog
-  // is only fired if the user opts in there (acceptNotifPrompt), so a decline
-  // never blindly burns the one-shot iOS permission.
-  void _ensureNotifPermission() {
+  /// Days on which something was actually played — not days since install.
+  /// Someone who opened the app three times in one evening has one day of
+  /// habit, not three.
+  int get _daysPlayed =>
+      stats.dailyHistory.values.where((d) => d.sessions > 0).length;
+
+  /// Days of use before the app is allowed to ask for notifications.
+  static const _notifMinDaysPlayed = 3;
+
+  /// Sessions before asking, on top of the days. Guards the case of three days
+  /// with a single game each — technically a habit, but not enough of the app
+  /// seen to have an opinion about being reminded of it.
+  static const _notifMinSessions = 5;
+
+  /// What counts as a result worth celebrating. Deliberately high: the ask
+  /// rides on the good feeling of the score behind it, and 70% is a score you
+  /// are annoyed by, not proud of.
+  static const _notifMinAccuracy = 0.9;
+
+  /// Decides whether this finished session is the moment to ask.
+  ///
+  /// Asking is a one-shot: on iOS a "Don't Allow" is permanent, and even the
+  /// in-app priming sheet only gets one honest chance. So it waits for a user
+  /// who has come back across several days AND has just done genuinely well —
+  /// the two conditions together. Primed on day one after a mediocre round,
+  /// the answer is a reflex "no" and the channel is gone for good.
+  ///
+  /// The OS dialog still only fires if they say yes to the sheet
+  /// ([acceptNotifPrompt]), so a decline here costs nothing at the OS level.
+  void _maybeAskForNotifications(double accuracy) {
     if (_storage.loadNotifPermAsked()) return;
+    if (accuracy < _notifMinAccuracy) return;
+    if (_daysPlayed < _notifMinDaysPlayed) return;
+    if (stats.sessionHistory.length < _notifMinSessions) return;
     showNotifPrompt = true;
     notifyListeners();
   }
@@ -962,13 +991,8 @@ class AppProvider extends ChangeNotifier {
     // in-progress snapshot is now stale, so drop it.
     _storage.saveStats(stats);
     _storage.removePending();
-    // First finished game = the moment of proven value — the right time to
-    // ask for notification permission (never as a cold-start popup). But only
-    // on a good score: primed right after a rough game (say two errors and a
-    // quit), the answer would be a reflex "no". A bad first game doesn't burn
-    // the prompt — the next good one asks instead.
     final accuracy = newSession.total > 0 ? newSession.correct / newSession.total : 0.0;
-    if (accuracy >= 0.7) _ensureNotifPermission();
+    _maybeAskForNotifications(accuracy);
     // Feeds the "has seen enough of the app to have an opinion" gate; the
     // rating prompt itself only fires at a peak (see ReviewService).
     ReviewService.instance.recordSession();

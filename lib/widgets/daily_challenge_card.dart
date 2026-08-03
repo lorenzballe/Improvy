@@ -139,7 +139,10 @@ class _DailyChallengeCardState extends State<DailyChallengeCard> {
           child: Container(
             padding: const EdgeInsets.fromLTRB(18, 16, 16, 16),
             decoration: const BoxDecoration(
-              borderRadius: BorderRadius.all(Radius.circular(21)),
+              // 22 − 1.4: the inner radius has to be the outer one minus the
+              // hairline, or the ring thickens and thins as it goes round the
+              // corners. At 21 it was 0.4 too wide and the frame read uneven.
+              borderRadius: BorderRadius.all(Radius.circular(20.6)),
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,

@@ -68,14 +68,19 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
 
   // Swipeable tabs — Home / Stats / Settings. State (incl. scroll position) is
   // preserved by keep-alive pages, so returning to a tab resumes where you left.
-  final PageController _pageController = PageController();
+  // Not final: onboarding hands the main scaffold a fresh one so its PageView
+  // mounts on Training instead of being jumped there a frame later.
+  PageController _pageController = PageController();
 
   // Provider listener for debug-button level-up detection
   AppProvider? _observedProvider;
 
   // One-shot: the app fades up as the onboarding poster lifts away, so the two
   // halves of that handover meet instead of cutting.
-  bool _arriving = false;
+  /// Bumped each time the onboarding hands over, which re-keys (and so replays)
+  /// the arrival animation. Zero means "we did not come from onboarding" — the
+  /// app was already past the tutorial on this launch, so nothing should fade.
+  int _arrivalId = 0;
 
   @override
   void initState() {
@@ -362,19 +367,84 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
 
     if (!provider.tutorialCompleted) {
       return OnboardingScreen(onComplete: () {
-        // The PageView remounts at page 0 when the main scaffold returns; reset
-        // the nav index to match so the indicator and the page can't desync
-        // (e.g. Training shown while the bar still highlights Settings).
-        _currentTab = 0;
-        _arriving = true;
+        // A brand-new controller, so the main scaffold's PageView mounts on
+        // Training already. The old code let it mount wherever the controller
+        // had been left and jumped it to page 0 in a post-frame callback —
+        // which is a second layout of the whole home screen, one frame after
+        // the first, and reads exactly like the page building twice.
+        _pageController.dispose();
+        _pageController = PageController();
+        setState(() {
+          _currentTab = 0;
+          _arrivalId++;
+        });
         AnalyticsService.instance.capture('onboarding_completed');
         provider.completeTutorial();
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted && _pageController.hasClients) _pageController.jumpToPage(0);
-        });
       });
     }
 
+    return TweenAnimationBuilder<double>(
+      // Re-keyed per arrival so the fade replays, and then left in place for
+      // good. The old code dropped the wrapper once the animation ended, and
+      // removing a widget from this position changes the shape of the tree —
+      // which remounts every screen beneath it. That was the *second* of the
+      // two renders: one for the page jump, one for the unwrap.
+      key: ValueKey('arrive-$_arrivalId'),
+      tween: Tween(begin: _arrivalId == 0 ? 1.0 : 0.0, end: 1.0),
+      duration: const Duration(milliseconds: 520),
+      curve: Curves.easeOutCubic,
+      builder: (_, v, child) => Opacity(
+        opacity: v,
+        child: Transform.scale(scale: 0.985 + 0.015 * v, child: child),
+      ),
+      // Going deeper — Choose Mode → setup → play, and resuming a session —
+      // used to be a hard cut, while picking a key inside Choose Mode animated.
+      // Same journey, so it now has the same manners: the arriving screen
+      // fades up and slides a little in from the right.
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.easeInCubic,
+        // The default centres and loosens its children; these are full-screen
+        // scaffolds and must fill the stack instead.
+        layoutBuilder: (current, previous) => Stack(
+          fit: StackFit.expand,
+          children: [...previous, if (current != null) current],
+        ),
+        transitionBuilder: (child, animation) => FadeTransition(
+          opacity: animation,
+          child: SlideTransition(
+            position: Tween<Offset>(begin: const Offset(0.055, 0), end: Offset.zero)
+                .animate(animation),
+            child: child,
+          ),
+        ),
+        child: KeyedSubtree(
+          key: ValueKey(_destination(provider)),
+          child: _screenFor(provider),
+        ),
+      ),
+    );
+  }
+
+  /// Which destination the app is on. Only the identity matters: the switcher
+  /// animates when this string changes and updates in place when it doesn't,
+  /// so the trainer rebuilding on every tick stays put.
+  String _destination(AppProvider provider) {
+    if (_pocketConfig != null) return 'pocket';
+    if (_pendingSetup != null && provider.activeMode == null) {
+      return 'setup-${_pendingSetup!.storageKey}';
+    }
+    if (provider.activeMode != null) {
+      if (_finishedSession != null) {
+        return provider.dailyChallengeActive ? 'daily-results' : 'summary';
+      }
+      return 'trainer';
+    }
+    return 'home';
+  }
+
+  Widget _screenFor(AppProvider provider) {
     // Pocket Mode runs as a self-contained full-screen takeover (audio loop,
     // not the tap-based game engine).
     if (_pocketConfig != null) {
@@ -674,20 +744,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       ),
     );
 
-    if (!_arriving) return home;
-    // Plays once, right after the onboarding poster has lifted away.
-    return TweenAnimationBuilder<double>(
-      key: const ValueKey('arrive'),
-      tween: Tween(begin: 0, end: 1),
-      duration: const Duration(milliseconds: 520),
-      curve: Curves.easeOutCubic,
-      onEnd: () { if (mounted) setState(() => _arriving = false); },
-      builder: (_, v, child) => Opacity(
-        opacity: v,
-        child: Transform.scale(scale: 0.985 + 0.015 * v, child: child),
-      ),
-      child: home,
-    );
+    return home;
   }
 }
 

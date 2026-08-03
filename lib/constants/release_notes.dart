@@ -45,7 +45,7 @@ class Release {
 /// the right behaviour for a pure bug-fix build.
 const List<Release> kReleases = [
   Release(
-    version: '1.5.9',
+    version: '1.6.0',
     headline: 'Home-screen widgets, and a calmer paywall.',
     lines: [
       ReleaseLine(

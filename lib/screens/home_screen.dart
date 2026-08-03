@@ -12,6 +12,7 @@ import '../services/haptics_service.dart';
 import '../widgets/daily_challenge_card.dart';
 import '../widgets/note_text.dart';
 import '../widgets/animal_icon.dart';
+import '../constants/app_scroll.dart';
 
 class HomeScreen extends StatelessWidget {
   final void Function([String? reason]) onShowPaywall;
@@ -64,6 +65,7 @@ class _HomeMain extends StatelessWidget {
 
     return SafeArea(
       child: SingleChildScrollView(
+        physics: kAppScrollPhysics,
         padding: EdgeInsets.only(bottom: 140 + MediaQuery.of(context).padding.bottom),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

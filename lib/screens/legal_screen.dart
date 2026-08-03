@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_info.dart';
+import '../constants/app_scroll.dart';
 
 class LegalScreen extends StatelessWidget {
   final String title;
@@ -39,6 +40,7 @@ class LegalScreen extends StatelessWidget {
             ),
             Expanded(
               child: SingleChildScrollView(
+                physics: kAppScrollPhysics,
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
                 child: Text(
                   body,
