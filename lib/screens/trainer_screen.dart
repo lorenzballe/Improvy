@@ -6,6 +6,7 @@ import '../models/training_mode.dart';
 import '../models/stats.dart';
 import '../constants/app_colors.dart';
 import '../constants/music_constants.dart';
+import '../utils/adaptive_engine.dart';
 import '../utils/music_engine.dart';
 import '../services/haptics_service.dart';
 import '../widgets/note_text.dart';
@@ -121,8 +122,21 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
       widget.numberOfQuestions ??
       (widget.difficulty == 1 ? 30 : widget.difficulty == 2 ? 40 : 50);
 
-  int get _timeLimit =>
+  /// The tier's own limit — what Apprentice / Virtuoso / Master mean.
+  int get _nominalTimeLimit =>
       widget.difficulty == 1 ? 6000 : widget.difficulty == 2 ? 4000 : 2000;
+
+  /// The limit actually in force for the next question.
+  ///
+  /// With Adaptive Difficulty on, this is the half of the feature a player can
+  /// feel: the clock closes in while you are cruising and opens back up when
+  /// you start missing, holding the session near the accuracy band where
+  /// learning is quickest. The tier still sets the centre, so a Master session
+  /// never drifts into feeling like Apprentice.
+  int get _timeLimit => widget.adaptiveDifficulty
+      ? AdaptiveClock.limitFor(
+          nominalMs: _nominalTimeLimit, recent: _sessionAnswers)
+      : _nominalTimeLimit;
 
   @override
   void initState() {
@@ -228,11 +242,17 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
       final seq = widget.questionSequence!;
       next = seq[_attempts < seq.length ? _attempts : seq.length - 1];
     } else
-    // Adaptive picking kicks in as soon as there is enough recorded data for
-    // this key+mode (see _pickAdaptiveDegree) — a returning player gets a
-    // personalised question 1, not five warm-up randoms every session.
+    // Adaptive picking works from question 1: a degree with no record here is
+    // the most useful thing to ask, so the engine covers the pool by itself
+    // instead of burning the opening on warm-up randoms.
     if (widget.adaptiveDifficulty) {
-      next = _pickAdaptiveDegree(possibleDegrees, currentDeg);
+      next = _adaptive.pick(
+        possible: possibleDegrees,
+        currentDeg: currentDeg,
+        history: _history,
+        session: _sessionAnswers,
+        timeLimitMs: _timeLimit,
+      );
     } else {
       final available = possibleDegrees.where((d) => d != currentDeg).toList();
       if (available.isEmpty) available.addAll(possibleDegrees);
@@ -297,108 +317,22 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
     return (tonic + 11) % 12;
   }
 
-  // True when a recorded answer's degree is (one spelling of) [candidate].
-  // Forward-chromatic candidates keep the slash form ('♭3/♯2') while answers
-  // record the single spelling actually asked ('♭3' or '♯2'), so the match
-  // must try every spelling — comparing the raw strings never matched, which
-  // left the three enharmonic degrees permanently "never seen" and over-asked.
-  static bool _isSameDegree(String recorded, String candidate) {
-    final r = normalizeExtension(recorded);
-    return candidate.split('/').any((p) => normalizeExtension(p) == r);
-  }
+  /// Past answers for THIS key and mode, in true chronological order, with the
+  /// current session appended as it goes.
+  ///
+  /// Only this key counts: the same degree lands on different piano keys in
+  /// different tonalities (♭3 in C is black, in F♯ it is white), so struggling
+  /// with a degree in one key says little about it in another. sessionHistory
+  /// is newest-first, so it is reversed; answers inside a session are already
+  /// oldest→newest.
+  late final List<AnswerRecord> _history = [
+    for (final s in widget.sessionHistory.reversed)
+      ...((s.answers ?? []) as List)
+          .where((a) => a.mode == widget.mode.storageKey && a.tonality == _currentKey)
+          .map(_normalizedAnswer),
+  ];
 
-  String _pickAdaptiveDegree(List<String> possible, String currentDeg) {
-    // Only this key's history: the same degree lands on different piano keys
-    // in different tonalities (♭3 in C is a black key, in F♯ it's white), so
-    // struggling with a degree in one key says little about it in another.
-    // Built in TRUE chronological order — sessionHistory is newest-first, so
-    // it must be reversed (answers inside a session are already oldest→newest)
-    // with the current session appended. The recent-accuracy slice, the
-    // correct-streak walk and questions-since-last-asked below all read the
-    // tail of this list as "most recent" and silently rot if the order lies.
-    final allAnswers = [
-      for (final s in widget.sessionHistory.reversed)
-        ...((s.answers ?? []) as List)
-            .where((a) => a.mode == widget.mode.storageKey && a.tonality == _currentKey)
-            .map(_normalizedAnswer),
-      ..._sessionAnswers,
-    ];
-
-    // Not enough data to be smart about this key yet → uniform random,
-    // exactly like non-adaptive play (no immediate repeat).
-    if (allAnswers.length < 8) {
-      final available = possible.where((d) => d != currentDeg).toList();
-      if (available.isEmpty) available.addAll(possible);
-      return available[Random().nextInt(available.length)];
-    }
-
-    final targetTime = widget.difficulty == 1 ? 5000.0 : widget.difficulty == 2 ? 3000.0 : 1500.0;
-
-    final weights = possible.map((deg) {
-      if (deg == currentDeg && possible.length > 1) return 0.0;
-
-      final degAnswers = allAnswers.where((a) => _isSameDegree(a.degree, deg)).toList();
-      if (degAnswers.isEmpty) return 100.0; // never asked in this key → top priority
-
-      // Mastery: accuracy over the most recent 15 asks, blended with the
-      // current correct-streak. Low mastery → high weight (asked more often).
-      final recent = degAnswers.length > 15 ? degAnswers.sublist(degAnswers.length - 15) : degAnswers;
-      final correctRecent = recent.where((a) => a.isCorrect).toList();
-      final globalAccuracy = correctRecent.length / recent.length;
-
-      int streakCount = 0;
-      for (int j = degAnswers.length - 1; j >= 0; j--) {
-        if (degAnswers[j].isCorrect) streakCount++; else break;
-      }
-
-      final masteryBoost = (streakCount / 5).clamp(0.0, 1.0);
-      final mastery = globalAccuracy * 0.6 + masteryBoost * 0.4;
-      double weight = 60 - mastery * 50;
-
-      // Speed: knowing it slowly is not knowing it — slow-but-correct answers
-      // keep a degree in rotation even at 100% accuracy.
-      if (correctRecent.length >= 3) {
-        final last3 = correctRecent.sublist(correctRecent.length - 3);
-        final avg = last3.fold<double>(0, (s, a) => s + a.responseTime) / 3;
-        if (avg > targetTime) {
-          weight += ((avg - targetTime) / targetTime).clamp(0.0, 1.5) * 45;
-        } else {
-          weight *= 0.7;
-        }
-      } else {
-        weight += 40;
-      }
-
-      // Spaced repetition: resurface degrees that haven't been asked for a
-      // while, so mastered ones still come back for review now and then.
-      final lastIdx = allAnswers.lastIndexWhere((a) => _isSameDegree(a.degree, deg));
-      final qSinceSeen = allAnswers.length - lastIdx;
-      if (qSinceSeen > possible.length * 3) {
-        final decay = ((qSinceSeen - possible.length * 3) / (possible.length * 12)).clamp(0.0, 1.0);
-        weight += decay * 40;
-      }
-
-      // Session variety: soften what was asked 2–3 questions ago so two weak
-      // degrees can't ping-pong back and forth for a whole session.
-      final n = _sessionAnswers.length;
-      if (n >= 2 && _isSameDegree(_sessionAnswers[n - 2].degree, deg)) {
-        weight *= 0.45;
-      } else if (n >= 3 && _isSameDegree(_sessionAnswers[n - 3].degree, deg)) {
-        weight *= 0.7;
-      }
-
-      weight += Random().nextDouble() * 5;
-      return weight.clamp(5.0, 200.0);
-    }).toList();
-
-    final totalWeight = weights.reduce((a, b) => a + b);
-    var random = Random().nextDouble() * totalWeight;
-    for (int i = 0; i < weights.length; i++) {
-      if (random < weights[i]) return possible[i];
-      random -= weights[i];
-    }
-    return possible[0];
-  }
+  final AdaptiveEngine _adaptive = AdaptiveEngine();
 
   AnswerRecord _normalizedAnswer(dynamic a) => AnswerRecord(
     degree: a.degree ?? '',
@@ -449,6 +383,10 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
       timestamp: DateTime.now().millisecondsSinceEpoch,
     );
     _sessionAnswers.add(record);
+    // The adaptive engine reads one chronological list, so this session's
+    // answers have to land in it as they happen — otherwise it keeps asking
+    // off a picture of the key that stops at last session.
+    _history.add(record);
 
     setState(() {
       _showFeedback = true;

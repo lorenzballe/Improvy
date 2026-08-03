@@ -342,7 +342,9 @@ class SettingsScreen extends StatelessWidget {
                               const SizedBox(height: 16),
                               Text(
                                 provider.isPro
-                                    ? 'Our algorithm analyzes your response times and accuracy to focus on the notes you find most challenging.'
+                                    ? 'Degrees you answer slowly or get wrong come up several times more often '
+                                        'than ones you own — right but slow still counts as unlearned. The clock '
+                                        'tightens while you are sharp and eases off when you start missing.'
                                     : 'PRO feature — upgrade to unlock smart training that adapts to your weaknesses.',
                                 style: TextStyle(
                                   fontSize: 11,
