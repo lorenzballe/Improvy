@@ -401,6 +401,15 @@ class AppProvider extends ChangeNotifier {
     return d.attempts > 0 || d.sessions > 0;
   }
 
+  /// Whether anything was practised today. The streak widget's alert state
+  /// hangs off this: a streak about to break is the one number here worth
+  /// interrupting someone for.
+  bool get playedToday {
+    final now = DateTime.now();
+    return _trainedOn(
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}');
+  }
+
   int get streak {
     final today = _dateKey(DateTime.now());
     final yesterday = _dateKey(DateTime.now().subtract(const Duration(days: 1)));

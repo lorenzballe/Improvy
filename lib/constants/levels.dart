@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+/// How many animal levels there are, top to bottom. The Level widget shows
+/// "Level 3 of 8", and that 8 must follow the ladder rather than be retyped.
+const int kAnimalLevelCount = 8;
+
 class AnimalLevel {
   final int level;
   final String name;

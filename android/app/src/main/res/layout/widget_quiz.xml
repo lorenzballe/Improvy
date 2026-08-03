@@ -1,21 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- "The little question": a flashcard on the home screen. The answer is
-     deliberately withheld — the curiosity gap is what makes it a widget worth
-     keeping, and the tap that resolves it lands inside the app.
-
-     The weighted FrameLayouts below are spacers, and they are FrameLayouts
-     rather than the obvious <Space> on purpose: RemoteViews inflates only the
-     handful of classes tagged @RemoteView, and Space is not among them. It
-     compiles, it previews fine in Android Studio, and then on the device it
-     throws "Class not allowed to be inflated" — which kills the whole widget,
-     not just the spacer. Same rule applies to any view added here later. -->
+<!-- Design 8 (Question 2x2). RemoteViews only inflates the classes tagged
+     @RemoteView — no Space, no View, no ConstraintLayout, no custom drawing.
+     Weighted FrameLayouts are the spacers. Colours that vary per key or per
+     mode arrive as a tint applied to widget_tile_white / widget_square_white,
+     because a background drawable cannot be recoloured from RemoteViews. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/quiz_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@drawable/widget_bg"
-    android:padding="16dp">
+    android:padding="14dp">
 
     <TextView
         android:id="@+id/quiz_label"
@@ -26,25 +21,35 @@
         android:textSize="9sp"
         android:letterSpacing="0.18"
         android:maxLines="1"
-        android:fontFamily="@font/lexend_black" />
+        android:fontFamily="@font/lexend_semibold" />
 
-    <!-- Pushes the question to the optical centre at every widget height. -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />
 
     <TextView
-        android:id="@+id/quiz_question"
+        android:id="@+id/quiz_degree"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/widget_quiz_placeholder"
-        android:textColor="#FFFFFFFF"
-        android:textSize="24sp"
-        android:lineSpacingMultiplier="1.05"
-        android:maxLines="2"
-        android:ellipsize="end"
-        android:fontFamily="@font/lexend_black" />
+        android:gravity="center"
+        android:text="@string/widget_quiz_degree_placeholder"
+        android:textColor="#FFFF4D"
+        android:textSize="38sp"
+        android:maxLines="1"
+        android:fontFamily="@font/outfit_semibold" />
+
+    <TextView
+        android:id="@+id/quiz_of"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingTop="4dp"
+        android:text="@string/widget_quiz_of_placeholder"
+        android:textColor="#8CFFFFFF"
+        android:textSize="13sp"
+        android:maxLines="1"
+        android:fontFamily="@font/lexend_medium" />
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -55,10 +60,10 @@
         android:id="@+id/quiz_hint"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center"
         android:text="@string/widget_quiz_hint"
         android:textColor="#73FFFFFF"
-        android:textSize="11sp"
+        android:textSize="10sp"
         android:maxLines="1"
-        android:ellipsize="end"
-        android:fontFamily="@font/lexend_semibold" />
+        android:fontFamily="@font/lexend_medium" />
 </LinearLayout>

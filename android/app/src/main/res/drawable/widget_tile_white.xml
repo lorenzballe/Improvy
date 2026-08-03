@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tinted at runtime (setColorFilter + setImageAlpha). RemoteViews cannot
+     recolour a background drawable, but ImageView exposes both of those as
+     remotable methods — so every coloured tile in the widgets is this one
+     shape wearing a filter. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <corners android:radius="12dp" />
+    <solid android:color="#FFFFFFFF" />
+</shape>

@@ -8,6 +8,10 @@ import '../models/daily_challenge.dart';
 import '../providers/app_provider.dart';
 import '../utils/music_engine.dart';
 import '../widgets/note_text.dart';
+import '../constants/app_colors.dart';
+import '../constants/levels.dart';
+import '../constants/theory_cards.dart';
+import '../models/key_progress.dart';
 
 /// Feeds the home-screen widgets.
 ///
@@ -35,6 +39,31 @@ class WidgetService {
   static const String _androidDailyProvider = 'ImprovyDailyWidgetProvider';
   static const String _iOSQuizKind = 'ImprovyQuizWidget';
   static const String _iOSDailyKind = 'ImprovyDailyWidget';
+
+  /// Every widget the app publishes, as (Android provider, iOS kind). Adding a
+  /// widget means adding it here — the refresh loop below walks this list, so a
+  /// new provider left out of it simply never updates.
+  static const List<(String, String)> _widgets = [
+    (_androidQuizProvider, _iOSQuizKind),
+    (_androidDailyProvider, _iOSDailyKind),
+    ('ImprovyQuizWideWidgetProvider', 'ImprovyQuizWideWidget'),
+    ('ImprovyLevelWidgetProvider', 'ImprovyLevelWidget'),
+    ('ImprovyMapWidgetProvider', 'ImprovyMapWidget'),
+    ('ImprovyMapTallWidgetProvider', 'ImprovyMapTallWidget'),
+    ('ImprovyStreakWidgetProvider', 'ImprovyStreakWidget'),
+    ('ImprovyStreakTallWidgetProvider', 'ImprovyStreakTallWidget'),
+    ('ImprovyWeakestWidgetProvider', 'ImprovyWeakestWidget'),
+    ('ImprovyLauncherWidgetProvider', 'ImprovyLauncherWidget'),
+    ('ImprovyPocketWidgetProvider', 'ImprovyPocketWidget'),
+    ('ImprovyTheoryWidgetProvider', 'ImprovyTheoryWidget'),
+  ];
+
+  /// The twelve keys in chromatic order, spelled the way the app spells them.
+  /// The map widget's 6×2 grid reads left-to-right as a rising scale, which is
+  /// only true in this order — [kKeys] is arranged by key signature instead.
+  static const List<String> chromaticKeyOrder = [
+    'C', 'D♭', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 'A', 'B♭', 'B',
+  ];
 
   /// Hours of questions written ahead. A week of rotation costs a few KB and
   /// means an untouched phone still shows something new every hour.
@@ -106,26 +135,113 @@ class WidgetService {
         HomeWidget.saveWidgetData<String>('daily_sub', DailyChallenge.rule),
         HomeWidget.saveWidgetData<int>('daily_streak', provider.dailyStreak),
 
-        // ── Progress ──────────────────────────────────────────────────────
+        // The key of the day in its own colour, so the widget's tile matches
+        // the tile the app shows for that key.
+        HomeWidget.saveWidgetData<String>('daily_key_color', _keyHex(daily.key)),
+        // Whether today is already covered. The streak widget goes to its alert
+        // state on false — a streak you are about to lose is the only number
+        // here worth interrupting someone for.
+        HomeWidget.saveWidgetData<bool>('played_today', provider.playedToday),
+
+        // ── Level & progress ──────────────────────────────────────────────
         HomeWidget.saveWidgetData<String>('animal_emoji', animal.emoji),
         HomeWidget.saveWidgetData<String>('animal_name', animal.name),
+        HomeWidget.saveWidgetData<String>('animal_color', animal.hex),
+        HomeWidget.saveWidgetData<String>('animal_quote', animal.quote),
+        HomeWidget.saveWidgetData<int>('animal_level', animal.level),
+        HomeWidget.saveWidgetData<int>('animal_levels_total', kAnimalLevelCount),
         HomeWidget.saveWidgetData<int>('progress_pct', provider.totalProgress.round()),
+
+        // ── Key mastery ───────────────────────────────────────────────────
+        // Twelve entries in chromatic order: name, percentage, colour, and
+        // whether it has ever been played (an untouched key is drawn hollow,
+        // not at 0% — "never started" and "started badly" are different).
+        HomeWidget.saveWidgetData<String>('keys_json', jsonEncode(_keyTiles(provider))),
+
+        // ── Weakest key ───────────────────────────────────────────────────
+        ..._weakestKeyData(provider),
+
+        // ── Theory of the day ─────────────────────────────────────────────
+        HomeWidget.saveWidgetData<String>('theory_degree', _theory(now).$1),
+        HomeWidget.saveWidgetData<String>('theory_text', _theory(now).$2),
+        HomeWidget.saveWidgetData<String>('theory_color', _theory(now).$3),
       ]);
 
-      await HomeWidget.updateWidget(
-        androidName: _androidQuizProvider,
-        iOSName: _iOSQuizKind,
-        qualifiedAndroidName: 'com.improvy.improvy.$_androidQuizProvider',
-      );
-      await HomeWidget.updateWidget(
-        androidName: _androidDailyProvider,
-        iOSName: _iOSDailyKind,
-        qualifiedAndroidName: 'com.improvy.improvy.$_androidDailyProvider',
-      );
+      // Every widget is refreshed from the same payload — one write, one sweep.
+      for (final (android, ios) in _widgets) {
+        await HomeWidget.updateWidget(
+          androidName: android,
+          iOSName: ios,
+          qualifiedAndroidName: 'com.improvy.improvy.$android',
+        );
+      }
     } catch (e) {
       // A widget that fails to refresh must never disturb the app.
       if (kDebugMode) debugPrint('[WidgetService] sync failed: $e');
     }
+  }
+
+  /// A key's colour as `#rrggbb`, from its position in the chromatic order —
+  /// the same positional rainbow the app uses, so a key looks the same on the
+  /// home screen as it does inside.
+  static String _keyHex(String key) {
+    final i = chromaticKeyOrder.indexOf(key);
+    final c = AppColors.keyColor(i < 0 ? 0 : i);
+    return '#${(c.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
+  }
+
+  /// The twelve tiles of the mastery map, chromatic order.
+  static List<Map<String, dynamic>> _keyTiles(AppProvider provider) {
+    return [
+      for (var i = 0; i < chromaticKeyOrder.length; i++)
+        () {
+          final key = chromaticKeyOrder[i];
+          final p = provider.progressData.firstWhere(
+            (k) => k.key == key,
+            orElse: () => KeyProgress(key: key),
+          );
+          final pct = p.totalProgress;
+          return <String, dynamic>{
+            'k': formatNoteForDisplay(key, provider.notation),
+            'p': pct,
+            'c': _keyHex(key),
+            // Untouched keys read as an outline. Without this a key you have
+            // never opened looks identical to one you keep failing.
+            'played': pct > 0,
+          };
+        }(),
+    ];
+  }
+
+  /// The key most worth practising, plus the numbers the widget shows for it.
+  ///
+  /// "Weakest" only means something once there is something to compare, so a
+  /// profile with nothing played publishes an empty name and the widget shows
+  /// its own invitation instead of pointing at an arbitrary C.
+  static List<Future<bool?>> _weakestKeyData(AppProvider provider) {
+    final played = provider.progressData.where((k) => k.totalProgress > 0).toList();
+    if (played.isEmpty) {
+      return [
+        HomeWidget.saveWidgetData<String>('weak_key', ''),
+        HomeWidget.saveWidgetData<int>('weak_pct', 0),
+        HomeWidget.saveWidgetData<String>('weak_color', _keyHex('C')),
+      ];
+    }
+    played.sort((a, b) => a.totalProgress.compareTo(b.totalProgress));
+    final worst = played.first;
+    return [
+      HomeWidget.saveWidgetData<String>(
+          'weak_key', formatNoteForDisplay(worst.key, provider.notation)),
+      HomeWidget.saveWidgetData<int>('weak_pct', worst.totalProgress),
+      HomeWidget.saveWidgetData<String>('weak_color', _keyHex(worst.key)),
+    ];
+  }
+
+  /// One theory card per day, picked by date so every device shows the same one
+  /// and it changes at midnight without the app running.
+  static (String, String, String) _theory(DateTime now) {
+    final card = kTheoryCards[_epochDay(now) % kTheoryCards.length];
+    return (card.degree, card.text, card.hex);
   }
 
   /// Days since 1970-01-01 for a local calendar date.

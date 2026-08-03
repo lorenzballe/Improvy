@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pocket Mode's single target. #6366F1 is Pocket's accent in
+     home_screen.dart — the widget must not invent its own. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <corners android:radius="16dp" />
+    <solid android:color="#FF6366F1" />
+</shape>

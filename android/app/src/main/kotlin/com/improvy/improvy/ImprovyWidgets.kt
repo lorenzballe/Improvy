@@ -104,7 +104,12 @@ class ImprovyQuizWidgetProvider : HomeWidgetProvider() {
         appWidgetIds.forEach { id ->
             val views = RemoteViews(context.packageName, R.layout.widget_quiz)
 
-            var question = context.getString(R.string.widget_quiz_placeholder)
+            // The degree and its key are drawn separately now: the degree is the
+            // headline, in the key's own colour, and "of X" is the quiet line
+            // under it. The payload still carries one string, so split on the
+            // first " of " and fall back to putting it all in the headline.
+            var question = context.getString(R.string.widget_quiz_degree_placeholder)
+            var ofKey = context.getString(R.string.widget_quiz_of_placeholder)
             var slot = currentSlot()
             try {
                 val raw = widgetData.getString("quiz_json", null)
@@ -122,7 +127,19 @@ class ImprovyQuizWidgetProvider : HomeWidgetProvider() {
                         // after a wrap they differ, and the app must reveal the
                         // question the user was looking at.
                         slot = base + index
-                        question = list.getJSONObject(index).optString("q", question)
+                        val raw2 = list.getJSONObject(index).optString("q", "")
+                        if (raw2.isNotEmpty()) {
+                            val cut = raw2.indexOf(" of ")
+                            if (cut > 0) {
+                                question = raw2.substring(0, cut)
+                                ofKey = context.getString(
+                                    R.string.widget_quiz_of, raw2.substring(cut + 4)
+                                )
+                            } else {
+                                question = raw2
+                                ofKey = ""
+                            }
+                        }
                     }
                 }
             } catch (_: Exception) {
@@ -130,7 +147,8 @@ class ImprovyQuizWidgetProvider : HomeWidgetProvider() {
                 // than crashing the launcher's widget host.
             }
 
-            views.setTextViewText(R.id.quiz_question, question)
+            views.setTextViewText(R.id.quiz_degree, question)
+            views.setTextViewText(R.id.quiz_of, ofKey)
             views.setOnClickPendingIntent(
                 R.id.quiz_root,
                 HomeWidgetLaunchIntent.getActivity(
