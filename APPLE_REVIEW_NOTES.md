@@ -43,13 +43,42 @@ means by tracking.
 
 ### You must do this — it is the actual fix
 
-App Store Connect → **App Privacy** → edit, and make it say:
+App Store Connect → **App Privacy** → edit. The label currently declares 11
+data types; the app collects **three**. Everything else is either not
+collected at all or an artefact of guessing what the SDKs do. Only PostHog
+(anonymous product analytics) and RevenueCat (purchase state) send anything —
+there is no login, no `identify()` call, and no crash/performance SDK in the
+project at all.
 
-- **Identifiers → Email Address: remove it.** Not collected.
-- **Location → Coarse Location: remove it.** Not collected.
-- For everything that stays (Product Interaction, Purchases), set
-  **"Not used for tracking"** and **"Not linked to the user"**.
-- The "Used to Track You" section must end up **empty**.
+**Delete these — they are false:**
+
+| Declared now | Why it is wrong |
+|---|---|
+| Email Address | Never collected. No sign-in, no `identify()`. |
+| Coarse Location | GeoIP is now disabled per event; not collected. |
+| Payment Info / Financial Info | The app never sees payment details — Apple processes the transaction; RevenueCat only learns *whether* Pro was bought. |
+| User ID | There is no user identity — nothing to key it to. |
+| Crash Data | No crash-reporting SDK is present. |
+| Performance Data / Other Diagnostic Data | Nothing collects these. |
+| Other Usage Data | Redundant with Product Interaction. |
+
+**Keep exactly these three.** For each: **"Not linked to the user"** and
+**"Not used for tracking"**, purposes limited to Analytics / App Functionality:
+
+| Keep | Purpose | Source |
+|---|---|---|
+| Product Interaction | Analytics | PostHog events |
+| Purchase History | App Functionality | RevenueCat |
+| Device ID | Analytics, App Functionality | anonymous PostHog `distinct_id` / RevenueCat app-user id — declare it: if Apple's scanner sees the id and the label denies it, that is a fresh rejection |
+
+**Then, on every remaining item, remove these purposes** — they are what makes
+Apple read the app as tracking:
+
+- **"Developer's Advertising or Marketing"** — nothing uses data for ads.
+- **"Product Personalization"** — the app adapts difficulty on-device only; no
+  transmitted data drives it.
+
+- The **"Used to Track You" section must end up empty.**
 
 Then reply to the rejection message with:
 
