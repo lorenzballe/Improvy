@@ -49,7 +49,18 @@ class AnalyticsService {
     // Analytics must NEVER break app flow — swallow any SDK/channel error so a
     // failed capture can't stop e.g. the paywall from opening.
     try {
-      Posthog().capture(eventName: event, properties: properties?.cast<String, Object>());
+      Posthog().capture(
+        eventName: event,
+        properties: {
+          ...?properties?.cast<String, Object>(),
+          // PostHog otherwise derives a city/region from the request IP. The
+          // app asks for no location permission and wants none of this, and
+          // the privacy label says so — see ios/Runner/PrivacyInfo.xcprivacy.
+          // Without this the server would quietly attach coarse location to
+          // every event and make that label untrue.
+          '\$geoip_disable': true,
+        },
+      );
     } catch (e) {
       if (kDebugMode) debugPrint('[PostHog] capture failed: $e');
     }

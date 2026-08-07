@@ -22,6 +22,43 @@ class KeepAliveAudio {
   bool _configured = false;
   bool _restarting = false;
 
+  /// Put the shared audio session into a category that survives the screen
+  /// locking, and that the ring/silent switch does not mute.
+  ///
+  /// Called once from `main()`, before anything creates a player. It used to
+  /// run only when Pocket Mode started playing, which left every player made
+  /// before that — including the voice player warmed up in initState — on
+  /// whatever category the plugin defaults to. An `ambient` default is silent
+  /// with the ring switch off and never plays in the background, so the whole
+  /// mode could come out mute on a device that happened to be on silent.
+  static Future<void> configureSession() async {
+    if (kIsWeb) return;
+    try {
+      await AudioPlayer.global.setAudioContext(
+        AudioContext(
+          iOS: AudioContextIOS(
+            category: AVAudioSessionCategory.playback,
+            options: {
+              AVAudioSessionOptions.mixWithOthers,
+              AVAudioSessionOptions.allowBluetooth,
+              AVAudioSessionOptions.allowBluetoothA2DP,
+            },
+          ),
+          android: AudioContextAndroid(
+            isSpeakerphoneOn: false,
+            stayAwake: true,
+            contentType: AndroidContentType.speech,
+            usageType: AndroidUsageType.media,
+            audioFocus: AndroidAudioFocus.none,
+          ),
+        ),
+      );
+    } catch (_) {
+      // A refused session must not stop the app launching; playback simply
+      // falls back to whatever the platform gives us.
+    }
+  }
+
   Future<void> start() async {
     // Web tabs get throttled by the browser, not by an audio session — the
     // trick doesn't apply there and would only cost an extra decoder.
@@ -29,27 +66,9 @@ class KeepAliveAudio {
     _running = true;
     try {
       if (!_configured) {
-        // Match the category the voice player uses, so neither one downgrades the
-        // shared session to something that can't play in the background.
-        await AudioPlayer.global.setAudioContext(
-          AudioContext(
-            iOS: AudioContextIOS(
-              category: AVAudioSessionCategory.playback,
-              options: {
-                AVAudioSessionOptions.mixWithOthers,
-                AVAudioSessionOptions.allowBluetooth,
-                AVAudioSessionOptions.allowBluetoothA2DP,
-              },
-            ),
-            android: AudioContextAndroid(
-              isSpeakerphoneOn: false,
-              stayAwake: true,
-              contentType: AndroidContentType.speech,
-              usageType: AndroidUsageType.media,
-              audioFocus: AndroidAudioFocus.none,
-            ),
-          ),
-        );
+        // Belt and braces: main() has already done this, but a session can be
+        // reset by an interruption, and re-asserting it is cheap.
+        await configureSession();
         await _player.setReleaseMode(ReleaseMode.loop);
         // A phone call, Siri or an alarm interrupts playback, and nothing
         // restarts it on its own — the session would then be suspended at the

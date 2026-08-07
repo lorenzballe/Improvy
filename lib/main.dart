@@ -6,6 +6,7 @@ import 'providers/app_provider.dart';
 import 'services/storage_service.dart';
 import 'services/purchase_service.dart';
 import 'services/analytics_service.dart';
+import 'services/keep_alive_audio.dart';
 import 'services/notification_service.dart';
 import 'services/widget_service.dart';
 import 'screens/root_screen.dart';
@@ -34,6 +35,11 @@ void main() async {
       debugPrint('[startup] $what failed: $e\n$s');
     }
   }
+
+  // Before anything creates an audio player: Pocket Mode's voice has to keep
+  // speaking with the screen locked, which needs the playback category in
+  // force from the start rather than from the first tap on Play.
+  await attempt('audio session', KeepAliveAudio.configureSession);
 
   final storage = StorageService();
   await attempt('storage', storage.init);
