@@ -87,7 +87,10 @@ b) Purchase status
 We record whether you have activated Improvy PRO. This is stored locally on your device and also managed by RevenueCat (see §3). We never receive or store your payment details — those remain with Apple or Google.
 
 c) Device metadata (collected automatically by PostHog)
-Our analytics provider (PostHog) may automatically record: app version, operating system version, device model, screen resolution, and a country derived from your IP address at the time of the request. Your IP address is not stored by PostHog.
+Our analytics provider (PostHog) may automatically record: app version, operating system version, device model, and screen resolution. It also assigns a random, per-install identifier so events from the same device can be grouped — it is tied to no account and identifies no person.
+
+d) Approximate location
+PostHog derives a coarse location (roughly your city, region, and country) from the IP address of each request, so we can see broadly where Improvy is used. The App itself never asks for location access and cannot read your device's GPS. This location is coarse, tied to no account or identity, used only for anonymous analytics, and never for advertising or tracking.
 
 2. HOW WE USE YOUR INFORMATION
 
@@ -101,7 +104,7 @@ We do not use your data for advertising. We do not sell, rent, or share your dat
 3. THIRD-PARTY SERVICES
 
 PostHog (Analytics)
-We use PostHog to collect anonymous usage events. PostHog may process data on servers located in the EU. No personal data is sent to PostHog. You can opt out of analytics in the App's Settings screen at any time. PostHog Privacy Policy: https://posthog.com/privacy
+We use PostHog to collect anonymous usage events and a coarse, IP-based location. PostHog may process data on servers located in the EU. No account or directly identifying information is sent to PostHog. PostHog Privacy Policy: https://posthog.com/privacy
 
 Apple / Google (In-App Purchases)
 In-app purchases are processed directly by Apple (App Store) or Google (Play Store). Their privacy policies govern the processing of your payment and account data:

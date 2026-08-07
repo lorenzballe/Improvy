@@ -16,8 +16,8 @@
 	<array>
 		<!-- Anonymous product analytics (PostHog, EU cloud): which screens are
 		     opened, which modes are started, how a session ended. No account,
-		     no sign-in, no email address, and server-side GeoIP is switched
-		     off per event — see lib/services/analytics_service.dart. -->
+		     no sign-in, no email address. (Coarse location from the request IP
+		     is declared separately below.) -->
 		<dict>
 			<key>NSPrivacyCollectedDataType</key>
 			<string>NSPrivacyCollectedDataTypeProductInteraction</string>
