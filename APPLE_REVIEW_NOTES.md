@@ -146,3 +146,60 @@ the voice continues, then attach it in **App Review Information → Notes**.
 I will remove `audio` from `UIBackgroundModes` instead — but that also means
 removing the "Keeps playing with the screen off" promise from Pocket Mode, the
 Settings copy and the marketing site, since it would no longer be true.
+
+---
+
+## Ready-to-paste reply to the reviewer
+
+Send this as the reply to the rejection in App Store Connect, once the label
+is corrected, the screen recording is attached, and the new build is uploaded.
+
+> Hello, and thank you for the review.
+>
+> **Guideline 5.1.2(i) — Privacy / Tracking**
+>
+> Improvy does not track users. There is no login and no account, no
+> `identify()` call, no IDFA, and no advertising SDK. No data is shared with a
+> data broker or linked to third-party data for advertising, so no App
+> Tracking Transparency prompt is required.
+>
+> The previous privacy label was inaccurate and has now been corrected in App
+> Store Connect:
+> - **Email Address** was listed by mistake and has been removed — the app
+>   never collects an email address. It has no sign-in, and the only email
+>   reference in the app is a `mailto:` support link that opens the user's own
+>   mail client.
+> - **Coarse Location** is not collected via any location permission — the app
+>   requests none and has no `NSLocation*` key in Info.plist. A coarse,
+>   IP-derived location (city/region) is produced server-side by our analytics
+>   provider (PostHog, EU) and is now declared as Analytics only, not linked to
+>   the user, and not used for tracking.
+> - Nothing is marked as "Used to Track You", and no data type lists a
+>   developer-advertising or marketing purpose.
+>
+> The new build also includes a Privacy Manifest (PrivacyInfo.xcprivacy)
+> declaring NSPrivacyTracking = false and these exact data types.
+>
+> **Guideline 2.5.4 — Background Audio**
+>
+> The app has a genuine persistent-audio feature called Pocket Mode: a
+> hands-free ear-training drill in which a recorded voice asks for a scale
+> degree, pauses, then speaks the answer, continuing with the screen locked so
+> the user can train with the phone in their pocket. This is the purpose of the
+> `audio` background mode. The feature is free and requires no account. A
+> screen recording made on a physical device, ending with a navigation to the
+> Home Screen while the audio continues, is attached in the App Review
+> Information notes.
+>
+> To reach it:
+> 1. Open the app and complete the single welcome screen ("Start training").
+> 2. On the Training tab, scroll down to the Pocket Mode card and tap it.
+> 3. Leave the defaults and tap START TRAINING.
+> 4. A voice begins asking for scale degrees and answering them.
+> 5. Lock the screen or go to the Home Screen — the voice keeps playing.
+>
+> Please ensure the device is not set to silent and the volume is up. We also
+> hardened the audio session so the playback category is set at app launch
+> rather than on first playback.
+>
+> Thank you.
