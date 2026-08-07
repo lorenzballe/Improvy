@@ -365,6 +365,11 @@ class OfWhatSetup extends StatefulWidget {
   final VoidCallback onCancel;
   final bool isPro;
   final VoidCallback onShowPaywall;
+  // Resume: the note and degrees of the last "…Of What?" game, so the setup
+  // reopens exactly where the user left off instead of on the C/chord-tone
+  // defaults. Null on a fresh open from the mode grid.
+  final String? initialNote;
+  final List<String>? initialDegrees;
 
   const OfWhatSetup({
     super.key,
@@ -372,6 +377,8 @@ class OfWhatSetup extends StatefulWidget {
     required this.onCancel,
     required this.isPro,
     required this.onShowPaywall,
+    this.initialNote,
+    this.initialDegrees,
   });
 
   @override
@@ -379,8 +386,10 @@ class OfWhatSetup extends StatefulWidget {
 }
 
 class _OfWhatSetupState extends State<OfWhatSetup> {
-  String _note = 'C';
-  Set<String> _degs = Set.of(kOfWhatChordTones);
+  late String _note = widget.initialNote ?? 'C';
+  late Set<String> _degs = (widget.initialDegrees != null && widget.initialDegrees!.isNotEmpty)
+      ? Set.of(widget.initialDegrees!)
+      : Set.of(kOfWhatChordTones);
   int _diff = 1;
   int _questions = 15;
 

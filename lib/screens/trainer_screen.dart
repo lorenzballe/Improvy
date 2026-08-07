@@ -1804,16 +1804,21 @@ class _PianoKeyboard extends StatelessWidget {
   // starting from G) is rendered at the octave boundary without adding a duplicate white.
   // scaleNames overrides the default flat names for black keys that are diatonic in
   // the current key (e.g. semitone 8 → 'G♯' in A major instead of 'A♭').
-  static (List<_KeyDef>, List<_KeyDef>) _buildKeys(int startSemi, Map<int, String> scaleNames) {
+  static (List<_KeyDef>, List<_KeyDef>) _buildKeys(int startSemi, Map<int, String> scaleNames, bool spellWhites) {
     const order = [
       ('C', 0), ('D', 2), ('E', 4), ('F', 5), ('G', 7), ('A', 9), ('B', 11),
     ];
     const blackDefault = {1: 'C♯', 3: 'E♭', 6: 'F♯', 8: 'A♭', 10: 'B♭'};
     var s = order.indexWhere((e) => e.$2 == startSemi);
     if (s < 0) s = 0;
+    // In chromatic mode white keys carry the tonic-relative spelling too (E is
+    // F♭ in the key of E♭), so they must read from scaleNames like the blacks —
+    // not the fixed natural letter. Other modes keep the plain letter.
     final whites = [
       for (var k = 0; k < 7; k++)
-        _KeyDef(order[(s + k) % 7].$1, order[(s + k) % 7].$2, false),
+        _KeyDef(
+          spellWhites ? (scaleNames[order[(s + k) % 7].$2] ?? order[(s + k) % 7].$1) : order[(s + k) % 7].$1,
+          order[(s + k) % 7].$2, false),
     ];
     final blacks = <_KeyDef>[];
     for (var k = 0; k < 6; k++) {
@@ -1842,7 +1847,7 @@ class _PianoKeyboard extends StatelessWidget {
   // far right (as the trailing half-black when it's a black note), and the
   // octave completes with a leading half-black at the LEFT edge when the
   // semitone just below the first white belongs to the window.
-  static (List<_KeyDef>, List<_KeyDef>) _buildKeysEndingAt(int topSemi, Map<int, String> scaleNames) {
+  static (List<_KeyDef>, List<_KeyDef>) _buildKeysEndingAt(int topSemi, Map<int, String> scaleNames, bool spellWhites) {
     const order = [
       ('C', 0), ('D', 2), ('E', 4), ('F', 5), ('G', 7), ('A', 9), ('B', 11),
     ];
@@ -1851,9 +1856,15 @@ class _PianoKeyboard extends StatelessWidget {
     final topWhite = blackTop ? (topSemi - 1 + 12) % 12 : topSemi;
     var e = order.indexWhere((el) => el.$2 == topWhite);
     if (e < 0) e = 6;
+    // As in _buildKeys: chromatic mode spells white keys by tonic-relative
+    // degree (E → F♭ in E♭), so read from scaleNames when spellWhites is set.
     final whites = [
       for (var k = 0; k < 7; k++)
-        _KeyDef(order[(e - 6 + k + 7) % 7].$1, order[(e - 6 + k + 7) % 7].$2, false),
+        _KeyDef(
+          spellWhites
+              ? (scaleNames[order[(e - 6 + k + 7) % 7].$2] ?? order[(e - 6 + k + 7) % 7].$1)
+              : order[(e - 6 + k + 7) % 7].$1,
+          order[(e - 6 + k + 7) % 7].$2, false),
     ];
     final blacks = <_KeyDef>[];
     for (var k = 0; k < 6; k++) {
@@ -1886,9 +1897,10 @@ class _PianoKeyboard extends StatelessWidget {
             for (final n in notes)
               if (kNoteToSemitone[n.note] != null) kNoteToSemitone[n.note]!: n.note,
           };
+    final spellWhites = chromaticTonic != null;
     final (whites, blacks) = topSemitone != null
-        ? _buildKeysEndingAt(topSemitone!, scaleNames)
-        : _buildKeys(startWhiteSemitone, scaleNames);
+        ? _buildKeysEndingAt(topSemitone!, scaleNames, spellWhites)
+        : _buildKeys(startWhiteSemitone, scaleNames, spellWhites);
     // Which semitones are valid answer options right now
     final active = <int>{};
     for (final n in notes) {

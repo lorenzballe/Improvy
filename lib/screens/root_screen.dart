@@ -305,9 +305,18 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     );
   }
 
-  void _openSetup(TrainingMode mode) {
+  // Resume carries the last "…Of What?" note + degrees into its setup; null for
+  // a fresh open from the grid, which then uses the C/chord-tone defaults.
+  String? _ofWhatResumeNote;
+  List<String>? _ofWhatResumeDegrees;
+
+  void _openSetup(TrainingMode mode, {String? ofWhatNote, List<String>? ofWhatDegrees}) {
     AnalyticsService.instance.capture('setup_opened', {'mode': mode.storageKey});
-    setState(() => _pendingSetup = mode);
+    setState(() {
+      _ofWhatResumeNote = ofWhatNote;
+      _ofWhatResumeDegrees = ofWhatDegrees;
+      _pendingSetup = mode;
+    });
   }
 
   // The paywall overlay is shared between the main scaffold and the "…Of What?"
@@ -538,10 +547,12 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
         return Stack(children: [
           OfWhatSetup(
             isPro: provider.isPro,
+            initialNote: _ofWhatResumeNote,
+            initialDegrees: _ofWhatResumeDegrees,
             onShowPaywall: () => _showPaywallSheet('ofwhat-degrees'),
-            onCancel: () { provider.deselectKey(); setState(() => _pendingSetup = null); },
+            onCancel: () { provider.deselectKey(); setState(() { _pendingSetup = null; _ofWhatResumeNote = null; _ofWhatResumeDegrees = null; }); },
             onStart: (note, degrees, difficulty, questions) {
-              setState(() => _pendingSetup = null);
+              setState(() { _pendingSetup = null; _ofWhatResumeNote = null; _ofWhatResumeDegrees = null; });
               provider.startOfWhatMode(
                 note: note,
                 degrees: degrees,

@@ -127,9 +127,15 @@ Map<int, String> chromaticKeyboardNoteNames(String key) {
   const degs = ['1', '♭2', '2', '♭3', '3', '4', '♯4', '5', '♭6', '6', '♭7', '7'];
   final names = <int, String>{};
   for (final d in degs) {
-    final note = getNoteFromChromaticDegree(d, const [], key);
+    var note = getNoteFromChromaticDegree(d, const [], key);
     final s = kNoteToSemitone[note];
-    if (s != null) names[s] = note;
+    if (s == null) continue;
+    // Strict degree spelling can demand a double accidental in flat keys (♭2 of
+    // A♭ is B𝄫, ♭2 of D♭ is E𝄫). That is unreadable on a key cap, so fall back
+    // to the plain single-accidental enharmonic (→ A, → D). Single accidentals
+    // like F♭ (♭2 of E♭) are kept — that legibility is the whole point.
+    if (note.contains('𝄪') || note.contains('𝄫')) note = _getSemitoneNoteName(s);
+    names[s] = note;
   }
   return names;
 }

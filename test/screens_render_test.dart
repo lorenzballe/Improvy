@@ -142,7 +142,7 @@ void main() {
     group('$label · empty state', () {
       testWidgets('home', (t) async {
         await t.show(
-          HomeScreen(onShowPaywall: ([_]) {}, onOpenSetup: (_) {}, onStartDaily: () {}),
+          HomeScreen(onShowPaywall: ([_]) {}, onOpenSetup: (_, {ofWhatNote, ofWhatDegrees}) {}, onStartDaily: () {}),
           await providerWith(),
           size,
         );
@@ -164,7 +164,7 @@ void main() {
     group('$label · with history', () {
       testWidgets('home', (t) async {
         await t.show(
-          HomeScreen(onShowPaywall: ([_]) {}, onOpenSetup: (_) {}, onStartDaily: () {}),
+          HomeScreen(onShowPaywall: ([_]) {}, onOpenSetup: (_, {ofWhatNote, ofWhatDegrees}) {}, onStartDaily: () {}),
           await providerWith(populated: true),
           size,
         );

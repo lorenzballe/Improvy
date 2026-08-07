@@ -124,7 +124,7 @@ void main() {
     p.selectKey('C');
     await show(
       t,
-      HomeScreen(onShowPaywall: ([_]) {}, onOpenSetup: (_) {}, onStartDaily: () {}),
+      HomeScreen(onShowPaywall: ([_]) {}, onOpenSetup: (_, {ofWhatNote, ofWhatDegrees}) {}, onStartDaily: () {}),
       p,
     );
     await expectLater(

@@ -774,6 +774,9 @@ class AppProvider extends ChangeNotifier {
       'key': note,
       'mode': TrainingMode.ofWhat.storageKey,
       'difficulty': difficulty,
+      // Stored so Resume can reopen the setup with the exact same note AND
+      // degrees the last game used, instead of falling back to the defaults.
+      'degrees': degrees,
       'timestamp': DateTime.now().millisecondsSinceEpoch,
     };
     _storage.saveLastSession(lastSession!);

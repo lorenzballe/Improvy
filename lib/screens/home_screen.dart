@@ -8,6 +8,7 @@ import '../models/training_mode.dart';
 import '../models/key_progress.dart';
 import '../constants/app_colors.dart';
 import '../constants/levels.dart';
+import '../constants/music_constants.dart';
 import '../services/haptics_service.dart';
 import '../widgets/daily_challenge_card.dart';
 import '../widgets/note_text.dart';
@@ -16,7 +17,7 @@ import '../constants/app_scroll.dart';
 
 class HomeScreen extends StatelessWidget {
   final void Function([String? reason]) onShowPaywall;
-  final void Function(TrainingMode mode) onOpenSetup;
+  final void Function(TrainingMode mode, {String? ofWhatNote, List<String>? ofWhatDegrees}) onOpenSetup;
   final VoidCallback onStartDaily;
 
   const HomeScreen({
@@ -53,7 +54,7 @@ class HomeScreen extends StatelessWidget {
 
 class _HomeMain extends StatelessWidget {
   final void Function([String? reason]) onShowPaywall;
-  final void Function(TrainingMode mode) onOpenSetup;
+  final void Function(TrainingMode mode, {String? ofWhatNote, List<String>? ofWhatDegrees}) onOpenSetup;
   final VoidCallback onStartDaily;
   const _HomeMain({super.key, required this.onShowPaywall, required this.onOpenSetup, required this.onStartDaily});
 
@@ -243,9 +244,17 @@ class _HomeMain extends StatelessWidget {
                   final diff = ls['difficulty'] as int? ?? 1;
                   final isSpecial = mode == 'custom' || mode == 'note-to-number';
                   if (mode == 'of-what') {
-                    // Of What is free; the degrees aren't stored in lastSession,
-                    // so reopen its setup (Pro gating happens there on Start).
-                    onOpenSetup(TrainingMode.ofWhat);
+                    // Reopen "…Of What?" setup already set to the exact note and
+                    // degrees of the last game — not the C/chord-tone defaults.
+                    var degs = (ls['degrees'] as List?)?.cast<String>();
+                    // A user who has since lost Pro must not resume back into the
+                    // Pro extension degrees, so drop them to chord tones (free);
+                    // if nothing free is left, fall back to the setup defaults.
+                    if (degs != null && !provider.isPro) {
+                      degs = degs.where(kOfWhatChordTones.contains).toList();
+                      if (degs.isEmpty) degs = null;
+                    }
+                    onOpenSetup(TrainingMode.ofWhat, ofWhatNote: key, ofWhatDegrees: degs);
                     return;
                   }
                   if (mode == 'pocket') {
@@ -1421,7 +1430,7 @@ class _MiniStatCard extends StatelessWidget {
 
 class _KeyDetail extends StatefulWidget {
   final void Function([String? reason]) onShowPaywall;
-  final void Function(TrainingMode mode) onOpenSetup;
+  final void Function(TrainingMode mode, {String? ofWhatNote, List<String>? ofWhatDegrees}) onOpenSetup;
   const _KeyDetail({super.key, required this.onShowPaywall, required this.onOpenSetup});
 
   @override
