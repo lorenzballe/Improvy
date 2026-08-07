@@ -48,19 +48,15 @@ class AnalyticsService {
     if (kDebugMode) debugPrint('[PostHog] capture: $event ${properties ?? {}}');
     // Analytics must NEVER break app flow — swallow any SDK/channel error so a
     // failed capture can't stop e.g. the paywall from opening.
+    //
+    // PostHog's server-side GeoIP is deliberately left ON: it derives a coarse
+    // city/region from the request IP so we can see roughly where users are.
+    // This is declared as "Coarse Location — Analytics only, not linked, not
+    // tracking" in the privacy manifest and the App Store Connect label, and
+    // in the site privacy policy. It is the ONLY source of location — the app
+    // requests no location permission.
     try {
-      Posthog().capture(
-        eventName: event,
-        properties: {
-          ...?properties?.cast<String, Object>(),
-          // PostHog otherwise derives a city/region from the request IP. The
-          // app asks for no location permission and wants none of this, and
-          // the privacy label says so — see ios/Runner/PrivacyInfo.xcprivacy.
-          // Without this the server would quietly attach coarse location to
-          // every event and make that label untrue.
-          '\$geoip_disable': true,
-        },
-      );
+      Posthog().capture(eventName: event, properties: properties?.cast<String, Object>());
     } catch (e) {
       if (kDebugMode) debugPrint('[PostHog] capture failed: $e');
     }

@@ -61,6 +61,23 @@
 				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
 			</array>
 		</dict>
+		<!-- Coarse location, analytics only. The app requests NO location
+		     permission; this is derived server-side by PostHog from the request
+		     IP (city/region) so we can see roughly where users are. Not linked
+		     to any identity and never used for tracking — purpose is Analytics
+		     only. See lib/services/analytics_service.dart (GeoIP left on). -->
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeCoarseLocation</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAnalytics</string>
+			</array>
+		</dict>
 	</array>
 
 	<key>NSPrivacyAccessedAPITypes</key>

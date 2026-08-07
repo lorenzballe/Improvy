@@ -11,68 +11,66 @@ Connect answer only the Account Holder or an Admin can change.
 ### What is actually true
 
 The app was read end to end for this. It does not track, by Apple's
-definition or any other:
-
-| Claimed in the privacy label | Reality in the code |
-|---|---|
-| Email Address | **Never collected.** There is no sign-in, no account, and no `identify()` call anywhere. |
-| Coarse Location | **Never requested.** `Info.plist` has no `NSLocation*` key, so iOS could not grant it even if the app asked. |
-| Used for tracking | **No.** No IDFA, no `AppTrackingTransparency`, no ad SDK, no data broker, no third-party linking. |
-
-Two SDKs send anything at all:
+definition or any other — no IDFA, no `AppTrackingTransparency`, no ad SDK,
+no data broker, no third-party linking, no sign-in, and no `identify()` call
+anywhere. Two SDKs send anything at all:
 
 - **PostHog** (EU cloud) — anonymous product analytics: which screens open,
-  which modes start, how a session ended. No account is attached.
+  which modes start, how a session ended. No account is attached. It also
+  derives a **coarse location** (roughly city / region / country) from the
+  request IP — the app itself asks for **no** location permission and has no
+  `NSLocation*` key in `Info.plist`.
 - **RevenueCat** — whether the one-off Pro unlock was bought, so it can be
   unlocked and restored.
 
 Neither links data to third-party data for advertising, which is what Apple
-means by tracking.
+means by tracking. The rejection was not "you collect location" — it was a
+label that declared data used for **"Developer's Advertising or Marketing"**
+without an ATT prompt. Coarse location declared as *Analytics only, not
+linked, not tracking* needs no ATT prompt and is allowed.
 
 ### Fixed in this commit
 
-- **Server-side GeoIP switched off.** PostHog otherwise derives a city and
-  region from the request IP. It no longer does — every event carries
-  `$geoip_disable`. So "Coarse Location" is now false at the source, not just
-  on paper.
 - **A privacy manifest was added** (`ios/Runner/PrivacyInfo.xcprivacy`) and
   wired into the Xcode target. It declares `NSPrivacyTracking = false` and
-  lists exactly the two data types above, both unlinked and both non-tracking.
-  The app had no manifest at all before, which is why nothing contradicted the
-  wrong label.
+  the four data types below, all unlinked and all non-tracking. The app had no
+  manifest at all before, which is why nothing contradicted the wrong label.
+- **Audio session fix** for Issue 2 (see below).
+
+PostHog's GeoIP is deliberately left **on** — the coarse location is wanted,
+and it is declared honestly everywhere (manifest, store label, site policy).
 
 ### You must do this — it is the actual fix
 
-App Store Connect → **App Privacy** → edit. The label currently declares 11
-data types; the app collects **three**. Everything else is either not
-collected at all or an artefact of guessing what the SDKs do. Only PostHog
-(anonymous product analytics) and RevenueCat (purchase state) send anything —
-there is no login, no `identify()` call, and no crash/performance SDK in the
-project at all.
+App Store Connect → **App Privacy** → edit. The label currently declares
+too many data types; the app collects **four**. Only PostHog (anonymous
+analytics + IP-based coarse location) and RevenueCat (purchase state) send
+anything — there is no login, no `identify()`, and no crash/performance SDK
+in the project.
 
 **Delete these — they are false:**
 
 | Declared now | Why it is wrong |
 |---|---|
 | Email Address | Never collected. No sign-in, no `identify()`. |
-| Coarse Location | GeoIP is now disabled per event; not collected. |
 | Payment Info / Financial Info | The app never sees payment details — Apple processes the transaction; RevenueCat only learns *whether* Pro was bought. |
 | User ID | There is no user identity — nothing to key it to. |
 | Crash Data | No crash-reporting SDK is present. |
 | Performance Data / Other Diagnostic Data | Nothing collects these. |
 | Other Usage Data | Redundant with Product Interaction. |
 
-**Keep exactly these three.** For each: **"Not linked to the user"** and
-**"Not used for tracking"**, purposes limited to Analytics / App Functionality:
+**Keep exactly these four.** For each: **"Not linked to the user"** and
+**"Not used for tracking"**:
 
-| Keep | Purpose | Source |
+| Keep | Purpose(s) | Source |
 |---|---|---|
 | Product Interaction | Analytics | PostHog events |
 | Purchase History | App Functionality | RevenueCat |
 | Device ID | Analytics, App Functionality | anonymous PostHog `distinct_id` / RevenueCat app-user id — declare it: if Apple's scanner sees the id and the label denies it, that is a fresh rejection |
+| Coarse Location | **Analytics only** | PostHog IP-based GeoIP — must NOT list any advertising or personalization purpose |
 
-**Then, on every remaining item, remove these purposes** — they are what makes
-Apple read the app as tracking:
+**Then, on every item, remove these purposes** — they are what makes Apple
+read the app as tracking:
 
 - **"Developer's Advertising or Marketing"** — nothing uses data for ads.
 - **"Product Personalization"** — the app adapts difficulty on-device only; no
@@ -82,14 +80,15 @@ Apple read the app as tracking:
 
 Then reply to the rejection message with:
 
-> Improvy does not track users. It collects no email address and no location:
-> the app requests no location permission and has no `NSLocation*` key in its
-> Info.plist, and there is no sign-in of any kind. The only data leaving the
-> device is anonymous product analytics (PostHog, EU) and purchase state
-> (RevenueCat) — neither is linked to third-party data for advertising and
-> neither is shared with a data broker, so no ATT prompt is required. The
-> App Privacy information has been corrected accordingly, and this build adds
-> a privacy manifest declaring NSPrivacyTracking = false.
+> Improvy does not track users. There is no sign-in and no `identify()` call,
+> no IDFA, no advertising SDK, and no data is shared with a data broker or
+> linked to third-party data for advertising — so no ATT prompt is required.
+> The app collects anonymous product analytics and purchase state, plus a
+> coarse, IP-derived location (roughly city/region) used solely for anonymous
+> analytics; the app requests no location permission and has no `NSLocation*`
+> key. The App Privacy information has been corrected so that no data type is
+> marked as used for tracking or for developer advertising, and this build
+> adds a privacy manifest declaring NSPrivacyTracking = false.
 
 ---
 
