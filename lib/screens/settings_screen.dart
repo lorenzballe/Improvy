@@ -144,7 +144,9 @@ class SettingsScreen extends StatelessWidget {
     final provider = context.watch<AppProvider>();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0A1A),
+      // Transparent so the root's living background shows through, shared with
+      // the other tabs.
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         child: SingleChildScrollView(
           // Always rubber-bands, like the rest of the app — without this the

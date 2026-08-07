@@ -23,6 +23,7 @@ import '../services/analytics_service.dart';
 import '../services/review_service.dart';
 import '../services/widget_service.dart';
 import '../widgets/quiz_reveal_modal.dart';
+import '../widgets/living_background.dart';
 import '../widgets/whats_new_modal.dart';
 import '../constants/release_notes.dart';
 
@@ -691,6 +692,11 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       backgroundColor: AppColors.background,
       body: Stack(
         children: [
+          // Design 12a's gradient, alive and pinned to the screen. It sits
+          // under the whole PageView so it holds still while the tabs slide
+          // over it — swipe to Stats and the background stays exactly where it
+          // was. The tab scaffolds above are transparent so it shows through.
+          const Positioned.fill(child: LivingBackground()),
           PageView(
             controller: _pageController,
             // Swipe is enabled only on the top-level tabs — disabled while a

@@ -163,7 +163,9 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0A1A),
+      // Transparent so the root's living background shows through and stays put
+      // as you swipe over from Training.
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         child: SingleChildScrollView(
           physics: kAppScrollPhysics,

@@ -31,7 +31,9 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<AppProvider>();
     return Scaffold(
-      backgroundColor: AppColors.background,
+      // Transparent so the root's living background shows through — the flat
+      // fill it used to carry is now painted once, behind all the tabs.
+      backgroundColor: Colors.transparent,
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 320),
         transitionBuilder: (child, anim) {
