@@ -366,51 +366,63 @@ class _TopBar extends StatelessWidget {
           // Rainbow-filled progress bar, with a glowing head at the leading
           // edge so progress is legible at a glance from across a room.
           LayoutBuilder(
-            builder: (ctx, c) {
-              final w = c.maxWidth * progress;
-              return SizedBox(
-                height: 8,
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  alignment: Alignment.centerLeft,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(99),
-                      child: Container(height: 6, color: Colors.white.withValues(alpha: 0.08)),
-                    ),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(99),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 260),
-                        curve: Curves.easeOut,
-                        height: 6,
-                        width: w,
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(colors: kFreeSpectrum),
-                        ),
+            builder: (ctx, c) => TweenAnimationBuilder<double>(
+              tween: Tween<double>(begin: 0, end: progress),
+              duration: const Duration(milliseconds: 260),
+              curve: Curves.easeOut,
+              builder: (_, p, __) {
+                final w = c.maxWidth * p;
+                return SizedBox(
+                  height: 8,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    alignment: Alignment.centerLeft,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(99),
+                        child: Container(height: 6, color: Colors.white.withValues(alpha: 0.08)),
                       ),
-                    ),
-                    if (progress > 0.005)
-                      AnimatedPositioned(
-                        duration: const Duration(milliseconds: 260),
-                        curve: Curves.easeOut,
-                        left: (w - 4).clamp(0.0, c.maxWidth - 8),
-                        child: Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white,
-                            boxShadow: [
-                              BoxShadow(color: Colors.white.withValues(alpha: 0.8), blurRadius: 10),
-                            ],
+                      // The spectrum is laid out across the WHOLE bar and then
+                      // uncovered as the run goes: each colour arrives in its
+                      // own place, a few numbers at a time. Painting it into
+                      // the filled part instead squeezed the entire rainbow
+                      // into whatever was done so far, so every colour was
+                      // there from the first tap and the whole thing stretched
+                      // as you played.
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(99),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          widthFactor: p.clamp(0.0, 1.0),
+                          child: Container(
+                            width: c.maxWidth,
+                            height: 6,
+                            decoration: const BoxDecoration(
+                              gradient: LinearGradient(colors: kFreeSpectrum),
+                            ),
                           ),
                         ),
                       ),
-                  ],
-                ),
-              );
-            },
+                      if (p > 0.005)
+                        Positioned(
+                          left: (w - 4).clamp(0.0, c.maxWidth - 8),
+                          child: Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(color: Colors.white.withValues(alpha: 0.8), blurRadius: 10),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),

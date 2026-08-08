@@ -947,22 +947,16 @@ class SettingsScreen extends StatelessWidget {
     ),
     child: _blurCard(
       child: Row(children: [
-        // White tile, rainbow star: the spectrum reads far better as the mark
-        // itself than as a slab behind a white glyph.
-        Container(
+        // No tile behind it — the star sits straight on the card, which is
+        // also why it can be set larger than the boxed icons on other rows
+        // and still balance them. Same 32px slot, so the titles stay aligned.
+        SizedBox(
           width: 32, height: 32,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(color: Colors.white.withAlpha(46), blurRadius: 14),
-            ],
-          ),
           child: Center(
             child: ShaderMask(
               blendMode: BlendMode.srcIn,
               shaderCallback: (b) => const LinearGradient(colors: kFreeSpectrum).createShader(b),
-              child: const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 19),
+              child: const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 27),
             ),
           ),
         ),

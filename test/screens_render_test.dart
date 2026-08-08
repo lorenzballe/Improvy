@@ -170,6 +170,31 @@ void main() {
         expect(find.text('2 / 200'), findsOneWidget);
       });
 
+      testWidgets('free mode — the bar uncovers the spectrum, never stretches it', (t) async {
+        await t.show(const FreeModeScreen(), await providerWith(), size);
+        for (var i = 0; i < 100; i++) {
+          await t.tapAt(Offset(size.width / 2, size.height / 2));
+          await t.pump(const Duration(milliseconds: 20));
+        }
+        await t.pump(const Duration(milliseconds: 400));
+
+        final fill = find.byWidgetPredicate((w) {
+          if (w is! Container) return false;
+          final d = w.decoration;
+          if (d is! BoxDecoration) return false;
+          final g = d.gradient;
+          return g is LinearGradient && g.colors.length == kFreeSpectrum.length &&
+              g.colors.first == kFreeSpectrum.first;
+        });
+        expect(fill, findsOneWidget);
+
+        // Half way through, the gradient must still be laid out across the
+        // WHOLE track and simply be clipped — painting it into the filled
+        // part instead would measure about half here, which is exactly the
+        // squeezed-rainbow look this guards against.
+        expect(t.getSize(fill).width, closeTo(size.width - 40, 0.5));
+      });
+
       testWidgets('free mode — the end of a run lays out', (t) async {
         await t.show(const FreeModeScreen(), await providerWith(), size);
         // Tap all the way through: the summary is a screen of its own and has
