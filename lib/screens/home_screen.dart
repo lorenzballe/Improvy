@@ -2233,85 +2233,106 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
 
 /// The ♯♭ mark on the Chromatic tile — design 20c, LEGATI.
 ///
-/// This is the design's own recipe, glyph for glyph: the Bravura SMuFL sharp
-/// (U+E262) and flat (U+E260) — not Noto Music's ♯♭, whose chunkier shapes
-/// smear into each other when overlapped — set at one size, the flat pulled
-/// left by 0.508 of the size across the sharp's right stem and dropped 0.111,
-/// exactly 20c's numbers. Same font, same offsets as the mock, so the two nest
-/// into one clean ligature instead of colliding.
+/// The Bravura SMuFL sharp (U+E262) and flat (U+E260) — not Noto Music's ♯♭,
+/// whose chunkier shapes smear together — the flat tucked against the sharp and
+/// dropped, one clean ligature.
 ///
-/// Bravura draws the accidentals around the baseline inside a tall, airy line
-/// box, so the glyphs are measured with a TextPainter and placed by their real
-/// ink box rather than the box the font reports — that is what keeps the mark
-/// centred in the tile and stops the drop from clipping out the bottom. Size
-/// the pair by [inkHeight]: the height the sharp's ink will really be.
+/// It is painted rather than laid out because centring is the whole problem:
+/// SMuFL accidentals float in a tall, airy line box, so a Text widget centres
+/// the box, not the ink, and the mark drifts up and left in its tile. The two
+/// glyphs' real ink boxes were measured off the font (em fractions relative to
+/// the baseline); the painter lays them out by that ink, takes the union, and
+/// centres THAT in the tile. [inkHeight] is the height the sharp's ink will be.
 class _SharpFlatMark extends StatelessWidget {
   final double inkHeight;
   const _SharpFlatMark({required this.inkHeight});
 
+  @override
+  Widget build(BuildContext context) => CustomPaint(
+        size: Size.square(inkHeight * 1.35),
+        painter: _SharpFlatPainter(inkHeight),
+      );
+}
+
+/// Paints the interlocked ♯♭, ink-centred. See [_SharpFlatMark].
+class _SharpFlatPainter extends CustomPainter {
+  final double inkHeight;
+  const _SharpFlatPainter(this.inkHeight);
+
   static const _sharp = '';
   static const _flat = '';
 
-  // The font size that makes the sharp's ink about [inkHeight] tall — Bravura's
-  // sharp fills roughly this fraction of its size.
-  static const _inkFrac = 0.70;
+  // Bravura ink boxes, em fractions off the baseline (measured from the font):
+  // the sharp is 0.25 wide and sits symmetric ±0.35 about the baseline; the
+  // flat is 0.23 wide, 0.44 above the baseline and 0.175 below.
+  static const _shBelow = 0.35, _shAbove = 0.35;
+  static const _flInkW = 0.23, _flAbove = 0.44, _flBelow = 0.175;
 
-  // 20c geometry, as fractions of the font size. [_flatLeftFrac] is where the
-  // flat's box starts (its overlap with the sharp — a smaller number sits it
-  // further over the sharp); [_dropEm] is its downward shift (the design's
-  // translateY of 7px at 63px). [_boxWFrac]/[_boxHFrac] size the centring box
-  // to the overlapped pair so it stays middle of the tile.
-  static const _flatLeftFrac = 0.34;
-  static const _dropEm = 0.111;
-  static const _boxWFrac = 0.78;
-  static const _boxHFrac = 0.80;
+  // 20c: where the flat's ink starts (just past the sharp's 0.25 — a hair of a
+  // gap, so they read as one ligature without the strokes colliding), and how
+  // far it drops (the design's translateY of 7px at 63px).
+  static const _flatX = 0.33, _drop = 0.111;
 
-  TextStyle _style(double fs, {bool stroke = false}) => TextStyle(
-        fontFamily: 'Bravura',
-        fontSize: fs,
-        height: 1,
-        color: stroke ? null : Colors.white,
-        foreground: stroke
-            ? (Paint()
-              ..style = PaintingStyle.stroke
-              ..strokeWidth = fs * 0.02
-              ..strokeJoin = StrokeJoin.round
-              ..color = Colors.white)
-            : null,
-      );
+  TextPainter _tp(String g, double fs, {required bool stroke}) {
+    final strokePaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = fs * 0.02
+      ..strokeJoin = StrokeJoin.round
+      ..color = Colors.white;
+    return TextPainter(
+      text: TextSpan(
+        text: g,
+        style: TextStyle(
+          fontFamily: 'Bravura',
+          fontSize: fs,
+          height: 1,
+          color: stroke ? null : Colors.white,
+          foreground: stroke ? strokePaint : null,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+  }
 
   @override
-  Widget build(BuildContext context) {
-    final fs = inkHeight / _inkFrac;
+  void paint(Canvas canvas, Size size) {
+    // The sharp's ink is (_shAbove + _shBelow) = 0.70 em tall, so this size makes
+    // it inkHeight.
+    final fs = inkHeight / (_shAbove + _shBelow);
 
-    // A glyph over its own faux-bold stroke. Positioned with only left/top, so
-    // the Text sizes to the glyph itself; the outer Stack does not clip, so it
-    // may paint past the little centring box without any flex to overflow.
-    Widget glyph(String g, double left, double top) => Positioned(
-          left: left,
-          top: top,
-          child: Stack(children: [
-            Text(g, style: _style(fs, stroke: true)),
-            Text(g, style: _style(fs)),
-          ]),
-        );
+    // Union of the two ink boxes, baseline at 0, y positive downward. The flat's
+    // box is shifted right by _flatX and down by _drop.
+    const unionRightEm = _flatX + _flInkW;
+    final topEm = -(_shAbove > (_flAbove - _drop) ? _shAbove : (_flAbove - _drop));
+    final bottomEm = _shBelow > (_flBelow + _drop) ? _shBelow : (_flBelow + _drop);
+    final unionW = unionRightEm * fs;
+    final unionH = (bottomEm - topEm) * fs;
 
-    // A plain Stack, not a Row: the glyphs are placed absolutely and allowed to
-    // paint past the little box, so nothing can overflow a flex. The flat is set
-    // left of where it would sit side by side, tucked over the sharp, and
-    // dropped — 20c.
-    return SizedBox(
-      width: fs * _boxWFrac,
-      height: fs * _boxHFrac,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          glyph(_sharp, 0, 0),
-          glyph(_flat, fs * _flatLeftFrac, fs * _dropEm),
-        ],
-      ),
-    );
+    // Centre the union in the tile; the sharp's baseline follows from it. A
+    // small nudge corrects for the flat's bowl reading a touch narrower on
+    // screen than its measured box, which otherwise leaves the pair sitting
+    // slightly up and to the left of centre.
+    final ox = (size.width - unionW) / 2 + 0.035 * fs;
+    final oy = (size.height - unionH) / 2 + 0.03 * fs;
+    final baselineY = oy + (-topEm) * fs;
+
+    void draw(String g, double inkLeftEm, double baseY) {
+      // Bravura's ink has no left bearing, so pen-x == ink left.
+      final penX = ox + inkLeftEm * fs;
+      for (final stroke in [true, false]) {
+        final tp = _tp(g, fs, stroke: stroke);
+        final bl = tp.computeDistanceToActualBaseline(TextBaseline.alphabetic) ??
+            tp.height * 0.8;
+        tp.paint(canvas, Offset(penX, baseY - bl));
+      }
+    }
+
+    draw(_sharp, 0, baselineY);
+    draw(_flat, _flatX, baselineY + _drop * fs);
   }
+
+  @override
+  bool shouldRepaint(_SharpFlatPainter old) => old.inkHeight != inkHeight;
 }
 
 /// A single glyph drawn slightly heavier than the max font weight (w900).
