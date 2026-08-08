@@ -10,6 +10,7 @@ import '../widgets/note_text.dart';
 import '../widgets/animal_icon.dart';
 import 'key_analytics_screen.dart';
 import '../constants/app_scroll.dart';
+import '../widgets/pressable_scale.dart';
 
 // ─── DEGREE DATA ─────────────────────────────────────────────────────────────
 
@@ -73,17 +74,35 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
-    if (_analyticsKey != null) {
-      return KeyAnalyticsScreen(
-        keyName: _analyticsKey!,
-        onShowPaywall: widget.onShowPaywall,
-        onBack: () {
-          context.read<AppProvider>().setViewingKeyStats(false);
-          setState(() => _analyticsKey = null);
-        },
-      );
-    }
+    // Opening a single tonality's analytics (and coming back) used to snap.
+    // Cross-fade + a short slide in both directions, matching the app's other
+    // screen transitions, so it reads as opening and closing.
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 280),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.easeInCubic,
+      transitionBuilder: (child, anim) => FadeTransition(
+        opacity: anim,
+        child: SlideTransition(
+          position: Tween<Offset>(begin: const Offset(0.05, 0), end: Offset.zero).animate(anim),
+          child: child,
+        ),
+      ),
+      child: _analyticsKey != null
+          ? KeyAnalyticsScreen(
+              key: ValueKey('ka-$_analyticsKey'),
+              keyName: _analyticsKey!,
+              onShowPaywall: widget.onShowPaywall,
+              onBack: () {
+                context.read<AppProvider>().setViewingKeyStats(false);
+                setState(() => _analyticsKey = null);
+              },
+            )
+          : _buildStatsBody(context),
+    );
+  }
 
+  Widget _buildStatsBody(BuildContext context) {
     final provider = context.watch<AppProvider>();
     final stats = provider.stats;
     final animalLevel = provider.animalLevel;
@@ -163,6 +182,7 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
     }
 
     return Scaffold(
+      key: const ValueKey('stats-body'),
       // Transparent so the root's living background shows through and stays put
       // as you swipe over from Training.
       backgroundColor: Colors.transparent,
@@ -288,7 +308,7 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
                   const SizedBox(height: 16),
                   ...provider.progressData.asMap().entries.map((e) {
                     final color = AppColors.keyColor(e.key);
-                    return GestureDetector(
+                    return PressableScale(
                       onTap: () {
                         provider.setViewingKeyStats(true);
                         setState(() => _analyticsKey = e.value.key);

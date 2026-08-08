@@ -8,6 +8,7 @@ import '../constants/app_colors.dart';
 import '../constants/music_constants.dart';
 import '../widgets/note_text.dart';
 import '../constants/app_scroll.dart';
+import '../widgets/pressable_scale.dart';
 
 // Roman labels for the 12 semitones (0..11), flat spellings only — used for
 // the note the user actually tapped, where the keyboard gives no enharmonic
@@ -216,7 +217,7 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                   children: [
                     if (!locked) Align(
                       alignment: Alignment.centerLeft,
-                      child: GestureDetector(
+                      child: PressableScale(
                         onTap: widget.onBack,
                         child: Container(
                           width: 40, height: 40,
@@ -554,7 +555,7 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                 // Back arrow stays live and in colour — same button as Choose Mode.
                 Positioned(
                   top: 4, left: 20,
-                  child: GestureDetector(
+                  child: PressableScale(
                     onTap: widget.onBack,
                     child: Container(
                       width: 40, height: 40,
@@ -1052,7 +1053,7 @@ class _RangeBtn extends StatelessWidget {
   const _RangeBtn({required this.label, required this.active, required this.onTap, this.activeColor = const Color(0xFF3B82F6)});
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
+  Widget build(BuildContext context) => PressableScale(
     onTap: onTap,
     child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),

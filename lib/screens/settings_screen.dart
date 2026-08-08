@@ -9,6 +9,7 @@ import '../constants/release_notes.dart';
 import '../services/purchase_service.dart';
 import '../services/review_service.dart';
 import 'legal_screen.dart';
+import '../widgets/pressable_scale.dart';
 
 class SettingsScreen extends StatelessWidget {
   final void Function([String? reason]) onShowPaywall;
@@ -916,7 +917,7 @@ class SettingsScreen extends StatelessWidget {
     ),
   );
 
-  Widget _legalRow(BuildContext context, String title, IconData icon, Widget screen) => GestureDetector(
+  Widget _legalRow(BuildContext context, String title, IconData icon, Widget screen) => PressableScale(
     onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen)),
     child: _blurCard(
       child: Row(children: [
@@ -1225,9 +1226,8 @@ class _NotationTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: GestureDetector(
+      child: PressableScale(
         onTap: onTap,
-        behavior: HitTestBehavior.opaque,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 14),
           child: Center(
@@ -1270,7 +1270,7 @@ class _DebugButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return PressableScale(
       onTap: onTap,
       child: Container(
         width: double.infinity,
