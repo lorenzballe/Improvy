@@ -9,6 +9,7 @@ import 'package:improvy/models/stats.dart';
 import 'package:improvy/models/training_mode.dart';
 import 'package:improvy/providers/app_provider.dart';
 import 'package:improvy/screens/daily_results_screen.dart';
+import 'package:improvy/screens/free_mode_screen.dart';
 import 'package:improvy/screens/home_screen.dart';
 import 'package:improvy/screens/key_analytics_screen.dart';
 import 'package:improvy/screens/legal_screen.dart';
@@ -158,6 +159,29 @@ void main() {
           await providerWith(),
           size,
         );
+      });
+
+      testWidgets('free mode — a tap advances the counter', (t) async {
+        await t.show(const FreeModeScreen(), await providerWith(), size);
+        expect(find.text('1 / 200'), findsOneWidget);
+        // The whole screen is the button: tapping the empty middle must count.
+        await t.tapAt(Offset(size.width / 2, size.height / 2));
+        await t.pump(const Duration(milliseconds: 400));
+        expect(find.text('2 / 200'), findsOneWidget);
+      });
+
+      testWidgets('free mode — the end of a run lays out', (t) async {
+        await t.show(const FreeModeScreen(), await providerWith(), size);
+        // Tap all the way through: the summary is a screen of its own and has
+        // to survive the narrow phone like every other state here.
+        for (var i = 0; i < 200; i++) {
+          await t.tapAt(Offset(size.width / 2, size.height / 2));
+          await t.pump(const Duration(milliseconds: 20));
+        }
+        await t.pump(const Duration(milliseconds: 400));
+        expect(find.text('200 / 200'), findsOneWidget);
+        expect(find.text('NUMBERS DONE'), findsOneWidget);
+        expect(find.text('GO AGAIN'), findsOneWidget);
       });
     });
 

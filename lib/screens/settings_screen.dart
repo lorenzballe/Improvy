@@ -9,6 +9,7 @@ import '../constants/release_notes.dart';
 import '../services/purchase_service.dart';
 import '../services/review_service.dart';
 import 'legal_screen.dart';
+import 'free_mode_screen.dart';
 import '../widgets/pressable_scale.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -436,6 +437,12 @@ class SettingsScreen extends StatelessWidget {
                   ],
                 ),
               ),
+              const SizedBox(height: 16),
+
+              // FREE MODE
+              _sectionLabel('FREE MODE'),
+              const SizedBox(height: 12),
+              _freeModeRow(context),
               const SizedBox(height: 16),
 
               // NOTIFICATIONS
@@ -914,6 +921,59 @@ class SettingsScreen extends StatelessWidget {
         color: Colors.white.withAlpha(102),
         letterSpacing: 2,
       ),
+    ),
+  );
+
+  /// Entry point for Free Mode — deliberately the one rainbow row in Settings,
+  /// because it is the one thing here that is a place to go rather than a
+  /// switch to flip.
+  Widget _freeModeRow(BuildContext context) => PressableScale(
+    onTap: () => Navigator.of(context).push(
+      // Fades and lifts in, and plays the same motion backwards on the way
+      // out, so entering and leaving the mode both read as a transition.
+      PageRouteBuilder<void>(
+        transitionDuration: const Duration(milliseconds: 320),
+        reverseTransitionDuration: const Duration(milliseconds: 260),
+        pageBuilder: (_, __, ___) => const FreeModeScreen(),
+        transitionsBuilder: (_, anim, __, child) => FadeTransition(
+          opacity: anim,
+          child: SlideTransition(
+            position: Tween<Offset>(begin: const Offset(0, 0.04), end: Offset.zero)
+                .animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+            child: child,
+          ),
+        ),
+      ),
+    ),
+    child: _blurCard(
+      child: Row(children: [
+        Container(
+          width: 32, height: 32,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(colors: [
+              Color(0xFFff4d4d), Color(0xFFffdb4d), Color(0xFF4dff4d),
+              Color(0xFF00dcdc), Color(0xFF4d4dff), Color(0xFFff4dff),
+            ]),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 17),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Free Mode',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: 0.4)),
+              const SizedBox(height: 2),
+              Text('Numbers at your own pace. No timer, no score.',
+                  style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w500, color: Colors.white.withAlpha(115))),
+            ],
+          ),
+        ),
+        Icon(Icons.chevron_right_rounded, color: Colors.white.withAlpha(51)),
+      ]),
     ),
   );
 
