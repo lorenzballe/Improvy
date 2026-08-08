@@ -62,12 +62,26 @@ class _QuizRevealModalState extends State<QuizRevealModal>
     super.dispose();
   }
 
+  bool _closing = false;
+
+  /// Rewinds the entrance so leaving reads as the reverse of arriving instead
+  /// of snapping away. Both exits — the backdrop and the button — go through
+  /// here, so they leave identically; the flag swallows a second tap during
+  /// the wind-back.
+  Future<void> _dismiss() async {
+    if (_closing || !mounted) return;
+    _closing = true;
+    await _enter.animateBack(0.0,
+        duration: const Duration(milliseconds: 300), curve: Curves.easeInCubic);
+    if (mounted) widget.onClose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(children: [
       Positioned.fill(
         child: GestureDetector(
-          onTap: widget.onClose,
+          onTap: _dismiss,
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
             child: Container(color: Colors.black.withValues(alpha: 0.62)),
@@ -189,7 +203,7 @@ class _QuizRevealModalState extends State<QuizRevealModal>
                     ),
                   ),
                   TextButton(
-                    onPressed: widget.onClose,
+                    onPressed: _dismiss,
                     child: Text('Not now',
                         style: TextStyle(
                             fontSize: 13,

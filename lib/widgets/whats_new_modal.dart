@@ -41,17 +41,39 @@ class _WhatsNewModalState extends State<WhatsNewModal>
   late final AnimationController _c = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 420),
+    // Leaves a little quicker than it arrives: an exit that takes as long as
+    // the entrance feels like the app is holding you up.
+    reverseDuration: const Duration(milliseconds: 320),
   )..forward();
 
   late final Animation<double> _rise = CurvedAnimation(
     parent: _c,
     curve: Curves.easeOutCubic,
+    // Eases *in* on the way out, so it gathers speed as it drops rather than
+    // replaying the arrival backwards.
+    reverseCurve: Curves.easeInCubic,
   );
 
   @override
   void dispose() {
     _c.dispose();
     super.dispose();
+  }
+
+  bool _closing = false;
+
+  /// Lower the sheet before handing control back.
+  ///
+  /// It rose on the way in and used to vanish on the way out, which read as a
+  /// glitch rather than a dismissal. Running the same curve backwards puts it
+  /// down the way it came up — and both exits go through here, so tapping the
+  /// backdrop and pressing Continue leave the same way, only the callback
+  /// differs. [_closing] guards a second tap during the 320ms it takes.
+  Future<void> _close(VoidCallback then) async {
+    if (_closing || !mounted) return;
+    _closing = true;
+    await _c.reverse();
+    if (mounted) then();
   }
 
   Future<void> _openChangelog() async {
@@ -68,7 +90,7 @@ class _WhatsNewModalState extends State<WhatsNewModal>
     return Stack(children: [
       Positioned.fill(
         child: GestureDetector(
-          onTap: widget.onDismiss,
+          onTap: () => _close(widget.onDismiss),
           child: FadeTransition(
             opacity: _rise,
             child: Container(color: const Color(0xBD06030C)),
@@ -169,7 +191,7 @@ class _WhatsNewModalState extends State<WhatsNewModal>
               mainAxisSize: MainAxisSize.min,
               children: [
                 GestureDetector(
-                  onTap: widget.onRead,
+                  onTap: () => _close(widget.onRead),
                   child: Container(
                     height: 54,
                     width: double.infinity,
