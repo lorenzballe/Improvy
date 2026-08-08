@@ -2231,8 +2231,9 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
   }
 }
 
-/// The ♯♭ mark on the Chromatic tile: both accidentals at one height, set
-/// close, and guaranteed to sit inside whatever holds them.
+/// The ♯♭ mark on the Chromatic tile — design 20c, LEGATI: the two accidentals
+/// tucked into one another so they read as a single handwritten ♯♭ ligature,
+/// the most overlapped of the design's three degrees.
 ///
 /// Every earlier attempt fought the font and lost. Noto Music places the
 /// accidentals inside a tall em box with a lot of air, and not the same amount
@@ -2241,15 +2242,12 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
 /// box pushed the ink out through the bottom of the tile.
 ///
 /// So the ink was measured instead. At font size N the sharp's mark is 0.33N
-/// wide and 0.80N tall, starting 0.25N below the top of its line box; the flat
-/// is 0.30N wide and 0.79N tall, starting 0.15N down. Two facts fall out: the
-/// same font size gives both the same height — the old code's 30-and-36 pairing
-/// was correcting a difference that was never there — and the flat sits a tenth
-/// of a size higher, which is the misalignment no amount of nudging fixed.
-///
-/// Each glyph is therefore given a box the size of its own ink and slid up by
-/// its own offset, so the box holds exactly the mark and nothing else. Size the
-/// pair by [inkHeight]: that is the height they will really be.
+/// wide and 0.80N tall, starting 0.48N below the top of its line box; the flat
+/// is 0.30N wide, starting 0.38N down. Each glyph gets a box the size of its
+/// own ink and is slid up by its own offset, so the box holds exactly the mark
+/// and nothing else — which is what lets them be laid over each other precisely
+/// instead of guessed at. The flat is then pulled left across the sharp's right
+/// stem and dropped a touch, the 20c overlap. Size the pair by [inkHeight].
 class _SharpFlatMark extends StatelessWidget {
   final double inkHeight;
   const _SharpFlatMark({required this.inkHeight});
@@ -2260,6 +2258,12 @@ class _SharpFlatMark extends StatelessWidget {
   static const _inkH = 0.80;
   static const _sharpW = 0.33, _sharpTop = 0.48;
   static const _flatW = 0.30, _flatTop = 0.38;
+
+  // 20c interlock: how far the flat slides back over the sharp (as a fraction of
+  // the sharp's ink width) and how far it drops (of the ink height). "Legati" —
+  // more overlap than 20a/20b, so the bowl of the flat sits inside the sharp.
+  static const _overlap = 0.62;
+  static const _flatDrop = 0.12;
 
   @override
   Widget build(BuildContext context) {
@@ -2297,13 +2301,21 @@ class _SharpFlatMark extends StatelessWidget {
           ),
         );
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        mark('♯', _sharpW, _sharpTop),
-        SizedBox(width: fs * 0.06),
-        mark('♭', _flatW, _flatTop),
-      ],
+    final sharpInk = fs * _sharpW;
+    final flatInk = fs * _flatW;
+    final drop = inkHeight * _flatDrop;
+    final flatLeft = sharpInk * (1 - _overlap);
+
+    return SizedBox(
+      width: flatLeft + flatInk,
+      height: inkHeight + drop,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(left: 0, top: 0, child: mark('♯', _sharpW, _sharpTop)),
+          Positioned(left: flatLeft, top: drop, child: mark('♭', _flatW, _flatTop)),
+        ],
+      ),
     );
   }
 }
