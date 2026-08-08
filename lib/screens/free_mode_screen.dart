@@ -30,36 +30,38 @@ class FreeModeScreen extends StatefulWidget {
 
 const int _kTotal = 200;
 
-/// The spectrum the degree colours run through, reused by every rainbow fill
-/// on this screen so the bar, the summary and the icon all match.
+/// The whole colour wheel, sampled every 30° and closing back on red.
+///
+/// Six colours was too coarse: between red and yellow there was no orange, and
+/// between green and blue nothing at all, so whole stretches of the spectrum
+/// were simply missing and what showed read as a handful of stripes. Thirteen
+/// stops give every hue *and* the gradations between neighbours. The first and
+/// last are the same red on purpose, so the list can be swept round a circle
+/// without a seam.
 const List<Color> kFreeSpectrum = [
-  Color(0xFFff4d4d), Color(0xFFffdb4d), Color(0xFF4dff4d),
-  Color(0xFF00dcdc), Color(0xFF4d4dff), Color(0xFFff4dff),
+  Color(0xFFFF2626), // 0°   red
+  Color(0xFFFF9326), // 30°  orange
+  Color(0xFFFFFF26), // 60°  yellow
+  Color(0xFF93FF26), // 90°  lime
+  Color(0xFF26FF26), // 120° green
+  Color(0xFF26FF93), // 150° spring green
+  Color(0xFF26FFFF), // 180° cyan
+  Color(0xFF2693FF), // 210° azure
+  Color(0xFF2626FF), // 240° blue
+  Color(0xFF9326FF), // 270° violet
+  Color(0xFFFF26FF), // 300° magenta
+  Color(0xFFFF2693), // 330° rose
+  Color(0xFFFF2626), // 360° back to red
 ];
 
-/// The spectrum as six hard bands instead of a smooth blend.
+/// The spectrum swept round a circle, for the small rainbow marks.
 ///
-/// For a mark only a few dozen pixels across, a continuous gradient spends
-/// most of its width on the transitions and every hue comes out muddied — the
-/// thing stops reading as a rainbow at all. Repeating each colour at both ends
-/// of its own stop gives clean steps, so all six stay identifiable however
-/// small the glyph is. Runs diagonally by default: across a square icon that
-/// is the longest line available, so each band gets the most room.
-LinearGradient freeSpectrumBands({
-  AlignmentGeometry begin = Alignment.topLeft,
-  AlignmentGeometry end = Alignment.bottomRight,
-}) =>
-    LinearGradient(
-      begin: begin,
-      end: end,
-      colors: [for (final c in kFreeSpectrum) ...[c, c]],
-      stops: [
-        for (var i = 0; i < kFreeSpectrum.length; i++) ...[
-          i / kFreeSpectrum.length,
-          (i + 1) / kFreeSpectrum.length,
-        ],
-      ],
-    );
+/// A linear gradient across a glyph this size can only ever show the slice of
+/// the wheel that fits along one line. Sweeping it instead wraps the entire
+/// spectrum around the mark, so every hue is on screen at once and the shades
+/// between them are visible rather than skipped — which is the whole point of
+/// the mark. Seamless because [kFreeSpectrum] ends on the red it started with.
+SweepGradient freeSpectrumWheel() => const SweepGradient(colors: kFreeSpectrum);
 
 /// Draws the next Free Mode degree, named exactly the way Chromatic mode names
 /// the degree it asks for — a **single** number, never a slash pair.
@@ -255,7 +257,7 @@ class _FreeModeScreenState extends State<FreeModeScreen>
             child: Center(
               child: ShaderMask(
                 blendMode: BlendMode.srcIn,
-                shaderCallback: (b) => freeSpectrumBands().createShader(b),
+                shaderCallback: (b) => freeSpectrumWheel().createShader(b),
                 child: const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 24),
               ),
             ),

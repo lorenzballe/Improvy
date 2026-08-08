@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:improvy/constants/app_colors.dart';
 import 'package:improvy/constants/music_constants.dart';
@@ -117,21 +118,29 @@ void main() {
     }
   });
 
-  test('banded spectrum is a well-formed gradient', () {
-    final g = freeSpectrumBands();
-    expect(g.colors.length, kFreeSpectrum.length * 2);
-    expect(g.stops!.length, g.colors.length);
-    // Flutter asserts on stops that go backwards; each colour must also own an
-    // equal slice, which is what keeps all six readable on a tiny glyph.
-    for (var i = 1; i < g.stops!.length; i++) {
-      expect(g.stops![i], greaterThanOrEqualTo(g.stops![i - 1]));
+  test('the spectrum covers the whole wheel, with no hue skipped', () {
+    // The bug this guards: a six-colour spectrum had no orange between red and
+    // yellow and nothing at all between green and blue, so the mark read as a
+    // few stripes rather than a rainbow. Every neighbouring pair must be a
+    // short hop round the wheel — a big jump means a missing stretch.
+    final hues = kFreeSpectrum.map((c) => HSVColor.fromColor(c).hue).toList();
+    for (var i = 1; i < hues.length; i++) {
+      var step = hues[i] - hues[i - 1];
+      if (step < 0) step += 360; // the closing wrap back to red
+      expect(step, closeTo(30, 1.0), reason: 'hue jump ${hues[i - 1]}→${hues[i]}');
     }
-    for (var i = 0; i < kFreeSpectrum.length; i++) {
-      expect(g.colors[i * 2], kFreeSpectrum[i]);
-      expect(g.colors[i * 2 + 1], kFreeSpectrum[i]);
-      final width = g.stops![i * 2 + 1] - g.stops![i * 2];
-      expect(width, closeTo(1 / kFreeSpectrum.length, 1e-9));
-    }
+    // Closing on the colour it opened with is what lets it sweep a circle
+    // without a visible seam.
+    expect(kFreeSpectrum.first, kFreeSpectrum.last);
+    expect(kFreeSpectrum.length, 13);
+  });
+
+  test('the wheel gradient sweeps the full spectrum', () {
+    final g = freeSpectrumWheel();
+    expect(g.colors, kFreeSpectrum);
+    // Even spacing is implied by leaving stops null; an explicit uneven list
+    // would bunch hues and undo the point of sampling the wheel evenly.
+    expect(g.stops, isNull);
   });
 
   test('the same pitch never repeats back to back', () {

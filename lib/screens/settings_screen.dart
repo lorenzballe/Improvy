@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kDebugMode, kIsWeb, TargetPlatform;
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../providers/app_provider.dart';
@@ -11,6 +12,19 @@ import '../services/review_service.dart';
 import 'legal_screen.dart';
 import 'free_mode_screen.dart';
 import '../widgets/pressable_scale.dart';
+
+/// Instagram's own mark — the rounded camera body, the lens and the flash dot.
+/// Drawn as strokes so it stays crisp at any size, and tinted white by the
+/// caller: worn on Instagram's gradient tile, which is how their brand
+/// guidelines say to present it when linking to a profile.
+const String _kInstagramGlyph =
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" '
+    'stroke="#000000" stroke-width="2" stroke-linecap="round" '
+    'stroke-linejoin="round">'
+    '<rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>'
+    '<path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>'
+    '<line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>'
+    '</svg>';
 
 class SettingsScreen extends StatelessWidget {
   final void Function([String? reason]) onShowPaywall;
@@ -851,7 +865,13 @@ class SettingsScreen extends StatelessWidget {
                           ),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 17),
+                        child: Center(
+                          child: SvgPicture.string(
+                            _kInstagramGlyph,
+                            width: 18, height: 18,
+                            colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                          ),
+                        ),
                       ),
                       const SizedBox(width: 12),
                       const Expanded(
@@ -1048,7 +1068,7 @@ class SettingsScreen extends StatelessWidget {
           width: 32, height: 32,
           child: ShaderMask(
             blendMode: BlendMode.srcIn,
-            shaderCallback: (b) => freeSpectrumBands().createShader(b),
+            shaderCallback: (b) => freeSpectrumWheel().createShader(b),
             child: const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 32),
           ),
         ),
