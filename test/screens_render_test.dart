@@ -164,11 +164,15 @@ void main() {
 
       testWidgets('free mode — a tap advances the counter', (t) async {
         await t.show(const FreeModeScreen(), await providerWith(), size);
-        expect(find.text('1 / 200'), findsOneWidget);
+        // Nothing done yet, so LEFT and RUN both read 200.
+        expect(find.text('200'), findsNWidgets(2));
         // The whole screen is the button: tapping the empty middle must count.
         await t.tapAt(Offset(size.width / 2, size.height / 2));
         await t.pump(const Duration(milliseconds: 400));
-        expect(find.text('2 / 200'), findsOneWidget);
+        // Asserted on LEFT, not on DONE: the degree on screen is drawn at
+        // random and can itself be '1', '9', '11' … so matching those texts
+        // would pass or fail depending on the draw. 199 cannot be a degree.
+        expect(find.text('199'), findsOneWidget);
       });
 
       testWidgets('free mode — the bar uncovers the spectrum, never stretches it', (t) async {
@@ -190,10 +194,15 @@ void main() {
         expect(fill, findsOneWidget);
 
         // Half way through, the gradient must still be laid out across the
-        // WHOLE track and simply be clipped — painting it into the filled
-        // part instead would measure about half here, which is exactly the
-        // squeezed-rainbow look this guards against.
-        expect(t.getSize(fill).width, closeTo(size.width - 40, 0.5));
+        // WHOLE track and simply be clipped — painting it into the filled part
+        // instead would measure about half here, which is exactly the
+        // squeezed-rainbow look this guards against. Compared against the
+        // track itself rather than a hand-computed width, so padding and
+        // borders can move without this becoming a false alarm.
+        final track = find.byWidgetPredicate((w) =>
+            w is Container && w.color == Colors.white.withValues(alpha: 0.08));
+        expect(track, findsOneWidget);
+        expect(t.getSize(fill).width, closeTo(t.getSize(track).width, 0.5));
       });
 
       testWidgets('free mode — the end of a run lays out', (t) async {
@@ -205,7 +214,7 @@ void main() {
           await t.pump(const Duration(milliseconds: 20));
         }
         await t.pump(const Duration(milliseconds: 400));
-        expect(find.text('200 / 200'), findsOneWidget);
+        expect(find.text('0'), findsOneWidget); // LEFT
         expect(find.text('NUMBERS DONE'), findsOneWidget);
         expect(find.text('GO AGAIN'), findsOneWidget);
       });

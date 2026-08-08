@@ -283,7 +283,11 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
   Widget _featureList() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text('What you unlock',
+      // Wraps to a second line on a narrow phone; the list below sits in an
+      // Expanded that measures what is actually left, so a taller label costs
+      // the rows a little breathing room rather than overflowing anything.
+      Text('What you get, from musician to musician',
+        maxLines: 2, overflow: TextOverflow.ellipsis,
         style: TextStyle(fontSize: 12.5 * _k, fontWeight: FontWeight.w600,
           letterSpacing: 1.6,
           color: Colors.white.withValues(alpha: 0.42))),
