@@ -117,6 +117,23 @@ void main() {
     }
   });
 
+  test('banded spectrum is a well-formed gradient', () {
+    final g = freeSpectrumBands();
+    expect(g.colors.length, kFreeSpectrum.length * 2);
+    expect(g.stops!.length, g.colors.length);
+    // Flutter asserts on stops that go backwards; each colour must also own an
+    // equal slice, which is what keeps all six readable on a tiny glyph.
+    for (var i = 1; i < g.stops!.length; i++) {
+      expect(g.stops![i], greaterThanOrEqualTo(g.stops![i - 1]));
+    }
+    for (var i = 0; i < kFreeSpectrum.length; i++) {
+      expect(g.colors[i * 2], kFreeSpectrum[i]);
+      expect(g.colors[i * 2 + 1], kFreeSpectrum[i]);
+      final width = g.stops![i * 2 + 1] - g.stops![i * 2];
+      expect(width, closeTo(1 / kFreeSpectrum.length, 1e-9));
+    }
+  });
+
   test('the same pitch never repeats back to back', () {
     final rng = math.Random(5);
     var base = '';

@@ -950,14 +950,17 @@ class SettingsScreen extends StatelessWidget {
         // No tile behind it — the star sits straight on the card, which is
         // also why it can be set larger than the boxed icons on other rows
         // and still balance them. Same 32px slot, so the titles stay aligned.
+        //
+        // Banded rather than blended, and filled in over the whole slot: a
+        // smooth six-stop gradient over a glyph this size spends its width on
+        // the hand-offs and comes out muddy, which is what stopped it reading
+        // as a rainbow.
         SizedBox(
           width: 32, height: 32,
-          child: Center(
-            child: ShaderMask(
-              blendMode: BlendMode.srcIn,
-              shaderCallback: (b) => const LinearGradient(colors: kFreeSpectrum).createShader(b),
-              child: const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 27),
-            ),
+          child: ShaderMask(
+            blendMode: BlendMode.srcIn,
+            shaderCallback: (b) => freeSpectrumBands().createShader(b),
+            child: const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 32),
           ),
         ),
         const SizedBox(width: 12),

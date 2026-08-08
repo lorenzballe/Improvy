@@ -30,6 +30,30 @@ const List<Color> kFreeSpectrum = [
   Color(0xFF00dcdc), Color(0xFF4d4dff), Color(0xFFff4dff),
 ];
 
+/// The spectrum as six hard bands instead of a smooth blend.
+///
+/// For a mark only a few dozen pixels across, a continuous gradient spends
+/// most of its width on the transitions and every hue comes out muddied — the
+/// thing stops reading as a rainbow at all. Repeating each colour at both ends
+/// of its own stop gives clean steps, so all six stay identifiable however
+/// small the glyph is. Runs diagonally by default: across a square icon that
+/// is the longest line available, so each band gets the most room.
+LinearGradient freeSpectrumBands({
+  AlignmentGeometry begin = Alignment.topLeft,
+  AlignmentGeometry end = Alignment.bottomRight,
+}) =>
+    LinearGradient(
+      begin: begin,
+      end: end,
+      colors: [for (final c in kFreeSpectrum) ...[c, c]],
+      stops: [
+        for (var i = 0; i < kFreeSpectrum.length; i++) ...[
+          i / kFreeSpectrum.length,
+          (i + 1) / kFreeSpectrum.length,
+        ],
+      ],
+    );
+
 /// Draws the next Free Mode degree, named exactly the way Chromatic mode names
 /// the degree it asks for — a **single** number, never a slash pair.
 ///
