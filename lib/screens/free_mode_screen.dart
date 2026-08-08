@@ -72,12 +72,6 @@ class _FreeModeScreenState extends State<FreeModeScreen>
     duration: const Duration(milliseconds: 2400),
   )..repeat(reverse: true);
 
-  /// Fires once per tap: a ring blooms out of the number.
-  late final AnimationController _bloom = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 620),
-  );
-
   @override
   void initState() {
     super.initState();
@@ -87,7 +81,6 @@ class _FreeModeScreenState extends State<FreeModeScreen>
   @override
   void dispose() {
     _pulse.dispose();
-    _bloom.dispose();
     super.dispose();
   }
 
@@ -108,7 +101,6 @@ class _FreeModeScreenState extends State<FreeModeScreen>
       return;
     }
     HapticsService.impactLight();
-    _bloom.forward(from: 0);
     setState(() {
       _roll();
       _index++;
@@ -161,7 +153,6 @@ class _FreeModeScreenState extends State<FreeModeScreen>
                                 degree: _degree,
                                 color: color,
                                 pulse: _pulse,
-                                bloom: _bloom,
                               ),
                       ),
                     ),
@@ -183,13 +174,11 @@ class _BigDegree extends StatelessWidget {
   final String degree;
   final Color color;
   final Animation<double> pulse;
-  final Animation<double> bloom;
 
   const _BigDegree({
     required this.degree,
     required this.color,
     required this.pulse,
-    required this.bloom,
   });
 
   @override
@@ -217,28 +206,6 @@ class _BigDegree extends StatelessWidget {
                       Colors.transparent,
                     ],
                     stops: const [0.0, 0.45, 1.0],
-                  ),
-                ),
-              );
-            },
-          ),
-          // Ring blooming out of the centre on every tap: the tap is confirmed
-          // by the screen itself, since there is no button to light up.
-          AnimatedBuilder(
-            animation: bloom,
-            builder: (_, __) {
-              if (bloom.value == 0 || bloom.value == 1) {
-                return const SizedBox.shrink();
-              }
-              final b = Curves.easeOutCubic.transform(bloom.value);
-              return Container(
-                width: 180 + 260 * b,
-                height: 180 + 260 * b,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: color.withValues(alpha: 0.45 * (1 - b)),
-                    width: 2.5 * (1 - b) + 0.5,
                   ),
                 ),
               );
