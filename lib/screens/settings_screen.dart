@@ -947,16 +947,24 @@ class SettingsScreen extends StatelessWidget {
     ),
     child: _blurCard(
       child: Row(children: [
+        // White tile, rainbow star: the spectrum reads far better as the mark
+        // itself than as a slab behind a white glyph.
         Container(
           width: 32, height: 32,
           decoration: BoxDecoration(
-            gradient: const LinearGradient(colors: [
-              Color(0xFFff4d4d), Color(0xFFffdb4d), Color(0xFF4dff4d),
-              Color(0xFF00dcdc), Color(0xFF4d4dff), Color(0xFFff4dff),
-            ]),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(color: Colors.white.withAlpha(46), blurRadius: 14),
+            ],
           ),
-          child: const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 17),
+          child: Center(
+            child: ShaderMask(
+              blendMode: BlendMode.srcIn,
+              shaderCallback: (b) => const LinearGradient(colors: kFreeSpectrum).createShader(b),
+              child: const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 19),
+            ),
+          ),
         ),
         const SizedBox(width: 12),
         Expanded(
