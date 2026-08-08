@@ -34,7 +34,11 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
   static const _gold = Color(0xFFFBBF24);
   static const _goldSoft = Color(0xFFFCD34D);
   static const _ink = Color(0xFF2A1B04); // dark brown on gold — high contrast
-  static const _fallbackPrice = '€19,99';
+  /// Shown only until the store answers, and only if it never does — the real
+  /// figure is whatever [PurchaseService.proPriceString] returns for the
+  /// reader's own region. Kept in step with the euro price published on the
+  /// site so the two never contradict each other in a screenshot.
+  static const _fallbackPrice = '€20,99';
   String? _livePrice;
 
   // label · trailing meta · icon · chip colour · icon ink
