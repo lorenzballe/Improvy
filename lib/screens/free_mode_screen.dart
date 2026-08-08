@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/music_constants.dart';
 import '../services/haptics_service.dart';
+import '../utils/music_engine.dart';
 import '../widgets/note_text.dart';
 import '../widgets/pressable_scale.dart';
 
@@ -29,26 +30,29 @@ const List<Color> kFreeSpectrum = [
   Color(0xFF00dcdc), Color(0xFF4d4dff), Color(0xFFff4dff),
 ];
 
-/// Draws the next Free Mode degree, spelled as a **single** number — never a
-/// slash pair like '♭3/♯2'.
+/// Draws the next Free Mode degree, named exactly the way Chromatic mode names
+/// the degree it asks for — a **single** number, never a slash pair.
 ///
-/// The draw is over the twelve semitones, not the fifteen spellings: picking
-/// uniformly from the spellings would make the three enharmonic semitones
-/// (♭3/♯2, ♯4/♭5, ♭6/♯5) turn up half again as often as the rest. So a semitone
-/// is chosen first — every pitch equally likely — and only then, where it has
-/// two names, one of them at even odds.
+/// The naming goes through [chromaticDegreeNames], the same call the trainer's
+/// `_askedName` and Pocket Mode's voice use, so the three modes can never drift
+/// apart about what a degree may be called. That means both enharmonic
+/// spellings (♭3 / ♯2) *and* the upper-structure names a chart actually prints
+/// (2 also asks as 9, ♯4 as ♯11, ♭6 as ♭13), each with an equal share.
 ///
-/// [previousBase] is excluded so the same pitch never comes up twice running:
-/// a repeat reads as a missed tap rather than a new question, and it would read
-/// that way even when the two draws spell it differently. Returns both the
-/// semitone drawn (to pass back in next time) and the spelling to show.
+/// The pitch is drawn first, over the twelve semitones rather than over the
+/// names: drawing from the names would make the pitches with three of them turn
+/// up three times as often as ones with a single name. [previousBase] is
+/// excluded so the same pitch never comes up twice running — a repeat reads as
+/// a missed tap rather than a new question, and it would read that way even
+/// when the two draws name it differently. Returns both the semitone drawn (to
+/// pass back in next time) and the name to show.
 ({String base, String spelling}) nextFreeDegree(math.Random rng, String previousBase) {
   var base = previousBase;
   while (base == previousBase) {
     base = kChromaticDegrees[rng.nextInt(kChromaticDegrees.length)];
   }
-  final split = kDegreeSplitMap[base];
-  return (base: base, spelling: split == null ? base : split[rng.nextInt(split.length)]);
+  final names = chromaticDegreeNames(base);
+  return (base: base, spelling: names[rng.nextInt(names.length)]);
 }
 
 class _FreeModeScreenState extends State<FreeModeScreen>
@@ -122,7 +126,10 @@ class _FreeModeScreenState extends State<FreeModeScreen>
 
   @override
   Widget build(BuildContext context) {
-    final color = AppColors.degreeColors[_degree] ?? Colors.white;
+    // Upper-structure names (9, ♯11, ♭13 …) aren't keys in the colour map —
+    // they are the same pitch as their base degree and must be lit the same,
+    // or a 9 would come up white while a 2 came up yellow.
+    final color = AppColors.degreeColors[normalizeExtension(_degree)] ?? Colors.white;
     final progress = (_index - 1).clamp(0, _kTotal) / _kTotal;
 
     return Scaffold(
