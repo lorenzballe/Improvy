@@ -2231,89 +2231,83 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
   }
 }
 
-/// The ♯♭ mark on the Chromatic tile — design 20c, LEGATI: the two accidentals
-/// tucked into one another so they read as a single handwritten ♯♭ ligature,
-/// the most overlapped of the design's three degrees.
+/// The ♯♭ mark on the Chromatic tile — design 20c, LEGATI.
 ///
-/// Every earlier attempt fought the font and lost. Noto Music places the
-/// accidentals inside a tall em box with a lot of air, and not the same amount
-/// for each, so nothing a widget can see says where the mark actually is:
-/// sizing by font size made the two different heights, and scaling by layout
-/// box pushed the ink out through the bottom of the tile.
+/// This is the design's own recipe, glyph for glyph: the Bravura SMuFL sharp
+/// (U+E262) and flat (U+E260) — not Noto Music's ♯♭, whose chunkier shapes
+/// smear into each other when overlapped — set at one size, the flat pulled
+/// left by 0.508 of the size across the sharp's right stem and dropped 0.111,
+/// exactly 20c's numbers. Same font, same offsets as the mock, so the two nest
+/// into one clean ligature instead of colliding.
 ///
-/// So the ink was measured instead. At font size N the sharp's mark is 0.33N
-/// wide and 0.80N tall, starting 0.48N below the top of its line box; the flat
-/// is 0.30N wide, starting 0.38N down. Each glyph gets a box the size of its
-/// own ink and is slid up by its own offset, so the box holds exactly the mark
-/// and nothing else — which is what lets them be laid over each other precisely
-/// instead of guessed at. The flat is then pulled left across the sharp's right
-/// stem and dropped a touch, the 20c overlap. Size the pair by [inkHeight].
+/// Bravura draws the accidentals around the baseline inside a tall, airy line
+/// box, so the glyphs are measured with a TextPainter and placed by their real
+/// ink box rather than the box the font reports — that is what keeps the mark
+/// centred in the tile and stops the drop from clipping out the bottom. Size
+/// the pair by [inkHeight]: the height the sharp's ink will really be.
 class _SharpFlatMark extends StatelessWidget {
   final double inkHeight;
   const _SharpFlatMark({required this.inkHeight});
 
-  // Fractions of the font size, measured off the rendered tile rather than
-  // taken from the font: the lift is what actually lands the ink at the top of
-  // its box, which is a little more than the glyph's own bearing suggests.
-  static const _inkH = 0.80;
-  static const _sharpW = 0.33, _sharpTop = 0.48;
-  static const _flatW = 0.30, _flatTop = 0.38;
+  static const _sharp = '';
+  static const _flat = '';
 
-  // 20c interlock: how far the flat slides back over the sharp (as a fraction of
-  // the sharp's ink width) and how far it drops (of the ink height). "Legati" —
-  // more overlap than 20a/20b, so the bowl of the flat sits inside the sharp.
-  static const _overlap = 0.62;
-  static const _flatDrop = 0.12;
+  // The font size that makes the sharp's ink about [inkHeight] tall — Bravura's
+  // sharp fills roughly this fraction of its size.
+  static const _inkFrac = 0.70;
+
+  // 20c geometry, as fractions of the font size. [_flatLeftFrac] is where the
+  // flat's box starts (its overlap with the sharp — a smaller number sits it
+  // further over the sharp); [_dropEm] is its downward shift (the design's
+  // translateY of 7px at 63px). [_boxWFrac]/[_boxHFrac] size the centring box
+  // to the overlapped pair so it stays middle of the tile.
+  static const _flatLeftFrac = 0.34;
+  static const _dropEm = 0.111;
+  static const _boxWFrac = 0.78;
+  static const _boxHFrac = 0.80;
+
+  TextStyle _style(double fs, {bool stroke = false}) => TextStyle(
+        fontFamily: 'Bravura',
+        fontSize: fs,
+        height: 1,
+        color: stroke ? null : Colors.white,
+        foreground: stroke
+            ? (Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = fs * 0.02
+              ..strokeJoin = StrokeJoin.round
+              ..color = Colors.white)
+            : null,
+      );
 
   @override
   Widget build(BuildContext context) {
-    final fs = inkHeight / _inkH;
+    final fs = inkHeight / _inkFrac;
 
-    Widget mark(String glyph, double widthFactor, double topFactor) => SizedBox(
-          width: fs * widthFactor,
-          height: inkHeight,
-          child: OverflowBox(
-            maxWidth: double.infinity,
-            maxHeight: double.infinity,
-            alignment: Alignment.topLeft,
-            child: Transform.translate(
-              offset: Offset(0, -fs * topFactor),
-              child: Stack(children: [
-                // Faux-bold: a stroke under the fill, scaled with the mark so
-                // the weight holds at any size.
-                Text(glyph,
-                    style: TextStyle(
-                      fontSize: fs, height: 1,
-                      fontFamilyFallback: const ['NotoMusic'],
-                      foreground: Paint()
-                        ..style = PaintingStyle.stroke
-                        ..strokeWidth = fs * 0.035
-                        ..strokeJoin = StrokeJoin.round
-                        ..color = Colors.white,
-                    )),
-                Text(glyph,
-                    style: TextStyle(
-                      fontSize: fs, height: 1, color: Colors.white,
-                      fontFamilyFallback: const ['NotoMusic'],
-                    )),
-              ]),
-            ),
-          ),
+    // A glyph over its own faux-bold stroke. Positioned with only left/top, so
+    // the Text sizes to the glyph itself; the outer Stack does not clip, so it
+    // may paint past the little centring box without any flex to overflow.
+    Widget glyph(String g, double left, double top) => Positioned(
+          left: left,
+          top: top,
+          child: Stack(children: [
+            Text(g, style: _style(fs, stroke: true)),
+            Text(g, style: _style(fs)),
+          ]),
         );
 
-    final sharpInk = fs * _sharpW;
-    final flatInk = fs * _flatW;
-    final drop = inkHeight * _flatDrop;
-    final flatLeft = sharpInk * (1 - _overlap);
-
+    // A plain Stack, not a Row: the glyphs are placed absolutely and allowed to
+    // paint past the little box, so nothing can overflow a flex. The flat is set
+    // left of where it would sit side by side, tucked over the sharp, and
+    // dropped — 20c.
     return SizedBox(
-      width: flatLeft + flatInk,
-      height: inkHeight + drop,
+      width: fs * _boxWFrac,
+      height: fs * _boxHFrac,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          Positioned(left: 0, top: 0, child: mark('♯', _sharpW, _sharpTop)),
-          Positioned(left: flatLeft, top: drop, child: mark('♭', _flatW, _flatTop)),
+          glyph(_sharp, 0, 0),
+          glyph(_flat, fs * _flatLeftFrac, fs * _dropEm),
         ],
       ),
     );

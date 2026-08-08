@@ -131,6 +131,7 @@ Future<void> loadRealFonts() async {
     'Outfit-SemiBold.ttf', 'Outfit-Bold.ttf',
   ]);
   await family('NotoMusic', ['NotoMusic-Regular.ttf']);
+  await family('Bravura', ['Bravura.otf']);
 }
 
 void main() {
