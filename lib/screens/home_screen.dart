@@ -2312,8 +2312,8 @@ class _SharpFlatPainter extends CustomPainter {
     // small nudge corrects for the flat's bowl reading a touch narrower on
     // screen than its measured box, which otherwise leaves the pair sitting
     // slightly up and to the left of centre.
-    final ox = (size.width - unionW) / 2 + 0.035 * fs;
-    final oy = (size.height - unionH) / 2 + 0.03 * fs;
+    final ox = (size.width - unionW) / 2;
+    final oy = (size.height - unionH) / 2;
     final baselineY = oy + (-topEm) * fs;
 
     void draw(String g, double inkLeftEm, double baseY) {
