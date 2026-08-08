@@ -11,6 +11,16 @@ const String kSupportMailto =
 /// The live marketing site.
 const String kWebsiteUrl = 'https://lorenzballe.github.io/Improvyapp/';
 
+/// The developer's Instagram.
+///
+/// Deliberately the plain https address rather than the `instagram://` scheme:
+/// Instagram serves this as a universal link, so iOS and Android hand it to the
+/// installed app on their own and fall back to the browser when it is missing.
+/// The custom scheme would additionally have to be listed in
+/// LSApplicationQueriesSchemes just to be *probed*, and buys nothing.
+const String kInstagramHandle = 'lorenz_balle';
+const String kInstagramUrl = 'https://www.instagram.com/$kInstagramHandle/';
+
 /// Public copies of the two legal texts. The store listings need addresses a
 /// reviewer can open, and these must keep saying the same thing as the bodies
 /// below — change one, change the other.

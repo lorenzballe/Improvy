@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:improvy/constants/app_info.dart';
 import 'package:improvy/constants/levels.dart';
 import 'package:improvy/models/stats.dart';
 import 'package:improvy/models/training_mode.dart';
@@ -160,6 +161,11 @@ void main() {
           await providerWith(),
           size,
         );
+        // Outward-facing rows people are told exist: the handle is published
+        // on the row itself, so a wrong or vanished one is a visible promise
+        // broken, not just a dead tap.
+        expect(find.text('@$kInstagramHandle'), findsOneWidget);
+        expect(find.text(kSupportEmail), findsOneWidget);
       });
 
       testWidgets('free mode — a tap advances the counter', (t) async {

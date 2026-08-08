@@ -40,6 +40,32 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
+  /// Opens the developer's Instagram — the installed app when the OS resolves
+  /// the universal link, the browser otherwise.
+  ///
+  /// Same contract as [_contactSupport]: a device that cannot open it must not
+  /// leave the tap silently doing nothing, so the handle is spelled out and the
+  /// user can find it themselves.
+  static Future<void> _openInstagram(BuildContext context) async {
+    try {
+      final ok = await launchUrl(
+        Uri.parse(kInstagramUrl),
+        mode: LaunchMode.externalApplication,
+      );
+      if (ok || !context.mounted) return;
+    } catch (_) {
+      if (!context.mounted) return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Color(0xFF1A1625),
+        content: Text('Find me on Instagram: @$kInstagramHandle',
+          style: TextStyle(fontWeight: FontWeight.w600)),
+      ),
+    );
+  }
+
   /// Widgets are added from the OS home screen, not from inside an app — there
   /// is no API to place one. All the app can do is say where the button is,
   /// which is exactly what people look for after reading that widgets exist.
@@ -795,6 +821,69 @@ class SettingsScreen extends StatelessWidget {
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
                                   color: Color(0xFFFBBF24),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(Icons.chevron_right_rounded, color: Colors.white.withAlpha(51)),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              // The person behind the app. Instagram's gradient is its own, not
+              // the app's palette, so it is worn only by the small icon tile —
+              // the same restraint every other row here shows.
+              PressableScale(
+                onTap: () => _openInstagram(context),
+                child: _blurCard(
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 32, height: 32,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            begin: Alignment.bottomLeft,
+                            end: Alignment.topRight,
+                            colors: [Color(0xFFF9CE34), Color(0xFFEE2A7B), Color(0xFF6228D7)],
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 17),
+                      ),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Follow the developer',
+                                maxLines: 1,
+                                softWrap: false,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                  letterSpacing: 0.4,
+                                ),
+                              ),
+                            ),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                '@$kInstagramHandle',
+                                maxLines: 1,
+                                softWrap: false,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFFEE2A7B),
                                 ),
                               ),
                             ),
