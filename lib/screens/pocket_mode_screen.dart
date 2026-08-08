@@ -69,7 +69,6 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
   String _presented = ''; // label actually spoken/shown (may be the extension)
   String _answer = '';
   String? _prevDegree;
-  String _spokenKey = ''; // last key the voice named, to avoid repeating it
 
   @override
   void initState() {
@@ -129,7 +128,6 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
     _voice.stop();
     _keepAlive.stop(); // paused means idle: let iOS suspend us and save battery
     _countdown.stop();
-    _spokenKey = ''; // re-announce the key on the first question after resuming
     setState(() { _playing = false; _phase = 0; });
   }
 
@@ -155,17 +153,14 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
       final answer = getNoteFromChromaticDegree(degree, scale, key);
       if (gen != _gen || !mounted) return;
 
-      // Ask. On a fixed key the voice names the key only when it changes (the
-      // first question, or after a resume) and then speaks just the degree, so
-      // it isn't repeating "of C" every time. Shuffling always names the key.
-      final sameKeyContext = !widget.config.shuffleKeys && key == _spokenKey;
-      // Two clips back to back — the degree, then the key ("flat three · C").
-      // On a fixed key the key clip is dropped after the first question.
+      // On a fixed key the voice never names it — not even on the first
+      // question: the user chose that key and it is shown on screen, so
+      // announcing it only delays the start. Shuffling picks a new key every
+      // question, so there the key must always be spoken ("flat three · C").
       final qClips = <String?>[
         VoiceService.degreeClip(presented),
-        if (!sameKeyContext) VoiceService.noteClip(key),
+        if (widget.config.shuffleKeys) VoiceService.noteClip(key),
       ];
-      _spokenKey = key;
       // Speech is fired without awaiting completion; _wait drives the pace so
       // the loop can never stall on an engine that never reports "done".
       setState(() { _key = key; _degree = degree; _presented = presented; _answer = ''; _phase = 1; });
@@ -314,7 +309,9 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
                     Row(children: [
                       Expanded(child: _stat('DEGREES', '${widget.config.degrees.length}')),
                       Container(width: 1, height: 28, color: Colors.white10),
-                      Expanded(child: _stat('DELAY', '${(widget.config.delayMs / 1000).round()}s')),
+                      Expanded(child: _stat('DELAY', widget.config.delayMs % 1000 == 0
+                          ? '${widget.config.delayMs ~/ 1000}s'
+                          : '${(widget.config.delayMs / 1000).toStringAsFixed(1)}s')),
                       Container(width: 1, height: 28, color: Colors.white10),
                       Expanded(child: _stat('SESSION', total == 0 ? '∞' : '${_index.clamp(0, total)}/$total')),
                     ]),

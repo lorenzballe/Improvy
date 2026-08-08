@@ -55,12 +55,25 @@ class _LevelUpModalState extends State<LevelUpModal>
     super.dispose();
   }
 
+  bool _closing = false;
+
+  /// Tapping "Awesome!" (or the backdrop) used to yank the modal out with no
+  /// exit — the screen behind just snapped back. Play the entrance backwards
+  /// instead: the card shrinks and drops while the whole overlay fades, then
+  /// hand control back once it has actually left.
+  Future<void> _handleClose() async {
+    if (_closing || !mounted) return;
+    setState(() => _closing = true);
+    await Future.wait([_bgCtrl.reverse(), _boxCtrl.reverse()]);
+    if (mounted) widget.onClose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final color = widget.animal.color;
 
     return GestureDetector(
-      onTap: widget.onClose,
+      onTap: _handleClose,
       child: AnimatedBuilder(
         animation: Listenable.merge([
           _bgCtrl, _haloCtrl, _rayCtrl, _glowCtrl, _boxCtrl, _iconCtrl, _textCtrl, _btnCtrl,
@@ -201,7 +214,7 @@ class _LevelUpModalState extends State<LevelUpModal>
                             btnOpacity: btnOpacity,
                             btnSlide: btnSlide,
                             animal: widget.animal,
-                            onClose: widget.onClose,
+                            onClose: _handleClose,
                           ),
                         ),
                       ),

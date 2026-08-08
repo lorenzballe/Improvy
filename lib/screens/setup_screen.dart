@@ -695,7 +695,7 @@ class _PocketModeSetupState extends State<PocketModeSetup> {
                                 _SectionTitle(
                                   icon: Icons.timer_outlined,
                                   title: 'Answer Delay',
-                                  subtitle: '${(_delayMs / 1000).round()}s before the voice reveals the note.',
+                                  subtitle: '${fmtDelaySeconds(_delayMs / 1000)} before the voice reveals the note.',
                                 ),
                                 const SizedBox(height: 8),
                                 _DelaySlider(
@@ -747,7 +747,11 @@ class _PocketModeSetupState extends State<PocketModeSetup> {
   }
 }
 
-// ── Answer-delay slider (1–10s, whole seconds) ───────────────────────────────
+// ── Answer-delay slider (0.5–10s, half-second steps) ─────────────────────────
+
+/// "5s" for whole seconds, "0.5s" / "1.5s" for the sub-second / half steps.
+String fmtDelaySeconds(double s) =>
+    s == s.roundToDouble() ? '${s.round()}s' : '${s.toStringAsFixed(1)}s';
 
 class _DelaySlider extends StatelessWidget {
   final double seconds;
@@ -760,7 +764,7 @@ class _DelaySlider extends StatelessWidget {
     return Column(
       children: [
         Center(
-          child: Text('${seconds.round()}s',
+          child: Text(fmtDelaySeconds(seconds),
               style: TextStyle(fontSize: 34, fontWeight: FontWeight.w900, color: accent, letterSpacing: -0.5)),
         ),
         const SizedBox(height: 4),
@@ -777,10 +781,12 @@ class _DelaySlider extends StatelessWidget {
             tickMarkShape: SliderTickMarkShape.noTickMark,
           ),
           child: Slider(
-            value: seconds.clamp(1, 10),
-            min: 1,
+            // Down to 0.5s so Master-level speed is reachable hands-free, in
+            // half-second steps (0.5, 1, 1.5, … 10).
+            value: seconds.clamp(0.5, 10),
+            min: 0.5,
             max: 10,
-            divisions: 9,
+            divisions: 19,
             onChanged: onChanged,
           ),
         ),
@@ -789,7 +795,7 @@ class _DelaySlider extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('1s', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white.withValues(alpha: 0.35))),
+              Text('0.5s', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white.withValues(alpha: 0.35))),
               Text('10s', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white.withValues(alpha: 0.35))),
             ],
           ),

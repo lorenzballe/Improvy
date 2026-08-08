@@ -123,8 +123,10 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
       (widget.difficulty == 1 ? 30 : widget.difficulty == 2 ? 40 : 50);
 
   /// The tier's own limit — what Apprentice / Virtuoso / Master mean.
+  /// Master is deliberately tight (1.6s, ~20% below the old 2s) so the top
+  /// tier really tests instant recall, not just fast thinking.
   int get _nominalTimeLimit =>
-      widget.difficulty == 1 ? 6000 : widget.difficulty == 2 ? 4000 : 2000;
+      widget.difficulty == 1 ? 6000 : widget.difficulty == 2 ? 4000 : 1600;
 
   /// The limit actually in force for the next question.
   ///
