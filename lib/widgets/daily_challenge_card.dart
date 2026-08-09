@@ -5,8 +5,10 @@ import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../constants/app_colors.dart';
 import '../constants/app_info.dart';
 import '../models/daily_challenge.dart';
+import '../models/key_progress.dart';
 import '../providers/app_provider.dart';
 import '../services/analytics_service.dart';
 import '../services/haptics_service.dart';
@@ -30,7 +32,6 @@ class DailyChallengeCard extends StatefulWidget {
 class _DailyChallengeCardState extends State<DailyChallengeCard> {
   static const _gold = Color(0xFFFBBF24);
   static const _goldSoft = Color(0xFFFCD34D);
-  static const _goldDeep = Color(0xFFF59E0B);
   static const _green = Color(0xFF22C55E);
   static const _red = Color(0xFFEF4444);
 
@@ -103,79 +104,107 @@ class _DailyChallengeCardState extends State<DailyChallengeCard> {
       child: AnimatedScale(
         scale: _pressed ? 0.98 : 1.0,
         duration: const Duration(milliseconds: 110),
-        // Gold gradient hairline — the same membership-card framing the paywall
-        // uses, marking this as the special card on the page.
+        child: played ? _playedCard(provider, result) : _freshCard(provider),
+      ),
+    );
+  }
+
+  /// Played state — the white-framed neutral card, unchanged.
+  Widget _playedCard(AppProvider provider, DailyResult result) => Container(
+        padding: const EdgeInsets.all(1.4),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(22),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white.withValues(alpha: 0.16),
+              Colors.white.withValues(alpha: 0.06),
+            ],
+          ),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withValues(alpha: 0.3),
+                blurRadius: 24,
+                offset: const Offset(0, 12)),
+          ],
+        ),
         child: Container(
-          padding: const EdgeInsets.all(1.4),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(22),
+          padding: const EdgeInsets.fromLTRB(18, 16, 16, 16),
+          decoration: const BoxDecoration(
+            borderRadius: BorderRadius.all(Radius.circular(20.6)),
             gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: played
-                  ? [
-                      Colors.white.withValues(alpha: 0.16),
-                      Colors.white.withValues(alpha: 0.06),
-                    ]
-                  : [
-                      _goldSoft.withValues(alpha: 0.85),
-                      _goldDeep.withValues(alpha: 0.35),
-                      _goldSoft.withValues(alpha: 0.6),
-                    ],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFF221830), Color(0xFF141020)],
             ),
+          ),
+          child: _playedBody(provider, result),
+        ),
+      );
+
+  /// Not-yet-played state — design 22d, "quiet, gold only as accent": a flat
+  /// #1A1625 body under a single thin gold hairline, one soft gold glow in the
+  /// corner, and a plain gold chevron instead of a filled play button. The
+  /// membership-card gold frame is gone; the gold survives only as an accent.
+  Widget _freshCard(AppProvider provider) => ClipRRect(
+        borderRadius: BorderRadius.circular(22),
+        child: Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF1A1625),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: _gold.withValues(alpha: 0.28)),
             boxShadow: [
-              if (!played)
-                BoxShadow(
-                    color: _goldDeep.withValues(alpha: 0.16),
-                    blurRadius: 30,
-                    spreadRadius: -6,
-                    offset: const Offset(0, 10)),
               BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.3),
+                  color: Colors.black.withValues(alpha: 0.28),
                   blurRadius: 24,
                   offset: const Offset(0, 12)),
             ],
           ),
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(18, 16, 16, 16),
-            decoration: const BoxDecoration(
-              // 22 − 1.4: the inner radius has to be the outer one minus the
-              // hairline, or the ring thickens and thins as it goes round the
-              // corners. At 21 it was 0.4 too wide and the frame read uneven.
-              borderRadius: BorderRadius.all(Radius.circular(20.6)),
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Color(0xFF221830), Color(0xFF141020)],
+          child: Stack(children: [
+            // The one gold flourish: a soft glow bleeding in from the top-right
+            // corner, clipped to the card by the ClipRRect above.
+            Positioned(
+              top: -40,
+              right: -40,
+              child: Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [_gold.withValues(alpha: 0.16), Colors.transparent],
+                    stops: const [0.0, 0.7],
+                  ),
+                ),
               ),
             ),
-            child: played ? _playedBody(provider, result) : _freshBody(provider),
-          ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 16, 16, 16),
+              child: _freshBody(provider),
+            ),
+          ]),
         ),
-      ),
-    );
-  }
+      );
 
   // ── Not played yet: the invitation ──────────────────────────────────────────
 
   Widget _freshBody(AppProvider provider) {
     final challenge = provider.todayChallenge;
     final streak = provider.dailyStreak;
+    // The day's key in the same colour the app gives it everywhere else, so the
+    // card and that key's mastery tile agree — 22d shows the key in its colour.
+    final keyIndex = kDefaultKeyOrder.indexOf(challenge.key);
+    final keyColor = AppColors.keyColor(keyIndex < 0 ? 0 : keyIndex);
     return Row(children: [
+      // Trophy, in a flat gold-tinted tile (no gradient) — quiet.
       Container(
         width: 46,
         height: 46,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              _gold.withValues(alpha: 0.2),
-              _goldDeep.withValues(alpha: 0.08)
-            ],
-          ),
-          border: Border.all(color: _gold.withValues(alpha: 0.35)),
+          color: _gold.withValues(alpha: 0.14),
+          border: Border.all(color: _gold.withValues(alpha: 0.32)),
         ),
         child: const Icon(Icons.emoji_events_rounded, color: _goldSoft, size: 24),
       ),
@@ -193,9 +222,9 @@ class _DailyChallengeCardState extends State<DailyChallengeCard> {
                   maxLines: 1,
                   softWrap: false,
                   style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 2,
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.6,
                       color: _goldSoft)),
               if (streak > 0) ...[
                 const SizedBox(width: 8),
@@ -203,22 +232,22 @@ class _DailyChallengeCardState extends State<DailyChallengeCard> {
                     maxLines: 1,
                     softWrap: false,
                     style: const TextStyle(
-                        fontSize: 11, fontWeight: FontWeight.w900, color: _goldSoft)),
+                        fontSize: 11, fontWeight: FontWeight.w800, color: _goldSoft)),
               ],
             ]),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 5),
           Row(
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
             children: [
               const Text('Key of ',
                   style: TextStyle(
-                      fontSize: 19, fontWeight: FontWeight.w800, color: Colors.white)),
+                      fontSize: 19, fontWeight: FontWeight.w700, color: Colors.white)),
               NoteText(
                   note: formatNoteForDisplay(challenge.key, provider.notation),
-                  style: const TextStyle(
-                      fontSize: 19, fontWeight: FontWeight.w800, color: Colors.white)),
+                  style: TextStyle(
+                      fontSize: 19, fontWeight: FontWeight.w700, color: keyColor)),
             ],
           ),
           const SizedBox(height: 4),
@@ -231,21 +260,13 @@ class _DailyChallengeCardState extends State<DailyChallengeCard> {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                   fontSize: 11.5,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w500,
                   color: Colors.white.withValues(alpha: 0.5))),
         ]),
       ),
-      const SizedBox(width: 8),
-      Container(
-        width: 34,
-        height: 34,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: _gold.withValues(alpha: 0.14),
-          border: Border.all(color: _gold.withValues(alpha: 0.4)),
-        ),
-        child: const Icon(Icons.play_arrow_rounded, color: _goldSoft, size: 22),
-      ),
+      const SizedBox(width: 10),
+      // 22d's control: a plain gold chevron, not a filled play button.
+      const Icon(Icons.chevron_right_rounded, color: _goldSoft, size: 26),
     ]);
   }
 
