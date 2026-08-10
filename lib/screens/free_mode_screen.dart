@@ -370,31 +370,18 @@ class _FreeModeScreenState extends State<FreeModeScreen>
             ),
             Padding(
               padding: EdgeInsets.all(ring * 0.18),
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 260),
-                switchInCurve: Curves.easeOutBack,
-                switchOutCurve: Curves.easeIn,
-                transitionBuilder: (child, anim) => FadeTransition(
-                  opacity: anim,
-                  child: ScaleTransition(
-                    scale: Tween<double>(begin: 0.80, end: 1).animate(anim),
-                    child: child,
-                  ),
-                ),
-                child: FittedBox(
-                  key: ValueKey(_degree),
-                  fit: BoxFit.scaleDown,
-                  child: NoteText(
-                    note: _degree,
-                    accidentalLift: 0.30,
-                    accidentalScale: 0.52,
-                    style: TextStyle(
-                      fontSize: 112,
-                      fontWeight: FontWeight.w900,
-                      color: live,
-                      height: 1,
-                      shadows: [Shadow(color: live.withValues(alpha: 0.45), blurRadius: 34)],
-                    ),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: NoteText(
+                  note: _degree,
+                  accidentalLift: 0.30,
+                  accidentalScale: 0.52,
+                  style: TextStyle(
+                    fontSize: 112,
+                    fontWeight: FontWeight.w900,
+                    color: live,
+                    height: 1,
+                    shadows: [Shadow(color: live.withValues(alpha: 0.45), blurRadius: 34)],
                   ),
                 ),
               ),

@@ -171,7 +171,7 @@ class _HomeMain extends StatelessWidget {
                   subtitle: 'A note is a given degree — name the root. Harmonize any melody.',
                   // A typographic "?" in the app's own heavy face — the thin
                   // material glyph looked generic next to the ♯♭ lettering.
-                  iconWidget: const Center(child: _ThickGlyph('?', 27)),
+                  iconWidget: const Center(child: _ThickGlyph('?', 27, stroke: 0.6)),
                   accentColor: const Color(0xFF22D3EE),
                   borderColor: const Color(0xFF22D3EE).withAlpha(110),
                   // Free to open — only the EXT/ALL degree selections inside its
