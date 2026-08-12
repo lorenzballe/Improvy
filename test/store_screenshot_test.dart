@@ -20,6 +20,19 @@ import 'package:improvy/widgets/paywall_modal.dart';
 ///
 /// It is the shipping widget, not a mockup — the same tree the app builds, so
 /// what the reviewer sees is what a customer sees.
+///
+/// **Strip the alpha channel before uploading.** Flutter always writes goldens
+/// as RGBA, and App Store Connect refuses any image carrying transparency —
+/// silently, with the upload control simply doing nothing and the "Add for
+/// Review" button staying disabled because the required field never fills.
+/// Flatten it onto the app's own background first:
+///
+/// ```
+/// python3 -c "from PIL import Image; \
+///   im=Image.open('test/goldens/iap_review_paywall.png').convert('RGBA'); \
+///   bg=Image.new('RGB', im.size, (15,10,26)); bg.paste(im, mask=im.split()[3]); \
+///   bg.save('iap_review_screenshot.png')"
+/// ```
 Future<void> loadRealFonts() async {
   Future<void> family(String name, List<String> files) async {
     final loader = FontLoader(name);
