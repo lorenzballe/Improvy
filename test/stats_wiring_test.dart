@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:improvy/models/stats.dart';
+import 'package:improvy/models/daily_challenge.dart';
 import 'package:improvy/models/training_mode.dart';
 import 'package:improvy/providers/app_provider.dart';
 import 'package:improvy/services/storage_service.dart';
@@ -150,32 +151,37 @@ void main() {
     });
   });
 
-  group('the Daily Challenge is a first-class diatonic run', () {
+  group('the Daily Challenge is a first-class chromatic run', () {
     test('it feeds mastery, the day and the game history like any other',
         () async {
       final p = await freshProvider();
       p.startDailyChallenge();
       final key = p.todayChallenge.key;
 
-      for (var i = 0; i < 10; i++) {
+      const played = DailyChallenge.questionCount;
+      for (var i = 0; i < played; i++) {
         p.recordAnswer(
           isCorrect: true,
           responseTime: 1200,
-          answerDetails: answer(mode: 'diatonic', tonality: key),
+          answerDetails: answer(mode: 'chromatic', tonality: key),
         );
       }
       p.finishSession();
       p.exitTrainer();
 
-      expect(p.stats.totalAttempts, 10);
+      expect(p.stats.totalAttempts, played);
       expect(p.stats.sessionHistory.length, 1);
-      // Credited to tier 2, because that is the tier the daily is played at —
-      // see DailyChallenge.difficulty. Filing it under tier 1 would claim an
-      // easier run than actually happened.
+      // Chromatic, because the daily asks chromatic degrees and so runs as a
+      // chromatic session — crediting the diatonic dial would claim progress
+      // on a mode that was never played. Tier 2, because that is the tier the
+      // daily is played at (DailyChallenge.difficulty).
+      expect(p.progressData.firstWhere((k) => k.key == key).chromaticLevels,
+          [0, played, 0]);
       expect(p.progressData.firstWhere((k) => k.key == key).diatonicLevels,
-          [0, 10, 0]);
+          [0, 0, 0],
+          reason: 'a chromatic run must not move the diatonic dial');
       expect(p.todayDailyResult, isNotNull);
-      expect(p.todayDailyResult!.correct, 10);
+      expect(p.todayDailyResult!.correct, played);
       expect(p.dailyStreak, 1);
     });
 
@@ -183,7 +189,7 @@ void main() {
         () async {
       final p = await freshProvider();
       p.startDailyChallenge();
-      expect(p.diatonicDifficulty, 2,
+      expect(p.chromaticDifficulty, DailyChallenge.difficulty,
           reason: 'answers must be filed under the tier actually played');
     });
   });

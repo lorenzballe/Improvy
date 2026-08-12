@@ -19,17 +19,22 @@ class DailyChallenge {
 
   const DailyChallenge({required this.dateKey, required this.key, required this.degrees});
 
-  static const int questionCount = 10;
+  /// Fifteen, not ten. At ten questions a single slip is a tenth of the score,
+  /// so the number measured luck as much as skill — and a score that noisy is
+  /// not worth sharing. Fifteen also fits the twelve chromatic degrees with
+  /// only three repeats, where ten diatonic degrees meant seeing the same
+  /// seven notes over and over.
+  static const int questionCount = 15;
 
   /// Seconds of budget each question is worth. Not a per-question limit — the
-  /// clock below is pooled — but the honest way to size the pool: it is the
-  /// same 4 seconds the trainer's medium tier gives a single question, so the
-  /// budget is derived from the game rather than picked to sound round.
+  /// clock below is pooled — but the honest way to size the pool.
   ///
-  /// 4s a question is tense on purpose. A confident answer takes about 2s, and
-  /// a wrong one costs its own 1.8s of feedback on top, so a clean run lands
-  /// with a few seconds spare while a hesitant one genuinely runs out.
-  static const int msPerQuestion = 4000;
+  /// 2.8s is deliberately under the trainer's own medium tier (3.2s): the
+  /// daily is meant to be the hardest thing you do that day, and at 4s it was
+  /// softer than an ordinary Virtuoso session. A confident answer takes about
+  /// 2s, so a clean run still lands with a little spare while a hesitant one
+  /// genuinely runs out.
+  static const int msPerQuestion = 2800;
 
   /// **One clock for the whole run**, not a per-question limit like the other
   /// modes. That is the shape of a challenge — you spend the budget how you
@@ -58,9 +63,14 @@ class DailyChallenge {
     final rng = _Lcg(_fnv1a(dateKey));
     final key = kKeys[rng.next(kKeys.length)];
 
-    // A seeded shuffle of all 7 degrees (everyone meets every degree), then 3
-    // extra picks with no immediate repeat — 10 questions total.
-    final base = ['1', '2', '3', '4', '5', '6', '7'];
+    // A seeded shuffle of all twelve chromatic degrees (everyone meets every
+    // one), then extra picks with no immediate repeat, up to questionCount.
+    //
+    // Chromatic, not diatonic: the challenge of the day should be able to ask
+    // for the ♯4, not only the seven easy degrees. It also keeps the run
+    // varied — twelve degrees over fifteen questions is three repeats, where
+    // seven would have meant eight.
+    final base = List<String>.from(kChromaticDegrees);
     for (var i = base.length - 1; i > 0; i--) {
       final j = rng.next(i + 1);
       final t = base[i];

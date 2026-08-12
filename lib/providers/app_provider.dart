@@ -541,14 +541,22 @@ class AppProvider extends ChangeNotifier {
     _dailyStartedAt = DateTime.now();
     dailyChallengeActive = true;
     selectedKey = c.key;
+    // The daily asks chromatic degrees, so it has to run as a chromatic
+    // session: the answer board is built from the mode, and a diatonic board
+    // offers only the seven scale notes — a ♯4 question would have no button
+    // to answer it with.
+    //
     // Keep the recorded difficulty in step with the trainer's: the daily runs
     // at DailyChallenge.difficulty (medium), and recordAnswer credits key
-    // mastery against diatonicDifficulty — misaligning them would file a 4s
-    // run's answers under the 6s level. A real diatonic run still feeds
-    // mastery, exactly as before.
-    diatonicDifficulty = DailyChallenge.difficulty;
+    // mastery against chromaticDifficulty — misaligning them would file this
+    // run's answers under the wrong level.
+    //
+    // Note this hands every player a taste of Chromatic mode, which is
+    // otherwise Pro. That is deliberate: the daily is free, and one run a day
+    // against the full twelve is the most honest advert the mode has.
+    chromaticDifficulty = DailyChallenge.difficulty;
     customQuestions = c.degrees.length;
-    activeMode = TrainingMode.diatonic;
+    activeMode = TrainingMode.chromatic;
     // Survives an OS kill — launch turns it into a burned attempt (see
     // _recoverDailyAttempt), so force-quitting is never a free retry.
     _storage.saveDailyAttemptStarted(c.dateKey);
