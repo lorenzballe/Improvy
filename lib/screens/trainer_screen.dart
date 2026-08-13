@@ -24,6 +24,8 @@ class TrainerScreen extends StatefulWidget {
   final List<dynamic> sessionHistory;
   final String notation;
   final bool keyboardFromTonic;
+  /// One standard name per pitch class instead of key-correct spelling.
+  final bool simpleNotes;
   // Daily Challenge: a predetermined degree sequence (question i asks
   // sequence[i] — no randomness, no adaptive picking) and tailored exit copy.
   final List<String>? questionSequence;
@@ -49,6 +51,7 @@ class TrainerScreen extends StatefulWidget {
     required this.sessionHistory,
     required this.notation,
     this.keyboardFromTonic = false,
+    this.simpleNotes = false,
     this.questionSequence,
     this.isDaily = false,
     this.totalTimeMs,
@@ -208,7 +211,8 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
       items.sort((a, b) => (kNoteToSemitone[a.note] ?? 0) - (kNoteToSemitone[b.note] ?? 0));
       return items;
     }
-    final buttons = getChromaticButtons(_scale, _currentKey);
+    final buttons = getChromaticButtons(_scale, _currentKey,
+        simpleNames: widget.simpleNotes);
     if (widget.mode == TrainingMode.custom && widget.customDegrees != null) {
       return buttons.map((b) {
         final matching = kChromaticDegrees.where((d) =>
@@ -725,6 +729,7 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
                       fixedSemitone: _isOfWhat ? kNoteToSemitone[_fixedNote] : null,
                       chromaticTonic:
                           widget.mode == TrainingMode.chromatic ? _currentKey : null,
+                      simpleNotes: widget.simpleNotes,
                       onSelect: _handleAnswer,
                     )
                   else
@@ -1789,6 +1794,7 @@ class _PianoKeyboard extends StatelessWidget {
   // Non-null in CHROMATIC mode: key labels are then spelled by relative degree
   // (1 ♭2 2 ♭3 3 4 ♯4 5 ♭6 6 ♭7 7 of this tonic) instead of the button names.
   final String? chromaticTonic;
+  final bool simpleNotes;
   final void Function(String) onSelect;
 
   const _PianoKeyboard({
@@ -1802,6 +1808,7 @@ class _PianoKeyboard extends StatelessWidget {
     this.topSemitone,
     this.fixedSemitone,
     this.chromaticTonic,
+    this.simpleNotes = false,
     required this.onSelect,
   });
 
@@ -1899,7 +1906,7 @@ class _PianoKeyboard extends StatelessWidget {
     // Chromatic mode spells keys by relative degree of the tonic; other modes
     // take the names straight from the answer buttons (diatonic spelling).
     final scaleNames = chromaticTonic != null
-        ? chromaticKeyboardNoteNames(chromaticTonic!)
+        ? chromaticKeyboardNoteNames(chromaticTonic!, simpleNames: simpleNotes)
         : <int, String>{
             for (final n in notes)
               if (kNoteToSemitone[n.note] != null) kNoteToSemitone[n.note]!: n.note,

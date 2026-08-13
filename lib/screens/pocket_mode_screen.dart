@@ -33,12 +33,15 @@ class PocketConfig {
 class PocketModeScreen extends StatefulWidget {
   final PocketConfig config;
   final String notation; // app's note-naming setting, for the key badge
+  /// One standard name per pitch class instead of key-correct spelling.
+  final bool simpleNotes;
   /// Reports how many questions were actually spoken, so a drill that ran
   /// counts as practice for the day while opening and immediately leaving does
   /// not. Pocket Mode asks for no answers, so there is nothing to score — but
   /// a day spent training hands-free is still a day trained.
   final void Function(int questionsHeard) onExit;
-  const PocketModeScreen({super.key, required this.config, this.notation = 'CDE', required this.onExit});
+  const PocketModeScreen({super.key, required this.config, this.notation = 'CDE',
+      this.simpleNotes = false, required this.onExit});
 
   @override
   State<PocketModeScreen> createState() => _PocketModeScreenState();
@@ -410,7 +413,8 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
     // Every key is named as that note is spelled IN THIS KEY — F♯ major reads
     // F♯ G♯ A♯ B C♯ D♯ E♯, not the generic flats. Same source the in-game
     // chromatic keyboard uses, so the two never disagree about a note's name.
-    final keyNames = chromaticKeyboardNoteNames(rootKey);
+    final keyNames =
+        chromaticKeyboardNoteNames(rootKey, simpleNames: widget.simpleNotes);
     final notes = <({String name, String label, bool black, int off})>[];
     for (int s = 0; s < 12; s++) {
       final pc = (rootPc + s) % 12;

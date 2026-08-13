@@ -402,6 +402,8 @@ class SettingsScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
 
+                    _SimpleNotesCard(provider: provider),
+                    const SizedBox(height: 12),
                     _KeyboardFromTonicCard(provider: provider),
                     const SizedBox(height: 20),
 
@@ -1173,6 +1175,99 @@ class SettingsScreen extends StatelessWidget {
 }
 
 // Toggle card: make the in-game piano keyboard start on the current tonic.
+/// "Simple note names": one spelling per pitch class, everywhere.
+///
+/// Key-correct spelling is what a musician eventually needs — the ♭2 of E♭
+/// really is F♭ — but it means the same piano key is labelled E in one session
+/// and F♭ in the next, and the chromatic buttons carry slashed pairs. This
+/// switches the whole app to the twelve names most players write:
+/// C D♭ D E♭ E F F♯ G A♭ A B♭ B.
+class _SimpleNotesCard extends StatelessWidget {
+  final AppProvider provider;
+  const _SimpleNotesCard({required this.provider});
+
+  @override
+  Widget build(BuildContext context) {
+    final on = provider.simpleNotes;
+    const accent = Color(0xFF8B5CF6); // violet
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => provider.setSimpleNotes(!on),
+      child: AnimatedContainer(
+        duration: Duration.zero,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: on
+              ? const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0x4D8B5CF6), Color(0x148B5CF6)],
+                )
+              : null,
+          color: on ? null : Colors.white.withAlpha(8),
+          border: Border.all(color: on ? const Color(0x668B5CF6) : Colors.white.withAlpha(13)),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: on ? [const BoxShadow(color: Color(0x268B5CF6), blurRadius: 30)] : null,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 48, height: 48,
+                  decoration: BoxDecoration(
+                    color: on ? accent : Colors.white.withAlpha(26),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: on ? [const BoxShadow(color: Color(0x668B5CF6), blurRadius: 25)] : null,
+                  ),
+                  child: Icon(Icons.abc_rounded,
+                      color: on ? Colors.white : Colors.white.withAlpha(102), size: 26),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Simple Note Names',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w900,
+                            color: on ? Colors.white : Colors.white.withAlpha(179),
+                            letterSpacing: 0.4,
+                          )),
+                      const SizedBox(height: 3),
+                      Text('NOTE SPELLING',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white.withAlpha(102),
+                            letterSpacing: 1.5,
+                          )),
+                    ],
+                  ),
+                ),
+                _ToggleSwitch(value: on, color: accent),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'One name per note everywhere — no slashes, no double names. '
+              'C  D\u266D  D  E\u266D  E  F  F\u266F  G  A\u266D  A  B\u266D  B.',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: Colors.white.withAlpha(102),
+                height: 1.5,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _KeyboardFromTonicCard extends StatelessWidget {
   final AppProvider provider;
   const _KeyboardFromTonicCard({required this.provider});

@@ -24,6 +24,10 @@ class AppProvider extends ChangeNotifier {
   bool adaptiveDifficulty = false;
   bool tutorialCompleted = false;
   String notation = 'CDE'; // 'CDE' or 'DoReMi'
+
+  /// One name per pitch class everywhere (C, D♭, D, E♭ … F♯ … B), instead of
+  /// the key-correct spelling that can print F♭, C♭ or a slashed pair.
+  bool simpleNotes = false;
   // When true, the in-game piano keyboard starts from the current key's tonic
   // (or the white key just below it, if the tonic is a black key) instead of
   // always running C→C.
@@ -88,6 +92,7 @@ class AppProvider extends ChangeNotifier {
     adaptiveDifficulty = _storage.loadAdaptiveDifficulty();
     tutorialCompleted = _storage.loadTutorialCompleted();
     notation = _storage.loadNotation();
+    simpleNotes = _storage.loadSimpleNotes();
     keyboardFromTonic = _storage.loadKeyboardFromTonic();
     notifDailyOn = _storage.loadNotifDailyOn();
     notifComebackOn = _storage.loadNotifComebackOn();
@@ -1047,6 +1052,14 @@ class AppProvider extends ChangeNotifier {
     notation = value;
     _storage.saveNotation(value);
     AnalyticsService.instance.capture('setting_changed', {'setting': 'notation', 'value': value});
+    notifyListeners();
+  }
+
+  void setSimpleNotes(bool value) {
+    simpleNotes = value;
+    _storage.saveSimpleNotes(value);
+    AnalyticsService.instance.capture('setting_changed',
+        {'setting': 'simple_notes', 'value': value});
     notifyListeners();
   }
 

@@ -14,6 +14,7 @@ class StorageService {
   static const _tutorialKey = 'musical_journey_tutorial_completed';
   static const _isProKey = 'isPro';
   static const _notationKey = 'musical_journey_notation';
+  static const _simpleNotesKey = 'musical_journey_simple_notes';
   static const _keyboardFromTonicKey = 'musical_journey_keyboard_from_tonic';
   static const _pendingKey = 'musical_journey_pending_session';
 
@@ -148,6 +149,9 @@ class StorageService {
 
   String loadNotation() => _prefs.getString(_notationKey) ?? 'CDE';
   Future<void> saveNotation(String v) => _prefs.setString(_notationKey, v);
+
+  bool loadSimpleNotes() => _prefs.getBool(_simpleNotesKey) ?? false;
+  Future<void> saveSimpleNotes(bool v) => _prefs.setBool(_simpleNotesKey, v);
 
   bool loadKeyboardFromTonic() => _prefs.getBool(_keyboardFromTonicKey) ?? false;
   Future<void> saveKeyboardFromTonic(bool v) => _prefs.setBool(_keyboardFromTonicKey, v);

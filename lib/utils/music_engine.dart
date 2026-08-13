@@ -123,7 +123,12 @@ String? rootFromNoteAndDegree(String note, String degree) {
 /// spelled by its degree relative to [key] — 1 ♭2 2 ♭3 3 4 ♯4 5 ♭6 6 ♭7 7.
 /// So in C the black keys read D♭ E♭ F♯ A♭ B♭ (A♭, not G♯), while in D the
 /// tritone makes G♯ (♯4). Returns semitone → spelled note name.
-Map<int, String> chromaticKeyboardNoteNames(String key) {
+Map<int, String> chromaticKeyboardNoteNames(String key, {bool simpleNames = false}) {
+  // With the setting on, every key cap carries its one standard name — no
+  // F♭ on the E key, no C♭ on the B key, whatever tonality is in play.
+  if (simpleNames) {
+    return {for (var s = 0; s < 12; s++) s: simpleNoteName(s)};
+  }
   const degs = ['1', '♭2', '2', '♭3', '3', '4', '♯4', '5', '♭6', '6', '♭7', '7'];
   final names = <int, String>{};
   for (final d in degs) {
@@ -157,7 +162,23 @@ class NoteItem {
   NoteItem({required this.label, this.rawLabel, required this.note, this.disabled = false});
 }
 
-List<NoteItem> getChromaticButtons(List<String> scale, String key) {
+/// One name per pitch class, the way most players write them: flats
+/// everywhere except the tritone, which reads F♯.
+///
+/// This is what the "Simple note names" setting switches the whole app to.
+/// Correct spelling is relative to a key — the ♭2 of E♭ really is F♭, not E —
+/// but a beginner reading F♭ on a key labelled E is being taught two things at
+/// once. With the setting on, a pitch has exactly one name everywhere: no
+/// slashes, no double accidentals, no key-dependent respelling.
+const List<String> kSimpleNoteNames = [
+  'C', 'D♭', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 'A', 'B♭', 'B',
+];
+
+/// The single standard name for a semitone (0 = C), per [kSimpleNoteNames].
+String simpleNoteName(int semitone) => kSimpleNoteNames[semitone % 12];
+
+List<NoteItem> getChromaticButtons(List<String> scale, String key,
+    {bool simpleNames = false}) {
   const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
   // Button names come from the RELATIVE degree of each semitone in the current
   // key — 1 ♭2 2 ♭3/♯2 3 4 ♯4/♭5 5 ♭6/♯5 6 ♭7 7 — with slash pairs spelled in
@@ -165,11 +186,15 @@ List<NoteItem> getChromaticButtons(List<String> scale, String key) {
   const degs = ['1', '♭2', '2', '♭3/♯2', '3', '4', '♯4/♭5', '5', '♭6/♯5', '6', '♭7', '7'];
   final tonic = kNoteToSemitone[key] ?? 0;
   return List.generate(12, (i) {
-    final offset = (i - tonic + 12) % 12;
-    final label = degs[offset]
-        .split('/')
-        .map((d) => getNoteFromChromaticDegree(d, scale, key))
-        .join('/');
+    // Only the printed label changes: [NoteItem.note] stays the generic name
+    // the answer is matched against, so simplifying the names cannot alter
+    // what counts as right.
+    final label = simpleNames
+        ? simpleNoteName(i)
+        : degs[(i - tonic + 12) % 12]
+            .split('/')
+            .map((d) => getNoteFromChromaticDegree(d, scale, key))
+            .join('/');
     return NoteItem(label: label, rawLabel: label, note: notes[i]);
   });
 }

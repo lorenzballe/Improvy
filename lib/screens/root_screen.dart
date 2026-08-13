@@ -483,6 +483,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       return PocketModeScreen(
         config: _pocketConfig!,
         notation: provider.notation,
+        simpleNotes: provider.simpleNotes,
         onExit: (questionsHeard) {
           // A drill that actually ran counts as practice for the day, so the
           // streak survives a week of hands-free training.
@@ -664,6 +665,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
         sessionHistory: provider.stats.sessionHistory,
         notation: provider.notation,
         keyboardFromTonic: provider.keyboardFromTonic,
+        simpleNotes: provider.simpleNotes,
         questionSequence: provider.dailyChallengeActive ? provider.activeDailyDegrees : null,
         isDaily: provider.dailyChallengeActive,
         // One clock for the whole run instead of a per-question limit: ten
