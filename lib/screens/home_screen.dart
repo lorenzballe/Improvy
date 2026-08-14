@@ -171,7 +171,8 @@ class _HomeMain extends StatelessWidget {
                   subtitle: 'A note is a given degree — name the root. Harmonize any melody.',
                   // A typographic "?" in the app's own heavy face — the thin
                   // material glyph looked generic next to the ♯♭ lettering.
-                  iconWidget: const Center(child: _ThickGlyph('?', 27)),
+                  iconWidget: const Center(
+                      child: _ThickGlyph('?', 27, stroke: 0, weight: FontWeight.w600)),
                   accentColor: const Color(0xFF22D3EE),
                   borderColor: const Color(0xFF22D3EE).withAlpha(110),
                   // Free to open — only the EXT/ALL degree selections inside its
@@ -2345,9 +2346,15 @@ class _ThickGlyph extends StatelessWidget {
   /// accidentals tight, and ♯♭ reads as one smudge without it.
   final double letterSpacing;
   /// Width of the faux-bold stroke. Needs raising when the glyph is scaled
-  /// down afterwards, or the extra weight is scaled away with it.
+  /// down afterwards, or the extra weight is scaled away with it. Set to 0 to
+  /// skip the outline pass entirely — a glyph that already has enough weight
+  /// in the UI font (a plain '?') comes out looking smudged with it on.
   final double stroke;
-  const _ThickGlyph(this.glyph, this.size, {this.letterSpacing = 0, this.stroke = 1.1});
+  /// Weight of the fill. The faux-bold exists for Noto Music's hairline ♯ and
+  /// ♭; ordinary glyphs want something nearer the Material icons beside them.
+  final FontWeight weight;
+  const _ThickGlyph(this.glyph, this.size,
+      {this.letterSpacing = 0, this.stroke = 1.1, this.weight = FontWeight.w900});
 
   @override
   Widget build(BuildContext context) {
@@ -2356,18 +2363,19 @@ class _ThickGlyph extends StatelessWidget {
         // ♯ and ♭ aren't in the UI font. Every other place that draws them
         // falls back to the bundled Noto Music; without it these two cards
         // showed tofu on CanvasKit web, which has no automatic system fallback.
+        if (stroke > 0)
+          Text(glyph, style: TextStyle(
+            fontSize: size, fontWeight: weight, height: 1,
+            letterSpacing: letterSpacing,
+            fontFamilyFallback: const ['NotoMusic'],
+            foreground: Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = stroke
+              ..strokeJoin = StrokeJoin.round
+              ..color = Colors.white,
+          )),
         Text(glyph, style: TextStyle(
-          fontSize: size, fontWeight: FontWeight.w900, height: 1,
-          letterSpacing: letterSpacing,
-          fontFamilyFallback: const ['NotoMusic'],
-          foreground: Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = stroke
-            ..strokeJoin = StrokeJoin.round
-            ..color = Colors.white,
-        )),
-        Text(glyph, style: TextStyle(
-          fontSize: size, fontWeight: FontWeight.w900, height: 1, color: Colors.white,
+          fontSize: size, fontWeight: weight, height: 1, color: Colors.white,
           letterSpacing: letterSpacing,
           fontFamilyFallback: const ['NotoMusic'],
         )),
