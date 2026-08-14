@@ -10,7 +10,7 @@ import '../widgets/pressable_scale.dart';
 
 /// Free Mode — a self-paced drill with no answers, no timer and no score.
 ///
-/// One degree fills the ring; a tap anywhere brings the next one. Nothing is
+/// One degree fills the screen; a tap anywhere brings the next one. Nothing is
 /// checked and nothing is counted right or wrong: the point is to work the
 /// calculation out in your own head, in whatever key you like, and move on when
 /// *you* are ready. A run is [_kTotal] numbers, tracked by the bar in the
@@ -18,9 +18,10 @@ import '../widgets/pressable_scale.dart';
 ///
 /// The chrome is deliberately the app's own: the 48px round exit, the centred
 /// spaced title, the frosted session card with its progress bar over a stat
-/// row, and the contour ring around the number — all the same as Pocket Mode
-/// and the trainer, so this reads as a first-class mode rather than a screen
-/// borrowed from somewhere else.
+/// row — the same as Pocket Mode and the trainer, so this reads as a
+/// first-class mode rather than a screen borrowed from somewhere else. The
+/// number itself is bare: no ring, no transition, because here it is the
+/// whole screen and anything around it is in the way.
 class FreeModeScreen extends StatefulWidget {
   const FreeModeScreen({super.key});
 
@@ -210,7 +211,7 @@ class _FreeModeScreenState extends State<FreeModeScreen>
                     // pill below is part of the composition and pulls the
                     // optical centre down with it.
                     child: Align(
-                      alignment: _done ? Alignment.center : const Alignment(0, -0.28),
+                      alignment: _done ? Alignment.center : const Alignment(0, -0.42),
                       child: _done
                           ? _DoneCard(onRestart: _restart)
                           : _stage(live),
@@ -350,56 +351,38 @@ class _FreeModeScreenState extends State<FreeModeScreen>
 
   // ── Stage: the number inside the app's contour ring ──
 
+  /// The number, bare.
+  ///
+  /// No ring and no transition, both on purpose. The contour ring boxed the
+  /// number in when the number *is* the whole screen here, and cross-fading
+  /// between two degrees left the outgoing one visible under the incoming
+  /// one — at a tap a second that reads as a smear rather than a change. The
+  /// swap is now instant, which is also the honest signal: the tap landed.
   Widget _stage(Color live) => LayoutBuilder(builder: (ctx, c) {
-        // Fit the ring to whatever room is left: never wider than the stage,
-        // never taller than the space available, capped so it stays elegant on
-        // big screens. Same sizing rule Pocket Mode uses.
-        // Never larger than the room actually given. Clamping the height up to
-        // a minimum first would hand back a ring taller than the stage on a
-        // short screen, which is an overflow rather than a small ring.
-        final ring = math.min(280.0, math.min(c.maxWidth - 32, c.maxHeight));
+        final side = math.min(340.0, math.min(c.maxWidth - 32, c.maxHeight));
         return SizedBox(
-          width: ring,
-          height: ring,
-          child: Stack(alignment: Alignment.center, children: [
-            RepaintBoundary(
-              child: CustomPaint(
-                size: Size(ring, ring),
-                painter: _RingPainter(color: live),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.all(ring * 0.18),
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 260),
-                switchInCurve: Curves.easeOutBack,
-                switchOutCurve: Curves.easeIn,
-                transitionBuilder: (child, anim) => FadeTransition(
-                  opacity: anim,
-                  child: ScaleTransition(
-                    scale: Tween<double>(begin: 0.80, end: 1).animate(anim),
-                    child: child,
-                  ),
-                ),
-                child: FittedBox(
-                  key: ValueKey(_degree),
-                  fit: BoxFit.scaleDown,
-                  child: NoteText(
-                    note: _degree,
-                    accidentalLift: 0.30,
-                    accidentalScale: 0.52,
-                    style: TextStyle(
-                      fontSize: 112,
-                      fontWeight: FontWeight.w900,
-                      color: live,
-                      height: 1,
-                      shadows: [Shadow(color: live.withValues(alpha: 0.45), blurRadius: 34)],
-                    ),
-                  ),
+          width: side,
+          height: side,
+          child: Center(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: NoteText(
+                note: _degree,
+                accidentalLift: 0.30,
+                accidentalScale: 0.52,
+                style: TextStyle(
+                  fontSize: 168,
+                  fontWeight: FontWeight.w900,
+                  color: live,
+                  height: 1,
+                  shadows: [
+                    Shadow(color: live.withValues(alpha: 0.55), blurRadius: 44),
+                    Shadow(color: live.withValues(alpha: 0.30), blurRadius: 96),
+                  ],
                 ),
               ),
             ),
-          ]),
+          ),
         );
       });
 
@@ -550,50 +533,6 @@ class _DoneCard extends StatelessWidget {
       ),
     );
   }
-}
-
-// ── Contour ring ─────────────────────────────────────────────────────────────
-
-/// The same ring the trainer and Pocket Mode draw around the big number, at
-/// rest: a faint full track with the coloured contour and its glow on top.
-class _RingPainter extends CustomPainter {
-  final Color color;
-  const _RingPainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final centre = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2 - 4;
-
-    canvas.drawCircle(
-      centre,
-      radius,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 6
-        ..color = Colors.white.withValues(alpha: 0.07),
-    );
-    canvas.drawCircle(
-      centre,
-      radius,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 6
-        ..color = color.withValues(alpha: 0.28)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
-    );
-    canvas.drawCircle(
-      centre,
-      radius,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 6
-        ..color = color.withValues(alpha: 0.85),
-    );
-  }
-
-  @override
-  bool shouldRepaint(_RingPainter old) => old.color != color;
 }
 
 // ── Aurora ───────────────────────────────────────────────────────────────────
