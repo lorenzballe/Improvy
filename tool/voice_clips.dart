@@ -51,9 +51,16 @@ const degreeClips = <Clip>[
   Clip('d_13', 'thirteen'),
 ];
 
-/// Answer notes the trainer can actually reach today, across all twelve keys.
-/// E double flat is the flat two of D flat; B double flat is the flat two of
-/// A flat and the flat six of D flat.
+/// Answer notes the trainer can actually reach, across all twelve keys.
+///
+/// Splitting Pocket Mode's degrees took this from 23 spellings to 27: asking
+/// for ♭5 rather than ♯4, or ♯2 rather than ♭3, changes how the answer is
+/// spelled. The four at the end are the new ones and are the only clips in
+/// this list still missing — until they exist, those questions are never put.
+///
+///   E𝄫  the ♭2 of D♭          B𝄫  the ♭2 of A♭, the ♭6 of D♭
+///   A𝄫  the ♭5 of D♭          C𝄪  the ♯2 of B and F♯
+///   F𝄪  the ♯2 of E and B     G𝄪  the ♯2 of F♯
 const noteClips = <Clip>[
   Clip('n_C', 'C'),
   Clip('n_Cb', 'C flat'),
@@ -78,6 +85,11 @@ const noteClips = <Clip>[
   Clip('n_Bb', 'B flat'),
   Clip('n_Bbb', 'B double flat'),
   Clip('n_Bs', 'B sharp'),
+  // Reached only since the degrees were split. Not yet recorded.
+  Clip('n_Abb', 'A double flat'),
+  Clip('n_Css', 'C double sharp'),
+  Clip('n_Fss', 'F double sharp'),
+  Clip('n_Gss', 'G double sharp'),
 ];
 
 /// The rest of the seven-letters-by-five-accidentals grid. Nothing asks for
@@ -85,15 +97,11 @@ const noteClips = <Clip>[
 /// only cheap moment to have them.
 const spareClips = <Clip>[
   Clip('n_Cbb', 'C double flat'),
-  Clip('n_Css', 'C double sharp'),
   Clip('n_Dbb', 'D double flat'),
   Clip('n_Dss', 'D double sharp'),
   Clip('n_Ess', 'E double sharp'),
   Clip('n_Fbb', 'F double flat'),
-  Clip('n_Fss', 'F double sharp'),
   Clip('n_Gbb', 'G double flat'),
-  Clip('n_Gss', 'G double sharp'),
-  Clip('n_Abb', 'A double flat'),
   Clip('n_Ass', 'A double sharp'),
   Clip('n_Bss', 'B double sharp'),
 ];

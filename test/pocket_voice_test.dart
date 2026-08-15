@@ -79,13 +79,17 @@ void main() {
     }
   });
 
-  test('an unspeakable spelling is silent, never renamed', () {
-    // What must happen for the one spelling with no recording: null, so the
-    // mode redraws. The moment this returns a clip id, some question is being
-    // asked in a name that is not the one on screen.
+  test('an unrecorded spelling is silent, never renamed', () {
+    // Silence, so the mode redraws — or, once it is recorded, its own clip.
+    // What it must never be is somebody else's: that is a question asked in a
+    // name that is not the one on screen. Written to survive the recordings
+    // arriving, so adding them turns this green rather than red.
     for (final spelling in unrecorded) {
-      expect(VoiceService.noteClip(spelling), isNull,
-          reason: '$spelling has no recording and must not borrow one');
+      final acc = spelling.substring(1)
+          .replaceAll('𝄫', 'bb').replaceAll('𝄪', 'ss')
+          .replaceAll('♭', 'b').replaceAll('♯', 's');
+      expect(VoiceService.noteClip(spelling), anyOf(isNull, 'n_${spelling[0]}$acc'),
+          reason: '$spelling must be silent or its own clip, never a twin');
     }
   });
 

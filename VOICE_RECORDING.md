@@ -4,8 +4,24 @@ Pocket Mode speaks every question out of `assets/audio/voice/`. A question is
 two or three clips played back to back with a 110 ms gap: the degree, the key,
 the answer note. **57 words** cover everything the trainer can ever say.
 
-The current 45 files are complete — nothing the app can ask is silent today,
-double flats included. This is here for re-recording them.
+**Four are missing right now.** Splitting Pocket Mode's degrees — so ♭5 can be
+trained apart from ♯4 — changed how some answers are spelled, and took the
+reachable set from 23 notes to 27:
+
+| file | say | why it exists now |
+|------|-----|-------------------|
+| `n_Abb.wav` | A double flat | the ♭5 of D♭ |
+| `n_Css.wav` | C double sharp | the ♯2 of B and of F♯ |
+| `n_Fss.wav` | F double sharp | the ♯2 of E and of B |
+| `n_Gss.wav` | G double sharp | the ♯2 of F♯ |
+
+Until they exist those six key-and-degree pairs are simply never asked — the
+mode draws again. It does **not** fall back to the enharmonic twin: that is
+what once put "sharp four" on a ♭5 question, and a trainer that teaches the
+wrong name for what is on screen is worse than one that stays quiet.
+
+`dart tool/sync_voice_clips.dart --check` prints exactly what is missing and
+exits non-zero while anything is.
 
 ---
 
@@ -86,9 +102,10 @@ a stutter. It is a label being read, not a sentence being performed.
 There is no `♭4`, `♯3`, `♯6`, `♯7`, `♭11` or `♯13` — the trainer never spells a
 degree that way, so those words are never needed.
 
-### Notes — 23, all reachable today
+### Notes — 27 reachable, 23 of them recorded
 
-Every one of these is used as an answer, or as the key being announced.
+Every one of these is used as an answer, or as the key being announced. The
+four marked `*` are the ones listed at the top of this file.
 
 | # | file | say |
 |---|------|-----|
@@ -121,7 +138,16 @@ The two double flats are real questions, not theory:
 - **E𝄫** is the ♭2 of D♭.
 - **B𝄫** is the ♭2 of A♭, and the ♭6 / ♯5 of D♭.
 
-### Notes — 12 spare
+And the four still to record:
+
+| # | file | say |
+|---|------|-----|
+| 24 | `n_Abb.wav` * | A double flat |
+| 25 | `n_Css.wav` * | C double sharp |
+| 26 | `n_Fss.wav` * | F double sharp |
+| 27 | `n_Gss.wav` * | G double sharp |
+
+### Notes — 8 spare
 
 Nothing asks for these. They complete the seven-letters-by-five-accidentals
 grid, so any spelling a future mode invents already has a voice.
@@ -129,17 +155,13 @@ grid, so any spelling a future mode invents already has a voice.
 | # | file | say |
 |---|------|-----|
 | 1 | `n_Cbb.wav` * | C double flat |
-| 2 | `n_Css.wav` * | C double sharp |
-| 3 | `n_Dbb.wav` * | D double flat |
-| 4 | `n_Dss.wav` * | D double sharp |
-| 5 | `n_Ess.wav` * | E double sharp |
-| 6 | `n_Fbb.wav` * | F double flat |
-| 7 | `n_Fss.wav` * | F double sharp |
-| 8 | `n_Gbb.wav` * | G double flat |
-| 9 | `n_Gss.wav` * | G double sharp |
-| 10 | `n_Abb.wav` * | A double flat |
-| 11 | `n_Ass.wav` * | A double sharp |
-| 12 | `n_Bss.wav` * | B double sharp |
+| 2 | `n_Dbb.wav` * | D double flat |
+| 3 | `n_Dss.wav` * | D double sharp |
+| 4 | `n_Ess.wav` * | E double sharp |
+| 5 | `n_Fbb.wav` * | F double flat |
+| 6 | `n_Gbb.wav` * | G double flat |
+| 7 | `n_Ass.wav` * | A double sharp |
+| 8 | `n_Bss.wav` * | B double sharp |
 
 ---
 
