@@ -30,10 +30,16 @@ import UIKit
   /// Two methods, called by KeepAliveAudio around a session:
   ///   activate   - claim playback, explicitly, before the first sound
   ///   deactivate - hand the output back when the drill stops
+  /// Held for the life of the app on purpose. A channel that only exists as a
+  /// local goes quiet if it is ever released, and a silent channel here looks
+  /// exactly like the bug this fixes.
+  private var audioSessionChannel: FlutterMethodChannel?
+
   private func registerAudioSession(_ registry: FlutterPluginRegistry) {
     guard let registrar = registry.registrar(forPlugin: "ImprovyAudioSession") else { return }
     let channel = FlutterMethodChannel(
       name: "improvy/audio_session", binaryMessenger: registrar.messenger())
+    audioSessionChannel = channel
 
     channel.setMethodCallHandler { call, result in
       let session = AVAudioSession.sharedInstance()
