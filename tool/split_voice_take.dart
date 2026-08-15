@@ -119,20 +119,78 @@ void main(List<String> args) {
 
 void _dump(List<_Word> words, List<Clip> expected, int rate) {
   print('');
+  final ms = <int>[];
   for (var i = 0; i < words.length; i++) {
     final w = words[i];
     final name = i < expected.length ? expected[i].file : '(extra)';
     final say = i < expected.length ? '"${expected[i].say}"' : '';
-    final ms = ((w.end - w.start) * 1000 / rate).round();
+    final len = ((w.end - w.start) * 1000 / rate).round();
+    ms.add(len);
     final at = (w.start * 1000 / rate / 1000).toStringAsFixed(1);
-    final flag = ms < 200 ? '  <- very short' : '';
+    final flag = len < 200 ? '  <- very short' : '';
     print('${(i + 1).toString().padLeft(3)}. ${at.padLeft(6)}s  '
-        '${ms.toString().padLeft(5)}ms  ${name.padRight(12)} $say$flag');
+        '${len.toString().padLeft(5)}ms  ${name.padRight(12)} $say$flag');
   }
   if (expected.length > words.length) {
     print('\nnot reached: '
         '${expected.sublist(words.length).map((c) => c.say).join(', ')}');
+    return;
   }
+  _alignment(ms, expected);
+}
+
+/// Says whether the names actually landed on the right words.
+///
+/// A count that matches is not proof of a good split — say "flat two" as two
+/// separate words and one extra boundary appears while a real gap elsewhere
+/// closes, and every name after that point is on the wrong sound. Nothing here
+/// can listen, but it can measure: in a take read in order, "B double flat"
+/// is a longer recording than "B", so duration and word count move together.
+/// Slide the names by one and that agreement inverts — on the current
+/// recordings, correct scores 0.90 and off-by-one scores below zero.
+void _alignment(List<int> ms, List<Clip> expected) {
+  final weight = expected.map((c) => c.weight.toDouble()).toList();
+  final len = ms.map((m) => m.toDouble()).toList();
+  final r = _pearson(weight, len);
+  print('\nalignment check: r = ${r.toStringAsFixed(2)}');
+  if (r > 0.7) {
+    print('  the names track the recording — the split reads as correct');
+  } else if (r > 0.4) {
+    print('  WEAK. Read the table above: bare letters ("C", "four") should be');
+    print('  the shortest rows, "B double flat" among the longest.');
+  } else {
+    print('  BAD — the names are almost certainly on the wrong words.');
+    print('  Most likely a word was skipped, doubled, or split in two.');
+  }
+
+  // Point at the individual rows that disagree most, which is usually where
+  // the slip happened.
+  final scale = len.reduce((a, b) => a + b) / weight.reduce((a, b) => a + b);
+  final off = <String>[];
+  for (var i = 0; i < ms.length; i++) {
+    final want = weight[i] * scale;
+    if ((len[i] - want).abs() > want * 0.55) {
+      off.add('  ${i + 1}. "${expected[i].say}" is ${ms[i]}ms, '
+          'expected around ${want.round()}ms');
+    }
+  }
+  if (off.isNotEmpty) {
+    print('\nrows that do not fit:\n${off.join('\n')}');
+  }
+}
+
+double _pearson(List<double> a, List<double> b) {
+  if (a.length < 3) return 1;
+  final ma = a.reduce((x, y) => x + y) / a.length;
+  final mb = b.reduce((x, y) => x + y) / b.length;
+  var cov = 0.0, va = 0.0, vb = 0.0;
+  for (var i = 0; i < a.length; i++) {
+    cov += (a[i] - ma) * (b[i] - mb);
+    va += (a[i] - ma) * (a[i] - ma);
+    vb += (b[i] - mb) * (b[i] - mb);
+  }
+  if (va == 0 || vb == 0) return 0;
+  return cov / math.sqrt(va * vb);
 }
 
 class _Word {

@@ -11,6 +11,17 @@ class Clip {
   final String id;
   final String say;
   String get file => '$id.wav';
+
+  /// Roughly how long this takes to say. Nothing here can hear the recording,
+  /// so this is what tells a correct split from one that slid by a word: a
+  /// take read in order has durations that track this, and a take with a word
+  /// skipped does not. See `_alignment` in split_voice_take.
+  ///
+  /// Word count, not syllables — "flat two" carries a small pause between its
+  /// two words that a two-syllable single word does not, and measuring the
+  /// current recordings, word count predicts length far better (r = 0.90
+  /// against 0.68) and so tells a good split from a bad one far more sharply.
+  int get weight => say.split(' ').length;
 }
 
 /// Every degree Pocket Mode can present, in the order it is read for recording
