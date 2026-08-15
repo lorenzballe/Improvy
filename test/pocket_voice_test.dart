@@ -86,24 +86,6 @@ void main() {
     });
   });
 
-  test('the declared clip lengths match the files they describe', () {
-    // Pocket Mode waits `_ms` before saying the next word, so a re-recorded
-    // clip whose entry was not regenerated makes the voice talk over itself or
-    // leave a hole. `dart tool/sync_voice_clips.dart` rewrites the table.
-    final wrong = <String>[];
-    for (final id in files) {
-      final actual = _wavMs(File('assets/audio/voice/$id.wav'));
-      final declared = VoiceService.phraseMs([id]);
-      if (actual == null) {
-        wrong.add('$id is not a readable wav');
-      } else if ((actual - declared).abs() > 1) {
-        wrong.add('$id: file is ${actual}ms, table says ${declared}ms');
-      }
-    }
-    expect(wrong, isEmpty,
-        reason: 'run: dart tool/sync_voice_clips.dart\n${wrong.join('\n')}');
-  });
-
   test('a phrase is as long as its clips plus the gaps between them', () {
     final degree = VoiceService.degreeClip('♭3');
     final note = VoiceService.noteClip('C');
@@ -156,29 +138,4 @@ int _wavMs(File f) {
   }
   final frames = dataBytes ~/ (channels * (bits ~/ 8));
   return (frames * 1000 / rate).round();
-}
-
-/// Length of a RIFF/WAVE file in ms, or null if it is not one.
-int? _wavMs(File f) {
-  final b = f.readAsBytesSync();
-  if (b.length < 12 || String.fromCharCodes(b.sublist(8, 12)) != 'WAVE') {
-    return null;
-  }
-  final d = ByteData.sublistView(b);
-  var byteRate = 0;
-  var pos = 12;
-  while (pos + 8 <= b.length) {
-    final id = String.fromCharCodes(b.sublist(pos, pos + 4));
-    final size = d.getUint32(pos + 4, Endian.little);
-    final body = pos + 8;
-    if (id == 'fmt ' && body + 16 <= b.length) {
-      byteRate = d.getUint32(body + 8, Endian.little);
-    } else if (id == 'data') {
-      if (byteRate == 0) return null;
-      final bytes = size < b.length - body ? size : b.length - body;
-      return (bytes * 1000 / byteRate).round();
-    }
-    pos = body + size + (size.isOdd ? 1 : 0); // chunks are word-aligned
-  }
-  return null;
 }

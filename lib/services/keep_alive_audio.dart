@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 
 /// Keeps a backgrounded Pocket Mode session alive on iOS.
 ///
@@ -38,11 +39,16 @@ class KeepAliveAudio {
         AudioContext(
           iOS: AudioContextIOS(
             category: AVAudioSessionCategory.playback,
-            options: {
-              AVAudioSessionOptions.mixWithOthers,
-              AVAudioSessionOptions.allowBluetooth,
-              AVAudioSessionOptions.allowBluetoothA2DP,
-            },
+            // No mixWithOthers. It reads as a courtesy — share the output with
+            // whatever else is playing — but what it actually declares is that
+            // this audio is secondary, and the system does not keep a locked
+            // phone awake for secondary audio. A call-and-response drill over
+            // someone's music was never usable anyway.
+            // A2DP only: allowBluetooth is the hands-free profile and is valid
+            // for the recording categories, not for playback. Passing it here
+            // risks the whole setCategory being rejected, which would leave
+            // the session on whatever the plugin defaults to.
+            options: {AVAudioSessionOptions.allowBluetoothA2DP},
           ),
           android: AudioContextAndroid(
             isSpeakerphoneOn: false,
@@ -56,6 +62,24 @@ class KeepAliveAudio {
     } catch (_) {
       // A refused session must not stop the app launching; playback simply
       // falls back to whatever the platform gives us.
+    }
+  }
+
+  /// iOS only: claim or release the playback session explicitly.
+  ///
+  /// audioplayers sets the session's category but only ever calls
+  /// `setActive(true)` from its sound-finished handler, never from the one that
+  /// starts a sound. An implicitly active session is honoured while the screen
+  /// is on and dropped when it locks — which is why the voice used to stop the
+  /// instant the phone locked in a release build, while a debugged build (which
+  /// iOS never suspends) looked fine. [AppDelegate] answers this channel.
+  static Future<void> _session(String method) async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.iOS) return;
+    try {
+      await const MethodChannel('improvy/audio_session').invokeMethod<void>(method);
+    } catch (_) {
+      // An older build without the native side, or a session the system
+      // refuses: playback still works, it just won't survive the lock.
     }
   }
 
@@ -87,6 +111,8 @@ class KeepAliveAudio {
         });
         _configured = true;
       }
+      // Claim the output before the first sound, not after one finishes.
+      await _session('activate');
       // Inaudible, but a real signal: the point is that the output keeps
       // running, not that anything is heard.
       await _player.setVolume(0.01);
@@ -104,6 +130,7 @@ class KeepAliveAudio {
     try {
       await _player.stop();
     } catch (_) {}
+    await _session('deactivate');
   }
 
   Future<void> dispose() async {
