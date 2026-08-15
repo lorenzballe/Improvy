@@ -55,18 +55,27 @@ void main() {
     }
   });
 
-  test('rarer spellings are spoken as themselves, not as their twin', () {
-    // These were the last gaps in the recordings; each now has its own clip, so
-    // a ♯2 question is heard as "sharp two" and not as "flat three".
-    final own = {
-      '♭5': VoiceService.degreeClip('♯4'),
-      '♯2': VoiceService.degreeClip('♭3'),
-    };
-    own.forEach((spelling, twin) {
-      expect(VoiceService.degreeClip(spelling), isNot(twin),
-          reason: '$spelling still borrows its enharmonic twin');
-    });
+  test('every presented degree is spoken as itself, never as its twin', () {
+    // The one that bites: chromaticDegreeNames('♯4/♭5') yields ♯4, ♭5 AND ♯11,
+    // and Pocket Mode picks one at random — so both halves of a slash degree
+    // are real questions. Drop ♭5's clip and the fallback quietly makes the
+    // screen read "♭5" while the voice says "sharp four". Checking the clip
+    // merely *resolves* misses that; it has to be the degree's own.
+    final borrowed = <String>[];
+    for (final d in pool) {
+      for (final name in chromaticDegreeNames(d)) {
+        final own = 'd_${name.startsWith('♭') ? 'b' : name.startsWith('♯') ? 's' : ''}'
+            '${name.replaceAll('♭', '').replaceAll('♯', '')}';
+        if (VoiceService.degreeClip(name) != own || !files.contains(own)) {
+          borrowed.add('$name -> ${VoiceService.degreeClip(name)}');
+        }
+      }
+    }
+    expect(borrowed, isEmpty,
+        reason: 'degrees not spoken as themselves: ${borrowed.join(', ')}');
+  });
 
+  test('rarer note spellings are spoken as themselves, not as their twin', () {
     final notes = {'A♯': 'B♭', 'B♯': 'C', 'C♭': 'B', 'D♯': 'E♭', 'E♯': 'F', 'B𝄫': 'A', 'E𝄫': 'D'};
     notes.forEach((spelling, twin) {
       final clip = VoiceService.noteClip(spelling);
@@ -106,6 +115,47 @@ void main() {
     // A missing clip must not add silence to the pacing.
     expect(VoiceService.phraseMs([null]), 0);
   });
+
+  test('every clip is as long as the service thinks it is', () {
+    // The session loop waits exactly the stored length before moving on, so a
+    // table that has drifted from the recordings does not throw — it talks over
+    // itself or leaves dead air. Re-record a clip without regenerating the
+    // table and this is what catches it.
+    final wrong = <String>[];
+    for (final id in files) {
+      final actual = _wavMs(File('assets/audio/voice/$id.wav'));
+      final stored = VoiceService.phraseMs([id]);
+      // A whole millisecond of slack: the table is rounded, nothing more.
+      if ((actual - stored).abs() > 1) {
+        wrong.add('$id: file ${actual}ms, table ${stored}ms');
+      }
+    }
+    expect(wrong, isEmpty, reason: 'clip lengths out of date:\n${wrong.join('\n')}');
+  });
+}
+
+/// Duration of a PCM .wav, straight from its header — walks the RIFF chunks
+/// rather than assuming a 44-byte one, since the recordings carry extra chunks.
+int _wavMs(File f) {
+  final b = f.readAsBytesSync();
+  final d = ByteData.sublistView(b);
+  var pos = 12; // past "RIFF"<size>"WAVE"
+  int rate = 0, channels = 0, bits = 0, dataBytes = 0;
+  while (pos + 8 <= b.length) {
+    final id = String.fromCharCodes(b.sublist(pos, pos + 4));
+    final size = d.getUint32(pos + 4, Endian.little);
+    if (id == 'fmt ') {
+      channels = d.getUint16(pos + 10, Endian.little);
+      rate = d.getUint32(pos + 12, Endian.little);
+      bits = d.getUint16(pos + 22, Endian.little);
+    } else if (id == 'data') {
+      dataBytes = size;
+      break;
+    }
+    pos += 8 + size + (size.isOdd ? 1 : 0); // chunks are word-aligned
+  }
+  final frames = dataBytes ~/ (channels * (bits ~/ 8));
+  return (frames * 1000 / rate).round();
 }
 
 /// Length of a RIFF/WAVE file in ms, or null if it is not one.
