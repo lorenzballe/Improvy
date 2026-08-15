@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_background">#0E0E12</color>
-    <color name="improvy_splash">#0F0A1A</color>
+    <!-- The exact grey inside the logo's rounded square (splash_logo.png is
+         that square on transparency). Matching it is the whole point: any
+         other value draws a visible tile around the logo. The app's own
+         background is a violet-black and was used here, which is what made
+         the square stand out while the app was starting. -->
+    <color name="improvy_splash">#151515</color>
 </resources>
