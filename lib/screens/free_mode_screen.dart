@@ -206,12 +206,13 @@ class _FreeModeScreenState extends State<FreeModeScreen>
                   const SizedBox(height: 12),
                   _sessionCard(donePart, progress),
                   Expanded(
-                    // The ring sits above dead centre. Centred in the space
-                    // left under the card it read as low, because the hint
-                    // pill below is part of the composition and pulls the
-                    // optical centre down with it.
+                    // The number sits well above dead centre. Centred in the
+                    // space left under the card it read as low, because the
+                    // hint pill below is part of the composition and pulls the
+                    // optical centre down with it — and the number is large
+                    // enough that its own mass drags the balance lower still.
                     child: Align(
-                      alignment: _done ? Alignment.center : const Alignment(0, -0.42),
+                      alignment: _done ? Alignment.center : const Alignment(0, -0.62),
                       child: _done
                           ? _DoneCard(onRestart: _restart)
                           : _stage(live),

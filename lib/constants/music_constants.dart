@@ -26,9 +26,15 @@ const List<String> kChromaticDegreesSplit = [
 //
 // Degrees with no extension name in practice (1, 3, 5, ♭7, 7 — nobody calls a
 // third a tenth) are simply absent. Used by the tap trainer and Pocket Mode.
+// The split spellings carry the extension that belongs to *them*, not to their
+// twin: ♯2 is the one a chart writes as ♯9, while ♭3 has no upper-structure
+// name at all (nobody calls a minor third a ♭10). Same for ♯4/♯11 against ♭5,
+// and ♭6/♭13 against ♯5 — both of which charts print as themselves. Pocket Mode
+// can now be set to ♭3 alone or ♯2 alone, and each has to name itself correctly.
 const Map<String, String> kChromaticExtensionOf = {
   '♭2': '♭9', '2': '9', '♭3/♯2': '♯9',
   '4': '11', '♯4/♭5': '♯11', '♭6/♯5': '♭13', '6': '13',
+  '♯2': '♯9', '♯4': '♯11', '♭6': '♭13',
 };
 
 // Slash degree → its two split spellings (sharp-of-lower first, then flat-of-higher).

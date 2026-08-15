@@ -11,8 +11,20 @@ import 'package:improvy/utils/music_engine.dart';
 /// every degree name it may present, and every answer note across all 12 keys —
 /// and check each one resolves to a clip that exists on disk.
 void main() {
-  // Pocket Mode's setup only ever offers the 12 collapsed chromatic degrees.
-  const pool = kChromaticDegrees;
+  // Pocket Mode's setup offers the 15 split degrees, so ♭3 and ♯2 can be
+  // trained apart. That widens what the mode can reach: with the collapsed
+  // list it only ever spelled 23 notes, and splitting takes it to 27.
+  const pool = kChromaticDegreesSplit;
+
+  /// The four spellings splitting the degrees reaches that have no recording,
+  /// so the tests below assert what the mode actually asks rather than failing
+  /// on questions it deliberately never puts. Pocket Mode redraws on these.
+  ///
+  ///   A𝄫  the ♭5 of D♭        C𝄪  the ♯2 of B and of F♯
+  ///   F𝄪  the ♯2 of E and B   G𝄪  the ♯2 of F♯
+  ///
+  /// Record those four and this set empties out on its own.
+  const unrecorded = {'A𝄫', 'C𝄪', 'F𝄪', 'G𝄪'};
 
   final files = Directory('assets/audio/voice')
       .listSync()
@@ -38,13 +50,43 @@ void main() {
       for (final d in pool) {
         final note = getNoteFromChromaticDegree(d, scale, key);
         for (final spelling in note.split('/').map((e) => e.trim())) {
-          if (spelling.isEmpty) continue;
+          if (spelling.isEmpty || unrecorded.contains(spelling)) continue;
           final clip = VoiceService.noteClip(spelling);
           if (clip == null || !files.contains(clip)) missing.add('$spelling (in $key)');
         }
       }
     }
     expect(missing, isEmpty, reason: 'notes with no playable clip: $missing');
+  });
+
+  test('a note is never spoken under another note\'s name', () {
+    // The rule the ♭5 bug broke, applied to notes. Splitting the degrees makes
+    // the trainer reach C𝄪, F𝄪 and G𝄪, which the old fallback map turned into
+    // "D", "G" and "A" — the screen showing one note while the voice says
+    // another. Resolving to *a* clip is not enough; it has to be its own.
+    for (final key in kAllKeys) {
+      final scale = calculateMajorScale(key);
+      for (final d in pool) {
+        final note = getNoteFromChromaticDegree(d, scale, key).split('/').first.trim();
+        final clip = VoiceService.noteClip(note);
+        if (clip == null) continue; // never asked — see _drawQuestion
+        final acc = note.substring(1)
+            .replaceAll('𝄫', 'bb').replaceAll('𝄪', 'ss')
+            .replaceAll('♭', 'b').replaceAll('♯', 's');
+        expect(clip, 'n_${note[0]}$acc',
+            reason: '$d of $key is $note but would be spoken as $clip');
+      }
+    }
+  });
+
+  test('an unspeakable spelling is silent, never renamed', () {
+    // What must happen for the one spelling with no recording: null, so the
+    // mode redraws. The moment this returns a clip id, some question is being
+    // asked in a name that is not the one on screen.
+    for (final spelling in unrecorded) {
+      expect(VoiceService.noteClip(spelling), isNull,
+          reason: '$spelling has no recording and must not borrow one');
+    }
   });
 
   test('every key can be named', () {

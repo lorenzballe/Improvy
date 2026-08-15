@@ -594,7 +594,7 @@ class _PocketModeSetupState extends State<PocketModeSetup> {
   // degrees and see the rest locked.
   Set<String> get _lockedDegs => widget.isPro
       ? const {}
-      : kChromaticDegrees.where((d) => !_diatonic.contains(d)).toSet();
+      : kChromaticDegreesSplit.where((d) => !_diatonic.contains(d)).toSet();
 
   @override
   void initState() {
@@ -605,7 +605,7 @@ class _PocketModeSetupState extends State<PocketModeSetup> {
   void _setDiatonic() => setState(() => _degs = {..._diatonic});
   void _setAll() {
     if (!widget.isPro) { widget.onShowPaywall(); return; }
-    setState(() => _degs = Set.of(kChromaticDegrees));
+    setState(() => _degs = Set.of(kChromaticDegreesSplit));
   }
 
   void _toggleDeg(String deg) {
@@ -684,8 +684,15 @@ class _PocketModeSetupState extends State<PocketModeSetup> {
                                   ],
                                 ),
                                 const SizedBox(height: 16),
+                                // The split list, so ♭3 and ♯2 are separate
+                                // buttons: hearing "flat three" is a different
+                                // drill from hearing "sharp two", and someone
+                                // working on one should not be handed the
+                                // other at random. Same grid Note→Number and
+                                // Custom already use.
                                 _DegreeGrid(
                                   selected: _degs,
+                                  list: kChromaticDegreesSplit,
                                   onToggle: _toggleDeg,
                                   lockedDegrees: _lockedDegs,
                                   onLockedTap: widget.onShowPaywall,
@@ -747,11 +754,34 @@ class _PocketModeSetupState extends State<PocketModeSetup> {
   }
 }
 
-// ── Answer-delay slider (0.5–10s, half-second steps) ─────────────────────────
+// ── Answer-delay slider (0.3–10s) ────────────────────────────────────────────
 
-/// "5s" for whole seconds, "0.5s" / "1.5s" for the sub-second / half steps.
+/// "5s" for whole seconds, "0.3s" / "1.5s" otherwise.
 String fmtDelaySeconds(double s) =>
     s == s.roundToDouble() ? '${s.round()}s' : '${s.toStringAsFixed(1)}s';
+
+/// The stops the slider can land on, in seconds.
+///
+/// Not an even step. The interesting end of this control is the fast end —
+/// 0.3 against 0.5 is the difference between recalling and working it out,
+/// while 8 against 9 is the difference between two long waits nobody is
+/// counting. So the steps are tenths down low and whole seconds up top, and
+/// the slider runs over the index rather than the value.
+const List<double> kDelayStops = [
+  0.3, 0.4, 0.5, 0.6, 0.8, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10,
+];
+
+/// The stop nearest [seconds] — used to place the thumb for a stored value
+/// that predates this list (every old setting was a whole or half second).
+int nearestDelayStop(double seconds) {
+  var best = 0;
+  for (var i = 1; i < kDelayStops.length; i++) {
+    if ((kDelayStops[i] - seconds).abs() < (kDelayStops[best] - seconds).abs()) {
+      best = i;
+    }
+  }
+  return best;
+}
 
 class _DelaySlider extends StatelessWidget {
   final double seconds;
@@ -781,13 +811,13 @@ class _DelaySlider extends StatelessWidget {
             tickMarkShape: SliderTickMarkShape.noTickMark,
           ),
           child: Slider(
-            // Down to 0.5s so Master-level speed is reachable hands-free, in
-            // half-second steps (0.5, 1, 1.5, … 10).
-            value: seconds.clamp(0.5, 10),
-            min: 0.5,
-            max: 10,
-            divisions: 19,
-            onChanged: onChanged,
+            // Over the index of kDelayStops, not the seconds: the steps are
+            // deliberately uneven and a Slider can only divide evenly.
+            value: nearestDelayStop(seconds).toDouble(),
+            min: 0,
+            max: (kDelayStops.length - 1).toDouble(),
+            divisions: kDelayStops.length - 1,
+            onChanged: (v) => onChanged(kDelayStops[v.round()]),
           ),
         ),
         Padding(
@@ -795,8 +825,8 @@ class _DelaySlider extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('0.5s', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white.withValues(alpha: 0.35))),
-              Text('10s', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white.withValues(alpha: 0.35))),
+              Text(fmtDelaySeconds(kDelayStops.first), style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white.withValues(alpha: 0.35))),
+              Text(fmtDelaySeconds(kDelayStops.last), style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white.withValues(alpha: 0.35))),
             ],
           ),
         ),

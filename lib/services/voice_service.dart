@@ -33,19 +33,20 @@ class VoiceService {
     'n_Gb': 579, 'n_Gs': 624,
   };
 
-  /// Every spelling Pocket Mode can say is recorded, so nothing falls back to
-  /// an enharmonic twin. Kept as the safety net for a spelling added to the
-  /// trainer before its clip is: same pitch, named the other way, rather than
-  /// a silent question.
+  /// Deliberately empty, and it should stay that way.
   ///
-  /// Note that both halves of a slash degree are real questions here:
-  /// `chromaticDegreeNames('♯4/♭5')` yields ♯4, ♭5 *and* ♯11, and Pocket Mode
-  /// picks one at random. So ♭5 and ♯2 need their own clips — dropping them and
-  /// leaning on this map would show "♭5" while saying "sharp four".
-  static const _fallback = <String, String>{
-    'n_Cbb': 'n_Bb', 'n_Fbb': 'n_Eb', 'n_Ass': 'n_B', 'n_Css': 'n_D',
-    'n_Dss': 'n_E', 'n_Fss': 'n_G', 'n_Gss': 'n_A',
-  };
+  /// This used to map a spelling with no recording onto its enharmonic twin —
+  /// C𝄪 spoken as "D", ♭5 spoken as "sharp four" — on the reasoning that
+  /// hearing the right pitch under the wrong name beats hearing nothing. It
+  /// does not. It shipped: the screen read ♭5 while the voice said "sharp
+  /// four", and the one thing a trainer cannot do is teach the wrong name for
+  /// what is on screen. Silence is a bug you notice; a confident wrong answer
+  /// is one you learn.
+  ///
+  /// A spelling with no clip is now simply never asked: [degreeClip] and
+  /// [noteClip] return null and Pocket Mode redraws the question. The map is
+  /// kept as the hook for a spelling that genuinely has no name of its own.
+  static const _fallback = <String, String>{};
 
   /// Gap between two clips in one phrase — enough to hear them as separate
   /// words, short enough that "flat three · C" still reads as one question.

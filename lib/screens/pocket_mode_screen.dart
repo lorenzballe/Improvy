@@ -141,19 +141,47 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
     widget.onExit(_index);
   }
 
+  /// One speakable question: the key, the degree, the name to ask it by, and
+  /// the answer note.
+  ///
+  /// The voice asks by one of the degree's names at random — an enharmonic
+  /// spelling or its upper-structure form (6/13, ♯4/♯11, …) — exactly as the
+  /// tap trainer does. The answer is always computed from the base degree, so
+  /// it is the same note whichever name was drawn.
+  ///
+  /// Splitting the degrees widened what the mode can reach: ask for the ♭5 of
+  /// D♭ and the correct spelling of the answer is A𝄫, which has no recording.
+  /// Rather than say the wrong name — the mistake that put "sharp four" on a
+  /// ♭5 question in a shipped build — an unspeakable draw is discarded and
+  /// another taken. Bounded, so a selection where nothing can be said ends the
+  /// session instead of spinning.
+  (String, String, String, String)? _drawQuestion() {
+    for (var attempt = 0; attempt < 40; attempt++) {
+      final key = widget.config.shuffleKeys
+          ? kAllKeys[_rng.nextInt(kAllKeys.length)]
+          : widget.config.key;
+      final degree = _pickDegree();
+      final names = chromaticDegreeNames(degree);
+      final presented = names[_rng.nextInt(names.length)];
+      final answer = getNoteFromChromaticDegree(degree, calculateMajorScale(key), key);
+      if (VoiceService.degreeClip(presented) == null) continue;
+      if (VoiceService.noteClip(answer) == null) continue;
+      if (widget.config.shuffleKeys && VoiceService.noteClip(key) == null) continue;
+      return (key, degree, presented, answer);
+    }
+    return null;
+  }
+
   Future<void> _loop(int gen) async {
     final total = widget.config.questions;
     while (mounted && gen == _gen && (total == 0 || _index < total)) {
-      final key = widget.config.shuffleKeys ? kAllKeys[_rng.nextInt(kAllKeys.length)] : widget.config.key;
-      final degree = _pickDegree();
-      // The voice asks by one of the degree's names at random — an enharmonic
-      // spelling or its upper-structure form (6/13, ♯4/♯11, …) — exactly as the
-      // tap trainer does. The answer note is the same either way and is always
-      // computed from the base degree below.
-      final names = chromaticDegreeNames(degree);
-      final presented = names[_rng.nextInt(names.length)];
-      final scale = calculateMajorScale(key);
-      final answer = getNoteFromChromaticDegree(degree, scale, key);
+      final q = _drawQuestion();
+      // Nothing in this selection can be spoken — one key and one degree whose
+      // answer has no recording, say ♯2 in F♯. Break rather than return, so it
+      // finishes the session properly instead of leaving the screen sitting on
+      // a Play button that has apparently done nothing.
+      if (q == null) break;
+      final (key, degree, presented, answer) = q;
       if (gen != _gen || !mounted) return;
 
       // On a fixed key the voice never names it — not even on the first
