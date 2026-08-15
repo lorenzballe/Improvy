@@ -23,7 +23,8 @@ class VoiceService {
   static const _ms = <String, int>{
     'd_1': 344, 'd_2': 312, 'd_3': 455, 'd_4': 435, 'd_5': 482, 'd_6': 580,
     'd_7': 502, 'd_9': 460, 'd_11': 503, 'd_13': 700, 'd_b2': 725,
-    'd_b3': 849, 'd_b6': 858, 'd_b7': 744, 'd_b9': 784, 'd_s4': 791,
+    'd_b3': 849, 'd_b5': 873, 'd_b6': 858, 'd_b7': 744, 'd_b9': 784,
+    'd_s2': 873, 'd_s4': 791,
     'd_s5': 788, 'd_s9': 808, 'd_b13': 1117, 'd_s11': 822, 'n_A': 384,
     'n_Ab': 604, 'n_As': 793, 'n_B': 374, 'n_Bb': 629, 'n_Bbb': 958,
     'n_Bs': 759, 'n_C': 484, 'n_Cb': 744, 'n_Cs': 709, 'n_D': 384,
@@ -32,17 +33,16 @@ class VoiceService {
     'n_Gb': 579, 'n_Gs': 624,
   };
 
-  /// Every spelling Pocket Mode can say is recorded, so nothing normally falls
-  /// back to an enharmonic twin. Kept as the safety net for a spelling added to
-  /// the trainer before its clip is: same pitch, named the other way, rather
-  /// than a silent question.
+  /// Every spelling Pocket Mode can say is recorded, so nothing falls back to
+  /// an enharmonic twin. Kept as the safety net for a spelling added to the
+  /// trainer before its clip is: same pitch, named the other way, rather than
+  /// a silent question.
   ///
-  /// ♭5 and ♯2 are here rather than on disk because Pocket Mode only ever
-  /// offers the collapsed degrees ('♯4/♭5', '♭3/♯2') and says the first half,
-  /// so those two are never asked for. Should the split spellings ever reach
-  /// this mode, they speak as their twin instead of going quiet.
+  /// Note that both halves of a slash degree are real questions here:
+  /// `chromaticDegreeNames('♯4/♭5')` yields ♯4, ♭5 *and* ♯11, and Pocket Mode
+  /// picks one at random. So ♭5 and ♯2 need their own clips — dropping them and
+  /// leaning on this map would show "♭5" while saying "sharp four".
   static const _fallback = <String, String>{
-    'd_b5': 'd_s4', 'd_s2': 'd_b3',
     'n_Cbb': 'n_Bb', 'n_Fbb': 'n_Eb', 'n_Ass': 'n_B', 'n_Css': 'n_D',
     'n_Dss': 'n_E', 'n_Fss': 'n_G', 'n_Gss': 'n_A',
   };

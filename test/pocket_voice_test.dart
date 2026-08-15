@@ -55,15 +55,24 @@ void main() {
     }
   });
 
-  test('the two unrecorded degrees fall back rather than going silent', () {
-    // ♭5 and ♯2 have no clip on purpose: Pocket Mode only offers the collapsed
-    // degrees ('♯4/♭5', '♭3/♯2') and speaks the first half, so neither is ever
-    // asked for — the test above walks the whole pool and proves it. Should
-    // they ever reach this mode they must still be heard, as their twin.
-    expect(files, isNot(contains('d_b5')));
-    expect(files, isNot(contains('d_s2')));
-    expect(VoiceService.degreeClip('♭5'), VoiceService.degreeClip('♯4'));
-    expect(VoiceService.degreeClip('♯2'), VoiceService.degreeClip('♭3'));
+  test('every presented degree is spoken as itself, never as its twin', () {
+    // The one that bites: chromaticDegreeNames('♯4/♭5') yields ♯4, ♭5 AND ♯11,
+    // and Pocket Mode picks one at random — so both halves of a slash degree
+    // are real questions. Drop ♭5's clip and the fallback quietly makes the
+    // screen read "♭5" while the voice says "sharp four". Checking the clip
+    // merely *resolves* misses that; it has to be the degree's own.
+    final borrowed = <String>[];
+    for (final d in pool) {
+      for (final name in chromaticDegreeNames(d)) {
+        final own = 'd_${name.startsWith('♭') ? 'b' : name.startsWith('♯') ? 's' : ''}'
+            '${name.replaceAll('♭', '').replaceAll('♯', '')}';
+        if (VoiceService.degreeClip(name) != own || !files.contains(own)) {
+          borrowed.add('$name -> ${VoiceService.degreeClip(name)}');
+        }
+      }
+    }
+    expect(borrowed, isEmpty,
+        reason: 'degrees not spoken as themselves: ${borrowed.join(', ')}');
   });
 
   test('rarer note spellings are spoken as themselves, not as their twin', () {
