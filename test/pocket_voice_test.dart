@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:improvy/constants/music_constants.dart';
@@ -54,18 +55,18 @@ void main() {
     }
   });
 
-  test('rarer spellings are spoken as themselves, not as their twin', () {
-    // These were the last gaps in the recordings; each now has its own clip, so
-    // a ♯2 question is heard as "sharp two" and not as "flat three".
-    final own = {
-      '♭5': VoiceService.degreeClip('♯4'),
-      '♯2': VoiceService.degreeClip('♭3'),
-    };
-    own.forEach((spelling, twin) {
-      expect(VoiceService.degreeClip(spelling), isNot(twin),
-          reason: '$spelling still borrows its enharmonic twin');
-    });
+  test('the two unrecorded degrees fall back rather than going silent', () {
+    // ♭5 and ♯2 have no clip on purpose: Pocket Mode only offers the collapsed
+    // degrees ('♯4/♭5', '♭3/♯2') and speaks the first half, so neither is ever
+    // asked for — the test above walks the whole pool and proves it. Should
+    // they ever reach this mode they must still be heard, as their twin.
+    expect(files, isNot(contains('d_b5')));
+    expect(files, isNot(contains('d_s2')));
+    expect(VoiceService.degreeClip('♭5'), VoiceService.degreeClip('♯4'));
+    expect(VoiceService.degreeClip('♯2'), VoiceService.degreeClip('♭3'));
+  });
 
+  test('rarer note spellings are spoken as themselves, not as their twin', () {
     final notes = {'A♯': 'B♭', 'B♯': 'C', 'C♭': 'B', 'D♯': 'E♭', 'E♯': 'F', 'B𝄫': 'A', 'E𝄫': 'D'};
     notes.forEach((spelling, twin) {
       final clip = VoiceService.noteClip(spelling);
@@ -87,4 +88,45 @@ void main() {
     // A missing clip must not add silence to the pacing.
     expect(VoiceService.phraseMs([null]), 0);
   });
+
+  test('every clip is as long as the service thinks it is', () {
+    // The session loop waits exactly the stored length before moving on, so a
+    // table that has drifted from the recordings does not throw — it talks over
+    // itself or leaves dead air. Re-record a clip without regenerating the
+    // table and this is what catches it.
+    final wrong = <String>[];
+    for (final id in files) {
+      final actual = _wavMs(File('assets/audio/voice/$id.wav'));
+      final stored = VoiceService.phraseMs([id]);
+      // A whole millisecond of slack: the table is rounded, nothing more.
+      if ((actual - stored).abs() > 1) {
+        wrong.add('$id: file ${actual}ms, table ${stored}ms');
+      }
+    }
+    expect(wrong, isEmpty, reason: 'clip lengths out of date:\n${wrong.join('\n')}');
+  });
+}
+
+/// Duration of a PCM .wav, straight from its header — walks the RIFF chunks
+/// rather than assuming a 44-byte one, since the recordings carry extra chunks.
+int _wavMs(File f) {
+  final b = f.readAsBytesSync();
+  final d = ByteData.sublistView(b);
+  var pos = 12; // past "RIFF"<size>"WAVE"
+  int rate = 0, channels = 0, bits = 0, dataBytes = 0;
+  while (pos + 8 <= b.length) {
+    final id = String.fromCharCodes(b.sublist(pos, pos + 4));
+    final size = d.getUint32(pos + 4, Endian.little);
+    if (id == 'fmt ') {
+      channels = d.getUint16(pos + 10, Endian.little);
+      rate = d.getUint32(pos + 12, Endian.little);
+      bits = d.getUint16(pos + 22, Endian.little);
+    } else if (id == 'data') {
+      dataBytes = size;
+      break;
+    }
+    pos += 8 + size + (size.isOdd ? 1 : 0); // chunks are word-aligned
+  }
+  final frames = dataBytes ~/ (channels * (bits ~/ 8));
+  return (frames * 1000 / rate).round();
 }

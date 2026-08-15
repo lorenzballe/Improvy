@@ -16,24 +16,33 @@ class VoiceService {
   bool _ready = false;
   int _gen = 0; // bumped by stop(), so a queued sequence abandons itself
 
-  /// Exact length of each clip, in ms — generated from the .wav files.
+  /// Exact length of each clip, in ms — generated from the .wav files. Wrong
+  /// numbers here are not a rounding error: the session loop waits exactly this
+  /// long before moving on, so a stale entry either talks over itself or leaves
+  /// dead air. Regenerate whenever a clip is re-recorded.
   static const _ms = <String, int>{
-    'd_1': 419, 'd_11': 574, 'd_13': 714, 'd_2': 374, 'd_3': 449, 'd_4': 414,
-    'd_5': 519, 'd_6': 659, 'd_7': 574, 'd_9': 549, 'd_b13': 1006,
-    'd_b2': 788, 'd_b3': 783, 'd_b5': 873, 'd_b6': 953, 'd_b7': 888,
-    'd_b9': 788, 'd_s11': 893, 'd_s2': 873, 'd_s4': 878, 'd_s5': 873,
-    'd_s9': 913, 'n_A': 384, 'n_Ab': 604, 'n_As': 793, 'n_B': 374,
-    'n_Bb': 629, 'n_Bbb': 958, 'n_Bs': 759, 'n_C': 484, 'n_Cb': 744,
-    'n_Cs': 709, 'n_D': 384, 'n_Db': 599, 'n_Ds': 734, 'n_E': 344,
-    'n_Eb': 589, 'n_Ebb': 963, 'n_Es': 813, 'n_F': 409, 'n_Fb': 749,
-    'n_Fs': 609, 'n_G': 414, 'n_Gb': 579, 'n_Gs': 624,
+    'd_1': 344, 'd_2': 312, 'd_3': 455, 'd_4': 435, 'd_5': 482, 'd_6': 580,
+    'd_7': 502, 'd_9': 460, 'd_11': 503, 'd_13': 700, 'd_b2': 725,
+    'd_b3': 849, 'd_b6': 858, 'd_b7': 744, 'd_b9': 784, 'd_s4': 791,
+    'd_s5': 788, 'd_s9': 808, 'd_b13': 1117, 'd_s11': 822, 'n_A': 384,
+    'n_Ab': 604, 'n_As': 793, 'n_B': 374, 'n_Bb': 629, 'n_Bbb': 958,
+    'n_Bs': 759, 'n_C': 484, 'n_Cb': 744, 'n_Cs': 709, 'n_D': 384,
+    'n_Db': 599, 'n_Ds': 734, 'n_E': 344, 'n_Eb': 589, 'n_Ebb': 963,
+    'n_Es': 813, 'n_F': 409, 'n_Fb': 749, 'n_Fs': 609, 'n_G': 414,
+    'n_Gb': 579, 'n_Gs': 624,
   };
 
-  /// Every spelling Pocket Mode can say is now recorded, so nothing falls back
-  /// to an enharmonic twin. Kept as the safety net for a spelling added to the
-  /// trainer before its clip is: same pitch, named the other way, rather than
-  /// a silent question.
+  /// Every spelling Pocket Mode can say is recorded, so nothing normally falls
+  /// back to an enharmonic twin. Kept as the safety net for a spelling added to
+  /// the trainer before its clip is: same pitch, named the other way, rather
+  /// than a silent question.
+  ///
+  /// ♭5 and ♯2 are here rather than on disk because Pocket Mode only ever
+  /// offers the collapsed degrees ('♯4/♭5', '♭3/♯2') and says the first half,
+  /// so those two are never asked for. Should the split spellings ever reach
+  /// this mode, they speak as their twin instead of going quiet.
   static const _fallback = <String, String>{
+    'd_b5': 'd_s4', 'd_s2': 'd_b3',
     'n_Cbb': 'n_Bb', 'n_Fbb': 'n_Eb', 'n_Ass': 'n_B', 'n_Css': 'n_D',
     'n_Dss': 'n_E', 'n_Fss': 'n_G', 'n_Gss': 'n_A',
   };
