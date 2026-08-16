@@ -65,22 +65,45 @@ class KeepAliveAudio {
     }
   }
 
-  /// iOS only: claim or release the playback session explicitly.
-  ///
-  /// audioplayers sets the session's category but only ever calls
-  /// `setActive(true)` from its sound-finished handler, never from the one that
-  /// starts a sound. An implicitly active session is honoured while the screen
-  /// is on and dropped when it locks — which is why the voice used to stop the
-  /// instant the phone locked in a release build, while a debugged build (which
-  /// iOS never suspends) looked fine. [AppDelegate] answers this channel.
-  static Future<void> _session(String method) async {
-    if (kIsWeb || defaultTargetPlatform != TargetPlatform.iOS) return;
+  static const _channel = MethodChannel('improvy/audio_session');
+
+  static bool get _isIOS =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+
+  /// What the last attempt to claim the session produced, for [describe].
+  static Object? _lastSessionResult;
+
+  /// On iOS the whole keep-alive lives natively — see BackgroundAudio in
+  /// AppDelegate.swift for why. The plugin never claims the session, and its
+  /// looping leaves a real hole in the output every time the file ends, which
+  /// is exactly the moment the system decides nothing is playing.
+  static Future<Object?> _session(String method) async {
+    if (!_isIOS) return null;
     try {
-      await const MethodChannel('improvy/audio_session').invokeMethod<void>(method);
-    } catch (_) {
-      // An older build without the native side, or a session the system
-      // refuses: playback still works, it just won't survive the lock.
+      final r = await _channel.invokeMethod<Object?>(method);
+      _lastSessionResult = r;
+      return r;
+    } catch (e) {
+      // Recorded rather than swallowed. This failing silently is how the bug
+      // survived two attempts at fixing it: the app looked identical whether
+      // the native side answered or was not there at all.
+      _lastSessionResult = 'FAILED $method: $e';
+      debugPrint('[KeepAliveAudio] $_lastSessionResult');
+      return null;
     }
+  }
+
+  /// A line describing the real audio session, for the Settings diagnostic.
+  /// Empty off iOS, where none of this applies.
+  static Future<String> describe() async {
+    if (!_isIOS) return 'not iOS — nothing to report';
+    final r = await _session('status') ?? _lastSessionResult;
+    if (r == null) return 'no answer from the native side';
+    if (r is! Map) return '$r';
+    return 'category ${r["category"]} · mode ${r["mode"]}\n'
+        'tone playing: ${r["playing"]}\n'
+        'background modes: ${(r["backgroundModes"] as List?)?.join(", ")}\n'
+        'output: ${(r["outputs"] as List?)?.join(", ")}';
   }
 
   Future<void> start() async {
@@ -88,15 +111,22 @@ class KeepAliveAudio {
     // trick doesn't apply there and would only cost an extra decoder.
     if (kIsWeb || _running) return;
     _running = true;
+
+    // iOS: claim the session and start the gapless tone, both natively.
+    if (_isIOS) {
+      await _session('activate');
+      return;
+    }
+
+    // Android keeps the plugin-side loop: a wake lock plus a looping asset is
+    // what holds a backgrounded player there, and none of the iOS session
+    // machinery applies.
     try {
       if (!_configured) {
-        // Belt and braces: main() has already done this, but a session can be
-        // reset by an interruption, and re-asserting it is cheap.
         await configureSession();
         await _player.setReleaseMode(ReleaseMode.loop);
-        // A phone call, Siri or an alarm interrupts playback, and nothing
-        // restarts it on its own — the session would then be suspended at the
-        // next silent gap and never come back. Pick it up again instead.
+        // A phone call or an alarm interrupts playback, and nothing restarts it
+        // on its own — the loop would stop and never come back.
         _watch = _player.onPlayerStateChanged.listen((s) {
           if (!_running || _restarting) return;
           if (s == PlayerState.playing) return;
@@ -111,11 +141,10 @@ class KeepAliveAudio {
         });
         _configured = true;
       }
-      // Claim the output before the first sound, not after one finishes.
-      await _session('activate');
-      // Inaudible, but a real signal: the point is that the output keeps
-      // running, not that anything is heard.
-      await _player.setVolume(0.01);
+      // Full volume, not 0.01. The file is a ±1 LSB dither — 90 dB below full
+      // scale and inaudible — so scaling it by a hundredth rounded it to
+      // literal digital zero, which is not a signal at all.
+      await _player.setVolume(1.0);
       await _player.play(AssetSource('audio/silence.wav'));
     } catch (_) {
       // If the platform refuses the player, speech still works in the
@@ -127,10 +156,13 @@ class KeepAliveAudio {
   Future<void> stop() async {
     if (!_running) return;
     _running = false;
+    if (_isIOS) {
+      await _session('deactivate');
+      return;
+    }
     try {
       await _player.stop();
     } catch (_) {}
-    await _session('deactivate');
   }
 
   Future<void> dispose() async {

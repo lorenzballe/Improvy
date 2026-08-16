@@ -172,6 +172,36 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
     return null;
   }
 
+  /// Shows what the audio session actually is, right now, on this device.
+  ///
+  /// The lock-screen problem cannot be reproduced anywhere it can be watched:
+  /// a simulator does not lock, and iOS never suspends an app with a debugger
+  /// attached, so a debug build always looks fine. This is the only way to see
+  /// whether the session is `playback`, whether it is the app that owns it,
+  /// and whether the keep-alive tone is actually running.
+  Future<void> _showAudioDiagnostics() async {
+    final text = await KeepAliveAudio.describe();
+    if (!mounted) return;
+    HapticsService.impactLight();
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF141020),
+        title: const Text('Audio session',
+            style: TextStyle(color: Colors.white, fontSize: 16)),
+        content: SelectableText(text,
+            style: const TextStyle(
+                color: Colors.white70, fontSize: 12, height: 1.5)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _loop(int gen) async {
     final total = widget.config.questions;
     while (mounted && gen == _gen && (total == 0 || _index < total)) {
@@ -337,15 +367,25 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
                       ])),
                     ),
                     const SizedBox(height: 16),
-                    Row(children: [
-                      Expanded(child: _stat('DEGREES', '${widget.config.degrees.length}')),
-                      Container(width: 1, height: 28, color: Colors.white10),
-                      Expanded(child: _stat('DELAY', widget.config.delayMs % 1000 == 0
-                          ? '${widget.config.delayMs ~/ 1000}s'
-                          : '${(widget.config.delayMs / 1000).toStringAsFixed(1)}s')),
-                      Container(width: 1, height: 28, color: Colors.white10),
-                      Expanded(child: _stat('SESSION', total == 0 ? '∞' : '${_index.clamp(0, total)}/$total')),
-                    ]),
+                    // Long-press the stats to read the real audio session.
+                    // Deliberately unlabelled and deliberately present in
+                    // release: whether this mode survives the lock screen is
+                    // only observable on a real device in a real build, and
+                    // two attempts at fixing it were spent guessing because
+                    // nothing could be seen from here.
+                    GestureDetector(
+                      onLongPress: _showAudioDiagnostics,
+                      behavior: HitTestBehavior.opaque,
+                      child: Row(children: [
+                        Expanded(child: _stat('DEGREES', '${widget.config.degrees.length}')),
+                        Container(width: 1, height: 28, color: Colors.white10),
+                        Expanded(child: _stat('DELAY', widget.config.delayMs % 1000 == 0
+                            ? '${widget.config.delayMs ~/ 1000}s'
+                            : '${(widget.config.delayMs / 1000).toStringAsFixed(1)}s')),
+                        Container(width: 1, height: 28, color: Colors.white10),
+                        Expanded(child: _stat('SESSION', total == 0 ? '∞' : '${_index.clamp(0, total)}/$total')),
+                      ]),
+                    ),
                   ]),
                 ),
               ),

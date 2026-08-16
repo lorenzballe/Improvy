@@ -4,6 +4,9 @@ import UIKit
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
+  private var audioSessionChannel: FlutterMethodChannel?
+  private let audio = BackgroundAudio()
+
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
@@ -16,63 +19,157 @@ import UIKit
     registerAudioSession(engineBridge.pluginRegistry)
   }
 
-  /// Owns the AVAudioSession for Pocket Mode, because the audio plugin does not.
+  /// Owns the audio session and the keep-alive tone for Pocket Mode.
   ///
-  /// `UIBackgroundModes: audio` only earns the app background time while the
-  /// system considers its session an active, primary playback session. The
-  /// audioplayers plugin sets the *category* but calls `setActive(true)` in
-  /// exactly one place — after a sound finishes — and never on the path that
-  /// starts one. So the session is only ever implicitly active, which the
-  /// system honours while the screen is on and drops the moment it locks.
-  /// Attached to a debugger that is invisible, since iOS does not suspend a
-  /// debugged app; in a release build the voice stops the instant you lock.
+  /// Three methods, all called by KeepAliveAudio:
+  ///   activate    - claim playback and start the tone
+  ///   deactivate  - stop the tone and hand the output back
+  ///   status      - what the session actually looks like right now, for when
+  ///                 this does not work and nobody can see why
   ///
-  /// Two methods, called by KeepAliveAudio around a session:
-  ///   activate   - claim playback, explicitly, before the first sound
-  ///   deactivate - hand the output back when the drill stops
-  /// Held for the life of the app on purpose. A channel that only exists as a
-  /// local goes quiet if it is ever released, and a silent channel here looks
-  /// exactly like the bug this fixes.
-  private var audioSessionChannel: FlutterMethodChannel?
-
+  /// Held for the life of the app on purpose: a channel that only exists as a
+  /// local goes quiet if it is ever released, which looks exactly like the bug
+  /// this exists to fix.
   private func registerAudioSession(_ registry: FlutterPluginRegistry) {
     guard let registrar = registry.registrar(forPlugin: "ImprovyAudioSession") else { return }
     let channel = FlutterMethodChannel(
       name: "improvy/audio_session", binaryMessenger: registrar.messenger())
     audioSessionChannel = channel
 
-    channel.setMethodCallHandler { call, result in
-      let session = AVAudioSession.sharedInstance()
-      do {
-        switch call.method {
-        case "activate":
-          // .spokenAudio is the documented mode for speech content: it tells
-          // the system this is talk, not music, so a car head unit treats it
-          // as such. No .mixWithOthers — an app that declares its audio
-          // mixable is telling the system it is secondary, and secondary
-          // audio is not what keeps a locked phone awake.
-          //
-          // `try?`, deliberately: the category is the nice-to-have and the
-          // activation is the fix. audioplayers has already put the session in
-          // .playback, so a device that refuses this exact combination must
-          // not be allowed to skip the setActive below — that would leave the
-          // session implicit again, which is the whole bug.
-          try? session.setCategory(
-            .playback, mode: .spokenAudio, options: [.allowBluetoothA2DP])
-          try session.setActive(true)
-          result(true)
-        case "deactivate":
-          // Let whatever was playing before pick itself back up.
-          try session.setActive(false, options: .notifyOthersOnDeactivation)
-          result(true)
-        default:
-          result(FlutterMethodNotImplemented)
+    channel.setMethodCallHandler { [weak self] call, result in
+      guard let self else { return result(nil) }
+      switch call.method {
+      case "activate":
+        do {
+          try self.audio.start()
+          result(self.audio.status())
+        } catch {
+          result(
+            FlutterError(
+              code: "audio_session", message: error.localizedDescription,
+              details: self.audio.status()))
         }
-      } catch {
-        result(
-          FlutterError(
-            code: "audio_session", message: error.localizedDescription, details: nil))
+      case "deactivate":
+        self.audio.stop()
+        result(nil)
+      case "status":
+        result(self.audio.status())
+      default:
+        result(FlutterMethodNotImplemented)
       }
     }
+  }
+}
+
+/// Keeps Pocket Mode running with the screen locked.
+///
+/// `UIBackgroundModes: audio` does not mean "keep my app running". It means the
+/// system will not suspend the app *while audio is actually reaching the
+/// output through an active session it considers primary*. Pocket Mode is
+/// mostly silence — the seconds you spend working the answer out — so without
+/// something filling those gaps the app is suspended in exactly them, every
+/// timer stops, and the drill dies where it stands.
+///
+/// This used to be done from Dart, through the audio plugin, and it did not
+/// hold. Two reasons, both fixed here:
+///
+///  1. The plugin never claims the session. It sets the category but calls
+///     `setActive(true)` from exactly one place — its sound-finished handler —
+///     and never on the path that starts a sound. An implicitly active session
+///     is honoured while the screen is on and dropped the moment it locks.
+///
+///  2. The tone had a hole in it. The plugin loops by waiting for the file to
+///     end, seeking back and starting again, which is an async round trip
+///     through Dart with real silence in the middle of it. `AVAudioPlayer` with
+///     `numberOfLoops = -1` loops inside the audio engine instead: no callback,
+///     no seek, no gap for the system to notice.
+///
+/// The tone itself is generated here rather than read from an asset — one less
+/// thing that can fail quietly on a device — and is a dither of ±1 LSB, which
+/// is 90 dB below full scale. Inaudible, but not digital zero: the Dart side
+/// was playing a ±1 file at volume 0.01, which rounds to nothing at all.
+final class BackgroundAudio {
+  private var player: AVAudioPlayer?
+  private var observing = false
+
+  func start() throws {
+    let session = AVAudioSession.sharedInstance()
+    // Best-effort, deliberately: the category is the nicety and the activation
+    // is the fix. A device that dislikes this exact combination must not be
+    // able to skip the setActive below — that would leave the session
+    // implicitly active again, which is the whole bug.
+    try? session.setCategory(.playback, mode: .spokenAudio, options: [.allowBluetoothA2DP])
+    try session.setActive(true)
+
+    if player == nil {
+      player = try AVAudioPlayer(data: BackgroundAudio.tone())
+      player?.numberOfLoops = -1
+      player?.volume = 1.0 // the file is already 90 dB down; do not scale it away
+      player?.prepareToPlay()
+    }
+    player?.play()
+    observeInterruptions()
+  }
+
+  func stop() {
+    player?.stop()
+    player = nil
+    // .notifyOthersOnDeactivation so whatever was playing before can resume.
+    try? AVAudioSession.sharedInstance().setActive(
+      false, options: .notifyOthersOnDeactivation)
+  }
+
+  /// A phone call, Siri or an alarm tears the session down, and nothing puts it
+  /// back on its own — the app would then be suspended at the next silent gap
+  /// and never return. Reclaim it when the interruption ends.
+  private func observeInterruptions() {
+    guard !observing else { return }
+    observing = true
+    NotificationCenter.default.addObserver(
+      forName: AVAudioSession.interruptionNotification,
+      object: AVAudioSession.sharedInstance(), queue: .main
+    ) { [weak self] note in
+      guard
+        let self, self.player != nil,
+        let raw = note.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt,
+        AVAudioSession.InterruptionType(rawValue: raw) == .ended
+      else { return }
+      try? AVAudioSession.sharedInstance().setActive(true)
+      self.player?.play()
+    }
+  }
+
+  /// What the session actually is, so a report can say more than "it stopped".
+  func status() -> [String: Any] {
+    let s = AVAudioSession.sharedInstance()
+    return [
+      "category": s.category.rawValue,
+      "mode": s.mode.rawValue,
+      "options": Int(s.categoryOptions.rawValue),
+      "playing": player?.isPlaying ?? false,
+      "otherAudioPlaying": s.isOtherAudioPlaying,
+      "outputs": s.currentRoute.outputs.map { $0.portType.rawValue },
+      "backgroundModes":
+        (Bundle.main.object(forInfoDictionaryKey: "UIBackgroundModes") as? [String]) ?? [],
+    ]
+  }
+
+  /// One second of mono 16-bit PCM at ±1 LSB, as a WAV in memory.
+  private static func tone() -> Data {
+    let rate = 44100, seconds = 1
+    let frames = rate * seconds
+    var d = Data(capacity: 44 + frames * 2)
+    func str(_ s: String) { d.append(contentsOf: Array(s.utf8)) }
+    func u32(_ v: UInt32) { withUnsafeBytes(of: v.littleEndian) { d.append(contentsOf: $0) } }
+    func u16(_ v: UInt16) { withUnsafeBytes(of: v.littleEndian) { d.append(contentsOf: $0) } }
+
+    str("RIFF"); u32(UInt32(36 + frames * 2)); str("WAVE")
+    str("fmt "); u32(16); u16(1); u16(1)
+    u32(UInt32(rate)); u32(UInt32(rate * 2)); u16(2); u16(16)
+    str("data"); u32(UInt32(frames * 2))
+    for i in 0..<frames {
+      u16(UInt16(bitPattern: i % 2 == 0 ? Int16(1) : Int16(-1)))
+    }
+    return d
   }
 }
