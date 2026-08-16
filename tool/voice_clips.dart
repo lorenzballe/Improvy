@@ -55,8 +55,8 @@ const degreeClips = <Clip>[
 ///
 /// Splitting Pocket Mode's degrees took this from 23 spellings to 27: asking
 /// for ♭5 rather than ♯4, or ♯2 rather than ♭3, changes how the answer is
-/// spelled. The four at the end are the new ones and are the only clips in
-/// this list still missing — until they exist, those questions are never put.
+/// spelled. The four at the end are those new ones, now recorded — so nothing
+/// the mode can ask is silent.
 ///
 ///   E𝄫  the ♭2 of D♭          B𝄫  the ♭2 of A♭, the ♭6 of D♭
 ///   A𝄫  the ♭5 of D♭          C𝄪  the ♯2 of B and F♯
@@ -85,7 +85,7 @@ const noteClips = <Clip>[
   Clip('n_Bb', 'B flat'),
   Clip('n_Bbb', 'B double flat'),
   Clip('n_Bs', 'B sharp'),
-  // Reached only since the degrees were split. Not yet recorded.
+  // Reached only since the degrees were split.
   Clip('n_Abb', 'A double flat'),
   Clip('n_Css', 'C double sharp'),
   Clip('n_Fss', 'F double sharp'),
@@ -106,7 +106,7 @@ const spareClips = <Clip>[
   Clip('n_Bss', 'B double sharp'),
 ];
 
-/// Clips the app needs to never be silent: 45 files.
+/// Clips the app needs to never be silent: 49 files.
 List<Clip> get required => [...degreeClips, ...noteClips];
 
 /// Everything worth recording in one sitting: 57 files.

@@ -21,16 +21,16 @@ class VoiceService {
   /// long before moving on, so a stale entry either talks over itself or leaves
   /// dead air. Regenerate whenever a clip is re-recorded.
   static const _ms = <String, int>{
-    'd_1': 344, 'd_2': 312, 'd_3': 455, 'd_4': 435, 'd_5': 482, 'd_6': 580,
-    'd_7': 502, 'd_9': 460, 'd_11': 503, 'd_13': 700, 'd_b2': 725,
-    'd_b3': 849, 'd_b5': 692, 'd_b6': 858, 'd_b7': 744, 'd_b9': 784,
-    'd_s2': 768, 'd_s4': 791,
-    'd_s5': 788, 'd_s9': 808, 'd_b13': 1117, 'd_s11': 822, 'n_A': 384,
-    'n_Ab': 604, 'n_As': 793, 'n_B': 374, 'n_Bb': 629, 'n_Bbb': 958,
-    'n_Bs': 759, 'n_C': 484, 'n_Cb': 744, 'n_Cs': 709, 'n_D': 384,
-    'n_Db': 599, 'n_Ds': 734, 'n_E': 344, 'n_Eb': 589, 'n_Ebb': 963,
-    'n_Es': 813, 'n_F': 409, 'n_Fb': 749, 'n_Fs': 609, 'n_G': 414,
-    'n_Gb': 579, 'n_Gs': 624,
+    'd_1': 344, 'd_11': 503, 'd_13': 700, 'd_2': 312, 'd_3': 455, 'd_4': 435,
+    'd_5': 482, 'd_6': 580, 'd_7': 502, 'd_9': 460, 'd_b13': 1117,
+    'd_b2': 725, 'd_b3': 849, 'd_b5': 692, 'd_b6': 858, 'd_b7': 744,
+    'd_b9': 784, 'd_s11': 822, 'd_s2': 768, 'd_s4': 791, 'd_s5': 788,
+    'd_s9': 808, 'n_A': 384, 'n_Ab': 604, 'n_Abb': 739, 'n_As': 793,
+    'n_B': 374, 'n_Bb': 629, 'n_Bbb': 958, 'n_Bs': 759, 'n_C': 484,
+    'n_Cb': 744, 'n_Cs': 709, 'n_Css': 919, 'n_D': 384, 'n_Db': 599,
+    'n_Ds': 734, 'n_E': 344, 'n_Eb': 589, 'n_Ebb': 963, 'n_Es': 813,
+    'n_F': 409, 'n_Fb': 749, 'n_Fs': 609, 'n_Fss': 849, 'n_G': 414,
+    'n_Gb': 579, 'n_Gs': 624, 'n_Gss': 959,
   };
 
   /// Deliberately empty, and it should stay that way.

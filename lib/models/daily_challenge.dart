@@ -2,6 +2,8 @@ import 'package:intl/intl.dart';
 
 import '../constants/app_info.dart';
 import '../constants/music_constants.dart';
+import '../utils/music_engine.dart';
+import 'training_mode.dart';
 
 /// The Daily Challenge: one shared run for the whole world, every day.
 ///
@@ -14,10 +16,42 @@ import '../constants/music_constants.dart';
 /// Local date by design (like Wordle): everyone plays "their" today.
 class DailyChallenge {
   final String dateKey; // YYYY-MM-DD, same format as AppStats.dailyHistory
-  final String key; // key of the day, e.g. 'B♭'
-  final List<String> degrees; // the 10 diatonic degrees asked, in order
+  /// Key of the day ('B♭') — or, in [TrainingMode.ofWhat], the melody note the
+  /// whole run is built on, since that mode has no tonality.
+  final String key;
+  final List<String> degrees; // the questions asked, in order
+  /// Which of the three directions today is. Seeded from the date like
+  /// everything else, so the whole world gets the same one.
+  final TrainingMode mode;
 
-  const DailyChallenge({required this.dateKey, required this.key, required this.degrees});
+  const DailyChallenge({
+    required this.dateKey,
+    required this.key,
+    required this.degrees,
+    this.mode = TrainingMode.chromatic,
+  });
+
+  /// The three directions the daily rotates through.
+  ///
+  /// Naming the note for a degree, naming the degree for a note, and naming the
+  /// root a note belongs to are three different skills — the first two are
+  /// famously not the same recall, and the third is the one that turns a melody
+  /// into changes. A challenge that only ever asked the first was testing a
+  /// third of what the app teaches.
+  ///
+  /// Order matters: it is indexed by the date seed, so appending is safe and
+  /// reordering silently rewrites history.
+  static const List<TrainingMode> modes = [
+    TrainingMode.chromatic, // degree → note
+    TrainingMode.noteToNumber, // note → degree
+    TrainingMode.ofWhat, // note is a degree → name the root
+  ];
+
+  /// The 12 roots …Of What? can answer with, and so the notes it can be built
+  /// on. Plain spellings: this mode names roots, not scale degrees.
+  static const List<String> ofWhatNotes = [
+    'C', 'D♭', 'D', 'E♭', 'E', 'F', 'G♭', 'G', 'A♭', 'A', 'B♭', 'B',
+  ];
 
   /// Fifteen, not ten. At ten questions a single slip is a tenth of the score,
   /// so the number measured luck as much as skill — and a score that noisy is
@@ -26,15 +60,24 @@ class DailyChallenge {
   /// seven notes over and over.
   static const int questionCount = 15;
 
-  /// Seconds of budget each question is worth. Not a per-question limit — the
-  /// clock below is pooled — but the honest way to size the pool.
+  /// Budget each question is worth, for the direction being asked. Not a
+  /// per-question limit — the clock below is pooled — but the honest way to
+  /// size the pool.
   ///
   /// 2.8s is deliberately under the trainer's own medium tier (3.2s): the
   /// daily is meant to be the hardest thing you do that day, and at 4s it was
   /// softer than an ordinary Virtuoso session. A confident answer takes about
   /// 2s, so a clean run still lands with a little spare while a hesitant one
   /// genuinely runs out.
-  static const int msPerQuestion = 2800;
+  ///
+  /// …Of What? gets 3.6s because it is a genuinely longer question: you hold a
+  /// note, apply a degree, and name the root it implies. Every player still
+  /// gets the same clock on the same day — this keeps a Wednesday from being
+  /// brutal purely because of which direction the seed drew.
+  static int msPerQuestionFor(TrainingMode mode) =>
+      mode == TrainingMode.ofWhat ? 3600 : 2800;
+
+  int get msPerQuestion => msPerQuestionFor(mode);
 
   /// **One clock for the whole run**, not a per-question limit like the other
   /// modes. That is the shape of a challenge — you spend the budget how you
@@ -45,13 +88,25 @@ class DailyChallenge {
   ///
   /// Scales with [questionCount] by construction: change the number of
   /// questions and the budget follows instead of silently becoming wrong.
-  static const int totalTimeMs = questionCount * msPerQuestion;
+  int get totalTimeMs => questionCount * msPerQuestion;
 
   /// The rule, in words, for every surface that states it — the card, both home
-  /// screen widgets, the store listing. Built from the constants above so the
+  /// screen widgets, the store listing. Built from the numbers above so the
   /// promise can never drift from the clock the run actually uses.
-  static String get rule =>
-      '$questionCount questions · ${totalTimeMs ~/ 1000} seconds';
+  String get rule => '$questionCount questions · ${totalTimeMs ~/ 1000} seconds';
+
+  /// What today asks, in three words, for the card and the widgets. The player
+  /// should know before tapping whether they are naming notes or roots.
+  String get modeLabel => switch (mode) {
+        TrainingMode.noteToNumber => 'Note to Number',
+        TrainingMode.ofWhat => '…Of What?',
+        _ => 'Chromatic',
+      };
+
+  /// What comes before [key] wherever the card and widgets announce the run.
+  /// …Of What? has no tonality, so calling its note a key would be a plain
+  /// lie — the run is built *on* that note, it is not in it.
+  String get subjectPrefix => mode == TrainingMode.ofWhat ? 'On ' : 'Key of ';
 
   /// Mastery tier the daily's answers are filed under (medium). The daily has
   /// no per-question clock, so this no longer sets a countdown — it only keeps
@@ -61,29 +116,54 @@ class DailyChallenge {
   factory DailyChallenge.forDate(DateTime date) {
     final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
     final rng = _Lcg(_fnv1a(dateKey));
-    final key = kKeys[rng.next(kKeys.length)];
 
-    // A seeded shuffle of all twelve chromatic degrees (everyone meets every
-    // one), then extra picks with no immediate repeat, up to questionCount.
+    // Drawn first, so the mode is a property of the date rather than of
+    // whatever happened to be drawn before it.
+    final mode = modes[rng.next(modes.length)];
+
+    // …Of What? has no tonality: what it needs is the note every question is
+    // built on. The other two need the key of the day.
+    final key = mode == TrainingMode.ofWhat
+        ? ofWhatNotes[rng.next(ofWhatNotes.length)]
+        : kKeys[rng.next(kKeys.length)];
+
+    // The pool the direction can actually ask.
     //
-    // Chromatic, not diatonic: the challenge of the day should be able to ask
-    // for the ♯4, not only the seven easy degrees. It also keeps the run
-    // varied — twelve degrees over fifteen questions is three repeats, where
-    // seven would have meant eight.
-    final base = List<String>.from(kChromaticDegrees);
+    // Chromatic asks the twelve collapsed degrees — not diatonic: the challenge
+    // of the day should be able to ask for the ♯4, not only the seven easy
+    // ones. Note→Number splits the enharmonics, because there a note's spelling
+    // *is* the question (F is the ♭3, E♯ the ♯2). …Of What? keeps only the
+    // degrees that give this note a clean root — B♭ as a ♯2 would be A𝄫, which
+    // is not a chord anybody plays — and drops degree 1, which hands the answer
+    // over by naming the note itself.
+    final base = switch (mode) {
+      TrainingMode.noteToNumber => List<String>.from(kChromaticDegreesSplit),
+      TrainingMode.ofWhat => kOfWhatDegrees
+          .where((d) => d != '1' && rootFromNoteAndDegree(key, d) != null)
+          .toList(),
+      _ => List<String>.from(kChromaticDegrees),
+    };
+
+    // A seeded shuffle of the pool (everyone meets every degree), then extra
+    // picks with no immediate repeat, up to questionCount.
     for (var i = base.length - 1; i > 0; i--) {
       final j = rng.next(i + 1);
       final t = base[i];
       base[i] = base[j];
       base[j] = t;
     }
-    final degrees = List<String>.from(base);
+    // Cannot happen with the pools above — every note has clean roots for most
+    // degrees — but an empty pool would loop forever on the fill below, and a
+    // challenge that hangs is worse than one that is a little plain.
+    if (base.isEmpty) base.add('5');
+    final degrees = List<String>.from(base.take(questionCount));
     while (degrees.length < questionCount) {
       final d = base[rng.next(base.length)];
       if (d == degrees.last) continue;
       degrees.add(d);
     }
-    return DailyChallenge(dateKey: dateKey, key: key, degrees: degrees);
+    return DailyChallenge(
+        dateKey: dateKey, key: key, degrees: degrees, mode: mode);
   }
 
   // FNV-1a 32-bit — stable across every platform, unlike String.hashCode.
@@ -123,6 +203,9 @@ class DailyResult {
   final int timeMs; // sum of the answered questions' response times
   final bool completed; // false when the run was abandoned mid-way
   final int timestamp;
+  /// Which direction that day asked. Results saved before the daily rotated
+  /// modes carry no value and read back as chromatic, which is what they were.
+  final TrainingMode mode;
 
   const DailyResult({
     required this.dateKey,
@@ -131,6 +214,7 @@ class DailyResult {
     required this.timeMs,
     required this.completed,
     required this.timestamp,
+    this.mode = TrainingMode.chromatic,
   });
 
   int get correct => answers.where((a) => a).length;
@@ -144,6 +228,7 @@ class DailyResult {
         'timeMs': timeMs,
         'completed': completed,
         'timestamp': timestamp,
+        'mode': mode.storageKey,
       };
 
   factory DailyResult.fromJson(Map<String, dynamic> json) => DailyResult(
@@ -153,6 +238,10 @@ class DailyResult {
         timeMs: (json['timeMs'] as num?)?.toInt() ?? 0,
         completed: json['completed'] ?? false,
         timestamp: (json['timestamp'] as num?)?.toInt() ?? 0,
+        mode: TrainingMode.values.firstWhere(
+          (m) => m.storageKey == json['mode'],
+          orElse: () => TrainingMode.chromatic,
+        ),
       );
 }
 
@@ -174,8 +263,19 @@ String buildDailyShareText(DailyResult r, int streak, {String? installUrl}) {
   final time = secs >= 60 ? '${secs ~/ 60}m ${(secs % 60).toString().padLeft(2, '0')}s' : '${secs}s';
   final grid = r.answers.map((a) => a ? '🟩' : '🟥').join();
   final flame = streak > 1 ? '\n🔥 $streak-day streak' : '';
+  // The daily rotates direction, so the line has to say which one it was —
+  // otherwise two scores from different days read as the same challenge, and
+  // "Key of B♭ major" is plainly wrong on a day with no tonality at all.
+  final subject = r.mode == TrainingMode.ofWhat
+      ? '${r.key} …of what?'
+      : 'Key of ${r.key} major';
+  final direction = switch (r.mode) {
+    TrainingMode.noteToNumber => ' · note→number',
+    TrainingMode.ofWhat => '',
+    _ => '',
+  };
   return 'Improvy Daily · $date\n'
-      'Key of ${r.key} major · ${r.correct}/${r.total} · $time\n'
+      '$subject$direction · ${r.correct}/${r.total} · $time\n'
       '$grid$flame\n\n'
       '${installUrl ?? kWebsiteUrl}';
 }

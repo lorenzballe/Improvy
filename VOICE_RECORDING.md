@@ -4,21 +4,20 @@ Pocket Mode speaks every question out of `assets/audio/voice/`. A question is
 two or three clips played back to back with a 110 ms gap: the degree, the key,
 the answer note. **57 words** cover everything the trainer can ever say.
 
-**Four are missing right now.** Splitting Pocket Mode's degrees — so ♭5 can be
-trained apart from ♯4 — changed how some answers are spelled, and took the
-reachable set from 23 notes to 27:
+**All 49 are recorded.** Splitting Pocket Mode's degrees — so ♭5 can be
+trained apart from ♯4 — changed how some answers are spelled and took the
+reachable set from 23 notes to 27. The four that opened up are now in:
 
-| file | say | why it exists now |
-|------|-----|-------------------|
+| file | say | why it exists |
+|------|-----|---------------|
 | `n_Abb.wav` | A double flat | the ♭5 of D♭ |
 | `n_Css.wav` | C double sharp | the ♯2 of B and of F♯ |
 | `n_Fss.wav` | F double sharp | the ♯2 of E and of B |
 | `n_Gss.wav` | G double sharp | the ♯2 of F♯ |
 
-Until they exist those six key-and-degree pairs are simply never asked — the
-mode draws again. It does **not** fall back to the enharmonic twin: that is
-what once put "sharp four" on a ♭5 question, and a trainer that teaches the
-wrong name for what is on screen is worse than one that stays quiet.
+Nothing the mode can ask is silent, and nothing falls back to an enharmonic
+twin: a spelling with no clip is never asked at all, because saying the wrong
+name is what once put "sharp four" on a ♭5 question.
 
 `dart tool/sync_voice_clips.dart --check` prints exactly what is missing and
 exits non-zero while anything is.
@@ -102,10 +101,9 @@ a stutter. It is a label being read, not a sentence being performed.
 There is no `♭4`, `♯3`, `♯6`, `♯7`, `♭11` or `♯13` — the trainer never spells a
 degree that way, so those words are never needed.
 
-### Notes — 27 reachable, 23 of them recorded
+### Notes — 27, all recorded
 
-Every one of these is used as an answer, or as the key being announced. The
-four marked `*` are the ones listed at the top of this file.
+Every one of these is used as an answer, or as the key being announced.
 
 | # | file | say |
 |---|------|-----|
@@ -138,14 +136,14 @@ The two double flats are real questions, not theory:
 - **E𝄫** is the ♭2 of D♭.
 - **B𝄫** is the ♭2 of A♭, and the ♭6 / ♯5 of D♭.
 
-And the four still to record:
+And the four that splitting the degrees opened up:
 
-| # | file | say |
-|---|------|-----|
-| 24 | `n_Abb.wav` * | A double flat |
-| 25 | `n_Css.wav` * | C double sharp |
-| 26 | `n_Fss.wav` * | F double sharp |
-| 27 | `n_Gss.wav` * | G double sharp |
+| # | file | say | |
+|---|------|-----|---|
+| 24 | `n_Abb.wav` | A double flat | the ♭5 of D♭ |
+| 25 | `n_Css.wav` | C double sharp | the ♯2 of B and F♯ |
+| 26 | `n_Fss.wav` | F double sharp | the ♯2 of E and B |
+| 27 | `n_Gss.wav` | G double sharp | the ♯2 of F♯ |
 
 ### Notes — 8 spare
 

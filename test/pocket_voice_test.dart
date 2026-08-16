@@ -16,15 +16,14 @@ void main() {
   // list it only ever spelled 23 notes, and splitting takes it to 27.
   const pool = kChromaticDegreesSplit;
 
-  /// The four spellings splitting the degrees reaches that have no recording,
-  /// so the tests below assert what the mode actually asks rather than failing
-  /// on questions it deliberately never puts. Pocket Mode redraws on these.
+  /// Empty, and that is the point: every spelling Pocket Mode can reach is
+  /// recorded, so no question is ever skipped for want of a voice.
   ///
-  ///   A𝄫  the ♭5 of D♭        C𝄪  the ♯2 of B and of F♯
-  ///   F𝄪  the ♯2 of E and B   G𝄪  the ♯2 of F♯
-  ///
-  /// Record those four and this set empties out on its own.
-  const unrecorded = {'A𝄫', 'C𝄪', 'F𝄪', 'G𝄪'};
+  /// Splitting the degrees briefly opened a gap here — A𝄫 (the ♭5 of D♭) and
+  /// the ♯2 of B, E and F♯ (C𝄪, F𝄪, G𝄪) had no clips. They do now. Anything
+  /// added back to this set is a question the trainer silently declines to
+  /// ask, which is a debt, not a design.
+  const unrecorded = <String>{};
 
   final files = Directory('assets/audio/voice')
       .listSync()
@@ -130,6 +129,26 @@ void main() {
       expect(clip, isNot(VoiceService.noteClip(twin)),
           reason: '$spelling still borrows $twin');
     });
+  });
+
+  test('no question is ever skipped: every draw can be spoken', () {
+    // Pocket Mode redraws when a question has no voice, which is the right
+    // failure but is still a question the player did not get. With all four
+    // double accidentals recorded there is nothing left to redraw around, and
+    // this says so for every key and degree the mode can offer at once.
+    for (final key in kAllKeys) {
+      final scale = calculateMajorScale(key);
+      expect(VoiceService.noteClip(key), isNotNull, reason: 'key $key');
+      for (final d in pool) {
+        for (final name in chromaticDegreeNames(d)) {
+          expect(VoiceService.degreeClip(name), isNotNull,
+              reason: '$name has no voice');
+        }
+        final answer = getNoteFromChromaticDegree(d, scale, key);
+        expect(VoiceService.noteClip(answer), isNotNull,
+            reason: '$d of $key answers $answer, which has no voice');
+      }
+    }
   });
 
   test('a phrase is as long as its clips plus the gaps between them', () {

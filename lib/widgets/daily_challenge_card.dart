@@ -241,8 +241,8 @@ class _DailyChallengeCardState extends State<DailyChallengeCard> {
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
             children: [
-              const Text('Key of ',
-                  style: TextStyle(
+              Text(challenge.subjectPrefix,
+                  style: const TextStyle(
                       fontSize: 19, fontWeight: FontWeight.w700, color: Colors.white)),
               NoteText(
                   note: formatNoteForDisplay(challenge.key, provider.notation),
@@ -255,7 +255,7 @@ class _DailyChallengeCardState extends State<DailyChallengeCard> {
           // 412dp phone and got ellipsised mid-word. The single attempt is
           // stated where it actually bites — the quit dialog — and the card
           // turning to its "done" state says it plainly enough.
-          Text(DailyChallenge.rule,
+          Text('${challenge.modeLabel} · ${challenge.rule}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(

@@ -130,9 +130,12 @@ class WidgetService {
             'daily_score', result == null ? '' : '${result.correct}/${result.total}'),
         HomeWidget.saveWidgetData<String>(
             'daily_grid', result == null ? '' : _grid(result)),
-        // The rule in words, derived from the challenge constants — so the
-        // widgets can never advertise a budget the run no longer uses.
-        HomeWidget.saveWidgetData<String>('daily_sub', DailyChallenge.rule),
+        // The rule in words, taken from the day's own challenge — so the
+        // widgets can never advertise a budget the run no longer uses, and an
+        // …Of What? day shows its longer clock rather than the chromatic one.
+        HomeWidget.saveWidgetData<String>('daily_sub', daily.rule),
+        // Which direction today asks, so a tap is never a surprise.
+        HomeWidget.saveWidgetData<String>('daily_mode', daily.modeLabel),
         HomeWidget.saveWidgetData<int>('daily_streak', provider.dailyStreak),
 
         // The key of the day in its own colour, so the widget's tile matches

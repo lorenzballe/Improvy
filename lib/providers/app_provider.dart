@@ -513,6 +513,11 @@ class AppProvider extends ChangeNotifier {
   /// The degree sequence of the run in progress (or of today, before a start).
   List<String> get activeDailyDegrees => (_activeDailyChallenge ?? todayChallenge).degrees;
 
+  /// The pooled clock for the run in progress. Per challenge, not a constant:
+  /// …Of What? days are given a longer budget for the same fifteen questions.
+  int get activeDailyTotalTimeMs =>
+      (_activeDailyChallenge ?? todayChallenge).totalTimeMs;
+
   DailyResult? get todayDailyResult => dailyResults[_dateKey(DateTime.now())];
 
   /// The result of the run just played — survives a run that crossed midnight,
@@ -539,34 +544,59 @@ class AppProvider extends ChangeNotifier {
   /// day, at a fixed medium difficulty (a 4s clock — the timer is the point,
   /// and the same conditions for everyone are what make the score comparable).
   /// No-op if today was played.
-  void startDailyChallenge() {
-    final c = todayChallenge;
+  /// Starts today's run. [challenge] overrides which one, so a test can drive
+  /// a specific direction instead of whichever the current date happens to
+  /// draw — the app itself never passes it.
+  void startDailyChallenge({DailyChallenge? challenge}) {
+    final c = challenge ?? todayChallenge;
     if (dailyResults.containsKey(c.dateKey)) return;
     _activeDailyChallenge = c;
     _dailyStartedAt = DateTime.now();
     dailyChallengeActive = true;
-    selectedKey = c.key;
-    // The daily asks chromatic degrees, so it has to run as a chromatic
-    // session: the answer board is built from the mode, and a diatonic board
-    // offers only the seven scale notes — a ♯4 question would have no button
-    // to answer it with.
-    //
     // Keep the recorded difficulty in step with the trainer's: the daily runs
     // at DailyChallenge.difficulty (medium), and recordAnswer credits key
     // mastery against chromaticDifficulty — misaligning them would file this
     // run's answers under the wrong level.
     //
-    // Note this hands every player a taste of Chromatic mode, which is
-    // otherwise Pro. That is deliberate: the daily is free, and one run a day
-    // against the full twelve is the most honest advert the mode has.
+    // Note this hands every player a taste of modes that are otherwise Pro.
+    // That is deliberate: the daily is free, and one run a day against the
+    // real thing is the most honest advert those modes have.
     chromaticDifficulty = DailyChallenge.difficulty;
     customQuestions = c.degrees.length;
-    activeMode = TrainingMode.chromatic;
+    activeMode = c.mode;
+
+    // Each direction needs the trainer configured the way its own setup screen
+    // would have. The board is built from these: get them wrong and a question
+    // has no button that can answer it.
+    switch (c.mode) {
+      case TrainingMode.ofWhat:
+        // No tonality — the run is anchored on a note, and the answers are the
+        // twelve roots. selectedKey is left clear so the home tab does not come
+        // back showing a key that was never in play.
+        fixedNote = c.key;
+        selectedKey = null;
+        isReverse = false;
+        customDegrees = c.degrees;
+      case TrainingMode.noteToNumber:
+        // Reverse: the question is a note, the buttons are the split degrees.
+        selectedKey = c.key;
+        fixedNote = null;
+        isReverse = true;
+        customDegrees = kChromaticDegreesSplit.toList();
+      default:
+        // Chromatic forward — the twelve-note board, as before.
+        selectedKey = c.key;
+        fixedNote = null;
+        isReverse = false;
+        customDegrees = null;
+    }
+
     // Survives an OS kill — launch turns it into a burned attempt (see
     // _recoverDailyAttempt), so force-quitting is never a free retry.
     _storage.saveDailyAttemptStarted(c.dateKey);
     AnalyticsService.instance.capture('daily_challenge_started', {
       'key': c.key,
+      'mode': c.mode.storageKey,
       'streak': dailyStreak,
     });
     notifyListeners();
@@ -610,6 +640,7 @@ class AppProvider extends ChangeNotifier {
         timeMs: timeMs,
         completed: completed,
         timestamp: DateTime.now().millisecondsSinceEpoch,
+        mode: c.mode,
       ),
     };
     _storage.saveDailyResults(dailyResults);
@@ -638,7 +669,7 @@ class AppProvider extends ChangeNotifier {
         : DateTime.now()
             .difference(_dailyStartedAt!)
             .inMilliseconds
-            .clamp(0, DailyChallenge.totalTimeMs);
+            .clamp(0, c.totalTimeMs);
     final completed = flags.length >= c.degrees.length;
     while (flags.length < c.degrees.length) {
       flags.add(false); // unanswered questions are misses — the grid stays 10 wide
@@ -652,6 +683,7 @@ class AppProvider extends ChangeNotifier {
         timeMs: timeMs,
         completed: completed,
         timestamp: DateTime.now().millisecondsSinceEpoch,
+        mode: c.mode,
       ),
     };
     _storage.saveDailyResults(dailyResults);
@@ -660,6 +692,7 @@ class AppProvider extends ChangeNotifier {
       'correct': flags.where((f) => f).length,
       'total': c.degrees.length,
       'completed': completed,
+      'mode': c.mode.storageKey,
       'streak': dailyStreak,
     });
   }

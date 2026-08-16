@@ -151,12 +151,32 @@ void main() {
     });
   });
 
-  group('the Daily Challenge is a first-class chromatic run', () {
+  group('the Daily Challenge is a first-class run', () {
+    // A chromatic run dated today. The daily now rotates through three
+    // directions, so reading whichever one today happens to draw would make
+    // these pass or fail depending on the date they are run — while a past
+    // date would file the result under a day that is not "today", which is
+    // what the streak and todayDailyResult are asking about.
+    DailyChallenge chromaticToday(AppProvider p) {
+      for (var d = 0; d < 365; d++) {
+        final c = DailyChallenge.forDate(DateTime(2026, 1, 1).add(Duration(days: d)));
+        if (c.mode != TrainingMode.chromatic) continue;
+        return DailyChallenge(
+          dateKey: p.todayChallenge.dateKey,
+          key: c.key,
+          degrees: c.degrees,
+          mode: c.mode,
+        );
+      }
+      throw StateError('no chromatic day in 2026');
+    }
+
     test('it feeds mastery, the day and the game history like any other',
         () async {
       final p = await freshProvider();
-      p.startDailyChallenge();
-      final key = p.todayChallenge.key;
+      final c = chromaticToday(p);
+      p.startDailyChallenge(challenge: c);
+      final key = c.key;
 
       const played = DailyChallenge.questionCount;
       for (var i = 0; i < played; i++) {
@@ -188,9 +208,12 @@ void main() {
     test('its clock is medium and its budget scales with the questions',
         () async {
       final p = await freshProvider();
-      p.startDailyChallenge();
+      final c = chromaticToday(p);
+      p.startDailyChallenge(challenge: c);
       expect(p.chromaticDifficulty, DailyChallenge.difficulty,
           reason: 'answers must be filed under the tier actually played');
+      expect(p.activeDailyTotalTimeMs,
+          DailyChallenge.questionCount * c.msPerQuestion);
     });
   });
 
