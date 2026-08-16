@@ -257,13 +257,26 @@ class _WhatsNewModalState extends State<WhatsNewModal>
             ),
           ),
           const SizedBox(width: 10),
-          Text(
-            r.date,
-            style: TextStyle(
-              fontSize: 9.5,
-              fontWeight: FontWeight.w400,
-              letterSpacing: 0.57,
-              color: Colors.white.withValues(alpha: 0.3),
+          // Shrunk rather than clipped. A two-digit day makes this row one
+          // character wider than a one-digit day, which is enough to overflow
+          // a 320pt screen — and a date is not something to ellipsise. The
+          // rule beside it already gives way first; this is what happens when
+          // it has nothing left to give.
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: Text(
+                r.date,
+                maxLines: 1,
+                softWrap: false,
+                style: TextStyle(
+                  fontSize: 9.5,
+                  fontWeight: FontWeight.w400,
+                  letterSpacing: 0.57,
+                  color: Colors.white.withValues(alpha: 0.3),
+                ),
+              ),
             ),
           ),
         ],

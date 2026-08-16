@@ -62,6 +62,49 @@ class Release {
 /// the right behaviour for a pure bug-fix build.
 const List<Release> kReleases = [
   Release(
+    version: '1.7.0',
+    date: '16 AUG 2026',
+    headline:
+        'The daily challenge now asks all three directions, and Pocket Mode '
+        'lets you drill one spelling at a time.',
+    lines: [
+      ReleaseLine(
+        icon: Icons.local_fire_department_rounded,
+        color: Color(0xFFE5A93C),
+        title: 'A new challenge every day',
+        detail:
+            'Some days you name the note for a degree, some days the degree '
+            'for a note, some days the root a note belongs to. Same run for '
+            'everyone, whichever one it is.',
+      ),
+      ReleaseLine(
+        glyph: '♯♭',
+        color: Color(0xFF6366F1),
+        title: 'One spelling at a time',
+        detail:
+            'Train ♭5 without ♯4, or ♯2 without ♭3 — every spelling is its own '
+            'button, and its own recording. The answer delay now goes down to '
+            '0.3 seconds.',
+      ),
+      ReleaseLine(
+        icon: Icons.bolt_rounded,
+        color: Color(0xFFF43F5E),
+        title: 'Master got harder',
+        detail:
+            'The top tier is down to 1.2 seconds in every mode. Long enough to '
+            'know the answer, not long enough to work it out.',
+      ),
+      ReleaseLine(
+        icon: Icons.headphones_rounded,
+        color: Color(0xFF34D399),
+        title: 'Plays with the screen off',
+        detail:
+            'It kept stopping the moment the phone locked. It no longer does, '
+            'so a walk really is a practice session.',
+      ),
+    ],
+  ),
+  Release(
     version: '1.6.0',
     date: '2 AUG 2026',
     headline:
