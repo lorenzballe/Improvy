@@ -64,6 +64,37 @@ void main() {
     expect(normalizeExtension('♯11'), '♯4');
   });
 
+  test('every answer is spelled on the letter its degree demands', () {
+    // The rule underneath every enharmonic question in the app: a degree owns a
+    // staff position, not just a pitch. The ♭5 of D♭ has to land on some kind
+    // of A — A𝄫, as it happens — because 5 is the fifth letter up from D. Get
+    // the pitch right on the wrong letter and the note is enharmonically
+    // "correct" and musically wrong, which is exactly what a theory trainer
+    // must never teach. All 12 keys against all 15 split degrees.
+    const letters = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+    const letterOffset = {
+      '1': 0, '♭2': 1, '2': 1, '♯2': 1, '♭3': 2, '3': 2, '4': 3, '♯4': 3,
+      '♭5': 4, '5': 4, '♯5': 4, '♭6': 5, '6': 5, '♭7': 6, '7': 6,
+    };
+    const semitone = {
+      '1': 0, '♭2': 1, '2': 2, '♯2': 3, '♭3': 3, '3': 4, '4': 5, '♯4': 6,
+      '♭5': 6, '5': 7, '♯5': 8, '♭6': 8, '6': 9, '♭7': 10, '7': 11,
+    };
+    for (final key in kAllKeys) {
+      final scale = calculateMajorScale(key);
+      final root = letters.indexOf(key[0]);
+      for (final d in kChromaticDegreesSplit) {
+        final answer =
+            getNoteFromChromaticDegree(d, scale, key).split('/').first.trim();
+        expect(answer[0], letters[(root + letterOffset[d]!) % 7],
+            reason: '$d of $key is $answer — wrong letter for that degree');
+        expect(kNoteToSemitone[answer],
+            ((kNoteToSemitone[key] ?? 0) + semitone[d]!) % 12,
+            reason: '$d of $key is $answer — wrong pitch');
+      }
+    }
+  });
+
   test('diatonic mode stays 1–7, with no extension names', () {
     const diatonic = ['1', '2', '3', '4', '5', '6', '7'];
     for (final d in diatonic) {
