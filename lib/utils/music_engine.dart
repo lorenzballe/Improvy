@@ -124,22 +124,23 @@ String? rootFromNoteAndDegree(String note, String degree) {
 /// So in C the black keys read D♭ E♭ F♯ A♭ B♭ (A♭, not G♯), while in D the
 /// tritone makes G♯ (♯4). Returns semitone → spelled note name.
 Map<int, String> chromaticKeyboardNoteNames(String key, {bool simpleNames = false}) {
-  // With the setting on, every key cap carries its one standard name — no
-  // F♭ on the E key, no C♭ on the B key, whatever tonality is in play.
-  if (simpleNames) {
-    return {for (var s = 0; s < 12; s++) s: simpleNoteName(s)};
-  }
   const degs = ['1', '♭2', '2', '♭3', '3', '4', '♯4', '5', '♭6', '6', '♭7', '7'];
   final names = <int, String>{};
   for (final d in degs) {
     var note = getNoteFromChromaticDegree(d, const [], key);
     final s = kNoteToSemitone[note];
     if (s == null) continue;
-    // Strict degree spelling can demand a double accidental in flat keys (♭2 of
-    // A♭ is B𝄫, ♭2 of D♭ is E𝄫). That is unreadable on a key cap, so fall back
-    // to the plain single-accidental enharmonic (→ A, → D). Single accidentals
-    // like F♭ (♭2 of E♭) are kept — that legibility is the whole point.
-    if (note.contains('𝄪') || note.contains('𝄫')) note = _getSemitoneNoteName(s);
+    if (simpleNames) {
+      // Only the unreadable spellings change. A cap that already reads the way
+      // the key writes it keeps that — the C♯ in A major is still C♯.
+      note = simplifySpelling(note);
+    } else if (note.contains('𝄪') || note.contains('𝄫')) {
+      // Strict degree spelling can demand a double accidental in flat keys (♭2
+      // of A♭ is B𝄫, ♭2 of D♭ is E𝄫). Unreadable on a key cap even with the
+      // setting off, so fall back to the plain enharmonic. Single accidentals
+      // like F♭ are kept here — that is what the setting is for.
+      note = _getSemitoneNoteName(s);
+    }
     names[s] = note;
   }
   return names;
@@ -165,17 +166,43 @@ class NoteItem {
 /// One name per pitch class, the way most players write them: flats
 /// everywhere except the tritone, which reads F♯.
 ///
-/// This is what the "Simple note names" setting switches the whole app to.
-/// Correct spelling is relative to a key — the ♭2 of E♭ really is F♭, not E —
-/// but a beginner reading F♭ on a key labelled E is being taught two things at
-/// once. With the setting on, a pitch has exactly one name everywhere: no
-/// slashes, no double accidentals, no key-dependent respelling.
+/// Used only as the *replacement* for a spelling the setting rejects — see
+/// [simplifySpelling]. It is not what every note becomes.
 const List<String> kSimpleNoteNames = [
   'C', 'D♭', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 'A', 'B♭', 'B',
 ];
 
 /// The single standard name for a semitone (0 = C), per [kSimpleNoteNames].
 String simpleNoteName(int semitone) => kSimpleNoteNames[semitone % 12];
+
+/// The 17 spellings "Simple Note Names" leaves alone: the seven naturals, and
+/// every single sharp or flat that actually lands on a black key.
+///
+/// F♭, C♭, E♯ and B♯ are single accidentals too, but each writes a white key as
+/// though it were something else. Those are the awkward ones, together with
+/// every double accidental — and nothing else is.
+const Set<String> kPlainSpellings = {
+  'C', 'D', 'E', 'F', 'G', 'A', 'B',
+  'C♯', 'D♯', 'F♯', 'G♯', 'A♯',
+  'D♭', 'E♭', 'G♭', 'A♭', 'B♭',
+};
+
+/// [note] as the setting would have it written.
+///
+/// Not a blanket rename. A note whose key-correct spelling is already one a
+/// musician would write keeps it: the C♯ in A major stays C♯, and B♭ stays B♭
+/// rather than flipping to A♯ — both name that pitch perfectly well, and the
+/// one the key gives is the one that belongs there.
+///
+/// What goes is what nobody wants to read mid-drill: every double accidental,
+/// and the four accidentals that spell a white key. C𝄫 becomes B♭, B𝄫 becomes
+/// A, F♭ becomes E.
+String simplifySpelling(String note) {
+  final n = note.split('/').first.trim();
+  if (kPlainSpellings.contains(n)) return n;
+  final s = kNoteToSemitone[n];
+  return s == null ? n : simpleNoteName(s);
+}
 
 List<NoteItem> getChromaticButtons(List<String> scale, String key,
     {bool simpleNames = false}) {
@@ -189,12 +216,15 @@ List<NoteItem> getChromaticButtons(List<String> scale, String key,
     // Only the printed label changes: [NoteItem.note] stays the generic name
     // the answer is matched against, so simplifying the names cannot alter
     // what counts as right.
+    final spellings = degs[(i - tonic + 12) % 12]
+        .split('/')
+        .map((d) => getNoteFromChromaticDegree(d, scale, key));
+    // With the setting on a button carries one name, and it is the key's own
+    // whenever that is readable: the slash pair collapses, F♭ becomes E, but
+    // C♯ in A major stays C♯ rather than flipping to D♭.
     final label = simpleNames
-        ? simpleNoteName(i)
-        : degs[(i - tonic + 12) % 12]
-            .split('/')
-            .map((d) => getNoteFromChromaticDegree(d, scale, key))
-            .join('/');
+        ? simplifySpelling(spellings.first)
+        : spellings.join('/');
     return NoteItem(label: label, rawLabel: label, note: notes[i]);
   });
 }

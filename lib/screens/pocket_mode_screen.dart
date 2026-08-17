@@ -183,11 +183,8 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
   ///
   /// Key-correct spelling is untouched when the setting is off: that is the
   /// default, and it is the more musical answer.
-  String _spell(String note) {
-    if (!widget.simpleNotes) return note;
-    final s = kNoteToSemitone[note.split('/').first.trim()];
-    return s == null ? note : simpleNoteName(s);
-  }
+  String _spell(String note) =>
+      widget.simpleNotes ? simplifySpelling(note) : note;
 
   /// The breath between hearing the answer and the next question starting.
   ///

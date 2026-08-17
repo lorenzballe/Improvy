@@ -4,18 +4,38 @@ import 'package:improvy/constants/music_constants.dart';
 import 'package:improvy/services/voice_service.dart';
 import 'package:improvy/utils/music_engine.dart';
 
-/// "Simple note names" promises one spelling per pitch class, everywhere.
+/// "Simple note names" removes the spellings nobody writes — and only those.
 ///
-/// The promise is easy to break by accident: the normal spelling is computed
-/// per key, so a single missed call site puts F♭ on a key cap in E♭ while the
-/// button below it says E. These pin the promise down in every key.
+/// F♭, C♭, E♯, B♯ and every double accidental go; the C♯ in A major stays C♯,
+/// because it belongs to the key and reads perfectly well. The promise is easy
+/// to break in both directions: a missed call site leaves B𝄫 on a key cap, and
+/// an over-eager one renames notes that were never the problem.
 void main() {
-  test('the twelve names are the ones a player actually writes', () {
-    expect(kSimpleNoteNames, [
-      'C', 'D♭', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 'A', 'B♭', 'B',
-    ]);
-    // Flats everywhere except the tritone — that one is F♯, not G♭.
-    expect(simpleNoteName(6), 'F♯');
+  test('only the awkward spellings are replaced', () {
+    // Exactly the cases stated: the ones that go, and the ones that stay.
+    expect(simplifySpelling('F♭'), 'E');
+    expect(simplifySpelling('C♭'), 'B');
+    expect(simplifySpelling('E♯'), 'F');
+    expect(simplifySpelling('B♯'), 'C');
+    expect(simplifySpelling('B𝄫'), 'A');
+    expect(simplifySpelling('C𝄫'), 'B♭');
+    expect(simplifySpelling('G𝄪'), 'A');
+
+    // A spelling the key gives and a musician would write is left alone —
+    // B♭ does not flip to A♯, and C♯ does not flip to D♭.
+    for (final n in kPlainSpellings) {
+      expect(simplifySpelling(n), n, reason: '$n should have been left alone');
+    }
+  });
+
+  test('a note that belongs to the key keeps the key\'s own name', () {
+    // The C♯ in A major is the third of the scale. Renaming it to D♭ would be
+    // the setting doing harm rather than good.
+    expect(chromaticKeyboardNoteNames('A', simpleNames: true)[1], 'C♯');
+    expect(chromaticKeyboardNoteNames('E', simpleNames: true)[8], 'G♯');
+    expect(chromaticKeyboardNoteNames('B♭', simpleNames: true)[10], 'B♭');
+    // …while the awkward one in the same breath does change.
+    expect(chromaticKeyboardNoteNames('E♭', simpleNames: true)[4], 'E');
   });
 
   test('buttons carry no slash and no double accidental, in every key', () {
@@ -29,24 +49,25 @@ void main() {
         expect(l.contains('/'), isFalse, reason: 'key $key: "$l" has a slash');
         expect(l.contains('𝄪') || l.contains('𝄫'), isFalse,
             reason: 'key $key: "$l" has a double accidental');
-        expect(kSimpleNoteNames, contains(l), reason: 'key $key: "$l" is off-list');
+        expect(kPlainSpellings, contains(l), reason: 'key $key: "$l" is off-list');
       }
       // Every pitch appears exactly once — no name is used twice.
       expect(labels.toSet().length, 12, reason: 'key $key repeated a name');
     }
   });
 
-  test('the same pitch reads the same in every key', () {
-    // The point of the setting: a key cap does not change name when the
-    // tonality changes. Without it, semitone 4 is E in C and F♭ in E♭.
+  test('every cap, in every key, is one of the seventeen', () {
+    // A pitch may still read C♯ in one key and D♭ in another — both are names
+    // a player writes, and the key decides which. What must never appear is a
+    // double accidental or a white key wearing an accidental.
     for (var semitone = 0; semitone < 12; semitone++) {
-      final seen = <String>{};
       for (final key in kAllKeys) {
-        seen.add(chromaticKeyboardNoteNames(key, simpleNames: true)[semitone]!);
+        final n = chromaticKeyboardNoteNames(key, simpleNames: true)[semitone]!;
+        expect(kPlainSpellings, contains(n),
+            reason: 'semitone $semitone in $key reads "$n"');
+        expect(kNoteToSemitone[n], semitone,
+            reason: '$n is not semitone $semitone');
       }
-      expect(seen.length, 1,
-          reason: 'semitone $semitone was spelled ${seen.toList()} across keys');
-      expect(seen.single, simpleNoteName(semitone));
     }
   });
 
@@ -86,7 +107,7 @@ void main() {
     // screen but leaving the voice on the key-correct name would have someone
     // reading "E" while hearing "F flat". Every one of the twelve has its own
     // recording, so the promise can actually be kept out loud.
-    for (final name in kSimpleNoteNames) {
+    for (final name in kPlainSpellings) {
       final clip = VoiceService.noteClip(name);
       expect(clip, isNotNull, reason: '$name has no recording');
       final acc = name.substring(1).replaceAll('♭', 'b').replaceAll('♯', 's');
@@ -103,10 +124,11 @@ void main() {
       final scale = calculateMajorScale(key);
       for (final d in kChromaticDegreesSplit) {
         final proper = getNoteFromChromaticDegree(d, scale, key);
-        final semitone = kNoteToSemitone[proper.split('/').first.trim()]!;
-        final simple = simpleNoteName(semitone);
+        final simple = simplifySpelling(proper);
         expect(areEnharmonicEquivalent(proper, simple), isTrue,
             reason: '$d of $key is $proper but simplifies to $simple');
+        expect(kPlainSpellings, contains(simple),
+            reason: '$d of $key simplifies to $simple, still not plain');
       }
     }
   });
