@@ -163,7 +163,8 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
       final degree = _pickDegree();
       final names = chromaticDegreeNames(degree);
       final presented = names[_rng.nextInt(names.length)];
-      final answer = getNoteFromChromaticDegree(degree, calculateMajorScale(key), key);
+      final answer = _spell(
+          getNoteFromChromaticDegree(degree, calculateMajorScale(key), key));
       if (VoiceService.degreeClip(presented) == null) continue;
       if (VoiceService.noteClip(answer) == null) continue;
       if (widget.config.shuffleKeys && VoiceService.noteClip(key) == null) continue;
@@ -171,6 +172,32 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
     }
     return null;
   }
+
+  /// How the answer is written and said, honouring "Simple Note Names".
+  ///
+  /// With the setting on, the promise is one spelling per pitch everywhere in
+  /// the app — and Pocket Mode was the one place still breaking it, saying
+  /// "F flat" and "E double flat" out loud to someone who had asked never to
+  /// see them. Same source as the rest of the app, so the voice, the screen
+  /// and the keyboard cannot disagree.
+  ///
+  /// Key-correct spelling is untouched when the setting is off: that is the
+  /// default, and it is the more musical answer.
+  String _spell(String note) {
+    if (!widget.simpleNotes) return note;
+    final s = kNoteToSemitone[note.split('/').first.trim()];
+    return s == null ? note : simpleNoteName(s);
+  }
+
+  /// The breath between hearing the answer and the next question starting.
+  ///
+  /// It was a flat 800ms, which is a whole beat of nothing — long enough that
+  /// a fast drill stopped feeling like one. It now follows the answer delay the
+  /// user chose: someone on 0.3s wants the questions to come at them, someone
+  /// on eight seconds is working slowly and would find a snap transition
+  /// jarring. Floored so the answer never runs straight into the next number,
+  /// capped so it never drags.
+  int get _afterAnswerMs => (widget.config.delayMs ~/ 3).clamp(220, 700);
 
   /// Shows what the audio session actually is, right now, on this device.
   ///
@@ -240,7 +267,7 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
       _reveal.forward(from: 0); // bloom ripple
       HapticsService.impactLight();
       _voice.say(aClips);
-      if (!await _wait(VoiceService.phraseMs(aClips) + 800, gen)) return;
+      if (!await _wait(VoiceService.phraseMs(aClips) + _afterAnswerMs, gen)) return;
 
       _prevDegree = degree;
       if (mounted) setState(() => _index++);

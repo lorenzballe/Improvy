@@ -112,14 +112,19 @@ void main() {
       expect(c.totalTimeMs, DailyChallenge.questionCount * c.msPerQuestion);
       // The daily should be harder than an ordinary Virtuoso question (3.2s)
       // in the two directions that compare to one.
+      // Whole seconds, so the stated rule is the real budget and not a
+      // rounded-down version of it.
+      expect(c.totalTimeMs % 1000, 0, reason: '${c.mode} has a ragged clock');
       if (c.mode != TrainingMode.ofWhat) {
+        // Tighter than the trainer's own medium tier, which is the point.
         expect(c.msPerQuestion, lessThan(3200));
-        expect(c.totalTimeMs, 42000);
-        expect(c.rule, '15 questions · 42 seconds');
+        expect(c.totalTimeMs, 36000);
+        expect(c.rule, '15 questions · 36 seconds');
       } else {
         // …Of What? is a two-step question and gets room for it — but not so
         // much room that it stops being a challenge.
-        expect(c.msPerQuestion, inInclusiveRange(3200, 4500));
+        expect(c.msPerQuestion, inInclusiveRange(3000, 3600));
+        expect(c.totalTimeMs, 48000);
       }
     }
   });
@@ -165,7 +170,7 @@ void main() {
     expect(p.selectedKey, isNull);
     expect(p.customDegrees, c.degrees);
     // Longer clock for the longer question.
-    expect(p.activeDailyTotalTimeMs, greaterThan(42000));
+    expect(p.activeDailyTotalTimeMs, greaterThan(36000));
   });
 
   test('the share line names the direction, and never invents a tonality', () {

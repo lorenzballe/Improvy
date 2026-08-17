@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:improvy/constants/music_constants.dart';
+import 'package:improvy/services/voice_service.dart';
 import 'package:improvy/utils/music_engine.dart';
 
 /// "Simple note names" promises one spelling per pitch class, everywhere.
@@ -75,6 +76,37 @@ void main() {
       for (final b in simple) {
         expect(areEnharmonicEquivalent(b.label, b.note), isTrue,
             reason: 'key $key: label ${b.label} does not match note ${b.note}');
+      }
+    }
+  });
+
+  test('Pocket Mode can say every simplified name out loud', () {
+    // The setting promises one spelling per pitch *everywhere*, and Pocket
+    // Mode is the one surface that also has to pronounce it: simplifying the
+    // screen but leaving the voice on the key-correct name would have someone
+    // reading "E" while hearing "F flat". Every one of the twelve has its own
+    // recording, so the promise can actually be kept out loud.
+    for (final name in kSimpleNoteNames) {
+      final clip = VoiceService.noteClip(name);
+      expect(clip, isNotNull, reason: '$name has no recording');
+      final acc = name.substring(1).replaceAll('♭', 'b').replaceAll('♯', 's');
+      expect(clip, 'n_${name[0]}$acc',
+          reason: '$name would be spoken as $clip');
+    }
+  });
+
+  test('simplifying never changes which pitch the answer is', () {
+    // The one thing the setting must not do is make an answer wrong. Every
+    // key-correct spelling the trainer can produce has to simplify to the same
+    // pitch it already was — F♭ to E, E𝄫 to D, and never to something else.
+    for (final key in kAllKeys) {
+      final scale = calculateMajorScale(key);
+      for (final d in kChromaticDegreesSplit) {
+        final proper = getNoteFromChromaticDegree(d, scale, key);
+        final semitone = kNoteToSemitone[proper.split('/').first.trim()]!;
+        final simple = simpleNoteName(semitone);
+        expect(areEnharmonicEquivalent(proper, simple), isTrue,
+            reason: '$d of $key is $proper but simplifies to $simple');
       }
     }
   });

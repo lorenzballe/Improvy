@@ -64,18 +64,21 @@ class DailyChallenge {
   /// per-question limit — the clock below is pooled — but the honest way to
   /// size the pool.
   ///
-  /// 2.8s is deliberately under the trainer's own medium tier (3.2s): the
-  /// daily is meant to be the hardest thing you do that day, and at 4s it was
-  /// softer than an ordinary Virtuoso session. A confident answer takes about
-  /// 2s, so a clean run still lands with a little spare while a hesitant one
-  /// genuinely runs out.
+  /// 2.4s, down from 2.8s and well under the trainer's medium tier (3.2s): the
+  /// daily is meant to be the hardest thing you do that day. A confident answer
+  /// takes about 2s, so a clean run still lands with a little spare — but the
+  /// spare is now thin enough that a run of hesitations really does run out,
+  /// which is the difference between a test and a formality.
   ///
-  /// …Of What? gets 3.6s because it is a genuinely longer question: you hold a
+  /// …Of What? gets 3.2s because it is a genuinely longer question: you hold a
   /// note, apply a degree, and name the root it implies. Every player still
   /// gets the same clock on the same day — this keeps a Wednesday from being
   /// brutal purely because of which direction the seed drew.
+  ///
+  /// Both are whole multiples of the question count, so the stated rule is the
+  /// exact budget rather than a rounded-down version of it.
   static int msPerQuestionFor(TrainingMode mode) =>
-      mode == TrainingMode.ofWhat ? 3600 : 2800;
+      mode == TrainingMode.ofWhat ? 3200 : 2400;
 
   int get msPerQuestion => msPerQuestionFor(mode);
 
