@@ -102,8 +102,14 @@ class VoiceService {
     } catch (_) {}
   }
 
-  /// Says the clips one after another. Returns immediately — the caller paces
-  /// itself with [phraseMs], the same way it did with the speech engine.
+  /// Says the clips one after another, completing when the last one has had
+  /// its full length to play.
+  ///
+  /// Await it. Callers used to fire this and run a parallel timer of
+  /// [phraseMs], started from the call — but the audio only begins once the
+  /// platform has loaded the clip, so the timer ran ahead of the sound by
+  /// however long that took. Every clip shares one player, so the next phrase
+  /// replaced the source and cut the previous one off mid-word.
   Future<void> say(List<String?> clips) async {
     if (kIsWeb) return;
     final real = clips.whereType<String>().toList();
@@ -111,11 +117,21 @@ class VoiceService {
     final gen = ++_gen;
     for (var i = 0; i < real.length; i++) {
       if (gen != _gen) return;
-      try {
-        await _player.play(AssetSource('audio/voice/${real[i]}.wav'));
-      } catch (_) {
-        return;
+      // One retry. A refused play used to abandon the whole phrase in silence,
+      // which on the answer is heard as the app simply not saying the note —
+      // and a decoder that is briefly busy is exactly the kind of thing that
+      // happens once in a long session rather than never.
+      var started = false;
+      for (var attempt = 0; attempt < 2 && !started; attempt++) {
+        try {
+          await _player.play(AssetSource('audio/voice/${real[i]}.wav'));
+          started = true;
+        } catch (_) {
+          if (gen != _gen) return;
+          await Future<void>.delayed(const Duration(milliseconds: 40));
+        }
       }
+      if (!started) return;
       final last = i == real.length - 1;
       await Future<void>.delayed(
           Duration(milliseconds: (_ms[real[i]] ?? 0) + (last ? 0 : gapMs)));

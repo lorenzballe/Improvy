@@ -246,11 +246,8 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
         VoiceService.degreeClip(presented),
         if (widget.config.shuffleKeys) VoiceService.noteClip(key),
       ];
-      // Speech is fired without awaiting completion; _wait drives the pace so
-      // the loop can never stall on an engine that never reports "done".
       setState(() { _key = key; _degree = degree; _presented = presented; _answer = ''; _phase = 1; });
-      _voice.say(qClips);
-      if (!await _wait(VoiceService.phraseMs(qClips), gen)) return;
+      if (!await _speak(qClips, gen)) return;
 
       // Think — a smooth 1→0 ring sweep over the delay (60fps, not stepped).
       setState(() => _phase = 2);
@@ -263,8 +260,8 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
       setState(() { _answer = answer; _phase = 3; });
       _reveal.forward(from: 0); // bloom ripple
       HapticsService.impactLight();
-      _voice.say(aClips);
-      if (!await _wait(VoiceService.phraseMs(aClips) + _afterAnswerMs, gen)) return;
+      if (!await _speak(aClips, gen)) return;
+      if (!await _wait(_afterAnswerMs, gen)) return;
 
       _prevDegree = degree;
       if (mounted) setState(() => _index++);
@@ -276,6 +273,31 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
       setState(() { _playing = false; _finished = true; _phase = 0; });
       _keepAlive.stop();
     }
+  }
+
+  /// Says [clips] and waits for them to actually finish.
+  ///
+  /// The loop used to fire speech and race a parallel timer against it, started
+  /// from the moment `say` was *called*. But the audio only starts once the
+  /// platform has loaded the clip, which is usually a few milliseconds and
+  /// occasionally far more — and every clip plays through the same player, so
+  /// the next `say` replaces the source and cuts off whatever is still
+  /// sounding. Once in every twenty or thirty questions that landed on the
+  /// answer: the note was truncated to nothing and the next degree arrived in
+  /// its place, which is heard as the app simply not saying the note.
+  ///
+  /// So the pacing now follows the speech instead of predicting it. Polled
+  /// rather than awaited directly, so pausing still stops the drill at once,
+  /// and capped so an engine that never reports back cannot freeze the session.
+  Future<bool> _speak(List<String?> clips, int gen) async {
+    var done = false;
+    unawaited(_voice.say(clips).whenComplete(() => done = true));
+    final limit = VoiceService.phraseMs(clips) + 2000;
+    for (var waited = 0; !done && waited < limit; waited += 40) {
+      if (gen != _gen || !mounted) return false;
+      await Future<void>.delayed(const Duration(milliseconds: 40));
+    }
+    return gen == _gen && mounted;
   }
 
   /// Interruptible pace timer: waits [ms] but bails the moment the generation
