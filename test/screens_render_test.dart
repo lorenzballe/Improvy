@@ -343,7 +343,7 @@ void main() {
 
       testWidgets('note to number', (t) async {
         await t.show(
-          NoteToNumberSetup(initialKey: 'B♭', onCancel: () {}, onStart: (_, __, ___) {}),
+          NoteToNumberSetup(initialKey: 'B♭', onShowPaywall: () {}, onCancel: () {}, onStart: (_, __, ___) {}),
           await providerWith(),
           size,
         );

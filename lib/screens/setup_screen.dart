@@ -14,12 +14,16 @@ import 'pocket_mode_screen.dart' show PocketConfig;
 
 class NoteToNumberSetup extends StatefulWidget {
   final String initialKey;
+  final bool isPro;
+  final VoidCallback onShowPaywall;
   final void Function(String key, List<String> degrees, int difficulty) onStart;
   final VoidCallback onCancel;
 
   const NoteToNumberSetup({
     super.key,
     required this.initialKey,
+    this.isPro = true,
+    required this.onShowPaywall,
     required this.onStart,
     required this.onCancel,
   });
@@ -98,7 +102,17 @@ class _NoteToNumberSetupState extends State<NoteToNumberSetup> {
                                   opts: const ['Diatonic', 'Chromatic'],
                                   sel: _chromatic ? 'Chromatic' : 'Diatonic',
                                   accentColor: _accent,
-                                  onChange: (v) => setState(() => _chromatic = v == 'Chromatic'),
+                                  onChange: (v) {
+                                    // Diatonic is free in every key; the twelve
+                                    // chromatic degrees are what Pro buys here.
+                                    if (v == 'Chromatic' && !widget.isPro) {
+                                      AnalyticsService.instance
+                                          .lockedFeature('note_to_number_chromatic');
+                                      widget.onShowPaywall();
+                                      return;
+                                    }
+                                    setState(() => _chromatic = v == 'Chromatic');
+                                  },
                                 ),
                                 const SizedBox(height: 36),
                                 const _SectionTitle(

@@ -587,6 +587,8 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       } else if (_pendingSetup == TrainingMode.noteToNumber) {
         return NoteToNumberSetup(
           initialKey: key,
+          isPro: provider.isPro,
+          onShowPaywall: _showPaywallSheet,
           onCancel: () { provider.deselectKey(); setState(() => _pendingSetup = null); },
           onStart: (selKey, degrees, difficulty) {
             setState(() => _pendingSetup = null);

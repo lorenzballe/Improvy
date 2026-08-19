@@ -205,13 +205,14 @@ class _HomeMain extends StatelessWidget {
                   icon: Icons.swap_horiz_rounded,
                   accentColor: const Color(0xFF34D399),
                   borderColor: const Color(0xFF34D399).withAlpha(110),
-                  isLocked: !provider.isPro,
+                  // Free, diatonic, in all twelve keys. This is the one
+                  // direction where the answer's position cannot be counted to
+                  // — the question is a written note and the answers are
+                  // numbers — so it is the honest way to learn a scale, and it
+                  // belongs in front of the paywall rather than behind it.
+                  // Chromatic is still Pro; that switch is inside the setup.
+                  isLocked: false,
                   onTap: () {
-                    if (!provider.isPro) {
-                      AnalyticsService.instance.lockedFeature('note_to_number');
-                      onShowPaywall();
-                      return;
-                    }
                     if (provider.selectedKey == null) provider.selectKey(provider.progressData.first.key);
                     onOpenSetup(TrainingMode.noteToNumber);
                   },

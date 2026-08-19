@@ -62,7 +62,7 @@ class Release {
 /// the right behaviour for a pure bug-fix build.
 const List<Release> kReleases = [
   Release(
-    version: '1.7.4',
+    version: '1.8.0',
     date: '17 AUG 2026',
     headline:
         'The daily challenge now asks all three directions, and Pocket Mode '
@@ -87,12 +87,22 @@ const List<Release> kReleases = [
             '0.3 seconds.',
       ),
       ReleaseLine(
-        icon: Icons.bolt_rounded,
-        color: Color(0xFFF43F5E),
-        title: 'Master got harder',
+        icon: Icons.swap_horiz_rounded,
+        color: Color(0xFF34D399),
+        title: 'Note to Number is free',
         detail:
-            'The top tier is down to 1.2 seconds in every mode. Long enough to '
-            'know the answer, not long enough to work it out.',
+            'All twelve keys, diatonic, no Pro needed. It is the one direction '
+            'where the buttons cannot hint at the answer, so it is the honest '
+            'way to learn a scale.',
+      ),
+      ReleaseLine(
+        icon: Icons.piano_rounded,
+        color: Color(0xFFF43F5E),
+        title: 'The keyboard stops helping',
+        detail:
+            'Apprentice still lights the scale. Above it every key is live, so '
+            'no question can be answered by counting — and Master takes the '
+            'note names off, like a real piano.',
       ),
       ReleaseLine(
         icon: Icons.headphones_rounded,

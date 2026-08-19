@@ -734,6 +734,7 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
                       chromaticTonic:
                           widget.mode == TrainingMode.chromatic ? _currentKey : null,
                       simpleNotes: widget.simpleNotes,
+                      aid: KeyboardAid.forDifficulty(widget.difficulty),
                       onSelect: _handleAnswer,
                     )
                   else
@@ -1778,8 +1779,37 @@ class _KeyDef {
   const _KeyDef(this.name, this.semitone, this.black, [this.frac = 0]);
 }
 
+/// How much help the keyboard gives, by tier.
+///
+/// The keyboard drew all twelve keys but only lit the seven in the scale, so
+/// "count the lit keys" answered a diatonic question without knowing anything —
+/// worst of all in C, where the app is free and beginners live.
+///
+///  * Apprentice keeps the help: the shape of the scale on the keys is exactly
+///    what someone is there to learn, and taking it away at the start teaches
+///    nobody anything.
+///  * Virtuoso lights all twelve. Counting stops working, and a wrong note
+///    outside the key becomes a real mistake instead of an impossible one.
+///  * Master also drops the printed names, which is what a piano actually looks
+///    like. By then the point is not reading, it is knowing where a note lives.
+enum KeyboardAid {
+  full,      // scale keys only, names shown
+  noCounting, // all twelve live, names shown
+  bare;      // all twelve live, no names
+
+  static KeyboardAid forDifficulty(int difficulty) => switch (difficulty) {
+        1 => KeyboardAid.full,
+        2 => KeyboardAid.noCounting,
+        _ => KeyboardAid.bare,
+      };
+
+  bool get allKeysLive => this != KeyboardAid.full;
+  bool get showsNames => this != KeyboardAid.bare;
+}
+
 class _PianoKeyboard extends StatelessWidget {
   final List<NoteItem> notes;
+  final KeyboardAid aid;
   final bool showFeedback;
   final String correctAnswer;
   final String? lastSelected;
@@ -1813,6 +1843,7 @@ class _PianoKeyboard extends StatelessWidget {
     this.fixedSemitone,
     this.chromaticTonic,
     this.simpleNotes = false,
+    this.aid = KeyboardAid.full,
     required this.onSelect,
   });
 
@@ -1919,12 +1950,22 @@ class _PianoKeyboard extends StatelessWidget {
     final (whites, blacks) = topSemitone != null
         ? _buildKeysEndingAt(topSemitone!, scaleNames, spellWhites)
         : _buildKeys(startWhiteSemitone, scaleNames, spellWhites);
-    // Which semitones are valid answer options right now
+    // Which semitones are valid answer options right now.
+    //
+    // Above Apprentice every key is live. Lighting only the scale is what made
+    // a diatonic question answerable by counting the lit keys, and a keyboard
+    // that refuses the wrong note is not a keyboard.
     final active = <int>{};
-    for (final n in notes) {
-      if (n.disabled) continue;
-      final s = kNoteToSemitone[n.note];
-      if (s != null) active.add(s);
+    if (aid.allKeysLive) {
+      for (var s = 0; s < 12; s++) {
+        active.add(s);
+      }
+    } else {
+      for (final n in notes) {
+        if (n.disabled) continue;
+        final s = kNoteToSemitone[n.note];
+        if (s != null) active.add(s);
+      }
     }
     final correctSemi = kNoteToSemitone[correctAnswer];
     final selectedSemi = lastSelected != null ? kNoteToSemitone[lastSelected!] : null;
@@ -2009,6 +2050,7 @@ class _PianoKeyboard extends StatelessWidget {
                                 isFixed: fixedSemitone == whites[i].semitone,
                                 showFeedback: showFeedback,
                                 notation: notation,
+                                showName: aid.showsNames,
                                 onTap: () => onSelect(whites[i].name),
                               ),
                             ),
@@ -2047,6 +2089,7 @@ class _PianoKeyboard extends StatelessWidget {
                                 isFixed: fixedSemitone == k.semitone,
                                 showFeedback: showFeedback,
                                 notation: notation,
+                                showName: aid.showsNames,
                                 onTap: () => onSelect(k.name),
                               ),
                             ),
@@ -2074,6 +2117,11 @@ class _PianoKey extends StatefulWidget {
   final bool isFixed;
   final bool showFeedback;
   final String notation;
+  /// Master hides the printed names: a real keyboard has none, and by that
+  /// tier the skill being certified is knowing where a note lives, not reading
+  /// it off the key. The name still appears on the feedback flash, so a wrong
+  /// answer always says what the right one was.
+  final bool showName;
   final VoidCallback onTap;
 
   const _PianoKey({
@@ -2084,6 +2132,7 @@ class _PianoKey extends StatefulWidget {
     this.isFixed = false,
     required this.showFeedback,
     required this.notation,
+    this.showName = true,
     required this.onTap,
   });
 
@@ -2158,14 +2207,16 @@ class _PianoKeyState extends State<_PianoKey> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            NoteText(
-              note: formatNoteForDisplay(widget.def.name, widget.notation),
-              style: TextStyle(
-                fontSize: isBlack ? 12 : 16,
-                fontWeight: FontWeight.w900,
-                color: labelColor,
+            if (widget.showName ||
+                widget.showFeedback && (widget.isCorrect || widget.isSelected))
+              NoteText(
+                note: formatNoteForDisplay(widget.def.name, widget.notation),
+                style: TextStyle(
+                  fontSize: isBlack ? 12 : 16,
+                  fontWeight: FontWeight.w900,
+                  color: labelColor,
+                ),
               ),
-            ),
             SizedBox(height: isBlack ? 10 : 16),
           ],
         ),
