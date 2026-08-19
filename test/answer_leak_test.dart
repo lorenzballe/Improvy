@@ -110,4 +110,41 @@ void main() {
     expect(await padlocksWhenPro(true), 0,
         reason: 'a paying user must not be shown a lock on what they own');
   });
+
+  testWidgets('tapping the locked half opens the paywall there and then',
+      (t) async {
+    // The bug this replaces: the paywall state flipped but nothing drew,
+    // because Note to Number's branch was the one that never stacked the
+    // overlay in. It appeared only after the setup was dismissed — a wall that
+    // arrives once you have already given up.
+    var opened = false;
+    SharedPreferences.setMockInitialValues({});
+    final storage = StorageService();
+    await storage.init();
+    final provider = AppProvider(storage);
+    await provider.init();
+
+    await t.pumpWidget(ChangeNotifierProvider.value(
+      value: provider,
+      child: MaterialApp(
+        home: NoteToNumberSetup(
+          initialKey: 'C',
+          isPro: false,
+          onShowPaywall: () => opened = true,
+          onCancel: () {},
+          onStart: (_, _, _) {},
+        ),
+      ),
+    ));
+    await t.pump();
+
+    await t.tap(find.text('CHROMATIC'));
+    await t.pump();
+
+    expect(opened, isTrue,
+        reason: 'the tap must ask for the paywall immediately');
+    // …and must not have quietly switched to the mode it cannot afford.
+    expect(find.textContaining('Focus on the 7 notes'), findsOneWidget,
+        reason: 'a free user must still be on Diatonic afterwards');
+  });
 }

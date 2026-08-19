@@ -439,10 +439,26 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     });
   }
 
+  /// The paywall renders above whatever is on screen, always.
+  ///
+  /// It used to be stacked in by each branch of [_content] separately, and
+  /// three of the five remembered. Note to Number did not — so tapping its
+  /// locked Chromatic pill flipped the state and drew nothing, and the paywall
+  /// only appeared once the setup was dismissed and the home tree came back.
+  /// A wall that arrives after you have given up is worse than no wall.
+  ///
+  /// Hoisting it here is not a tidier version of the same thing: it makes the
+  /// mistake impossible rather than fixed in the one place it was noticed.
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AppProvider>();
+    return Stack(children: [
+      _content(context, provider),
+      if (_showPaywall) _paywallOverlay(provider),
+    ]);
+  }
 
+  Widget _content(BuildContext context, AppProvider provider) {
     // Latch the largest bottom inset so a flickering system gesture bar can't
     // make the floating nav jump up and down.
     final rawBottom = MediaQuery.of(context).viewPadding.bottom;
@@ -566,7 +582,6 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
               setState(() { _pendingSetup = null; _pocketConfig = config; });
             },
           ),
-          if (_showPaywall) _paywallOverlay(provider),
         ]);
       }
       if (_pendingSetup == TrainingMode.custom) {
@@ -617,7 +632,6 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
               );
             },
           ),
-          if (_showPaywall) _paywallOverlay(provider),
         ]);
       }
     }
@@ -773,7 +787,6 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
               _KeepAlivePage(child: SettingsScreen(onShowPaywall: _showPaywallSheet, onSimulatePerfect: _triggerPerfectCelebration)),
             ],
           ),
-          if (_showPaywall) _paywallOverlay(provider),
           if (provider.selectedKey == null && !provider.viewingKeyStats && !_showPaywall)
             Positioned(
               bottom: 24 + _stableBottomInset,
