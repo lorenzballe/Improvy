@@ -97,7 +97,7 @@ void main() {
             isPro: isPro,
             onShowPaywall: () {},
             onCancel: () {},
-            onStart: (_, __, ___) {},
+            onStart: (_, _, _) {},
           ),
         ),
       ));
