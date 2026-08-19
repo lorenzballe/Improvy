@@ -126,6 +126,56 @@ event and any chart can be split by them without a join.
 
 ---
 
+## What arrives without a single line of code
+
+Worth knowing before adding anything: PostHog's mobile SDK attaches a static
+context to **every** event, and the server derives more from the request IP.
+Nothing here needs a permission and nothing here was written by us.
+
+| | |
+|---|---|
+| App | `$app_version`, `$app_build`, `$app_name`, `$app_namespace` |
+| Device | `$device_manufacturer`, `$device_model`, `$device_type`, `$screen_width`, `$screen_height` |
+| OS | `$os_name`, `$os_version` |
+| Setting | `$locale`, `$timezone`, network type |
+| Where | `$geoip_country_name`, `$geoip_subdivision_1_name` (region), `$geoip_city_name`, `$geoip_time_zone`, and an approximate `$geoip_latitude` / `$geoip_longitude` |
+
+That last row **is** approximate location, and it is already on. Confirm it in
+30 seconds: *Activity → Live events →* open any event and read the property
+list. The exact names may differ slightly by SDK version; the list on screen is
+the authority, not this table.
+
+## Location: what we do not ask for, and why
+
+The app requests **no location permission** and should not start.
+
+GeoIP already answers every question worth asking — which countries to
+translate for, which timezones to schedule reminders in, where growth is coming
+from — at city resolution, with no prompt and no permission to decline.
+
+Asking for real GPS would mean a permission dialog most people refuse, a purpose
+string in Info.plist, a *Precise Location* row on the App Store label, and a
+genuine review risk: Apple's 5.1.1 requires data collection to be tied to a
+feature the user can see, and a scale trainer has no such feature. Two
+rejections have already cost this app weeks. It would buy nothing that the row
+above does not already give.
+
+**Session replay** is the other thing deliberately left off. It records the
+screen. For a tap-a-note app the insight is small next to the cost: a privacy
+label change, a policy change, and a lot of video of people tapping notes. It is
+one line in `init()` the day that trade looks worth it.
+
+## Feature flags — the thing that was actually missing
+
+`AnalyticsService.flag('name')` and `.variant('name')`. Already in the SDK,
+nothing to install.
+
+This is the one professional habit the app had no way to practise: changing the
+paywall wording, the daily's difficulty or the onboarding order for half the
+users and reading which half converts — without shipping a build and waiting a
+week for review. A flag that fails to load falls back to whatever ships today,
+so it can never break the app.
+
 ## Privacy
 
 Unchanged, and the events above keep it that way: no name, no email, no

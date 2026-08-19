@@ -425,6 +425,44 @@ class AppProvider extends ChangeNotifier {
   ///
   /// Called after anything that changes the answer, not on a timer: session
   /// end, a purchase, a settings change. Cheap, and the SDK batches it.
+  /// The first day this device ever trained — the closest thing to an install
+  /// date the app stores, and enough to read behaviour by tenure without
+  /// keeping a second timestamp around.
+  DateTime? get _firstPlayed {
+    if (stats.dailyHistory.isEmpty) return null;
+    final keys = stats.dailyHistory.keys.toList()..sort();
+    return DateTime.tryParse(keys.first);
+  }
+
+  int get daysSinceFirstPlay {
+    final first = _firstPlayed;
+    return first == null ? 0 : DateTime.now().difference(first).inDays;
+  }
+
+  /// Where and when this person practises, in the shape a chart can use.
+  ///
+  /// PostHog already attaches locale, timezone, device and a GeoIP country to
+  /// every event, but only as event properties — as *person* properties they
+  /// become cohorts you can filter a whole account by ("everyone in Italy",
+  /// "everyone on an iPad").
+  Map<String, Object?> _context() {
+    final view = PlatformDispatcher.instance.views.isEmpty
+        ? null
+        : PlatformDispatcher.instance.views.first;
+    final shortest = view == null
+        ? 0.0
+        : (view.physicalSize.shortestSide / view.devicePixelRatio);
+    return {
+      'locale': PlatformDispatcher.instance.locale.toLanguageTag(),
+      'timezone': DateTime.now().timeZoneName,
+      'utc_offset_hours': DateTime.now().timeZoneOffset.inHours,
+      // 600dp is the usual tablet line. Worth knowing: the whole layout is
+      // designed for a phone in one hand.
+      'device_class': shortest >= 600 ? 'tablet' : 'phone',
+      'days_since_first_play': daysSinceFirstPlay,
+    };
+  }
+
   void syncAnalyticsProfile() {
     final level = animalLevel;
     final played = progressData.where((k) => k.totalProgress > 0).length;
@@ -454,6 +492,12 @@ class AppProvider extends ChangeNotifier {
       'adaptive_difficulty': adaptiveDifficulty,
       'keyboard_from_tonic': keyboardFromTonic,
       'notif_daily_on': notifDailyOn,
+      'notif_comeback_on': notifComebackOn,
+      // Retention cannot be read without this: someone who never granted
+      // notifications is not the same case as someone who ignores them.
+      'notif_permission_asked': _storage.loadNotifPermAsked(),
+      'reminder_hour': notifHour,
+      ..._context(),
     }, once: {
       // Never overwritten, so "everyone who arrived in August" stays a stable
       // cohort however long they go on playing.
@@ -664,6 +708,9 @@ class AppProvider extends ChangeNotifier {
       'key': c.key,
       'mode': c.mode.storageKey,
       'streak': dailyStreak,
+      'hour': DateTime.now().hour,
+      'weekday': DateTime.now().weekday,
+      'days_since_first_play': daysSinceFirstPlay,
     });
     // Milestones are the moments worth a notification, a share prompt or a
     // rating ask — knowing how many people reach each one is what says which.

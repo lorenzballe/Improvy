@@ -384,6 +384,12 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       'is_daily': wasDaily,
       'adaptive': provider.adaptiveDifficulty,
       'session_number': provider.stats.totalSessions + 1,
+      // When people actually practise. The daily reminder is hardcoded to
+      // 19:00 on nothing but a guess; this is what replaces the guess, and it
+      // is the single most actionable thing a habit app can measure.
+      'hour': DateTime.now().hour,
+      'weekday': DateTime.now().weekday,
+      'days_since_first_play': provider.daysSinceFirstPlay,
     });
     // Activation. Everything before this is a download; this is a user.
     if (firstEver) {

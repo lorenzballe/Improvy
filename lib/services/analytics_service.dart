@@ -223,6 +223,35 @@ class AnalyticsService {
     return f;
   }
 
+  /// A remote switch, decided in PostHog rather than in a release.
+  ///
+  /// The one thing a professional app does that this one could not: change the
+  /// paywall wording, the daily's difficulty or the onboarding order for half
+  /// the users and read which half converts — without shipping a build and
+  /// waiting a week for review. Already in the SDK; nothing to install.
+  ///
+  /// Returns [fallback] when the flag is unknown or the network is not there,
+  /// so a flag that never loads is simply the behaviour that ships today.
+  Future<bool> flag(String key, {bool fallback = false}) async {
+    if (!_enabled) return fallback;
+    try {
+      return await Posthog().isFeatureEnabled(key);
+    } catch (_) {
+      return fallback;
+    }
+  }
+
+  /// The variant of a multi-way experiment ('control', 'b', …), or null.
+  Future<String?> variant(String key) async {
+    if (!_enabled) return null;
+    try {
+      final v = await Posthog().getFeatureFlag(key);
+      return v is String ? v : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// An error the user never sees. These are the ones worth knowing about:
   /// a device where audio, storage or the store quietly does not work looks
   /// exactly like a device where the user simply stopped playing.
