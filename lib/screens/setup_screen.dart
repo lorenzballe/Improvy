@@ -102,6 +102,7 @@ class _NoteToNumberSetupState extends State<NoteToNumberSetup> {
                                   opts: const ['Diatonic', 'Chromatic'],
                                   sel: _chromatic ? 'Chromatic' : 'Diatonic',
                                   accentColor: _accent,
+                                  locked: widget.isPro ? const {} : const {'Chromatic'},
                                   onChange: (v) {
                                     // Diatonic is free in every key; the twelve
                                     // chromatic degrees are what Pro buys here.
@@ -492,7 +493,12 @@ class _OfWhatSetupState extends State<OfWhatSetup> {
                                       label: 'EXT',
                                       locked: !widget.isPro,
                                       onTap: () {
-                                        if (!widget.isPro) { widget.onShowPaywall(); return; }
+                                        if (!widget.isPro) {
+                                          AnalyticsService.instance
+                                              .lockedFeature('of_what_extensions');
+                                          widget.onShowPaywall();
+                                          return;
+                                        }
                                         setState(() => _degs = Set.of(kOfWhatExtensions));
                                       },
                                     ),
@@ -501,7 +507,12 @@ class _OfWhatSetupState extends State<OfWhatSetup> {
                                       label: 'ALL',
                                       locked: !widget.isPro,
                                       onTap: () {
-                                        if (!widget.isPro) { widget.onShowPaywall(); return; }
+                                        if (!widget.isPro) {
+                                          AnalyticsService.instance
+                                              .lockedFeature('of_what_all_degrees');
+                                          widget.onShowPaywall();
+                                          return;
+                                        }
                                         setState(() => _degs = Set.of(kOfWhatDegrees));
                                       },
                                     ),
@@ -1098,12 +1109,17 @@ class _SlidingPillRow extends StatelessWidget {
   final List<String> opts;
   final String sel;
   final Color accentColor;
+  /// Options that need Pro. They stay tappable — the tap is what opens the
+  /// paywall — but wear the same small grey padlock the locked quick buttons
+  /// and key tiles use, so nobody discovers the wall by walking into it.
+  final Set<String> locked;
   final ValueChanged<String> onChange;
 
   const _SlidingPillRow({
     required this.opts,
     required this.sel,
     required this.accentColor,
+    this.locked = const {},
     required this.onChange,
   });
 
@@ -1183,6 +1199,16 @@ class _SlidingPillRow extends StatelessWidget {
                                       color: active ? const Color(0xE6000000) : Colors.white.withValues(alpha: 0.45)),
                                 ),
                                 Text(opt.split('→')[1].trim().toUpperCase(), maxLines: 1, softWrap: false),
+                              ])
+                            : locked.contains(opt)
+                            ? Row(mainAxisSize: MainAxisSize.min, children: [
+                                Icon(Icons.lock_rounded,
+                                    size: 11,
+                                    color: active
+                                        ? const Color(0xE6000000)
+                                        : Colors.white.withValues(alpha: 0.4)),
+                                const SizedBox(width: 5),
+                                Text(opt.toUpperCase(), maxLines: 1, softWrap: false),
                               ])
                             : Text(
                                 opt.toUpperCase(),
