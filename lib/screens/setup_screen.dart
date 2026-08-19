@@ -14,6 +14,9 @@ import 'pocket_mode_screen.dart' show PocketConfig;
 
 class NoteToNumberSetup extends StatefulWidget {
   final String initialKey;
+  /// Required, like the other two setups — never defaulted. A default of `true`
+  /// here means a forgotten argument silently unlocks Pro instead of failing to
+  /// compile, which is the wrong way round for the one flag that guards money.
   final bool isPro;
   final VoidCallback onShowPaywall;
   final void Function(String key, List<String> degrees, int difficulty) onStart;
@@ -22,7 +25,7 @@ class NoteToNumberSetup extends StatefulWidget {
   const NoteToNumberSetup({
     super.key,
     required this.initialKey,
-    this.isPro = true,
+    required this.isPro,
     required this.onShowPaywall,
     required this.onStart,
     required this.onCancel,

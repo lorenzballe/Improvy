@@ -1,6 +1,12 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:improvy/constants/music_constants.dart';
+import 'package:improvy/providers/app_provider.dart';
+import 'package:improvy/screens/setup_screen.dart';
+import 'package:improvy/services/storage_service.dart';
 import 'package:improvy/screens/trainer_screen.dart';
 import 'package:improvy/utils/music_engine.dart';
 
@@ -70,5 +76,38 @@ void main() {
         expect(shown, isNotEmpty, reason: 'degree $degree of $key');
       }
     }
+  });
+
+  testWidgets('the Pro half of Note to Number wears a padlock', (t) async {
+    // A control that costs money must say so before it is tapped. Chromatic
+    // looked exactly like Diatonic and only revealed itself by opening a
+    // paywall — the wall you find by walking into it.
+    SharedPreferences.setMockInitialValues({});
+    final storage = StorageService();
+    await storage.init();
+    final provider = AppProvider(storage);
+    await provider.init();
+
+    Future<int> padlocksWhenPro(bool isPro) async {
+      await t.pumpWidget(ChangeNotifierProvider.value(
+        value: provider,
+        child: MaterialApp(
+          home: NoteToNumberSetup(
+            initialKey: 'C',
+            isPro: isPro,
+            onShowPaywall: () {},
+            onCancel: () {},
+            onStart: (_, __, ___) {},
+          ),
+        ),
+      ));
+      await t.pump();
+      return find.byIcon(Icons.lock_rounded).evaluate().length;
+    }
+
+    expect(await padlocksWhenPro(false), 1,
+        reason: 'a free user must see the lock on Chromatic');
+    expect(await padlocksWhenPro(true), 0,
+        reason: 'a paying user must not be shown a lock on what they own');
   });
 }
