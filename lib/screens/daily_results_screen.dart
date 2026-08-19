@@ -80,7 +80,7 @@ class _DailyResultsScreenState extends State<DailyResultsScreen> {
 
   Future<void> _share(DailyResult r, int streak) async {
     HapticsService.impactMedium();
-    AnalyticsService.instance.capture('daily_challenge_shared', {
+    AnalyticsService.instance.capture(Ev.dailyShared, {
       'correct': r.correct,
       'total': r.total,
     });

@@ -125,11 +125,11 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     if (action == 'quiz') {
       final slot = int.tryParse(uri.queryParameters['s'] ?? '');
       if (slot == null) return;
-      AnalyticsService.instance.capture('widget_tapped', {'widget': 'quiz'});
+      AnalyticsService.instance.capture(Ev.widgetTapped, {'widget': 'quiz'});
       setState(() =>
           _quizReveal = WidgetService.instance.questionForSlot(slot, provider.notation));
     } else if (action == 'daily') {
-      AnalyticsService.instance.capture('widget_tapped', {'widget': 'daily'});
+      AnalyticsService.instance.capture(Ev.widgetTapped, {'widget': 'daily'});
       if (provider.todayDailyResult == null) {
         provider.startDailyChallenge();
       } else {
@@ -140,11 +140,11 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       // The weakest-key widget: open that key's training straight away, which
       // is the whole reason the widget is worth a slot on someone's home screen.
       final key = uri.queryParameters['k'];
-      AnalyticsService.instance.capture('widget_tapped', {'widget': 'weakest'});
+      AnalyticsService.instance.capture(Ev.widgetTapped, {'widget': 'weakest'});
       _switchTab(0);
       if (key != null && key.isNotEmpty) provider.selectKey(key);
     } else if (action == 'pocket' || action == 'chromatic' || action == 'custom') {
-      AnalyticsService.instance.capture('widget_tapped', {'widget': action});
+      AnalyticsService.instance.capture(Ev.widgetTapped, {'widget': action});
       _switchTab(0);
       final mode = switch (action) {
         'pocket' => TrainingMode.pocket,
@@ -153,10 +153,10 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       };
       _openSetup(mode);
     } else if (action == 'stats') {
-      AnalyticsService.instance.capture('widget_tapped', {'widget': 'stats'});
+      AnalyticsService.instance.capture(Ev.widgetTapped, {'widget': 'stats'});
       _switchTab(1);
     } else if (action == 'train' || action == 'theory') {
-      AnalyticsService.instance.capture('widget_tapped', {'widget': action});
+      AnalyticsService.instance.capture(Ev.widgetTapped, {'widget': action});
       _switchTab(0);
     }
   }
@@ -164,7 +164,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
   static const _tabNames = ['home', 'stats', 'settings'];
   void _trackTab(int i) {
     if (i >= 0 && i < _tabNames.length) {
-      AnalyticsService.instance.capture('screen_view', {'name': _tabNames[i]});
+      AnalyticsService.instance.screen(_tabNames[i]);
     }
   }
 
@@ -198,7 +198,8 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       final current = provider.animalLevel;
       if (_prevLevel != null && current.level > _prevLevel!.level) {
         setState(() { _levelUpLevel = current; _confettiColor = current.color; });
-        AnalyticsService.instance.capture('level_up', {'level': current.level, 'animal': current.name});
+        AnalyticsService.instance.capture(Ev.levelUp,
+          {'level': current.level, 'animal': current.name});
         // Emit after the rebuild so the confetti overlay already has the new
         // animal colour (otherwise the first burst comes out white).
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -220,8 +221,19 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     super.dispose();
   }
 
+  /// Where the paywall was opened from, and when. Both are needed to read the
+  /// funnel: a conversion rate with no source cannot say which locked door
+  /// actually sells, and a dismissal with no duration cannot tell a misfire
+  /// from a considered no.
+  String _paywallSource = 'unknown';
+  DateTime? _paywallShownAt;
+
   void _showPaywallSheet([String? reason]) {
-    AnalyticsService.instance.capture('paywall_shown', {'reason': ?reason});
+    _paywallSource =
+        reason ?? AnalyticsService.instance.takeLockedFeature() ?? 'unknown';
+    _paywallShownAt = DateTime.now();
+    PurchaseService.instance.paywallSource = _paywallSource;
+    AnalyticsService.instance.capture(Ev.paywallShown, {'source': _paywallSource});
     setState(() => _showPaywall = true);
   }
 
@@ -237,6 +249,12 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
   /// rating prompt back for a while after it.
   void _closePaywall() {
     ReviewService.instance.noteFrictionMoment();
+    AnalyticsService.instance.capture(Ev.paywallDismissed, {
+      'source': _paywallSource,
+      'seconds_visible': _paywallShownAt == null
+          ? 0
+          : DateTime.now().difference(_paywallShownAt!).inSeconds,
+    });
     setState(() => _showPaywall = false);
   }
 
@@ -312,7 +330,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
   List<String>? _ofWhatResumeDegrees;
 
   void _openSetup(TrainingMode mode, {String? ofWhatNote, List<String>? ofWhatDegrees}) {
-    AnalyticsService.instance.capture('setup_opened', {'mode': mode.storageKey});
+    AnalyticsService.instance.capture(Ev.setupOpened, {'mode': mode.storageKey});
     setState(() {
       _ofWhatResumeNote = ofWhatNote;
       _ofWhatResumeDegrees = ofWhatDegrees;
@@ -347,17 +365,39 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     final newLevel = provider.animalLevel;
     if (_prevLevel != null && newLevel.level > _prevLevel!.level) {
       setState(() { _levelUpLevel = newLevel; _confettiColor = newLevel.color; });
-      AnalyticsService.instance.capture('level_up', {'level': newLevel.level, 'animal': newLevel.name});
+      AnalyticsService.instance.capture(Ev.levelUp,
+          {'level': newLevel.level, 'animal': newLevel.name});
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _confettiCtrl.play();
       });
     }
-    AnalyticsService.instance.capture('session_finished');
+    final wasDaily = provider.dailyChallengeActive;
+    final firstEver = provider.stats.totalSessions == 0;
+    AnalyticsService.instance.capture(Ev.sessionFinished, {
+      'mode': data['mode'],
+      'key': data['key'],
+      'difficulty': data['difficulty'],
+      'correct': data['correct'],
+      'total': data['total'],
+      'accuracy': data['accuracy'],
+      'seconds': data['time'],
+      'is_daily': wasDaily,
+      'adaptive': provider.adaptiveDifficulty,
+      'session_number': provider.stats.totalSessions + 1,
+    });
+    // Activation. Everything before this is a download; this is a user.
+    if (firstEver) {
+      AnalyticsService.instance.capture(Ev.firstSessionCompleted, {
+        'mode': data['mode'],
+        'accuracy': data['accuracy'],
+      });
+    }
     // Update _prevLevel now so the provider listener won't double-trigger
     // when exitTrainer() fires after the user leaves the summary screen.
     _prevLevel = newLevel;
 
     provider.finishSession();
+    provider.syncAnalyticsProfile();
     setState(() => _finishedSession = data);
 
     // Perfect session → rainbow confetti rain + frame-glow over the summary
@@ -366,7 +406,12 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     final correct = (data['correct'] as num?)?.toInt() ?? 0;
     final total = (data['total'] as num?)?.toInt() ?? 0;
     if (total > 0 && correct == total) {
-      AnalyticsService.instance.capture('perfect_session', {'mode': data['mode'], 'key': data['key']});
+      AnalyticsService.instance.capture(Ev.perfectSession, {
+        'mode': data['mode'],
+        'key': data['key'],
+        'total': total,
+        'difficulty': data['difficulty'],
+      });
       _triggerPerfectCelebration();
     }
 
@@ -410,7 +455,8 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
           _currentTab = 0;
           _arrivalId++;
         });
-        AnalyticsService.instance.capture('onboarding_completed');
+        AnalyticsService.instance.capture(Ev.onboardingCompleted);
+    provider.syncAnalyticsProfile();
         provider.completeTutorial();
       });
     }
@@ -505,7 +551,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
             onShowPaywall: () => _showPaywallSheet('pocket-degrees'),
             onCancel: () { provider.deselectKey(); setState(() => _pendingSetup = null); },
             onStart: (config) {
-              AnalyticsService.instance.capture('session_started', {
+              AnalyticsService.instance.capture(Ev.sessionStarted, {
                 'mode': 'pocket',
                 'shuffle': config.shuffleKeys,
                 'degrees': config.degrees.length,

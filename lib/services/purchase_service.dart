@@ -46,6 +46,11 @@ class PurchaseService {
   static const String entitlementId = 'pro';
   static const String proProductId = 'improvy_pro_lifetime';
 
+  /// Which locked door sent the user here — set by the paywall when it opens.
+  /// A conversion rate without it cannot say what is actually worth paying
+  /// for, which is the only question this funnel exists to answer.
+  String paywallSource = 'unknown';
+
   bool _isPro = false;
   bool get isPro => _isPro;
 
@@ -104,7 +109,7 @@ class PurchaseService {
       lastPurchaseError = 'Billing is not available on this device.';
       return PurchaseOutcome.notConfigured;
     }
-    AnalyticsService.instance.capture('pro_purchase_start');
+    AnalyticsService.instance.capture(Ev.purchaseStarted, {'source': paywallSource});
     try {
       final offerings = await Purchases.getOfferings();
       final current = offerings.current;
@@ -113,7 +118,7 @@ class PurchaseService {
         lastPurchaseError =
             'The store returned no purchasable product. (RevenueCat: the current '
             'Offering has no package linked to the Play product.)';
-        AnalyticsService.instance.capture('pro_purchase_no_offering');
+        AnalyticsService.instance.capture(Ev.purchaseNoOffering, {'source': paywallSource});
         return PurchaseOutcome.noProducts;
       }
       // Prefer the lifetime package; fall back to whatever the offering exposes.
@@ -124,6 +129,10 @@ class PurchaseService {
       final code = PurchasesErrorHelper.getErrorCode(e);
       if (code == PurchasesErrorCode.purchaseCancelledError) {
         if (kDebugMode) debugPrint('[PurchaseService] purchase cancelled by user');
+        // Backing out is not a failure, and counting it as one would make the
+        // error rate look like a broken store rather than a price objection.
+        AnalyticsService.instance
+            .capture(Ev.purchaseCancelled, {'source': paywallSource});
         return PurchaseOutcome.cancelled;
       }
       if (kDebugMode) debugPrint('[PurchaseService] purchase error: $code');
@@ -135,16 +144,21 @@ class PurchaseService {
       final detail = _underlying(e);
       lastPurchaseError = '${code.name}: ${e.message ?? 'unknown store error'}'
           '${detail == null ? '' : '\n\n$detail'}';
-      AnalyticsService.instance.capture('pro_purchase_error', {'code': code.name});
+      AnalyticsService.instance.capture(
+          Ev.purchaseFailed, {'code': code.name, 'source': paywallSource});
       return PurchaseOutcome.error;
     } catch (e) {
       if (kDebugMode) debugPrint('[PurchaseService] purchase failed: $e');
       lastPurchaseError = e.toString();
+      // The non-PlatformException path used to vanish entirely: a purchase
+      // that failed here was indistinguishable from one never attempted.
+      AnalyticsService.instance
+          .error(Ev.purchaseFailed, e, {'code': 'unknown', 'source': paywallSource});
       return PurchaseOutcome.error;
     }
     await _refresh(force: true);
     if (_isPro) {
-      AnalyticsService.instance.capture('pro_purchase_success');
+      AnalyticsService.instance.capture(Ev.purchaseSucceeded, {'source': paywallSource});
       return PurchaseOutcome.success;
     }
     // Purchase went through but no entitlement came back: the product is not
@@ -166,7 +180,7 @@ class PurchaseService {
       return false;
     }
     await _refresh(force: true);
-    AnalyticsService.instance.capture('pro_restore', {'found': _isPro});
+    AnalyticsService.instance.capture(Ev.restore, {'found': _isPro});
     return _isPro;
   }
 

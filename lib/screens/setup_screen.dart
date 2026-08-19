@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../constants/app_colors.dart';
 import '../constants/music_constants.dart';
 import '../providers/app_provider.dart';
+import '../services/analytics_service.dart';
 import '../widgets/note_text.dart';
 import 'pocket_mode_screen.dart' show PocketConfig;
 
@@ -604,7 +605,11 @@ class _PocketModeSetupState extends State<PocketModeSetup> {
 
   void _setDiatonic() => setState(() => _degs = {..._diatonic});
   void _setAll() {
-    if (!widget.isPro) { widget.onShowPaywall(); return; }
+    if (!widget.isPro) {
+      AnalyticsService.instance.lockedFeature('pocket_all_degrees');
+      widget.onShowPaywall();
+      return;
+    }
     setState(() => _degs = Set.of(kChromaticDegreesSplit));
   }
 

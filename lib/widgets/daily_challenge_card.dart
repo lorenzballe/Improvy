@@ -64,7 +64,7 @@ class _DailyChallengeCardState extends State<DailyChallengeCard> {
 
   Future<void> _share(DailyResult result, int streak) async {
     HapticsService.impactMedium();
-    AnalyticsService.instance.capture('daily_challenge_shared', {
+    AnalyticsService.instance.capture(Ev.dailyShared, {
       'correct': result.correct,
       'total': result.total,
       'from': 'home_card',

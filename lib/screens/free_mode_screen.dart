@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui' show FontFeature, ImageFilter;
 import 'package:flutter/material.dart';
+import '../services/analytics_service.dart';
 import '../constants/app_colors.dart';
 import '../constants/music_constants.dart';
 import '../services/haptics_service.dart';
@@ -109,6 +110,7 @@ class _FreeModeScreenState extends State<FreeModeScreen>
   @override
   void initState() {
     super.initState();
+    AnalyticsService.instance.capture(Ev.freeModeOpened);
     _roll();
   }
 

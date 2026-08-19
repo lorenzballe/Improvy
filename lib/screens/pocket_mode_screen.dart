@@ -7,6 +7,7 @@ import '../constants/music_constants.dart';
 import '../services/voice_service.dart';
 import '../services/keep_alive_audio.dart';
 import '../services/haptics_service.dart';
+import '../services/analytics_service.dart';
 import '../utils/music_engine.dart';
 import '../widgets/note_text.dart';
 
@@ -80,6 +81,14 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
     _reveal = AnimationController(vsync: this, duration: const Duration(milliseconds: 820));
     _countdown = AnimationController(vsync: this, duration: const Duration(seconds: 1), value: 0);
     _voice.warmUp(); // spin the decoder up before the first question
+    AnalyticsService.instance.capture(Ev.pocketStarted, {
+      'key': widget.config.shuffleKeys ? 'shuffle' : widget.config.key,
+      'shuffle_keys': widget.config.shuffleKeys,
+      'degrees': widget.config.degrees.length,
+      'delay_ms': widget.config.delayMs,
+      'questions': widget.config.questions, // 0 = endless
+      'simple_notes': widget.simpleNotes,
+    });
     // Auto-start: the user already pressed Start on the setup screen.
     WidgetsBinding.instance.addPostFrameCallback((_) => _play());
   }
@@ -234,7 +243,16 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
       // answer has no recording, say ♯2 in F♯. Break rather than return, so it
       // finishes the session properly instead of leaving the screen sitting on
       // a Play button that has apparently done nothing.
-      if (q == null) break;
+      if (q == null) {
+        // Worth knowing about: it means a real user picked a combination the
+        // recordings cannot cover, and sat through a drill that ended early.
+        AnalyticsService.instance.capture(Ev.questionUnspeakable, {
+          'key': widget.config.key,
+          'shuffle_keys': widget.config.shuffleKeys,
+          'degrees': widget.config.degrees.join(' '),
+        });
+        break;
+      }
       final (key, degree, presented, answer) = q;
       if (gen != _gen || !mounted) return;
 

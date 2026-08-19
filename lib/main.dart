@@ -33,6 +33,10 @@ void main() async {
       await run();
     } catch (e, s) {
       debugPrint('[startup] $what failed: $e\n$s');
+      // A device where storage, the store or notifications quietly fail looks
+      // exactly like a device where the user simply stopped playing. This is
+      // the only way to tell the two apart.
+      AnalyticsService.instance.error(Ev.startupStepFailed, e, {'step': what});
     }
   }
 
@@ -56,7 +60,10 @@ void main() async {
   PurchaseService.instance.onProChanged = provider.setIsPro;
   await attempt('purchases', PurchaseService.instance.init);
   await attempt('analytics', AnalyticsService.instance.init);
-  AnalyticsService.instance.capture('app_open');
+  // No manual app_open: captureApplicationLifecycleEvents gives
+  // Application Opened / Installed / Updated / Backgrounded, which is both
+  // more than this said and more reliable about when it happened.
+  provider.syncAnalyticsProfile();
 
   // Home-screen widgets: pick up the tap that launched us (if any), then push
   // the current state out. Both are best-effort — a widget must never be able

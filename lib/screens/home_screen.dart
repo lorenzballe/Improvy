@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
+import '../services/analytics_service.dart';
 import '../models/training_mode.dart';
 import '../models/key_progress.dart';
 import '../constants/app_colors.dart';
@@ -206,7 +207,11 @@ class _HomeMain extends StatelessWidget {
                   borderColor: const Color(0xFF34D399).withAlpha(110),
                   isLocked: !provider.isPro,
                   onTap: () {
-                    if (!provider.isPro) { onShowPaywall(); return; }
+                    if (!provider.isPro) {
+                      AnalyticsService.instance.lockedFeature('note_to_number');
+                      onShowPaywall();
+                      return;
+                    }
                     if (provider.selectedKey == null) provider.selectKey(provider.progressData.first.key);
                     onOpenSetup(TrainingMode.noteToNumber);
                   },
@@ -220,7 +225,11 @@ class _HomeMain extends StatelessWidget {
                   borderColor: const Color(0xFFD857EC).withAlpha(110),
                   isLocked: !provider.isPro,
                   onTap: () {
-                    if (!provider.isPro) { onShowPaywall(); return; }
+                    if (!provider.isPro) {
+                      AnalyticsService.instance.lockedFeature('custom_mode');
+                      onShowPaywall();
+                      return;
+                    }
                     if (provider.selectedKey == null) provider.selectKey(provider.progressData.first.key);
                     onOpenSetup(TrainingMode.custom);
                   },
@@ -1614,7 +1623,11 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                     isLocked: !isPro && keyName != 'C',
                     onTap: () {
                       HapticsService.impactMedium();
-                      if (!isPro && keyName != 'C') { widget.onShowPaywall(); return; }
+                      if (!isPro && keyName != 'C') {
+                        AnalyticsService.instance.lockedFeature('chromatic_key');
+                        widget.onShowPaywall();
+                        return;
+                      }
                       provider.startMode(TrainingMode.chromatic);
                     },
                 );

@@ -79,7 +79,7 @@ class ReviewService {
       // retry on the next level-up and burn the user's patience.
       await prefs.setInt(_lastAskedKey, DateTime.now().millisecondsSinceEpoch);
       await prefs.setInt(_askCountKey, (prefs.getInt(_askCountKey) ?? 0) + 1);
-      AnalyticsService.instance.capture('review_prompt_requested', {'trigger': trigger});
+      AnalyticsService.instance.capture(Ev.reviewPrompted, {'trigger': trigger});
 
       await _inAppReview.requestReview();
     } catch (e) {
@@ -97,7 +97,7 @@ class ReviewService {
   /// Settings row) — not the native sheet, which is reserved for peaks.
   Future<void> openStoreListing() async {
     if (!canOpenStoreListing) return;
-    AnalyticsService.instance.capture('review_store_opened');
+    AnalyticsService.instance.capture(Ev.reviewStoreOpened);
     try {
       await _inAppReview.openStoreListing(appStoreId: kAppStoreId);
     } catch (e) {

@@ -4,6 +4,8 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+import 'analytics_service.dart';
+
 /// Keeps a backgrounded Pocket Mode session alive on iOS.
 ///
 /// `UIBackgroundModes: audio` does not mean "keep my app running". It means
@@ -86,9 +88,12 @@ class KeepAliveAudio {
     } catch (e) {
       // Recorded rather than swallowed. This failing silently is how the bug
       // survived two attempts at fixing it: the app looked identical whether
-      // the native side answered or was not there at all.
+      // the native side answered or was not there at all — and on someone
+      // else's phone there is no console to read.
       _lastSessionResult = 'FAILED $method: $e';
       debugPrint('[KeepAliveAudio] $_lastSessionResult');
+      AnalyticsService.instance
+          .error(Ev.audioSessionFailed, e, {'method': method});
       return null;
     }
   }

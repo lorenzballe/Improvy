@@ -178,6 +178,9 @@ class AppProvider extends ChangeNotifier {
   void setNotifDailyOn(bool v) {
     notifDailyOn = v;
     _storage.saveNotifDailyOn(v);
+    AnalyticsService.instance
+        .capture(Ev.settingChanged, {'setting': 'notif_daily', 'value': v});
+    syncAnalyticsProfile();
     resyncNotifications();
     notifyListeners();
   }
@@ -185,6 +188,8 @@ class AppProvider extends ChangeNotifier {
   void setNotifComebackOn(bool v) {
     notifComebackOn = v;
     _storage.saveNotifComebackOn(v);
+    AnalyticsService.instance
+        .capture(Ev.settingChanged, {'setting': 'notif_comeback', 'value': v});
     resyncNotifications();
     notifyListeners();
   }
@@ -193,6 +198,8 @@ class AppProvider extends ChangeNotifier {
     notifHour = hour;
     notifMinute = minute;
     _storage.saveNotifTime(hour, minute);
+    AnalyticsService.instance.capture(
+        Ev.settingChanged, {'setting': 'notif_time', 'value': '\$hour:\$minute'});
     resyncNotifications();
     notifyListeners();
   }
@@ -323,19 +330,31 @@ class AppProvider extends ChangeNotifier {
     if (_daysPlayed < _notifMinDaysPlayed) return;
     if (stats.sessionHistory.length < _notifMinSessions) return;
     showNotifPrompt = true;
+    AnalyticsService.instance.capture(Ev.notifPermissionAsked);
     notifyListeners();
   }
 
   void acceptNotifPrompt() {
     showNotifPrompt = false;
     _storage.saveNotifPermAsked(true);
-    NotificationService.requestPermission().then((_) => resyncNotifications());
+    // Two separate answers: yes to us, then yes or no to the OS. Only the
+    // second one decides whether a reminder can ever be delivered, and the
+    // gap between them is the cost of asking at the wrong moment.
+    AnalyticsService.instance
+        .capture(Ev.notifPermissionResult, {'accepted_prompt': true});
+    NotificationService.requestPermission().then((granted) {
+      AnalyticsService.instance.capture(
+          Ev.notifPermissionResult, {'os_granted': granted});
+      resyncNotifications();
+    });
     notifyListeners();
   }
 
   void dismissNotifPrompt() {
     showNotifPrompt = false;
     _storage.saveNotifPermAsked(true);
+    AnalyticsService.instance
+        .capture(Ev.notifPermissionResult, {'accepted_prompt': false});
     notifyListeners();
   }
 
@@ -395,6 +414,53 @@ class AppProvider extends ChangeNotifier {
   }
 
   AnimalLevel get animalLevel => getAnimalLevel(totalProgress);
+
+  /// Pushes who this person is to analytics: what they have done, what they
+  /// have turned on, and whether they have paid.
+  ///
+  /// Without this the events answer "what happened" and never "to whom" —
+  /// no retention curve, no cohorts, no way to ask the one question that
+  /// decides the app's future: what does someone who has played twenty games
+  /// and still not bought Pro have in common with everyone else who didn't.
+  ///
+  /// Called after anything that changes the answer, not on a timer: session
+  /// end, a purchase, a settings change. Cheap, and the SDK batches it.
+  void syncAnalyticsProfile() {
+    final level = animalLevel;
+    final played = progressData.where((k) => k.totalProgress > 0).length;
+    final mastered = progressData.where((k) => k.totalProgress >= 100).length;
+    final accuracy = stats.totalAttempts == 0
+        ? 0.0
+        : (stats.totalCorrect / stats.totalAttempts * 100);
+
+    AnalyticsService.instance.setSuperProperties(isPro: isPro, level: level.level);
+    AnalyticsService.instance.setPerson({
+      'is_pro': isPro,
+      'level': level.level,
+      'animal': level.name,
+      'total_progress': double.parse(totalProgress.toStringAsFixed(1)),
+      'streak': streak,
+      'daily_streak': dailyStreak,
+      'total_sessions': stats.totalSessions,
+      'total_attempts': stats.totalAttempts,
+      'accuracy': double.parse(accuracy.toStringAsFixed(1)),
+      'keys_played': played,
+      'keys_mastered': mastered,
+      'dailies_played': dailyResults.length,
+      // The settings, so a chart can ask whether the people who turn adaptive
+      // difficulty on stay longer than the people who turn it off.
+      'notation': notation,
+      'simple_notes': simpleNotes,
+      'adaptive_difficulty': adaptiveDifficulty,
+      'keyboard_from_tonic': keyboardFromTonic,
+      'notif_daily_on': notifDailyOn,
+    }, once: {
+      // Never overwritten, so "everyone who arrived in August" stays a stable
+      // cohort however long they go on playing.
+      'first_seen': DateTime.now().toIso8601String(),
+      'first_version': kReleases.isEmpty ? 'unknown' : kReleases.first.version,
+    });
+  }
 
   /// Did the user train on this day? Answers count, and so does a Pocket Mode
   /// drill — which has no answers by design, only a session (see
@@ -594,11 +660,19 @@ class AppProvider extends ChangeNotifier {
     // Survives an OS kill — launch turns it into a burned attempt (see
     // _recoverDailyAttempt), so force-quitting is never a free retry.
     _storage.saveDailyAttemptStarted(c.dateKey);
-    AnalyticsService.instance.capture('daily_challenge_started', {
+    AnalyticsService.instance.capture(Ev.dailyStarted, {
       'key': c.key,
       'mode': c.mode.storageKey,
       'streak': dailyStreak,
     });
+    // Milestones are the moments worth a notification, a share prompt or a
+    // rating ask — knowing how many people reach each one is what says which.
+    const milestones = [3, 7, 14, 30, 60, 100, 365];
+    if (milestones.contains(dailyStreak)) {
+      AnalyticsService.instance
+          .capture(Ev.streakMilestone, {'streak': dailyStreak});
+    }
+    syncAnalyticsProfile();
     notifyListeners();
   }
 
@@ -644,7 +718,7 @@ class AppProvider extends ChangeNotifier {
       ),
     };
     _storage.saveDailyResults(dailyResults);
-    AnalyticsService.instance.capture('daily_challenge_finished', {
+    AnalyticsService.instance.capture(Ev.dailyFinished, {
       'correct': relevant.where((a) => a.isCorrect).length,
       'total': c.degrees.length,
       'completed': completed,
@@ -688,7 +762,7 @@ class AppProvider extends ChangeNotifier {
     };
     _storage.saveDailyResults(dailyResults);
     _storage.removeDailyAttemptStarted();
-    AnalyticsService.instance.capture('daily_challenge_finished', {
+    AnalyticsService.instance.capture(Ev.dailyFinished, {
       'correct': flags.where((f) => f).length,
       'total': c.degrees.length,
       'completed': completed,
@@ -733,7 +807,7 @@ class AppProvider extends ChangeNotifier {
     };
     _storage.saveLastSession(lastSession!);
 
-    AnalyticsService.instance.capture('session_started', {
+    AnalyticsService.instance.capture(Ev.sessionStarted, {
       'mode': mode.storageKey,
       'key': keyToUse,
       'difficulty': diff,
@@ -763,7 +837,7 @@ class AppProvider extends ChangeNotifier {
       'timestamp': DateTime.now().millisecondsSinceEpoch,
     };
     _storage.saveLastSession(lastSession!);
-    AnalyticsService.instance.capture('session_started', {
+    AnalyticsService.instance.capture(Ev.sessionStarted, {
       'mode': TrainingMode.custom.storageKey,
       'key': selectedKey,
       'difficulty': difficulty,
@@ -793,7 +867,7 @@ class AppProvider extends ChangeNotifier {
       'timestamp': DateTime.now().millisecondsSinceEpoch,
     };
     _storage.saveLastSession(lastSession!);
-    AnalyticsService.instance.capture('session_started', {
+    AnalyticsService.instance.capture(Ev.sessionStarted, {
       'mode': TrainingMode.noteToNumber.storageKey,
       'key': selectedKey,
       'difficulty': difficulty,
@@ -826,7 +900,7 @@ class AppProvider extends ChangeNotifier {
       'timestamp': DateTime.now().millisecondsSinceEpoch,
     };
     _storage.saveLastSession(lastSession!);
-    AnalyticsService.instance.capture('session_started', {
+    AnalyticsService.instance.capture(Ev.sessionStarted, {
       'mode': TrainingMode.ofWhat.storageKey,
       'note': note,
       'difficulty': difficulty,
@@ -865,7 +939,9 @@ class AppProvider extends ChangeNotifier {
       },
     );
     _storage.saveStats(stats);
-    AnalyticsService.instance.capture('pocket_session_finished', {'questions': questionsHeard});
+    AnalyticsService.instance
+        .capture(Ev.pocketFinished, {'questions': questionsHeard});
+    syncAnalyticsProfile();
     resyncNotifications();
     notifyListeners();
   }
@@ -1059,6 +1135,11 @@ class AppProvider extends ChangeNotifier {
   }
 
   void setIsPro(bool value) {
+    if (value != isPro) {
+      // Push the profile immediately: every event after this must be able to
+      // say it came from a paying user.
+      Future.microtask(syncAnalyticsProfile);
+    }
     isPro = value;
     _storage.saveIsPro(value);
     if (!value) {
@@ -1070,6 +1151,10 @@ class AppProvider extends ChangeNotifier {
 
   void setViewingKeyStats(bool value) {
     if (viewingKeyStats == value) return;
+    if (value) {
+      AnalyticsService.instance
+          .capture(Ev.keyStatsOpened, {'key': selectedKey ?? 'unknown'});
+    }
     viewingKeyStats = value;
     notifyListeners();
   }
@@ -1077,29 +1162,36 @@ class AppProvider extends ChangeNotifier {
   void setAdaptiveDifficulty(bool value) {
     adaptiveDifficulty = value;
     _storage.saveAdaptiveDifficulty(value);
-    AnalyticsService.instance.capture('setting_changed', {'setting': 'adaptive_difficulty', 'value': value});
+    AnalyticsService.instance.capture(Ev.settingChanged,
+        {'setting': 'adaptive_difficulty', 'value': value});
+    syncAnalyticsProfile();
     notifyListeners();
   }
 
   void setNotation(String value) {
     notation = value;
     _storage.saveNotation(value);
-    AnalyticsService.instance.capture('setting_changed', {'setting': 'notation', 'value': value});
+    AnalyticsService.instance.capture(Ev.settingChanged,
+        {'setting': 'notation', 'value': value});
+    syncAnalyticsProfile();
     notifyListeners();
   }
 
   void setSimpleNotes(bool value) {
     simpleNotes = value;
     _storage.saveSimpleNotes(value);
-    AnalyticsService.instance.capture('setting_changed',
+    AnalyticsService.instance.capture(Ev.settingChanged,
         {'setting': 'simple_notes', 'value': value});
+    syncAnalyticsProfile();
     notifyListeners();
   }
 
   void setKeyboardFromTonic(bool value) {
     keyboardFromTonic = value;
     _storage.saveKeyboardFromTonic(value);
-    AnalyticsService.instance.capture('setting_changed', {'setting': 'keyboard_from_tonic', 'value': value});
+    AnalyticsService.instance.capture(Ev.settingChanged,
+        {'setting': 'keyboard_from_tonic', 'value': value});
+    syncAnalyticsProfile();
     notifyListeners();
   }
 

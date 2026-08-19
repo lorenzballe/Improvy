@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../providers/app_provider.dart';
+import '../services/analytics_service.dart';
 import '../constants/app_info.dart';
 import '../constants/release_notes.dart';
 import '../services/purchase_service.dart';
@@ -305,7 +306,11 @@ class SettingsScreen extends StatelessWidget {
                     GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onTap: () {
-                        if (!provider.isPro) { onShowPaywall(); return; }
+                        if (!provider.isPro) {
+                          AnalyticsService.instance.lockedFeature('adaptive_difficulty');
+                          onShowPaywall();
+                          return;
+                        }
                         provider.setAdaptiveDifficulty(!provider.adaptiveDifficulty);
                       },
                       child: Opacity(
