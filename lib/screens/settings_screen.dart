@@ -1112,7 +1112,7 @@ class SettingsScreen extends StatelessWidget {
             const SnackBar(
               behavior: SnackBarBehavior.floating,
               backgroundColor: Color(0xFF1A1625),
-              content: Text('Sent. I read every one of these.',
+              content: Text('Sent. We read every one of these.',
                   style: TextStyle(fontWeight: FontWeight.w600)),
             ),
           );
@@ -1153,7 +1153,7 @@ class SettingsScreen extends StatelessWidget {
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      'Straight to me, without leaving the app',
+                      'Straight to us, without leaving the app',
                       maxLines: 1,
                       softWrap: false,
                       style: TextStyle(

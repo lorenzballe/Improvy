@@ -143,7 +143,7 @@ class _FeedbackSheetState extends State<FeedbackSheet> {
                 ),
                 const SizedBox(height: 22),
                 const Text(
-                  'Tell me',
+                  'Tell us',
                   style: TextStyle(
                     fontFamily: 'Outfit',
                     fontSize: 30,
@@ -155,7 +155,7 @@ class _FeedbackSheetState extends State<FeedbackSheet> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'It comes straight to me. No email app, no account, no name '
+                  'It comes straight to us. No email app, no account, no name '
                   'attached unless you write one.',
                   style: TextStyle(
                     fontSize: 12.5,

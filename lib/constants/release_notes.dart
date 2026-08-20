@@ -65,7 +65,7 @@ const List<Release> kReleases = [
     version: '1.8.5',
     date: '20 AUG 2026',
     headline:
-        'There is now a place to tell me what is wrong with this app, and it '
+        'There is now a place to tell us what is wrong with this app, and it '
         'does not need your email.',
     lines: [
       ReleaseLine(
