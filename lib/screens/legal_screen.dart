@@ -62,7 +62,7 @@ class LegalScreen extends StatelessWidget {
 const String kPrivacyPolicyBody = '''
 PRIVACY POLICY
 
-Last updated: July 24, 2026
+Last updated: August 20, 2026
 
 Improvy ("App", "we", "us") is developed and operated by Lorenzo Ballestrazzi ("Developer"). This Privacy Policy explains what information we collect, how we use it, and your rights.
 
@@ -92,19 +92,23 @@ Our analytics provider (PostHog) may automatically record: app version, operatin
 d) Approximate location
 PostHog derives a coarse location (roughly your city, region, and country) from the IP address of each request, so we can see broadly where Improvy is used. The App itself never asks for location access and cannot read your device's GPS. This location is coarse, tied to no account or identity, used only for anonymous analytics, and never for advertising or tracking.
 
+e) Feedback you choose to send
+The App has a feedback box in Settings. We receive only what you type into it: your message, the category you pick, and — if you fill in the optional email field — the address you enter, which we use solely to reply to you. Leaving that field blank keeps the message anonymous. Nothing is read from your device or attached on your behalf; if you write personal information into the box, we receive it because you sent it.
+
 2. HOW WE USE YOUR INFORMATION
 
 We use anonymous usage data exclusively to:
 - Understand which training features are most useful
 - Identify and fix bugs
 - Prioritise future improvements
+- Read, and where you asked for one, answer your feedback
 
 We do not use your data for advertising. We do not sell, rent, or share your data with any third party for marketing purposes.
 
 3. THIRD-PARTY SERVICES
 
 PostHog (Analytics)
-We use PostHog to collect anonymous usage events and a coarse, IP-based location. PostHog may process data on servers located in the EU. No account or directly identifying information is sent to PostHog. PostHog Privacy Policy: https://posthog.com/privacy
+We use PostHog to collect anonymous usage events and a coarse, IP-based location, and it is also the channel that carries feedback you send from Settings. PostHog may process data on servers located in the EU. We send it no account and no identifying information of our own — the only directly identifying data it can ever hold is an email address you typed into the feedback box yourself. PostHog Privacy Policy: https://posthog.com/privacy
 
 Apple / Google (In-App Purchases)
 In-app purchases are processed directly by Apple (App Store) or Google (Play Store). Their privacy policies govern the processing of your payment and account data:

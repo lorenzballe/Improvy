@@ -13,6 +13,7 @@ import '../services/review_service.dart';
 import 'legal_screen.dart';
 import 'free_mode_screen.dart';
 import '../widgets/pressable_scale.dart';
+import '../widgets/feedback_sheet.dart';
 
 /// Instagram's own mark — the rounded camera body, the lens and the flash dot.
 /// Drawn as strokes so it stays crisp at any size, and tinted white by the
@@ -795,6 +796,8 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
               ],
+              _feedbackRow(context),
+              const SizedBox(height: 10),
               GestureDetector(
                 onTap: () => _contactSupport(context),
                 child: _blurCard(
@@ -1097,6 +1100,76 @@ class SettingsScreen extends StatelessWidget {
       ]),
     ),
   );
+
+  /// The one support row that cannot fail to open. Contact Support hands the
+  /// message to a mail app the phone may not have set up; this is a box and a
+  /// button, and it arrives whether or not the user owns an email client.
+  Widget _feedbackRow(BuildContext context) => PressableScale(
+        onTap: () async {
+          final sent = await FeedbackSheet.show(context, source: 'settings');
+          if (!sent || !context.mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: Color(0xFF1A1625),
+              content: Text('Sent. I read every one of these.',
+                  style: TextStyle(fontWeight: FontWeight.w600)),
+            ),
+          );
+        },
+        child: _blurCard(
+          child: Row(children: [
+            Container(
+              width: 32, height: 32,
+              decoration: BoxDecoration(
+                color: const Color(0x334F46E5),
+                border: Border.all(color: const Color(0x334F46E5)),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.forum_rounded, color: Color(0xFF818CF8), size: 17),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Send Feedback',
+                      maxLines: 1,
+                      softWrap: false,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                  ),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Straight to me, without leaving the app',
+                      maxLines: 1,
+                      softWrap: false,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF818CF8),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, color: Colors.white.withAlpha(51)),
+          ]),
+        ),
+      );
 
   Widget _legalRow(BuildContext context, String title, IconData icon, Widget screen) => PressableScale(
     onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen)),

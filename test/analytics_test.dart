@@ -65,6 +65,7 @@ void main() {
       Ev.settingChanged,
       Ev.startupStepFailed,
       Ev.audioSessionFailed,
+      Ev.feedbackSubmitted,
     ]) {
       final constant = RegExp("static const ([a-zA-Z]+) = '$ev'")
           .firstMatch(File('lib/services/analytics_service.dart').readAsStringSync())

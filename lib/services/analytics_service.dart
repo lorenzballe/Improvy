@@ -56,6 +56,16 @@ abstract final class Ev {
   static const purchaseNoOffering = 'pro_purchase_no_offering';
   static const restore = 'pro_restore';
 
+  // ── Feedback ──
+  /// The sheet was opened. Together with [feedbackSubmitted] this says how
+  /// many people start writing and give up — which is the only way to know
+  /// whether the box is too much to ask for.
+  static const feedbackOpened = 'feedback_opened';
+
+  /// A message the user actually sent, carrying `message`, `kind` and an
+  /// optional `email`. Read it in PostHog → Activity, filtered on this event.
+  static const feedbackSubmitted = 'feedback_submitted';
+
   // ── Settings & notifications ──
   static const settingChanged = 'setting_changed';
   static const notifPermissionAsked = 'notification_permission_asked';

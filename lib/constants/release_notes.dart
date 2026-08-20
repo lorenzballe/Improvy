@@ -62,6 +62,24 @@ class Release {
 /// the right behaviour for a pure bug-fix build.
 const List<Release> kReleases = [
   Release(
+    version: '1.8.5',
+    date: '20 AUG 2026',
+    headline:
+        'There is now a place to tell me what is wrong with this app, and it '
+        'does not need your email.',
+    lines: [
+      ReleaseLine(
+        icon: Icons.forum_rounded,
+        color: Color(0xFF818CF8),
+        title: 'Say it from inside the app',
+        detail:
+            'Settings, under Support. A box and a button — no mail app, no '
+            'account, no name attached unless you write one. Leave an email '
+            'only if you want an answer back.',
+      ),
+    ],
+  ),
+  Release(
     version: '1.8.4',
     date: '17 AUG 2026',
     headline:
