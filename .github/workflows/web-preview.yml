@@ -14,10 +14,14 @@ permissions:
   pages: write
   id-token: write
 
-# Only one Pages deployment at a time; newer pushes cancel older runs.
+# Only one Pages deployment at a time. Queued, NOT cancelled: main and the
+# working branch share this group, so a push to both — which is what shipping
+# looks like here — used to have the second run kill the first. The site still
+# ended up correct (same commit, either run deploys it), but every push left a
+# red "cancelled" run on main that looked like a broken build.
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
