@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:improvy/providers/app_provider.dart';
+import 'package:improvy/screens/settings_screen.dart';
+import 'package:improvy/services/storage_service.dart';
 import 'package:improvy/widgets/feedback_sheet.dart';
 
 /// The feedback box is the only channel in the app where the user writes to
@@ -67,5 +73,51 @@ void main() {
     for (final k in FeedbackKind.values) {
       expect(find.text(k.label), findsOneWidget);
     }
+  });
+
+  _confirmation();
+}
+
+/// The confirmation after sending was drawn in the surface colour, on a bar
+/// that floats where the tab bar already sits — invisible twice over. These
+/// pin down both halves of that fix.
+void _confirmation() {
+  testWidgets('the confirmation is neither the surface colour nor behind the nav',
+      (t) async {
+    SharedPreferences.setMockInitialValues({});
+    final storage = StorageService();
+    await storage.init();
+    final provider = AppProvider(storage);
+    await provider.init();
+    provider.completeTutorial();
+
+    t.view.physicalSize = const Size(390, 844);
+    t.view.devicePixelRatio = 1.0;
+    addTearDown(t.view.resetPhysicalSize);
+    addTearDown(t.view.resetDevicePixelRatio);
+
+    await t.pumpWidget(ChangeNotifierProvider<AppProvider>.value(
+      value: provider,
+      child: MaterialApp(
+        home: SettingsScreen(onShowPaywall: ([_]) {}, onSimulatePerfect: () {}),
+      ),
+    ));
+    await t.pumpAndSettle();
+
+    await t.scrollUntilVisible(find.text('Send Feedback'), 300);
+    await t.tap(find.text('Send Feedback'));
+    await t.pumpAndSettle();
+    await t.enterText(find.byType(TextField).first, 'the buttons give it away');
+    await t.pump();
+    await t.tap(find.text('SEND'));
+    await t.pumpAndSettle();
+
+    final bar = t.widget<SnackBar>(find.byType(SnackBar));
+    expect(bar.backgroundColor, isNot(const Color(0xFF1A1625)),
+        reason: 'the surface colour is what every card behind it is painted');
+    // Clear of the floating tab bar: anchored at 24, about 78 tall.
+    expect((bar.margin as EdgeInsets?)?.bottom ?? 0, greaterThan(100),
+        reason: 'a confirmation under the nav bar is one nobody reads');
+    expect(find.textContaining('Sent.'), findsOneWidget);
   });
 }

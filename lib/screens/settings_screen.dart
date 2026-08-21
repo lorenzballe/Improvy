@@ -33,6 +33,41 @@ class SettingsScreen extends StatelessWidget {
   final VoidCallback onSimulatePerfect;
   const SettingsScreen({super.key, required this.onShowPaywall, required this.onSimulatePerfect});
 
+  /// A confirmation the user can actually see.
+  ///
+  /// The default here was the surface colour — the same `0xFF1A1625` as every
+  /// card on the screen — on a bar that floats at the very bottom, where the
+  /// tab bar already sits. So "Sent." was invisible twice over: the wrong
+  /// colour, in the wrong place. This wears the accent the SEND button uses
+  /// and is lifted clear of the nav.
+  static void _toast(BuildContext context, String message, {IconData? icon}) {
+    // 24 is where the nav is anchored, ~78 is how tall it stands.
+    final lift = 24.0 + 78.0 + MediaQuery.of(context).padding.bottom;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color(0xFF4F46E5),
+        elevation: 12,
+        duration: const Duration(seconds: 3),
+        margin: EdgeInsets.fromLTRB(20, 0, 20, lift),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        content: Row(
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 18, color: Colors.white),
+              const SizedBox(width: 10),
+            ],
+            Expanded(
+              child: Text(message,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w700, color: Colors.white)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   /// Hands the address to the OS mail app. If the device has no mail client
   /// set up nothing opens, so the row shows the address itself — the user can
   /// still read it and write from wherever they like.
@@ -46,14 +81,7 @@ class SettingsScreen extends StatelessWidget {
     } catch (_) {
       if (!context.mounted) return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: const Color(0xFF1A1625),
-        content: const Text('Write to $kSupportEmail',
-          style: TextStyle(fontWeight: FontWeight.w600)),
-      ),
-    );
+    _toast(context, 'Write to $kSupportEmail', icon: Icons.mail_rounded);
   }
 
   /// Opens the developer's Instagram — the installed app when the OS resolves
@@ -72,14 +100,7 @@ class SettingsScreen extends StatelessWidget {
     } catch (_) {
       if (!context.mounted) return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: Color(0xFF1A1625),
-        content: Text('Find me on Instagram: @$kInstagramHandle',
-          style: TextStyle(fontWeight: FontWeight.w600)),
-      ),
-    );
+    _toast(context, 'Find us on Instagram: @$kInstagramHandle');
   }
 
   /// Widgets are added from the OS home screen, not from inside an app — there
@@ -1108,14 +1129,8 @@ class SettingsScreen extends StatelessWidget {
         onTap: () async {
           final sent = await FeedbackSheet.show(context, source: 'settings');
           if (!sent || !context.mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              behavior: SnackBarBehavior.floating,
-              backgroundColor: Color(0xFF1A1625),
-              content: Text('Sent. We read every one of these.',
-                  style: TextStyle(fontWeight: FontWeight.w600)),
-            ),
-          );
+          _toast(context, 'Sent. We read every one of these.',
+              icon: Icons.check_circle_rounded);
         },
         child: _blurCard(
           child: Row(children: [
@@ -1632,13 +1647,22 @@ class _DebugButton extends StatelessWidget {
           children: [
             Icon(icon, color: color, size: 16),
             const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: color,
-                letterSpacing: 0.6,
+            // Scaled rather than clipped: these labels are written by hand and
+            // the longest one already overflows a narrow phone by 28px.
+            Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  softWrap: false,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: color,
+                    letterSpacing: 0.6,
+                  ),
+                ),
               ),
             ),
           ],
