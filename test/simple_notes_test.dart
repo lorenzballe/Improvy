@@ -107,12 +107,14 @@ void main() {
     // screen but leaving the voice on the key-correct name would have someone
     // reading "E" while hearing "F flat". Every one of the twelve has its own
     // recording, so the promise can actually be kept out loud.
-    for (final name in kPlainSpellings) {
-      final clip = VoiceService.noteClip(name);
-      expect(clip, isNotNull, reason: '$name has no recording');
-      final acc = name.substring(1).replaceAll('♭', 'b').replaceAll('♯', 's');
-      expect(clip, 'n_${name[0]}$acc',
-          reason: '$name would be spoken as $clip');
+    for (final lang in VoiceLang.values) {
+      for (final name in kPlainSpellings) {
+        final clip = VoiceService.noteClip(name, lang);
+        expect(clip, isNotNull, reason: '$name has no recording in ${lang.name}');
+        final acc = name.substring(1).replaceAll('♭', 'b').replaceAll('♯', 's');
+        expect(clip!.split('/').last, 'n_${name[0]}$acc',
+            reason: '$name would be spoken as $clip');
+      }
     }
   });
 

@@ -16,8 +16,10 @@ import 'dart:io';
 import 'voice_clips.dart';
 
 void main(List<String> args) {
+  final lang = langFrom(args);
+  final voiceDir = voiceDirFor(lang);
   if (args.contains('--list')) {
-    _printScript();
+    _printScript(langFrom(args));
     return;
   }
   final check = args.contains('--check');
@@ -73,17 +75,35 @@ void main(List<String> args) {
     exit(2);
   }
   final end = text.indexOf('\n  };', start);
+
+  // The table holds every language at once, keyed `en/n_C`. This run measured
+  // one language, so the others have to be carried across untouched — writing
+  // `found` alone would silently delete them, and the app would fall back to
+  // English for a whole language without anything failing.
+  final table = <String, int>{};
+  for (final m in RegExp("'(\\w+)/(\\w+)': (\\d+)")
+      .allMatches(text.substring(start, end))) {
+    if (m.group(1) != lang) {
+      table['${m.group(1)}/${m.group(2)}'] = int.parse(m.group(3)!);
+    }
+  }
+  for (final e in found.entries) {
+    table['$lang/${e.key}'] = e.value;
+  }
+
   final rewritten =
-      text.replaceRange(start, end, '$head\n${_format(found)}'.trimRight());
+      text.replaceRange(start, end, '$head\n${_format(table)}'.trimRight());
   if (rewritten == text) {
     print('_ms already matches the files — nothing to write');
     return;
   }
   src.writeAsStringSync(rewritten);
-  print('rewrote _ms with ${found.length} entries');
+  print('rewrote _ms: ${found.length} in $lang, '
+      '${table.length - found.length} carried across');
 }
 
-void _printScript() {
+void _printScript([String lang = 'en']) {
+  final voiceDir = voiceDirFor(lang);
   final present = Directory(voiceDir).existsSync()
       ? Directory(voiceDir)
           .listSync()

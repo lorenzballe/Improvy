@@ -1,17 +1,32 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 
-/// Speaks Pocket Mode with the app owner's own recorded voice.
+/// Which recording set speaks. Follows the app's note-naming setting: C-D-E is
+/// read in English, Do-Re-Mi in Italian — the names on screen and the names in
+/// your ear have to be the same words.
+enum VoiceLang {
+  en,
+  it;
+
+  /// 'CDE' | 'DoReMi', the value AppProvider.notation holds.
+  static VoiceLang forNotation(String notation) =>
+      notation == 'DoReMi' ? VoiceLang.it : VoiceLang.en;
+}
+
+/// Speaks Pocket Mode with recorded human voices.
 ///
-/// Every degree and note is a short clip in `assets/audio/voice/`, played back
-/// to back — "flat three" then the key, then the answer note. Clip lengths are
-/// known ahead of time ([phraseMs]), so the session loop can pace itself
-/// exactly instead of estimating how long a sentence takes to say.
+/// Every degree and note is a short clip under `assets/audio/voice/<lang>/`,
+/// played back to back — "flat three" then the key, then the answer note. Clip
+/// lengths are known ahead of time ([phraseMs]), so the session loop can pace
+/// itself exactly instead of estimating how long a sentence takes to say.
 ///
-/// Every spelling the mode can present is recorded, double flats included, so
-/// a question is always heard in the spelling it was asked in. [_fallback] only
-/// covers spellings the trainer could grow into later.
+/// A clip id carries its language: `en/n_C`, `it/d_1`. That is what lets one
+/// phrase mix folders when it has to — see [_resolve] — without the player or
+/// the pacing needing to know anything about it.
 class VoiceService {
+  VoiceService(this.lang);
+
+  final VoiceLang lang;
   final AudioPlayer _player = AudioPlayer(playerId: 'pocket_voice');
   bool _ready = false;
   int _gen = 0; // bumped by stop(), so a queued sequence abandons itself
@@ -21,47 +36,45 @@ class VoiceService {
   /// long before moving on, so a stale entry either talks over itself or leaves
   /// dead air. Regenerate whenever a clip is re-recorded.
   static const _ms = <String, int>{
-    'd_1': 344, 'd_11': 503, 'd_13': 700, 'd_2': 312, 'd_3': 455, 'd_4': 435,
-    'd_5': 482, 'd_6': 580, 'd_7': 502, 'd_9': 460, 'd_b13': 1117,
-    'd_b2': 725, 'd_b3': 849, 'd_b5': 692, 'd_b6': 858, 'd_b7': 744,
-    'd_b9': 784, 'd_s11': 822, 'd_s2': 768, 'd_s4': 791, 'd_s5': 788,
-    'd_s9': 808, 'n_A': 384, 'n_Ab': 604, 'n_Abb': 739, 'n_As': 793,
-    'n_B': 374, 'n_Bb': 629, 'n_Bbb': 958, 'n_Bs': 759, 'n_C': 484,
-    'n_Cb': 744, 'n_Cs': 709, 'n_Css': 919, 'n_D': 384, 'n_Db': 599,
-    'n_Ds': 734, 'n_E': 344, 'n_Eb': 589, 'n_Ebb': 963, 'n_Es': 813,
-    'n_F': 409, 'n_Fb': 749, 'n_Fs': 609, 'n_Fss': 849, 'n_G': 414,
-    'n_Gb': 579, 'n_Gs': 624, 'n_Gss': 959,
+    'en/d_1': 344, 'en/d_11': 503, 'en/d_13': 700, 'en/d_2': 312,
+    'en/d_3': 455, 'en/d_4': 435, 'en/d_5': 482, 'en/d_6': 580, 'en/d_7': 502,
+    'en/d_9': 460, 'en/d_b13': 1117, 'en/d_b2': 725, 'en/d_b3': 849,
+    'en/d_b5': 692, 'en/d_b6': 858, 'en/d_b7': 744, 'en/d_b9': 784,
+    'en/d_s11': 822, 'en/d_s2': 768, 'en/d_s4': 791, 'en/d_s5': 788,
+    'en/d_s9': 808, 'en/n_A': 316, 'en/n_Ab': 496, 'en/n_Abb': 676,
+    'en/n_As': 524, 'en/n_B': 290, 'en/n_Bb': 579, 'en/n_Bbb': 703,
+    'en/n_Bs': 636, 'en/n_C': 441, 'en/n_Cb': 588, 'en/n_Cs': 633,
+    'en/n_Css': 919, 'en/n_D': 431, 'en/n_Db': 554, 'en/n_Ds': 573,
+    'en/n_E': 269, 'en/n_Eb': 487, 'en/n_Ebb': 701, 'en/n_Es': 473,
+    'en/n_F': 398, 'en/n_Fb': 732, 'en/n_Fs': 637, 'en/n_Fss': 780,
+    'en/n_G': 388, 'en/n_Gb': 616, 'en/n_Gs': 726, 'en/n_Gss': 959,
+    'it/d_1': 372, 'it/d_11': 585, 'it/d_13': 594, 'it/d_2': 428,
+    'it/d_3': 288, 'it/d_4': 516, 'it/d_5': 534, 'it/d_7': 560, 'it/d_9': 524,
+    'it/d_b13': 986, 'it/d_b2': 793, 'it/d_b3': 680, 'it/d_b5': 951,
+    'it/d_b6': 757, 'it/d_b7': 893, 'it/d_b9': 834, 'it/d_s11': 927,
+    'it/d_s2': 803, 'it/d_s4': 885, 'it/d_s5': 864, 'it/d_s9': 843,
+    'it/n_A': 289, 'it/n_Ab': 694, 'it/n_Abb': 932, 'it/n_As': 731,
+    'it/n_B': 297, 'it/n_Bb': 733, 'it/n_Bbb': 931, 'it/n_Bs': 737,
+    'it/n_C': 318, 'it/n_Cb': 586, 'it/n_Cs': 703, 'it/n_Css': 1011,
+    'it/n_D': 259, 'it/n_Ds': 734, 'it/n_E': 283, 'it/n_Eb': 648,
+    'it/n_Ebb': 938, 'it/n_Es': 782, 'it/n_F': 352, 'it/n_Fb': 726,
+    'it/n_Fs': 732, 'it/n_Fss': 975, 'it/n_G': 448, 'it/n_Gb': 712,
+    'it/n_Gs': 802, 'it/n_Gss': 1068,
   };
-
-  /// Deliberately empty, and it should stay that way.
-  ///
-  /// This used to map a spelling with no recording onto its enharmonic twin —
-  /// C𝄪 spoken as "D", ♭5 spoken as "sharp four" — on the reasoning that
-  /// hearing the right pitch under the wrong name beats hearing nothing. It
-  /// does not. It shipped: the screen read ♭5 while the voice said "sharp
-  /// four", and the one thing a trainer cannot do is teach the wrong name for
-  /// what is on screen. Silence is a bug you notice; a confident wrong answer
-  /// is one you learn.
-  ///
-  /// A spelling with no clip is now simply never asked: [degreeClip] and
-  /// [noteClip] return null and Pocket Mode redraws the question. The map is
-  /// kept as the hook for a spelling that genuinely has no name of its own.
-  static const _fallback = <String, String>{};
 
   /// Gap between two clips in one phrase — enough to hear them as separate
   /// words, short enough that "flat three · C" still reads as one question.
   static const gapMs = 110;
 
   /// Clip id for a degree as Pocket Mode presents it ('♭3', '♯11', '9', …).
-  static String? degreeClip(String degree) {
+  static String? degreeClip(String degree, VoiceLang lang) {
     final d = degree.split('/').first.trim();
     final acc = d.startsWith('♭') ? 'b' : d.startsWith('♯') ? 's' : '';
-    final id = 'd_$acc${d.replaceAll('♭', '').replaceAll('♯', '')}';
-    return _resolve(id);
+    return _resolve('d_$acc${d.replaceAll('♭', '').replaceAll('♯', '')}', lang);
   }
 
   /// Clip id for a note name ('E♭', 'C♯', 'B𝄫', …).
-  static String? noteClip(String note) {
+  static String? noteClip(String note, VoiceLang lang) {
     final n = note.split('/').first.trim();
     if (n.isEmpty) return null;
     final acc = n
@@ -70,15 +83,32 @@ class VoiceService {
         .replaceAll('𝄪', 'ss')
         .replaceAll('♭', 'b')
         .replaceAll('♯', 's');
-    return _resolve('n_${n[0]}$acc');
+    return _resolve('n_${n[0]}$acc', lang);
   }
 
-  static String? _resolve(String id) {
-    if (_ms.containsKey(id)) return id;
-    final alt = _fallback[id];
-    if (alt != null && _ms.containsKey(alt)) return alt;
+  /// Finds the clip, falling back across languages but never across names.
+  ///
+  /// The rule this must not break is the one the ♭5 bug taught: a clip may
+  /// never stand in for a *different* spelling — the screen showing ♭5 while
+  /// the voice says "sharp four" teaches the wrong name. Falling back to
+  /// English is a different thing: same name, said in the other language. It
+  /// is a blemish, not a lie, and it beats dropping a whole degree out of
+  /// Italian training because one recording has not arrived. Every such gap is
+  /// listed in VOICE_RECORDING.md and should end at zero.
+  static String? _resolve(String base, VoiceLang lang) {
+    final own = '${lang.name}/$base';
+    if (_ms.containsKey(own)) return own;
+    const fallback = 'en';
+    if (lang.name != fallback && _ms.containsKey('$fallback/$base')) {
+      assert(() {
+        debugPrint('[VoiceService] "$base" not recorded in ${lang.name} — '
+            'saying it in $fallback');
+        return true;
+      }());
+      return '$fallback/$base';
+    }
     assert(() {
-      debugPrint('[VoiceService] no clip for "$id" — nothing will be spoken');
+      debugPrint('[VoiceService] no clip for "$base" — nothing will be spoken');
       return true;
     }());
     return null;

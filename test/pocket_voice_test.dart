@@ -9,151 +9,146 @@ import 'package:improvy/utils/music_engine.dart';
 /// Pocket Mode is audio-only: a spelling with no clip is a question the user
 /// simply never hears. These walk the whole vocabulary the mode can produce —
 /// every degree name it may present, and every answer note across all 12 keys —
-/// and check each one resolves to a clip that exists on disk.
+/// in **both** recorded languages, and check each one can be spoken.
 void main() {
   // Pocket Mode's setup offers the 15 split degrees, so ♭3 and ♯2 can be
   // trained apart. That widens what the mode can reach: with the collapsed
   // list it only ever spelled 23 notes, and splitting takes it to 27.
   const pool = kChromaticDegreesSplit;
 
-  /// Empty, and that is the point: every spelling Pocket Mode can reach is
-  /// recorded, so no question is ever skipped for want of a voice.
+  /// Clips the Italian voice does not have yet, and so borrows from English.
   ///
-  /// Splitting the degrees briefly opened a gap here — A𝄫 (the ♭5 of D♭) and
-  /// the ♯2 of B, E and F♯ (C𝄪, F𝄪, G𝄪) had no clips. They do now. Anything
-  /// added back to this set is a question the trainer silently declines to
-  /// ask, which is a debt, not a design.
-  const unrecorded = <String>{};
+  /// This set is a debt, not a design: while a name is in here an Italian
+  /// session hears that one word in English. It must only ever shrink. Delete
+  /// an entry the moment its recording lands — the tests below then prove the
+  /// Italian clip is really being used.
+  const italianGaps = <String>{'d_6', 'n_Db'};
 
-  final files = Directory('assets/audio/voice')
+  Set<String> filesIn(String lang) => Directory('assets/audio/voice/$lang')
       .listSync()
       .whereType<File>()
-      .map((f) => f.uri.pathSegments.last.replaceAll('.wav', ''))
+      .map((f) => '$lang/${f.uri.pathSegments.last.replaceAll('.wav', '')}')
       .toSet();
 
-  test('every presented degree has a clip on disk', () {
-    final missing = <String>[];
+  final files = {
+    for (final l in VoiceLang.values) l: filesIn(l.name),
+  };
+  final allFiles = files.values.expand((s) => s).toSet();
+
+  for (final lang in VoiceLang.values) {
+    final name = lang.name.toUpperCase();
+
+    test('$name · every presented degree can be spoken', () {
+      final missing = <String>[];
+      for (final d in pool) {
+        for (final n in chromaticDegreeNames(d)) {
+          final clip = VoiceService.degreeClip(n, lang);
+          if (clip == null || !allFiles.contains(clip)) missing.add(n);
+        }
+      }
+      expect(missing, isEmpty, reason: 'degrees with no playable clip: $missing');
+    });
+
+    test('$name · every answer note can be spoken, in all 12 keys', () {
+      final missing = <String>{};
+      for (final key in kAllKeys) {
+        final scale = calculateMajorScale(key);
+        for (final d in pool) {
+          final note = getNoteFromChromaticDegree(d, scale, key);
+          for (final spelling in note.split('/').map((e) => e.trim())) {
+            if (spelling.isEmpty) continue;
+            final clip = VoiceService.noteClip(spelling, lang);
+            if (clip == null || !allFiles.contains(clip)) {
+              missing.add('$spelling (in $key)');
+            }
+          }
+        }
+      }
+      expect(missing, isEmpty, reason: 'notes with no playable clip: $missing');
+    });
+
+    test('$name · every key can be named', () {
+      for (final key in kAllKeys) {
+        final clip = VoiceService.noteClip(key, lang);
+        expect(clip, isNotNull, reason: 'no clip for key $key');
+        expect(allFiles, contains(clip), reason: 'clip $clip missing for $key');
+      }
+    });
+
+    test('$name · nothing is ever spoken under another name', () {
+      // The rule the ♭5 bug broke: a clip may stand in for another *language*,
+      // never for another *name*. Whatever comes back, the part after the
+      // language folder has to be this spelling's own id.
+      String id(String s) => 'd_${s.startsWith('♭') ? 'b' : s.startsWith('♯') ? 's' : ''}'
+          '${s.replaceAll('♭', '').replaceAll('♯', '')}';
+      for (final d in pool) {
+        for (final n in chromaticDegreeNames(d)) {
+          final clip = VoiceService.degreeClip(n, lang)!;
+          expect(clip.split('/').last, id(n),
+              reason: '$n would be spoken as $clip');
+        }
+      }
+      for (final key in kAllKeys) {
+        final scale = calculateMajorScale(key);
+        for (final d in pool) {
+          final note = getNoteFromChromaticDegree(d, scale, key).split('/').first.trim();
+          final acc = note.substring(1)
+              .replaceAll('𝄫', 'bb').replaceAll('𝄪', 'ss')
+              .replaceAll('♭', 'b').replaceAll('♯', 's');
+          expect(VoiceService.noteClip(note, lang)!.split('/').last,
+              'n_${note[0]}$acc',
+              reason: '$d of $key is $note but would be spoken as something else');
+        }
+      }
+    });
+
+    test('$name · every clip is as long as the service thinks it is', () {
+      // The session loop waits exactly the stored length before moving on, so a
+      // table that has drifted from the recordings does not throw — it talks
+      // over itself or leaves dead air.
+      final wrong = <String>[];
+      for (final id in files[lang]!) {
+        final actual = _wavMs(File('assets/audio/voice/$id.wav'));
+        final stored = VoiceService.phraseMs([id]);
+        if ((actual - stored).abs() > 1) {
+          wrong.add('$id: file ${actual}ms, table ${stored}ms');
+        }
+      }
+      expect(wrong, isEmpty, reason: 'clip lengths out of date:\n${wrong.join('\n')}');
+    });
+  }
+
+  test('the Italian voice speaks Italian wherever it has been recorded', () {
+    // Guards the fallback from quietly widening: anything not in [italianGaps]
+    // must come out of the Italian folder, and every gap must still be real.
+    final borrowed = <String>{};
     for (final d in pool) {
-      for (final name in chromaticDegreeNames(d)) {
-        final clip = VoiceService.degreeClip(name);
-        if (clip == null || !files.contains(clip)) missing.add(name);
+      for (final n in chromaticDegreeNames(d)) {
+        final clip = VoiceService.degreeClip(n, VoiceLang.it)!;
+        if (!clip.startsWith('it/')) borrowed.add(clip.split('/').last);
       }
     }
-    expect(missing, isEmpty, reason: 'degrees with no playable clip: $missing');
-  });
-
-  test('every answer note has a clip on disk, in all 12 keys', () {
-    final missing = <String>{};
     for (final key in kAllKeys) {
       final scale = calculateMajorScale(key);
       for (final d in pool) {
         final note = getNoteFromChromaticDegree(d, scale, key);
-        for (final spelling in note.split('/').map((e) => e.trim())) {
-          if (spelling.isEmpty || unrecorded.contains(spelling)) continue;
-          final clip = VoiceService.noteClip(spelling);
-          if (clip == null || !files.contains(clip)) missing.add('$spelling (in $key)');
-        }
+        final clip = VoiceService.noteClip(note, VoiceLang.it)!;
+        if (!clip.startsWith('it/')) borrowed.add(clip.split('/').last);
       }
     }
-    expect(missing, isEmpty, reason: 'notes with no playable clip: $missing');
+    expect(borrowed, italianGaps,
+        reason: 'Italian borrowing from English changed. Missing recordings: '
+            '$borrowed, expected exactly $italianGaps');
   });
 
-  test('a note is never spoken under another note\'s name', () {
-    // The rule the ♭5 bug broke, applied to notes. Splitting the degrees makes
-    // the trainer reach C𝄪, F𝄪 and G𝄪, which the old fallback map turned into
-    // "D", "G" and "A" — the screen showing one note while the voice says
-    // another. Resolving to *a* clip is not enough; it has to be its own.
-    for (final key in kAllKeys) {
-      final scale = calculateMajorScale(key);
-      for (final d in pool) {
-        final note = getNoteFromChromaticDegree(d, scale, key).split('/').first.trim();
-        final clip = VoiceService.noteClip(note);
-        if (clip == null) continue; // never asked — see _drawQuestion
-        final acc = note.substring(1)
-            .replaceAll('𝄫', 'bb').replaceAll('𝄪', 'ss')
-            .replaceAll('♭', 'b').replaceAll('♯', 's');
-        expect(clip, 'n_${note[0]}$acc',
-            reason: '$d of $key is $note but would be spoken as $clip');
-      }
-    }
-  });
-
-  test('an unrecorded spelling is silent, never renamed', () {
-    // Silence, so the mode redraws — or, once it is recorded, its own clip.
-    // What it must never be is somebody else's: that is a question asked in a
-    // name that is not the one on screen. Written to survive the recordings
-    // arriving, so adding them turns this green rather than red.
-    for (final spelling in unrecorded) {
-      final acc = spelling.substring(1)
-          .replaceAll('𝄫', 'bb').replaceAll('𝄪', 'ss')
-          .replaceAll('♭', 'b').replaceAll('♯', 's');
-      expect(VoiceService.noteClip(spelling), anyOf(isNull, 'n_${spelling[0]}$acc'),
-          reason: '$spelling must be silent or its own clip, never a twin');
-    }
-  });
-
-  test('every key can be named', () {
-    for (final key in kAllKeys) {
-      final clip = VoiceService.noteClip(key);
-      expect(clip, isNotNull, reason: 'no clip for key $key');
-      expect(files, contains(clip), reason: 'clip $clip missing for key $key');
-    }
-  });
-
-  test('every presented degree is spoken as itself, never as its twin', () {
-    // The one that bites: chromaticDegreeNames('♯4/♭5') yields ♯4, ♭5 AND ♯11,
-    // and Pocket Mode picks one at random — so both halves of a slash degree
-    // are real questions. Drop ♭5's clip and the fallback quietly makes the
-    // screen read "♭5" while the voice says "sharp four". Checking the clip
-    // merely *resolves* misses that; it has to be the degree's own.
-    final borrowed = <String>[];
-    for (final d in pool) {
-      for (final name in chromaticDegreeNames(d)) {
-        final own = 'd_${name.startsWith('♭') ? 'b' : name.startsWith('♯') ? 's' : ''}'
-            '${name.replaceAll('♭', '').replaceAll('♯', '')}';
-        if (VoiceService.degreeClip(name) != own || !files.contains(own)) {
-          borrowed.add('$name -> ${VoiceService.degreeClip(name)}');
-        }
-      }
-    }
-    expect(borrowed, isEmpty,
-        reason: 'degrees not spoken as themselves: ${borrowed.join(', ')}');
-  });
-
-  test('rarer note spellings are spoken as themselves, not as their twin', () {
-    final notes = {'A♯': 'B♭', 'B♯': 'C', 'C♭': 'B', 'D♯': 'E♭', 'E♯': 'F', 'B𝄫': 'A', 'E𝄫': 'D'};
-    notes.forEach((spelling, twin) {
-      final clip = VoiceService.noteClip(spelling);
-      expect(clip, isNotNull, reason: 'no clip for $spelling');
-      expect(files, contains(clip), reason: 'clip $clip missing on disk');
-      expect(clip, isNot(VoiceService.noteClip(twin)),
-          reason: '$spelling still borrows $twin');
-    });
-  });
-
-  test('no question is ever skipped: every draw can be spoken', () {
-    // Pocket Mode redraws when a question has no voice, which is the right
-    // failure but is still a question the player did not get. With all four
-    // double accidentals recorded there is nothing left to redraw around, and
-    // this says so for every key and degree the mode can offer at once.
-    for (final key in kAllKeys) {
-      final scale = calculateMajorScale(key);
-      expect(VoiceService.noteClip(key), isNotNull, reason: 'key $key');
-      for (final d in pool) {
-        for (final name in chromaticDegreeNames(d)) {
-          expect(VoiceService.degreeClip(name), isNotNull,
-              reason: '$name has no voice');
-        }
-        final answer = getNoteFromChromaticDegree(d, scale, key);
-        expect(VoiceService.noteClip(answer), isNotNull,
-            reason: '$d of $key answers $answer, which has no voice');
-      }
-    }
+  test('the note-naming setting picks the voice', () {
+    expect(VoiceLang.forNotation('CDE'), VoiceLang.en);
+    expect(VoiceLang.forNotation('DoReMi'), VoiceLang.it);
   });
 
   test('a phrase is as long as its clips plus the gaps between them', () {
-    final degree = VoiceService.degreeClip('♭3');
-    final note = VoiceService.noteClip('C');
+    final degree = VoiceService.degreeClip('♭3', VoiceLang.en);
+    final note = VoiceService.noteClip('C', VoiceLang.en);
     expect(VoiceService.phraseMs([degree]), greaterThan(0));
     expect(
       VoiceService.phraseMs([degree, note]),
@@ -161,23 +156,6 @@ void main() {
     );
     // A missing clip must not add silence to the pacing.
     expect(VoiceService.phraseMs([null]), 0);
-  });
-
-  test('every clip is as long as the service thinks it is', () {
-    // The session loop waits exactly the stored length before moving on, so a
-    // table that has drifted from the recordings does not throw — it talks over
-    // itself or leaves dead air. Re-record a clip without regenerating the
-    // table and this is what catches it.
-    final wrong = <String>[];
-    for (final id in files) {
-      final actual = _wavMs(File('assets/audio/voice/$id.wav'));
-      final stored = VoiceService.phraseMs([id]);
-      // A whole millisecond of slack: the table is rounded, nothing more.
-      if ((actual - stored).abs() > 1) {
-        wrong.add('$id: file ${actual}ms, table ${stored}ms');
-      }
-    }
-    expect(wrong, isEmpty, reason: 'clip lengths out of date:\n${wrong.join('\n')}');
   });
 }
 

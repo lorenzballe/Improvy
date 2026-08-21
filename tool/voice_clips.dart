@@ -121,7 +121,16 @@ final groups = <String, List<Clip>>{
   'all': everything,
 };
 
-const voiceDir = 'assets/audio/voice';
+/// Where a language's recordings live. Pocket Mode reads the folder that
+/// matches the app's note-naming setting — C-D-E in English, Do-Re-Mi in
+/// Italian — so every tool here works on one language at a time.
+String voiceDirFor(String lang) => 'assets/audio/voice/$lang';
+
+/// The language a tool works on, from `--lang xx` (English if unsaid).
+String langFrom(List<String> args) {
+  final i = args.indexOf('--lang');
+  return (i >= 0 && i + 1 < args.length) ? args[i + 1] : 'en';
+}
 
 /// A parsed 16-bit PCM wav: the samples, and how fast to play them.
 class Wav {

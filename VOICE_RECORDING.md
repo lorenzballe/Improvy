@@ -1,26 +1,38 @@
 # Pocket Mode — recording the voice
 
-Pocket Mode speaks every question out of `assets/audio/voice/`. A question is
-two or three clips played back to back with a 110 ms gap: the degree, the key,
-the answer note. **57 words** cover everything the trainer can ever say.
+Pocket Mode speaks every question out of `assets/audio/voice/<lang>/`. A
+question is two or three clips played back to back with a 110 ms gap: the
+degree, the key, the answer note. **49 words** cover everything the trainer can
+ever say, and there is one folder per language:
 
-**All 49 are recorded.** Splitting Pocket Mode's degrees — so ♭5 can be
-trained apart from ♯4 — changed how some answers are spelled and took the
-reachable set from 23 notes to 27. The four that opened up are now in:
+| folder | spoken when | state |
+|--------|-------------|-------|
+| `en/` | note naming is **C-D-E** | 49/49 — complete |
+| `it/` | note naming is **Do-Re-Mi** | 47/49 — see below |
 
-| file | say | why it exists |
-|------|-----|---------------|
-| `n_Abb.wav` | A double flat | the ♭5 of D♭ |
-| `n_Css.wav` | C double sharp | the ♯2 of B and of F♯ |
-| `n_Fss.wav` | F double sharp | the ♯2 of E and of B |
-| `n_Gss.wav` | G double sharp | the ♯2 of F♯ |
+The language follows the app's note-naming setting, not the phone's locale:
+what is written on screen and what is said in your ear have to be the same
+words. See `VoiceLang.forNotation`.
 
-Nothing the mode can ask is silent, and nothing falls back to an enharmonic
-twin: a spelling with no clip is never asked at all, because saying the wrong
-name is what once put "sharp four" on a ♭5 question.
+## Still to record — Italian
 
-`dart tool/sync_voice_clips.dart --check` prints exactly what is missing and
-exits non-zero while anything is.
+| file | say | why it matters |
+|------|-----|----------------|
+| `d_6.wav` | sei | the sixth degree — diatonic, so it comes up constantly |
+| `n_Db.wav` | Re bemolle | the answer wherever a degree lands on D♭ |
+
+Until they arrive those two are spoken **in English** inside an Italian
+session. That is deliberate and it is the lesser of two evils: dropping them
+would quietly remove the sixth degree from Italian training altogether. It is
+a debt — `italianGaps` in `test/pocket_voice_test.dart` names it, and the test
+fails if the set of borrowed clips ever changes, in either direction.
+
+What is never allowed is a clip standing in for a *different name*: the screen
+reading ♭5 while the voice says "sharp four" is what taught the wrong name
+once already. Another language is a blemish; another name is a lie.
+
+`dart tool/sync_voice_clips.dart --check --lang it` prints exactly what is
+missing and exits non-zero while anything is. `--lang` defaults to English.
 
 ---
 

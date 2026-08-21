@@ -38,6 +38,7 @@ const _padHeadMs = 30;
 const _padTailMs = 70;
 
 void main(List<String> args) {
+  final voiceDir = voiceDirFor(langFrom(args));
   final flags = args.where((a) => a.startsWith('--')).toSet();
   final rest = args.where((a) => !a.startsWith('--')).toList();
   final dryRun = flags.contains('--dry-run');

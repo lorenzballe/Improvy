@@ -62,6 +62,32 @@ class Release {
 /// the right behaviour for a pure bug-fix build.
 const List<Release> kReleases = [
   Release(
+    version: '1.9.0',
+    date: '21 AUG 2026',
+    headline:
+        'Pocket Mode now speaks Italian, and the English voice has been '
+        're-recorded.',
+    lines: [
+      ReleaseLine(
+        icon: Icons.record_voice_over_rounded,
+        color: Color(0xFF34D399),
+        title: 'It speaks your notes',
+        detail:
+            'Set the note names to Do-Re-Mi and the voice switches to Italian '
+            'as well — questions, keys and answers. What is on screen and '
+            'what is in your ear are finally the same words.',
+      ),
+      ReleaseLine(
+        glyph: '♯♭',
+        color: Color(0xFF818CF8),
+        title: 'A clearer English voice',
+        detail:
+            'Every note name re-recorded, from C to G double sharp. The '
+            'numbers are unchanged.',
+      ),
+    ],
+  ),
+  Release(
     version: '1.8.5',
     date: '20 AUG 2026',
     headline:

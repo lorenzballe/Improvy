@@ -51,7 +51,11 @@ class PocketModeScreen extends StatefulWidget {
 class _PocketModeScreenState extends State<PocketModeScreen> with TickerProviderStateMixin {
   static const _accent = Color(0xFF6366F1); // indigo — Pocket Mode's colour
 
-  final VoiceService _voice = VoiceService();
+  // The recordings follow the app's note-naming setting: C-D-E is read in
+  // English, Do-Re-Mi in Italian. The words on screen and the words in your
+  // ear have to be the same ones.
+  late final VoiceLang _lang = VoiceLang.forNotation(widget.notation);
+  late final VoiceService _voice = VoiceService(_lang);
   // Runs for as long as the session is playing: without audio actually flowing
   // iOS suspends the app during the silent gaps and the loop stops dead.
   final KeepAliveAudio _keepAlive = KeepAliveAudio();
@@ -174,9 +178,9 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
       final presented = names[_rng.nextInt(names.length)];
       final answer = _spell(
           getNoteFromChromaticDegree(degree, calculateMajorScale(key), key));
-      if (VoiceService.degreeClip(presented) == null) continue;
-      if (VoiceService.noteClip(answer) == null) continue;
-      if (widget.config.shuffleKeys && VoiceService.noteClip(key) == null) continue;
+      if (VoiceService.degreeClip(presented, _lang) == null) continue;
+      if (VoiceService.noteClip(answer, _lang) == null) continue;
+      if (widget.config.shuffleKeys && VoiceService.noteClip(key, _lang) == null) continue;
       return (key, degree, presented, answer);
     }
     return null;
@@ -261,8 +265,8 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
       // announcing it only delays the start. Shuffling picks a new key every
       // question, so there the key must always be spoken ("flat three · C").
       final qClips = <String?>[
-        VoiceService.degreeClip(presented),
-        if (widget.config.shuffleKeys) VoiceService.noteClip(key),
+        VoiceService.degreeClip(presented, _lang),
+        if (widget.config.shuffleKeys) VoiceService.noteClip(key, _lang),
       ];
       setState(() { _key = key; _degree = degree; _presented = presented; _answer = ''; _phase = 1; });
       if (!await _speak(qClips, gen)) return;
@@ -274,7 +278,7 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
       if (!await _wait(widget.config.delayMs, gen)) return;
 
       // Reveal on screen + speak the answer.
-      final aClips = <String?>[VoiceService.noteClip(answer)];
+      final aClips = <String?>[VoiceService.noteClip(answer, _lang)];
       setState(() { _answer = answer; _phase = 3; });
       _reveal.forward(from: 0); // bloom ripple
       HapticsService.impactLight();
