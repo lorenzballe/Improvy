@@ -5,10 +5,11 @@ import '../models/key_progress.dart';
 import '../providers/app_provider.dart';
 import '../constants/app_colors.dart';
 import '../constants/levels.dart';
+import '../services/notifications_service.dart';
 import '../widgets/note_text.dart';
 import '../widgets/animal_icon.dart';
 
-class SessionSummaryScreen extends StatelessWidget {
+class SessionSummaryScreen extends StatefulWidget {
   final Map<String, dynamic> sessionData;
   final List<KeyProgress> progressData;
   final VoidCallback onRetry;
@@ -25,13 +26,37 @@ class SessionSummaryScreen extends StatelessWidget {
   });
 
   @override
+  State<SessionSummaryScreen> createState() => _SessionSummaryScreenState();
+}
+
+class _SessionSummaryScreenState extends State<SessionSummaryScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Show notification after the first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final correct = widget.sessionData['correct'] as int? ?? 0;
+      final total = widget.sessionData['total'] as int? ?? 0;
+      final key = widget.sessionData['key'] as String? ?? 'C';
+
+      if (total > 0) {
+        NotificationsService.showSessionCompleteNotification(
+          correctAnswers: correct,
+          totalAnswers: total,
+          keyName: key,
+        );
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final key     = sessionData['key']        as String? ?? 'C';
-    final mode    = sessionData['mode']       as String? ?? 'diatonic';
-    final correct = sessionData['correct']    as int?    ?? 0;
-    final total   = sessionData['total']      as int?    ?? 0;
-    final time    = sessionData['time']       as int?    ?? 0;
-    final diff    = sessionData['difficulty'] as int?    ?? 1;
+    final key     = widget.sessionData['key']        as String? ?? 'C';
+    final mode    = widget.sessionData['mode']       as String? ?? 'diatonic';
+    final correct = widget.sessionData['correct']    as int?    ?? 0;
+    final total   = widget.sessionData['total']      as int?    ?? 0;
+    final time    = widget.sessionData['time']       as int?    ?? 0;
+    final diff    = widget.sessionData['difficulty'] as int?    ?? 1;
     final errors  = total - correct;
     final acc     = total > 0 ? (correct / total * 100).round() : 0;
     final passed  = errors <= 3;
@@ -58,7 +83,7 @@ class SessionSummaryScreen extends StatelessWidget {
     final modeColor = isDiat ? const Color(0xFF3B82F6) : const Color(0xFFA855F7);
 
     // Mastery
-    final keyData  = progressData.firstWhere((k) => k.key == key, orElse: () => KeyProgress(key: key));
+    final keyData  = widget.progressData.firstWhere((k) => k.key == key, orElse: () => KeyProgress(key: key));
     final modePct  = (isDiat ? keyData.diatonicProgress : keyData.chromaticProgress).toDouble();
     final animal   = getAnimalLevel(modePct);
 
@@ -85,7 +110,7 @@ class SessionSummaryScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
               child: Row(children: [
-                _BackBtn(onTap: onBack),
+                _BackBtn(onTap: widget.onBack),
                 Expanded(
                   child: Column(children: [
                     Text(
@@ -246,9 +271,9 @@ class SessionSummaryScreen extends StatelessWidget {
               modeColor: modeColor,
               accentColor: accentColor,
               difficulty: diff,
-              onRetry: onRetry,
-              onBack: onBack,
-              onNextDifficulty: onNextDifficulty,
+              onRetry: widget.onRetry,
+              onBack: widget.onBack,
+              onNextDifficulty: widget.onNextDifficulty,
             ),
           ]),
         ),

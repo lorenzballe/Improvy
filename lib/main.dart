@@ -6,6 +6,7 @@ import 'providers/app_provider.dart';
 import 'services/storage_service.dart';
 import 'services/purchase_service.dart';
 import 'services/analytics_service.dart';
+import 'services/notifications_service.dart';
 import 'screens/root_screen.dart';
 
 void main() async {
@@ -32,6 +33,9 @@ void main() async {
   await PurchaseService.instance.init();
   await AnalyticsService.instance.init();
   AnalyticsService.instance.capture('app_open');
+
+  // Initialize notifications
+  await NotificationsService.init();
 
   runApp(
     ChangeNotifierProvider.value(
