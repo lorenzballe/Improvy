@@ -544,7 +544,7 @@ class _ProgressCardState extends State<_ProgressCard> with SingleTickerProviderS
                           child: Text(a.name.toUpperCase(),
                             maxLines: 1,
                             softWrap: false,
-                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: a.color, letterSpacing: 1)),
+                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: a.color, letterSpacing: 1, decoration: TextDecoration.none)),
                         ),
                       ],
                     ),

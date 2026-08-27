@@ -383,7 +383,7 @@ class _MasteryCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       animal.name,
-                      style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.3),
+                      style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.3, decoration: TextDecoration.none),
                     ),
                   ],
                 ),
