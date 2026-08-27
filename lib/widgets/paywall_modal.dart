@@ -81,14 +81,16 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
   Future<void> _restore() async {
     if (_restoring) return;
     setState(() => _restoring = true);
-    final ok = await PurchaseService.instance.restorePurchases();
+    final outcome = await PurchaseService.instance.restorePurchases();
     if (!mounted) return;
     setState(() => _restoring = false);
-    if (ok) {
+    if (outcome == RestoreOutcome.restored) {
       widget.onClose();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('No previous purchase found'),
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(outcome == RestoreOutcome.unavailable
+            ? 'Could not reach the store — check your Google Play account'
+            : 'No previous purchase found'),
         behavior: SnackBarBehavior.floating,
       ));
     }

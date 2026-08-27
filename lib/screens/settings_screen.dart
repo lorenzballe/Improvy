@@ -456,11 +456,16 @@ class SettingsScreen extends StatelessWidget {
                     if (!provider.isPro) const SizedBox(height: 8),
                     GestureDetector(
                       onTap: () async {
-                        final ok = await PurchaseService.instance.restorePurchases();
-                        if (ok) provider.setIsPro(true);
+                        final outcome = await PurchaseService.instance.restorePurchases();
+                        if (outcome == RestoreOutcome.restored) provider.setIsPro(true);
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text(ok ? 'PRO restored' : 'No previous purchase found'),
+                            content: Text(switch (outcome) {
+                              RestoreOutcome.restored => 'PRO restored',
+                              RestoreOutcome.unavailable =>
+                                'Could not reach the store — check your Google Play account',
+                              RestoreOutcome.notFound => 'No previous purchase found',
+                            }),
                             behavior: SnackBarBehavior.floating,
                           ));
                         }

@@ -18,7 +18,15 @@ import 'analytics_service.dart';
 ///
 /// Outcome of a purchase attempt — lets the UI explain failures instead of
 /// silently doing nothing.
-enum PurchaseOutcome { success, cancelled, noProducts, noEntitlement, error, notConfigured }
+///
+/// [notAllowed] is deliberately separate from [error]: the store refused to
+/// open the payment sheet at all, so "try again" is the one piece of advice
+/// that cannot possibly work.
+enum PurchaseOutcome { success, cancelled, noProducts, noEntitlement, notAllowed, error, notConfigured }
+
+/// Outcome of a restore attempt. "Nothing to restore" and "the store could not
+/// be reached" look identical to the user unless we keep them apart.
+enum RestoreOutcome { restored, notFound, unavailable }
 
 /// What you still configure outside the app (RevenueCat dashboard + stores):
 ///   • An **Entitlement** (its identifier is [entitlementId]).
@@ -126,9 +134,22 @@ class PurchaseService {
         if (kDebugMode) debugPrint('[PurchaseService] purchase cancelled by user');
         return PurchaseOutcome.cancelled;
       }
-      if (kDebugMode) debugPrint('[PurchaseService] purchase error: $code');
-      lastPurchaseError = '${code.name}: ${e.message ?? 'unknown store error'}';
-      AnalyticsService.instance.capture('pro_purchase_error', {'code': code.name});
+      final underlying = _underlyingMessage(e);
+      if (kDebugMode) debugPrint('[PurchaseService] purchase error: $code — $underlying');
+      lastPurchaseError = '${code.name}: ${e.message ?? 'unknown store error'}'
+          '${underlying == null ? '' : '\n$underlying'}';
+      // The store's own wording is what separates, say, Play's
+      // BILLING_UNAVAILABLE (account cannot transact) from FEATURE_NOT_SUPPORTED
+      // (Play Store too old / patched GMS). Without it every device-side refusal
+      // looks the same in analytics.
+      AnalyticsService.instance.capture('pro_purchase_error', {
+        'code': code.name,
+        'message': ?e.message,
+        'underlying': ?underlying,
+      });
+      if (code == PurchasesErrorCode.purchaseNotAllowedError) {
+        return PurchaseOutcome.notAllowed;
+      }
       return PurchaseOutcome.error;
     } catch (e) {
       if (kDebugMode) debugPrint('[PurchaseService] purchase failed: $e');
@@ -149,18 +170,32 @@ class PurchaseService {
   }
 
   /// Restores a previous purchase (uses the signed-in App Store / Play account —
-  /// no email needed). Returns true when PRO is found.
-  Future<bool> restorePurchases() async {
-    if (!_configured) return false;
+  /// no email needed).
+  ///
+  /// A store that cannot be reached returns [RestoreOutcome.unavailable], never
+  /// [RestoreOutcome.notFound] — telling someone "no purchase found" when the
+  /// billing client is the thing that failed sends them hunting for the wrong
+  /// problem.
+  Future<RestoreOutcome> restorePurchases() async {
+    if (!_configured) return RestoreOutcome.unavailable;
     try {
       await Purchases.restorePurchases();
+    } on PlatformException catch (e) {
+      final code = PurchasesErrorHelper.getErrorCode(e);
+      if (kDebugMode) debugPrint('[PurchaseService] restore failed: $code');
+      AnalyticsService.instance.capture('pro_restore_error', {
+        'code': code.name,
+        'underlying': ?_underlyingMessage(e),
+      });
+      return RestoreOutcome.unavailable;
     } catch (e) {
       if (kDebugMode) debugPrint('[PurchaseService] restore failed: $e');
-      return false;
+      AnalyticsService.instance.capture('pro_restore_error', {'code': 'unknown'});
+      return RestoreOutcome.unavailable;
     }
     await _refresh(force: true);
     AnalyticsService.instance.capture('pro_restore', {'found': _isPro});
-    return _isPro;
+    return _isPro ? RestoreOutcome.restored : RestoreOutcome.notFound;
   }
 
   /// Presents the RevenueCat-hosted **Paywall** (design it in the dashboard for
@@ -190,6 +225,17 @@ class PurchaseService {
   }
 
   // ── internals ──────────────────────────────────────────────────────────────
+
+  /// The store's own explanation, which RevenueCat forwards in `details` under
+  /// `underlyingErrorMessage`. Null when the platform gave us nothing.
+  static String? _underlyingMessage(PlatformException e) {
+    final details = e.details;
+    if (details is Map) {
+      final m = details['underlyingErrorMessage'] ?? details['underlying_error_message'];
+      if (m is String && m.isNotEmpty) return m;
+    }
+    return null;
+  }
 
   Future<void> _refresh({bool force = false}) async {
     try {

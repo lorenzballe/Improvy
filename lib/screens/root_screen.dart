@@ -130,7 +130,10 @@ class _RootScreenState extends State<RootScreen> {
   }
 
   void _showPurchaseError(PurchaseOutcome outcome) {
-    final detail = PurchaseService.instance.lastPurchaseError;
+    // Raw store codes help us debug and mean nothing to a user — especially one
+    // who is not reading the app in English. Keep them out of release builds;
+    // the same string still reaches analytics.
+    final detail = kDebugMode ? PurchaseService.instance.lastPurchaseError : null;
     final (title, message) = switch (outcome) {
       PurchaseOutcome.noProducts => (
         'Store not ready',
@@ -145,6 +148,18 @@ class _RootScreenState extends State<RootScreen> {
       PurchaseOutcome.notConfigured => (
         'Billing unavailable',
         'In-app purchases are not available on this device.',
+      ),
+      // The store refused to open the payment sheet, so nothing was charged and
+      // pressing the button again will fail identically. Name the three things
+      // the user can actually go and change instead of saying "try again".
+      PurchaseOutcome.notAllowed => (
+        'Purchases blocked by the store',
+        'Google Play would not allow a purchase from this account on this '
+            'device, so you have not been charged. This is almost always one of:\n\n'
+            '•  no payment method set up in your Google account\n'
+            '•  the Play Store app needs an update\n'
+            '•  purchases restricted by a family or work account\n\n'
+            'You can check these in the Play Store app, then come back here.',
       ),
       _ => (
         'Purchase failed',
