@@ -55,5 +55,22 @@ class AnalyticsService {
     }
   }
 
+  /// Attaches [value] to every event captured from now on (a PostHog "super
+  /// property"), and persists it across launches.
+  ///
+  /// Used to carry FOREIGN ids — e.g. the RevenueCat customer id. PostHog and
+  /// RevenueCat each generate their own anonymous id, so without a bridge like
+  /// this there is no way to go from a user seen in analytics to their
+  /// RevenueCat customer (to grant a promotional entitlement, say).
+  Future<void> registerSuperProperty(String key, String value) async {
+    if (!_enabled || value.isEmpty) return;
+    try {
+      await Posthog().register(key, value);
+      if (kDebugMode) debugPrint('[PostHog] register: $key = $value');
+    } catch (e) {
+      if (kDebugMode) debugPrint('[PostHog] register failed: $e');
+    }
+  }
+
   void screen(String name) => capture('\$screen', {'name': name});
 }

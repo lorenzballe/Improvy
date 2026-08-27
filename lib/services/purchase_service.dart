@@ -68,6 +68,9 @@ class PurchaseService {
       await Purchases.setLogLevel(kDebugMode ? LogLevel.debug : LogLevel.error);
       await Purchases.configure(PurchasesConfiguration(_apiKey));
       _configured = true;
+      // Make this customer findable from analytics before anything else runs,
+      // so every later event — purchase failures above all — carries the id.
+      await _linkAnalyticsIdentity();
       // Push the real, authoritative status (overrides any stale cached flag).
       await _refresh(force: true);
       // Keep the flag live for the rest of the session.
@@ -225,6 +228,18 @@ class PurchaseService {
   }
 
   // ── internals ──────────────────────────────────────────────────────────────
+
+  /// Publishes the (anonymous) RevenueCat customer id as an analytics super
+  /// property. Best-effort: failing to link identities must never stop billing
+  /// from configuring.
+  Future<void> _linkAnalyticsIdentity() async {
+    try {
+      final id = await Purchases.appUserID;
+      await AnalyticsService.instance.registerSuperProperty('revenuecat_id', id);
+    } catch (e) {
+      if (kDebugMode) debugPrint('[PurchaseService] identity link failed: $e');
+    }
+  }
 
   /// The store's own explanation, which RevenueCat forwards in `details` under
   /// `underlyingErrorMessage`. Null when the platform gave us nothing.

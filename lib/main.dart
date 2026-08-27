@@ -29,9 +29,11 @@ void main() async {
 
   // Production services. RevenueCat keeps provider.isPro in sync with the user's
   // real entitlements (purchase / restore / remote updates); PostHog = analytics.
+  // Analytics first: PurchaseService publishes the RevenueCat customer id into
+  // it during init, and a capture before setup would be dropped.
+  await AnalyticsService.instance.init();
   PurchaseService.instance.onProChanged = provider.setIsPro;
   await PurchaseService.instance.init();
-  await AnalyticsService.instance.init();
   AnalyticsService.instance.capture('app_open');
 
   // Initialize notifications
