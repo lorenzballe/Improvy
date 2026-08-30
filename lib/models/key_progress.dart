@@ -214,23 +214,39 @@ class KeyProgress {
 
   List<int> get effectiveHarmonizerAll => closeRow(harmonizerAllLevels);
 
-  /// **The** number on a key: the three families, evenly.
+  /// How the three families divide the key: 40 / 40 / 20.
   ///
-  /// They are three different skills over the same twelve notes, and none of
-  /// them is a shortcut to another. Naming the note for a degree, naming the
-  /// degree for a note, and naming the key a note belongs to are learned
-  /// separately — being fluent one way says nothing about the other two, which
-  /// is exactly why they cannot share a dial and must share a scale.
+  /// The two directions over a key are the everyday work — reading a degree
+  /// and naming the note, hearing a note and naming its degree. The harmonizer
+  /// asks something rarer and more advanced: which key a note belongs to.
+  /// Real, and worth training, but not a third of what it means to know a key.
+  ///
+  /// Note that this weighting does NOT touch where free play stops. Each
+  /// family is exactly half free — the seven scale degrees, the same seven
+  /// backwards, the chord tones — so any split of the three still tops out at
+  /// 50%. The paywall's line holds whatever these numbers are, which is what
+  /// makes them safe to tune later against real usage rather than taste.
+  static const double kNormalWeight = 0.40;
+  static const double kNoteToNumberWeight = 0.40;
+  static const double kHarmonizerWeight = 0.20;
+
+  /// **The** number on a key.
+  ///
+  /// Three different skills over the same twelve notes, and none of them is a
+  /// shortcut to another: being fluent one way says nothing about the other
+  /// two, which is exactly why they cannot share a dial and must share a
+  /// scale.
   ///
   /// The harmonizer is indexed by the NOTE rather than by the key, so on the
   /// tile for C it contributes what you know about the note C rather than
   /// about the key of C. That is still knowledge about C, and it is the same
-  /// twelve items either way — but it is the one seam in this number, and
-  /// worth remembering before reading too much into a single tile.
-  int get totalProgress =>
-      ((normalProgress + noteToNumberProgress + harmonizerProgress) / 3)
-          .round()
-          .clamp(0, 100);
+  /// twelve items either way — but it is the one seam in this number, and part
+  /// of why it carries the smallest share.
+  int get totalProgress => (normalProgress * kNormalWeight +
+          noteToNumberProgress * kNoteToNumberWeight +
+          harmonizerProgress * kHarmonizerWeight)
+      .round()
+      .clamp(0, 100);
 
   /// Raw evidence for one mode: what was actually scored in it, with no
   /// inference from the other. This is what the per-mode bars show — a bar

@@ -62,6 +62,32 @@ class Release {
 /// the right behaviour for a pure bug-fix build.
 const List<Release> kReleases = [
   Release(
+    version: '1.10.1',
+    date: '30 AUG 2026',
+    headline: 'The animals come faster now, and the harder ones cost more.',
+    lines: [
+      ReleaseLine(
+        icon: Icons.pets_rounded,
+        color: Color(0xFF22C55E),
+        title: 'Turtle is two sessions away',
+        detail:
+            'The eight levels used to be eight equal steps, set when a key '
+            'counted one skill. The first ones are now close together and the '
+            'last ones are a long climb — which is what their names always '
+            'promised.',
+      ),
+      ReleaseLine(
+        icon: Icons.balance_rounded,
+        color: Color(0xFFA855F7),
+        title: 'The two directions carry more weight',
+        detail:
+            'Reading a degree and naming the note, and its mirror, are 40% of '
+            'a key each. Naming the key a note belongs to is rarer and more '
+            'advanced, and is the remaining 20%.',
+      ),
+    ],
+  ),
+  Release(
     version: '1.10.0',
     date: '30 AUG 2026',
     headline:

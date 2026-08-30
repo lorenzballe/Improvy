@@ -244,7 +244,7 @@ class AppProvider extends ChangeNotifier {
 
     final a = animalLevel;
     final p = totalProgress;
-    const thresholds = [12.5, 25.0, 37.5, 50.0, 62.5, 75.0, 87.5, 100.0];
+    const thresholds = [...kAnimalThresholds, 100.0];
     double? toNext;
     for (final t in thresholds) {
       if (p < t) { toNext = t - p; break; }

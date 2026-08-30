@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:improvy/constants/levels.dart';
 import 'package:improvy/models/key_progress.dart';
 import 'package:improvy/providers/app_provider.dart';
 
@@ -112,6 +113,7 @@ void main() {
   _bestIsNeverInferred();
   _theThreeFamilies();
   _theTile();
+  _theAnimalLadder();
 
   group('what the gate makes impossible', () {
     test('a tier can only hold a score if the one below is at 80%', () {
@@ -206,20 +208,31 @@ void _theThreeFamilies() {
 /// twelve tiles is what the animal reads.
 void _theTile() {
   group('the number on the tile', () {
-    test('one family finished is a third of the key', () {
-      expect(k(d: [30, 40, 50], c: [30, 40, 50]).totalProgress, 33);
+    test('the two directions are 40 each, the harmonizer 20', () {
+      // Reading a degree and naming the note, and its mirror, are the everyday
+      // work. Naming the key a note belongs to is rarer and more advanced.
+      expect(k(d: [30, 40, 50], c: [30, 40, 50]).totalProgress, 40);
       expect(
           KeyProgress(key: 'C', ntnChromaticLevels: [30, 40, 50]).totalProgress,
-          33);
+          40);
       expect(
           KeyProgress(key: 'C', harmonizerAllLevels: [30, 40, 50])
               .totalProgress,
-          33);
+          20);
+    });
+
+    test('the weights sum to one, whatever they are set to', () {
+      expect(
+          KeyProgress.kNormalWeight +
+              KeyProgress.kNoteToNumberWeight +
+              KeyProgress.kHarmonizerWeight,
+          closeTo(1.0, 1e-9));
     });
 
     test('the free half of all three is exactly half the key', () {
       // Diatonic, Note to Number diatonic and the chord tones are the three
-      // free halves. Nothing a free player can do goes past this.
+      // free halves. Each family is half free, so ANY weighting of the three
+      // lands here — the paywall's line does not depend on the weights.
       final free = KeyProgress(
         key: 'C',
         diatonicLevels: [30, 40, 50],
@@ -245,6 +258,41 @@ void _theTile() {
       final forward = k(d: [30, 40, 50], c: [30, 40, 50]);
       expect(forward.noteToNumberProgress, 0);
       expect(forward.harmonizerProgress, 0);
+    });
+  });
+}
+
+/// The animal ladder is the app's only long-term reward, so where its rungs
+/// sit is a product decision, not an accident of arithmetic.
+void _theAnimalLadder() {
+  group('the animal ladder', () {
+    test('the first rung is close enough to reach in a sitting', () {
+      // One key taken to 100% is 8.33% of the global figure, and the first
+      // animal now sits at 2% — roughly two good sessions rather than fourteen.
+      expect(kAnimalThresholds.first, lessThanOrEqualTo(3));
+      expect(getAnimalLevel(0).level, 1);
+      expect(getAnimalLevel(kAnimalThresholds.first).level, 2);
+    });
+
+    test('every rung is higher than the last, and the gaps widen', () {
+      var previousGap = 0.0;
+      for (var i = 0; i < kAnimalThresholds.length; i++) {
+        final gap = kAnimalThresholds[i] - (i == 0 ? 0 : kAnimalThresholds[i - 1]);
+        expect(gap, greaterThan(previousGap),
+            reason: 'rung ${i + 2} is not harder to reach than the one below');
+        previousGap = gap;
+      }
+    });
+
+    test('there are exactly as many rungs as animals above the first', () {
+      expect(kAnimalThresholds.length, kAnimalLevelCount - 1);
+      expect(getAnimalLevel(100).level, kAnimalLevelCount);
+    });
+
+    test('free play stops two animals short of the top', () {
+      // Every family is half free, so a free player caps at 50% however much
+      // they grind — and the last two animals are the thing being sold.
+      expect(getAnimalLevel(50).level, kAnimalLevelCount - 2);
     });
   });
 }
