@@ -62,6 +62,42 @@ class Release {
 /// the right behaviour for a pure bug-fix build.
 const List<Release> kReleases = [
   Release(
+    version: '1.9.1',
+    date: '21 AUG 2026',
+    headline:
+        'Note to Number and …Of What? now remember what you did, and every key '
+        'wears how far you have taken it.',
+    lines: [
+      ReleaseLine(
+        icon: Icons.donut_large_rounded,
+        color: Color(0xFF34D399),
+        title: 'Every key shows its own progress',
+        detail:
+            'The outline of each key fills as you take it through the three '
+            'tiers, in that key\u2019s own colour. Twelve keys, read at a glance.',
+      ),
+      ReleaseLine(
+        icon: Icons.stairs_rounded,
+        color: Color(0xFFA855F7),
+        title: 'The ladder reaches the other modes',
+        detail:
+            'Note to Number and …Of What? keep your record for each key and '
+            'each tier, and Master has to be earned through Apprentice and '
+            'Virtuoso — the same rule the main modes have always had.',
+      ),
+      ReleaseLine(
+        icon: Icons.tune_rounded,
+        color: Color(0xFF22D3EE),
+        title: 'Simpler setups, longer sessions',
+        detail:
+            '…Of What? is now Chord or All, and its length comes from the tier '
+            'instead of a separate list. Custom Mode builds any of the three '
+            'directions, and both it and Pocket Mode run 30, 50, 100 — or '
+            'until you stop.',
+      ),
+    ],
+  ),
+  Release(
     version: '1.9.0',
     date: '21 AUG 2026',
     headline:

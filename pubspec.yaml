@@ -2,7 +2,7 @@
 description: "Improvy - Music Interval Trainer"
 publish_to: 'none'
 
-version: 1.9.0+86
+version: 1.9.1+87
 
 environment:
   sdk: ^3.12.0

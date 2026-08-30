@@ -121,9 +121,21 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
     'C', 'D♭', 'D', 'E♭', 'E', 'F', 'G♭', 'G', 'A♭', 'A', 'B♭', 'B',
   ];
 
+  /// How long this run is. Null from the caller means "as long as the tier is
+  /// worth" — 30/40/50 by difficulty, which is what makes finishing a session
+  /// and filling a tier the same act.
+  ///
+  /// Zero means **endless**: the run has no last question and ends when the
+  /// player chooses to end it. Every place that compares against it has to ask
+  /// [_endless] first, or an endless run would finish on question zero.
   int get _questionsPerKey =>
       widget.numberOfQuestions ??
       (widget.difficulty == 1 ? 30 : widget.difficulty == 2 ? 40 : 50);
+
+  bool get _endless => _questionsPerKey == 0;
+
+  /// True once the run has served its last question.
+  bool get _runComplete => !_endless && _attempts >= _questionsPerKey;
 
   /// The tier's own limit — what Apprentice / Virtuoso / Master mean.
   ///
@@ -428,7 +440,7 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
       // A whole-run clock can expire during this pause; if it did, the run is
       // already over and must not roll on to another question.
       if (_finished) return;
-      if (_attempts >= _questionsPerKey) {
+      if (_runComplete) {
         _finishSession();
       } else {
         _generateChallenge();
@@ -451,7 +463,7 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
   // an accidental edge-swipe shouldn't kill a 40-question streak. The clock is
   // paused while the dialog is up and restarts fresh on "keep playing".
   void _requestExit() {
-    if (_attempts == 0 || _attempts >= _questionsPerKey) {
+    if (_attempts == 0 || _runComplete) {
       widget.onExit();
       return;
     }
@@ -484,7 +496,9 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
                   widget.isDaily
                       ? 'One attempt per day, and the clock keeps running — if you leave now, '
                           '$_attempts/$_questionsPerKey is your score until tomorrow.'
-                      : 'You are $_attempts/$_questionsPerKey in — the run ends here if you leave.',
+                      : _endless
+                          ? 'You are $_attempts questions in — leaving ends the run and keeps the score.'
+                          : 'You are $_attempts/$_questionsPerKey in — the run ends here if you leave.',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 13, height: 1.5, color: Colors.white.withAlpha(150))),
               const SizedBox(height: 20),
@@ -515,14 +529,21 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
       _exitDialogOpen = false;
       if (!mounted) return;
       if (quit == true) {
-        widget.onExit();
+        // An endless run has no other way to end, so quitting IS finishing it:
+        // it earns its summary rather than being thrown away like a run
+        // abandoned halfway.
+        if (_endless && _attempts > 0) {
+          _finishSession();
+        } else {
+          widget.onExit();
+        }
         return;
       }
       // The run may have ended under the dialog (whole-run clock expired).
       if (_finished) return;
       // Resume where we paused: mid-feedback → advance; mid-question → fresh clock.
       if (_showFeedback) {
-        if (_attempts >= _questionsPerKey) {
+        if (_runComplete) {
           _finishSession();
         } else {
           _generateChallenge();
@@ -1150,7 +1171,12 @@ class _TopBar extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Expanded(child: _StatItem(label: 'CORRECT', value: '$correct/$total', valueColor: Colors.white)),
+                Expanded(
+                    child: _StatItem(
+                        label: 'CORRECT',
+                        // An endless run has no denominator to show.
+                        value: total > 0 ? '$correct/$total' : '$correct',
+                        valueColor: Colors.white)),
                 Container(width: 1, height: 30, color: Colors.white10),
                 Expanded(child: _StatItem(label: 'ACCURACY', value: '$accuracy%', valueColor: accuracyColor)),
                 Container(width: 1, height: 30, color: Colors.white10),

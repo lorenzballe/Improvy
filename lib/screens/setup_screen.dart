@@ -5,6 +5,7 @@ import '../constants/app_colors.dart';
 import '../constants/music_constants.dart';
 import '../providers/app_provider.dart';
 import '../services/analytics_service.dart';
+import '../widgets/mastery_border.dart';
 import '../widgets/note_text.dart';
 import 'pocket_mode_screen.dart' show PocketConfig;
 
@@ -19,7 +20,9 @@ class NoteToNumberSetup extends StatefulWidget {
   /// compile, which is the wrong way round for the one flag that guards money.
   final bool isPro;
   final VoidCallback onShowPaywall;
-  final void Function(String key, List<String> degrees, int difficulty) onStart;
+  final void Function(
+          String key, List<String> degrees, int difficulty, bool chromatic)
+      onStart;
   final VoidCallback onCancel;
 
   const NoteToNumberSetup({
@@ -40,7 +43,6 @@ class _NoteToNumberSetupState extends State<NoteToNumberSetup> {
   bool _chromatic = false;
   int _diff = 1;
 
-  static const _diffLabels = ['Apprentice', 'Virtuoso', 'Master'];
   static const _accent = Color(0xFF34D399);
   static const _grad = [Color(0xFF34D399), Color(0xFF34D399)]; // monochrome green (START button)
 
@@ -48,6 +50,32 @@ class _NoteToNumberSetupState extends State<NoteToNumberSetup> {
   void initState() {
     super.initState();
     _key = widget.initialKey;
+  }
+
+  List<int> _levels(BuildContext context) => context
+      .watch<AppProvider>()
+      .ntnLevels(_key, chromatic: _chromatic);
+
+  /// Land on the hardest tier this key has earned, the way selecting a key on
+  /// the home screen does.
+  ///
+  /// Called from the two events that can invalidate the choice — a different
+  /// key, a different direction — and never from build: a tier corrected while
+  /// painting would leave START holding the old one, and the run would begin
+  /// at a difficulty the page said was locked.
+  void _syncTier() {
+    final levels = context
+        .read<AppProvider>()
+        .ntnLevels(_key, chromatic: _chromatic);
+    if (!_TierSelector.unlocked(levels, _diff)) {
+      _diff = AppProvider.highestUnlockedTier(levels);
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncTier();
   }
 
   @override
@@ -90,7 +118,13 @@ class _NoteToNumberSetupState extends State<NoteToNumberSetup> {
                                 _KeyGrid(
                                   selected: _key,
                                   accentColor: _accent,
-                                  onSelect: (k) => setState(() => _key = k),
+                                  progressFor: (k) => context
+                                      .watch<AppProvider>()
+                                      .ntnProgress(k, chromatic: _chromatic),
+                                  onSelect: (k) => setState(() {
+                                    _key = k;
+                                    _syncTier();
+                                  }),
                                 ),
                                 const SizedBox(height: 36),
                                 _SectionTitle(
@@ -115,7 +149,10 @@ class _NoteToNumberSetupState extends State<NoteToNumberSetup> {
                                       widget.onShowPaywall();
                                       return;
                                     }
-                                    setState(() => _chromatic = v == 'Chromatic');
+                                    setState(() {
+                                      _chromatic = v == 'Chromatic';
+                                      _syncTier();
+                                    });
                                   },
                                 ),
                                 const SizedBox(height: 36),
@@ -125,11 +162,11 @@ class _NoteToNumberSetupState extends State<NoteToNumberSetup> {
                                   subtitle: 'Higher difficulty means less time to answer.',
                                 ),
                                 const SizedBox(height: 18),
-                                _SlidingPillRow(
-                                  opts: _diffLabels,
-                                  sel: _diffLabels[_diff - 1],
+                                _TierSelector(
+                                  levels: _levels(context),
+                                  selected: _diff,
                                   accentColor: _accent,
-                                  onChange: (v) => setState(() => _diff = _diffLabels.indexOf(v) + 1),
+                                  onChange: (d) => setState(() => _diff = d),
                                 ),
                                 const SizedBox(height: 40),
                               ],
@@ -148,7 +185,7 @@ class _NoteToNumberSetupState extends State<NoteToNumberSetup> {
                       final degrees = _chromatic
                           ? kChromaticDegreesSplit.toList()
                           : ['1', '2', '3', '4', '5', '6', '7'];
-                      widget.onStart(_key, degrees, _diff);
+                      widget.onStart(_key, degrees, _diff, _chromatic);
                     },
                   ),
                 ],
@@ -161,6 +198,18 @@ class _NoteToNumberSetupState extends State<NoteToNumberSetup> {
   }
 }
 
+/// What a Custom session actually is.
+///
+/// Custom used to offer one axis — the direction of the question — which left
+/// "…Of What?" reachable only through its own tile, with its own fixed sets.
+/// Making it a third choice here is what lets someone build the harmonizer
+/// drill they want instead of the two we ship.
+///
+/// Nothing built here feeds any dial. That is the point of Custom, and the
+/// reason it can be this free: a session narrowed to one degree is practice,
+/// not a record.
+enum CustomDirection { normal, noteToNumber, ofWhat }
+
 // ─────────────────────────────────────────────────────────────────────────────
 // CustomModeSetup
 // ─────────────────────────────────────────────────────────────────────────────
@@ -170,7 +219,7 @@ class CustomModeSetup extends StatefulWidget {
   final void Function(
     String key,
     List<String> degrees,
-    bool isReverse,
+    CustomDirection direction,
     int difficulty,
     int questions,
   ) onStart;
@@ -189,14 +238,48 @@ class CustomModeSetup extends StatefulWidget {
 
 class _CustomModeSetupState extends State<CustomModeSetup> {
   late String _key;
-  bool _isReverse = false;
+  CustomDirection _dir = CustomDirection.normal;
+  bool get _isReverse => _dir == CustomDirection.noteToNumber;
+  bool get _isOfWhat => _dir == CustomDirection.ofWhat;
   // web default: ["1","3","5"]; every degree is freely selectable.
   Set<String> _degs = {'1', '3', '5'};
   int _diff = 1;
-  int _questions = 15;
+  int _questions = 30;
+
+  static const _dirLabels = {
+    CustomDirection.normal: 'Normal',
+    CustomDirection.noteToNumber: 'Note to Number',
+    CustomDirection.ofWhat: '…Of What?',
+  };
+
+  // Jazz extensions borrow the colour of the chromatic degree they extend, so
+  // ♭9 and ♭2 read as the same note a register apart.
+  static Color _degColor(String d) {
+    const base = {'♭9': '♭2', '9': '2', '♯9': '♯2', '11': '4', '♯11': '♯4', '♭13': '♭6', '13': '6'};
+    return AppColors.degreeColors[base[d] ?? d] ?? _accent;
+  }
+
+  /// Switching direction has to leave a valid selection behind: the three
+  /// modes do not spell their degrees the same way.
+  void _setDirection(CustomDirection d) {
+    if (d == _dir) return;
+    setState(() {
+      final wasOfWhat = _isOfWhat;
+      final toReverse = d == CustomDirection.noteToNumber;
+      if (d == CustomDirection.ofWhat) {
+        _degs = Set.of(kOfWhatChordTones);
+      } else if (wasOfWhat) {
+        _degs = {'1', '3', '5'};
+      } else {
+        _degs = _convertDegs(_degs, toReverse);
+      }
+      _dir = d;
+    });
+  }
 
   static const _diffLabels = ['Apprentice', 'Virtuoso', 'Master'];
-  static const _questionOpts = ['15', '30', '50', '75', '100'];
+  // ∞ is 0 on the wire, which the trainer reads as "no last question".
+  static const _questionOpts = ['30', '50', '100', '∞'];
   static const _accent = Color(0xFFD857EC);
   static const _grad = [Color(0xFFD857EC), Color(0xFFD857EC)]; // monochrome purple (START button)
 
@@ -266,37 +349,48 @@ class _CustomModeSetupState extends State<CustomModeSetup> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const _SectionTitle(
+                                // The mode comes first: it decides what the
+                                // rest of the page even means — whether the
+                                // grid below picks a tonality or the one note
+                                // the whole session hangs on.
+                                _SectionTitle(
+                                  icon: Icons.tune_rounded,
+                                  title: 'Mode',
+                                  subtitle: switch (_dir) {
+                                    CustomDirection.normal =>
+                                      'Name the note for a degree, in this key.',
+                                    CustomDirection.noteToNumber =>
+                                      'Name the degree for a note, in this key.',
+                                    CustomDirection.ofWhat =>
+                                      'One note held throughout — name the key it belongs to.',
+                                  },
+                                ),
+                                const SizedBox(height: 18),
+                                _SlidingPillRow(
+                                  opts: _dirLabels.values.toList(),
+                                  sel: _dirLabels[_dir]!,
+                                  accentColor: _accent,
+                                  onChange: (v) => _setDirection(_dirLabels.entries
+                                      .firstWhere((e) => e.value == v)
+                                      .key),
+                                ),
+                                const SizedBox(height: 36),
+
+                                _SectionTitle(
                                   icon: Icons.music_note_rounded,
-                                  title: 'Select Root Key',
+                                  // In …Of What? this grid is not a tonality at
+                                  // all — it is the melody note being held, and
+                                  // calling it a root key would be a lie.
+                                  title: _isOfWhat ? 'Select Note' : 'Select Root Key',
+                                  subtitle: _isOfWhat
+                                      ? 'The note held for the whole session.'
+                                      : '',
                                 ),
                                 const SizedBox(height: 18),
                                 _KeyGrid(
                                   selected: _key,
                                   accentColor: _accent,
                                   onSelect: (k) => setState(() => _key = k),
-                                ),
-                                const SizedBox(height: 36),
-
-                                _SectionTitle(
-                                  icon: Icons.track_changes_rounded,
-                                  title: 'Direction',
-                                  subtitle: _isReverse
-                                      ? 'Identify the degree from its note.'
-                                      : 'Identify the note from its degree.',
-                                ),
-                                const SizedBox(height: 18),
-                                _SlidingPillRow(
-                                  opts: const ['Degree → Note', 'Note → Degree'],
-                                  sel: _isReverse ? 'Note → Degree' : 'Degree → Note',
-                                  accentColor: _accent,
-                                  onChange: (v) => setState(() {
-                                    final rev = v == 'Note → Degree';
-                                    if (rev != _isReverse) {
-                                      _degs = _convertDegs(_degs, rev);
-                                      _isReverse = rev;
-                                    }
-                                  }),
                                 ),
                                 const SizedBox(height: 36),
 
@@ -309,9 +403,21 @@ class _CustomModeSetupState extends State<CustomModeSetup> {
                                         title: 'Select Degrees',
                                       ),
                                     ),
-                                    _QuickBtn(label: 'DIATONIC', onTap: _setDiatonic),
-                                    const SizedBox(width: 8),
-                                    _QuickBtn(label: 'ALL', onTap: _setAll),
+                                    if (_isOfWhat) ...[
+                                      _QuickBtn(
+                                          label: 'CHORD',
+                                          onTap: () => setState(
+                                              () => _degs = Set.of(kOfWhatChordTones))),
+                                      const SizedBox(width: 8),
+                                      _QuickBtn(
+                                          label: 'ALL',
+                                          onTap: () => setState(
+                                              () => _degs = Set.of(kOfWhatDegrees))),
+                                    ] else ...[
+                                      _QuickBtn(label: 'DIATONIC', onTap: _setDiatonic),
+                                      const SizedBox(width: 8),
+                                      _QuickBtn(label: 'ALL', onTap: _setAll),
+                                    ],
                                   ],
                                 ),
                                 const SizedBox(height: 16),
@@ -319,6 +425,8 @@ class _CustomModeSetupState extends State<CustomModeSetup> {
                                   selected: _degs,
                                   onToggle: _toggleDeg,
                                   reverse: _isReverse,
+                                  list: _isOfWhat ? kOfWhatDegrees : null,
+                                  colorFor: _isOfWhat ? _degColor : null,
                                 ),
                                 const SizedBox(height: 36),
 
@@ -344,9 +452,10 @@ class _CustomModeSetupState extends State<CustomModeSetup> {
                                 const SizedBox(height: 18),
                                 _QuestionRow(
                                   opts: _questionOpts,
-                                  selected: '$_questions',
+                                  selected: _questions == 0 ? '∞' : '$_questions',
                                   accentColor: _accent,
-                                  onSelect: (v) => setState(() => _questions = int.parse(v)),
+                                  onSelect: (v) => setState(
+                                      () => _questions = v == '∞' ? 0 : int.parse(v)),
                                 ),
                                 const SizedBox(height: 40),
                               ],
@@ -361,7 +470,7 @@ class _CustomModeSetupState extends State<CustomModeSetup> {
                     shadowColor: _accent.withValues(alpha:0.4),
                     icon: Icons.bolt_rounded, // web: Zap
                     onTap: () => widget.onStart(
-                      _key, _degs.toList(), _isReverse, _diff, _questions,
+                      _key, _degs.toList(), _dir, _diff, _questions,
                     ),
                   ),
                 ],
@@ -380,7 +489,8 @@ class _CustomModeSetupState extends State<CustomModeSetup> {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class OfWhatSetup extends StatefulWidget {
-  final void Function(String note, List<String> degrees, int difficulty, int questions) onStart;
+  final void Function(String note, List<String> degrees, int difficulty)
+      onStart;
   final VoidCallback onCancel;
   final bool isPro;
   final VoidCallback onShowPaywall;
@@ -406,39 +516,37 @@ class OfWhatSetup extends StatefulWidget {
 
 class _OfWhatSetupState extends State<OfWhatSetup> {
   late String _note = widget.initialNote ?? 'C';
-  late Set<String> _degs = (widget.initialDegrees != null && widget.initialDegrees!.isNotEmpty)
-      ? Set.of(widget.initialDegrees!)
-      : Set.of(kOfWhatChordTones);
-  int _diff = 1;
-  int _questions = 15;
 
-  static const _diffLabels = ['Apprentice', 'Virtuoso', 'Master'];
-  static const _questionOpts = ['15', '30', '50', '75', '100'];
+  /// Two sets, not a free grid: CHORD is the four chord tones, ALL is every
+  /// degree including the extensions. The hand-picked grid it replaces made
+  /// this the one mode where a session could be narrowed to a single degree —
+  /// and so the one mode whose record could not be trusted.
+  late bool _all = widget.initialDegrees != null &&
+      widget.initialDegrees!.length > kOfWhatChordTones.length;
+  int _diff = 1;
+
   static const _accent = Color(0xFF22D3EE); // cyan
 
-  // Jazz extensions reuse the colour of their base chromatic degree.
-  static Color _degColor(String d) {
-    const base = {'♭9': '♭2', '9': '2', '♯9': '♯2', '11': '4', '♯11': '♯4', '♭13': '♭6', '13': '6'};
-    return AppColors.degreeColors[base[d] ?? d] ?? _accent;
+  Set<String> get _degs =>
+      _all ? Set.of(kOfWhatDegrees) : Set.of(kOfWhatChordTones);
+
+  List<int> _levels(BuildContext context) =>
+      context.watch<AppProvider>().harmonizerLevelsFor(_note);
+
+  /// See the note on Note to Number's copy: corrected on the events that can
+  /// invalidate it, never while painting.
+  void _syncTier() {
+    final levels = context.read<AppProvider>().harmonizerLevelsFor(_note);
+    if (!_TierSelector.unlocked(levels, _diff)) {
+      _diff = AppProvider.highestUnlockedTier(levels);
+    }
   }
 
-  void _toggle(String d) {
-    setState(() {
-      if (_degs.contains(d)) {
-        if (_degs.length > 1) _degs.remove(d);
-      } else {
-        _degs.add(d);
-      }
-    });
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncTier();
   }
-
-  // Chord tones are free; everything beyond them (the EXT / ALL presets and
-  // the extension degrees in the grid) is Pro. The gate lives on the controls
-  // themselves — locked chips/cells open the paywall — so Start never has to
-  // block: a free user's selection can only ever contain free degrees.
-  Set<String> get _lockedDegs => widget.isPro
-      ? const {}
-      : kOfWhatDegrees.where((d) => !kOfWhatChordTones.contains(d)).toSet();
 
   @override
   Widget build(BuildContext context) {
@@ -478,57 +586,37 @@ class _OfWhatSetupState extends State<OfWhatSetup> {
                                 _KeyGrid(
                                   selected: _note,
                                   accentColor: _accent,
-                                  onSelect: (n) => setState(() => _note = n),
+                                  progressFor: (n) => context
+                                      .watch<AppProvider>()
+                                      .harmonizerProgressFor(n),
+                                  onSelect: (n) => setState(() {
+                                    _note = n;
+                                    _syncTier();
+                                  }),
                                 ),
                                 const SizedBox(height: 36),
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    const Expanded(
-                                      child: _SectionTitle(
-                                        icon: Icons.tune_rounded,
-                                        title: 'Degrees to Ask',
-                                      ),
-                                    ),
-                                    _QuickBtn(label: 'CHORD', onTap: () => setState(() => _degs = Set.of(kOfWhatChordTones))),
-                                    const SizedBox(width: 8),
-                                    _QuickBtn(
-                                      label: 'EXT',
-                                      locked: !widget.isPro,
-                                      onTap: () {
-                                        if (!widget.isPro) {
-                                          AnalyticsService.instance
-                                              .lockedFeature('of_what_extensions');
-                                          widget.onShowPaywall();
-                                          return;
-                                        }
-                                        setState(() => _degs = Set.of(kOfWhatExtensions));
-                                      },
-                                    ),
-                                    const SizedBox(width: 8),
-                                    _QuickBtn(
-                                      label: 'ALL',
-                                      locked: !widget.isPro,
-                                      onTap: () {
-                                        if (!widget.isPro) {
-                                          AnalyticsService.instance
-                                              .lockedFeature('of_what_all_degrees');
-                                          widget.onShowPaywall();
-                                          return;
-                                        }
-                                        setState(() => _degs = Set.of(kOfWhatDegrees));
-                                      },
-                                    ),
-                                  ],
+                                _SectionTitle(
+                                  icon: Icons.tune_rounded,
+                                  title: 'Degrees to Ask',
+                                  subtitle: _all
+                                      ? 'Every degree, extensions included.'
+                                      : 'The four chord tones: 1, 3, 5, 7.',
                                 ),
-                                const SizedBox(height: 16),
-                                _DegreeGrid(
-                                  selected: _degs,
-                                  onToggle: _toggle,
-                                  list: kOfWhatDegrees,
-                                  colorFor: _degColor,
-                                  lockedDegrees: _lockedDegs,
-                                  onLockedTap: widget.onShowPaywall,
+                                const SizedBox(height: 18),
+                                _SlidingPillRow(
+                                  opts: const ['Chord', 'All'],
+                                  sel: _all ? 'All' : 'Chord',
+                                  accentColor: _accent,
+                                  locked: widget.isPro ? const {} : const {'All'},
+                                  onChange: (v) {
+                                    if (v == 'All' && !widget.isPro) {
+                                      AnalyticsService.instance
+                                          .lockedFeature('of_what_all_degrees');
+                                      widget.onShowPaywall();
+                                      return;
+                                    }
+                                    setState(() => _all = v == 'All');
+                                  },
                                 ),
                                 const SizedBox(height: 36),
                                 const _SectionTitle(
@@ -537,24 +625,11 @@ class _OfWhatSetupState extends State<OfWhatSetup> {
                                   subtitle: 'Higher difficulty means less time to answer.',
                                 ),
                                 const SizedBox(height: 18),
-                                _SlidingPillRow(
-                                  opts: _diffLabels,
-                                  sel: _diffLabels[_diff - 1],
+                                _TierSelector(
+                                  levels: _levels(context),
+                                  selected: _diff,
                                   accentColor: _accent,
-                                  onChange: (v) => setState(() => _diff = _diffLabels.indexOf(v) + 1),
-                                ),
-                                const SizedBox(height: 36),
-                                const _SectionTitle(
-                                  icon: Icons.auto_awesome_rounded,
-                                  title: 'Number of Questions',
-                                  subtitle: 'How many questions for this session?',
-                                ),
-                                const SizedBox(height: 18),
-                                _QuestionRow(
-                                  opts: _questionOpts,
-                                  selected: '$_questions',
-                                  accentColor: _accent,
-                                  onSelect: (v) => setState(() => _questions = int.parse(v)),
+                                  onChange: (d) => setState(() => _diff = d),
                                 ),
                                 const SizedBox(height: 40),
                               ],
@@ -568,7 +643,7 @@ class _OfWhatSetupState extends State<OfWhatSetup> {
                     gradColors: const [Color(0xFF22D3EE), Color(0xFF22D3EE)],
                     shadowColor: _accent.withValues(alpha: 0.4),
                     icon: Icons.bolt_rounded,
-                    onTap: () => widget.onStart(_note, _degs.toList(), _diff, _questions),
+                    onTap: () => widget.onStart(_note, _degs.toList(), _diff),
                   ),
                 ],
               ),
@@ -617,7 +692,10 @@ class _PocketModeSetupState extends State<PocketModeSetup> {
   static const _accent = Color(0xFF6366F1); // indigo
   static const _grad = [Color(0xFF6366F1), Color(0xFF6366F1)];
 
-  static const _questionOpts = ['15', '30', '50', '∞'];
+  // 15 was over before the mode had settled into a rhythm — Pocket Mode is
+  // something you start and walk away from, so the shortest run should still
+  // be worth putting the phone in your pocket for.
+  static const _questionOpts = ['30', '50', '100', '∞'];
 
   // Chromatic (non-diatonic) degrees are Pro; free users get the 7 scale
   // degrees and see the rest locked.
@@ -1021,7 +1099,18 @@ class _KeyGrid extends StatelessWidget {
   final String selected;
   final Color accentColor;
   final ValueChanged<String> onSelect;
-  const _KeyGrid({required this.selected, required this.accentColor, required this.onSelect});
+
+  /// How far this key has been taken in the mode being set up, 0–100. Null in
+  /// the modes that keep no per-key record (Custom), where every cell simply
+  /// stays neutral.
+  final int Function(String key)? progressFor;
+
+  const _KeyGrid({
+    required this.selected,
+    required this.accentColor,
+    required this.onSelect,
+    this.progressFor,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1041,7 +1130,17 @@ class _KeyGrid extends StatelessWidget {
         final k = keys[i];
         final sel = k == selected;
         final color = sel ? (AppColors.noteColors[k] ?? accentColor) : accentColor;
-        return _KeyCell(noteKey: k, displayColor: color, selected: sel, onTap: () => onSelect(k));
+        return _KeyCell(
+          noteKey: k,
+          displayColor: color,
+          selected: sel,
+          // The outline always wears the KEY's own colour, never the mode's
+          // accent: it is a property of the key, and reading it as one across
+          // a grid of twelve is the whole point.
+          masteryColor: AppColors.noteColors[k] ?? accentColor,
+          mastery: (progressFor?.call(k) ?? 0) / 100,
+          onTap: () => onSelect(k),
+        );
       },
     );
   }
@@ -1051,8 +1150,22 @@ class _KeyCell extends StatelessWidget {
   final String noteKey;
   final Color displayColor;
   final bool selected;
+
+  /// 0–1 of this key's mastery in the mode being set up. 0 leaves the cell
+  /// exactly as it was: a key never touched should look untouched, not faintly
+  /// started.
+  final double mastery;
+  final Color masteryColor;
   final VoidCallback onTap;
-  const _KeyCell({required this.noteKey, required this.displayColor, required this.selected, required this.onTap});
+
+  const _KeyCell({
+    required this.noteKey,
+    required this.displayColor,
+    required this.selected,
+    required this.onTap,
+    this.mastery = 0,
+    this.masteryColor = Colors.white,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1062,7 +1175,13 @@ class _KeyCell extends StatelessWidget {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       // No press/illuminate animation — the key colours instantly on tap.
-      child: Container(
+      child: MasteryBorder(
+        progress: mastery,
+        // On a selected cell the tile is already the note's colour, so the
+        // outline would vanish into it; white reads on both.
+        color: sel ? Colors.white.withValues(alpha: 0.85) : masteryColor,
+        radius: 16,
+        child: Container(
         decoration: BoxDecoration(
           // Selected: vivid note colour with a glossy sheen + soft neon glow.
           // Unselected: quiet glass tile with a hairline border.
@@ -1099,6 +1218,7 @@ class _KeyCell extends StatelessWidget {
               ),
             ),
           ),
+        ),
         ),
       ),
     );
@@ -1231,6 +1351,137 @@ class _SlidingPillRow extends StatelessWidget {
         ),
       );
     });
+  }
+}
+
+// ── Difficulty tiers, with the record and the gates ──────────────────────────
+
+/// The three tiers plus what you have actually done with them.
+///
+/// The forward modes have always worked this way — you cannot open Master
+/// before Virtuoso, and the card tells you your record — while Note to Number
+/// and "…Of What?" offered three interchangeable pills and remembered nothing.
+/// Same ladder here, so "difficulty" means one thing across the app.
+class _TierSelector extends StatelessWidget {
+  /// The key's (or note's) three tier scores for THIS mode.
+  final List<int> levels;
+  final int selected;
+  final Color accentColor;
+  final ValueChanged<int> onChange;
+
+  const _TierSelector({
+    required this.levels,
+    required this.selected,
+    required this.accentColor,
+    required this.onChange,
+  });
+
+  static const labels = ['Apprentice', 'Virtuoso', 'Master'];
+  static const caps = [30, 40, 50];
+
+  /// What the tier above needs from the tier below. Mirrors the key cards.
+  static const gates = [0, 27, 37];
+
+  static bool unlocked(List<int> levels, int tier) =>
+      tier <= 1 || levels[tier - 2] >= gates[tier - 1];
+
+  void _explain(BuildContext context, int tier) {
+    final need = gates[tier - 1];
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        margin: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(24, 26, 24, 30),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1625),
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              Icon(Icons.lock_rounded, color: accentColor, size: 18),
+              const SizedBox(width: 8),
+              Text('${labels[tier - 1]} is locked'.toUpperCase(),
+                  style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.4,
+                      color: accentColor)),
+            ]),
+            const SizedBox(height: 12),
+            Text(
+              'Reach $need correct in ${labels[tier - 2]} first. '
+              'You are at ${levels[tier - 2]}.',
+              style: const TextStyle(
+                  fontSize: 14, height: 1.5, color: Colors.white70),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final best = levels[selected - 1];
+    final cap = caps[selected - 1];
+    final pct = (best / cap * 100).round().clamp(0, 100);
+    final color = best <= 0
+        ? Colors.white.withAlpha(80)
+        : best >= cap
+            ? const Color(0xFFFACC15)
+            : pct >= 80
+                ? const Color(0xFF10B981)
+                : pct >= 50
+                    ? const Color(0xFFF59E0B)
+                    : const Color(0xFFFB7185);
+
+    final lockedLabels = <String>{
+      for (var t = 2; t <= 3; t++)
+        if (!unlocked(levels, t)) labels[t - 1],
+    };
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SlidingPillRow(
+          opts: labels,
+          sel: labels[selected - 1],
+          accentColor: accentColor,
+          locked: lockedLabels,
+          onChange: (v) {
+            final tier = labels.indexOf(v) + 1;
+            if (!unlocked(levels, tier)) {
+              _explain(context, tier);
+              return;
+            }
+            onChange(tier);
+          },
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Text('$best/$cap BEST',
+                style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.2,
+                    color: Colors.white.withAlpha(90))),
+            const Spacer(),
+            Text('$pct%',
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.5,
+                    color: color)),
+          ],
+        ),
+      ],
+    );
   }
 }
 

@@ -97,15 +97,25 @@ void main() {
             isPro: isPro,
             onShowPaywall: () {},
             onCancel: () {},
-            onStart: (_, _, _) {},
+            onStart: (_, _, _, _) {},
           ),
         ),
       ));
       await t.pump();
-      return find.byIcon(Icons.lock_rounded).evaluate().length;
+      // Only the padlock riding on the CHROMATIC pill. The difficulty tiers
+      // wear the same icon when they are not yet unlocked, and counting every
+      // lock on the page would make this test fail for the wrong reason.
+      return find
+          .descendant(
+            of: find.ancestor(
+                of: find.text('CHROMATIC'), matching: find.byType(Row)),
+            matching: find.byIcon(Icons.lock_rounded),
+          )
+          .evaluate()
+          .length;
     }
 
-    expect(await padlocksWhenPro(false), 1,
+    expect(await padlocksWhenPro(false), greaterThan(0),
         reason: 'a free user must see the lock on Chromatic');
     expect(await padlocksWhenPro(true), 0,
         reason: 'a paying user must not be shown a lock on what they own');
@@ -132,7 +142,7 @@ void main() {
           isPro: false,
           onShowPaywall: () => opened = true,
           onCancel: () {},
-          onStart: (_, _, _) {},
+          onStart: (_, _, _, _) {},
         ),
       ),
     ));

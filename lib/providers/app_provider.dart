@@ -67,6 +67,10 @@ class AppProvider extends ChangeNotifier {
   bool? isReverse;
   int? customDifficulty;
   int? customQuestions;
+
+  /// True when the running Note to Number session covers all twelve degrees.
+  /// Selects which of [KeyProgress]'s two reverse stores gets credited.
+  bool ntnChromatic = false;
   // "…Of What?" mode: the fixed melody note held for the whole session (the
   // degree rotates and the root is the answer).
   String? fixedNote;
@@ -407,6 +411,43 @@ class AppProvider extends ChangeNotifier {
   }
 
   // Computed
+  /// The stored [KeyProgress] for a key or note, or a blank one. Every dial
+  /// reader goes through here so a key the user has never touched behaves like
+  /// a key at zero rather than throwing.
+  KeyProgress progressFor(String key) => progressData.firstWhere(
+        (k) => k.key == key,
+        orElse: () => KeyProgress(key: key),
+      );
+
+  /// Note to Number's three tier scores for a key, in the direction being set
+  /// up (7 degrees or 12).
+  List<int> ntnLevels(String key, {required bool chromatic}) {
+    final p = progressFor(key);
+    return chromatic ? p.ntnChromaticLevels : p.ntnDiatonicLevels;
+  }
+
+  /// 0–100 across all three tiers — what the outline on a key cell fills to.
+  int ntnProgress(String key, {required bool chromatic}) {
+    final p = progressFor(key);
+    return chromatic ? p.ntnChromaticProgress : p.ntnDiatonicProgress;
+  }
+
+  /// "…Of What?" is keyed by the note being held, not by a tonality.
+  List<int> harmonizerLevelsFor(String note) => progressFor(note).harmonizerLevels;
+
+  int harmonizerProgressFor(String note) => progressFor(note).harmonizerProgress;
+
+  /// The hardest tier a set of scores has earned: Virtuoso opens at 27 of
+  /// Apprentice's 30, Master at 37 of Virtuoso's 40 — the same gates the
+  /// forward modes have always used, so "you cannot start at the top" means
+  /// one thing across the whole app.
+  static int highestUnlockedTier(List<int> levels) {
+    if (levels.length < 2) return 1;
+    if (levels[1] >= 37) return 3;
+    if (levels[0] >= 27) return 2;
+    return 1;
+  }
+
   double get totalProgress {
     if (progressData.isEmpty) return 0;
     final total = progressData.fold<int>(0, (acc, k) => acc + k.totalProgress);
@@ -900,9 +941,15 @@ class AppProvider extends ChangeNotifier {
     int questions = 30,
     int difficulty = 1,
     String? overrideKey,
+    bool chromatic = false,
   }) {
     if (overrideKey != null) selectedKey = overrideKey;
     if (selectedKey == null) return;
+    // Which of the key's two Note to Number stores this run credits. Passed in
+    // rather than inferred from the degree list: Custom Mode can start a
+    // reverse session with any hand-picked set, and guessing "chromatic
+    // because it has 9 degrees" would file free practice under a real dial.
+    ntnChromatic = chromatic;
     customDegrees = degrees;
     isReverse = true;
     customDifficulty = difficulty;
@@ -926,10 +973,13 @@ class AppProvider extends ChangeNotifier {
 
   // "…Of What?" — a fixed melody [note], the degree rotates each question, the
   // answer is the root. Not tied to a key; reuses customDegrees/customQuestions.
+  /// [questions] null means "as many as the tier is worth" — the trainer then
+  /// falls back to 30/40/50 by difficulty, which is what makes finishing a
+  /// session and filling a tier the same act.
   void startOfWhatMode({
     required String note,
     required List<String> degrees,
-    int questions = 30,
+    int? questions,
     int difficulty = 1,
   }) {
     fixedNote = note;
@@ -1113,6 +1163,35 @@ class AppProvider extends ChangeNotifier {
     // ships narrowed by default (chord tones), so requiring the full set would
     // leave the dial at zero for almost everyone. It feeds only this card,
     // never the key's mastery percentage.
+    // Note to Number mastery — the same key, learned backwards, on its own
+    // pair of dials.
+    //
+    // Excluded from progression until now on the grounds that a reverse
+    // session "can be narrowed to a single degree". That is true of Custom
+    // Mode, which is where the reverse direction used to live; it is not true
+    // here. Note to Number's own setup offers exactly two sets — the 7
+    // diatonic degrees or all 12 — so there is nothing to narrow and nothing
+    // to inflate. Custom stays excluded, which is what the rule was protecting.
+    if (activeMode == TrainingMode.noteToNumber && selectedKey != null) {
+      final diff = (customDifficulty ?? 1).clamp(1, 3);
+      final currentCorrect = stats.currentSessionCorrect;
+
+      progressData = progressData.map((item) {
+        if (item.key != selectedKey) return item;
+        final levels = List<int>.from(
+            ntnChromatic ? item.ntnChromaticLevels : item.ntnDiatonicLevels);
+        final maxForLevel = diff == 1 ? 30 : diff == 2 ? 40 : 50;
+        final best =
+            currentCorrect > levels[diff - 1] ? currentCorrect : levels[diff - 1];
+        levels[diff - 1] = best > maxForLevel ? maxForLevel : best;
+        return ntnChromatic
+            ? item.copyWith(ntnChromaticLevels: levels)
+            : item.copyWith(ntnDiatonicLevels: levels);
+      }).toList();
+
+      _storage.saveProgress(progressData);
+    }
+
     if (activeMode == TrainingMode.ofWhat && fixedNote != null) {
       final diff = (customDifficulty ?? 1).clamp(1, 3);
       final currentCorrect = stats.currentSessionCorrect;

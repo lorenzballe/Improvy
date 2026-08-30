@@ -588,11 +588,23 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
         return CustomModeSetup(
           initialKey: key,
           onCancel: () { provider.deselectKey(); setState(() => _pendingSetup = null); },
-          onStart: (selKey, degrees, reverse, difficulty, questions) {
+          onStart: (selKey, degrees, direction, difficulty, questions) {
             setState(() => _pendingSetup = null);
+            // …Of What? is a different engine, not a flag on this one: the
+            // subject is a held note rather than a tonality, so a Custom run
+            // in that direction starts the harmonizer.
+            if (direction == CustomDirection.ofWhat) {
+              provider.startOfWhatMode(
+                note: selKey,
+                degrees: degrees,
+                difficulty: difficulty,
+                questions: questions,
+              );
+              return;
+            }
             provider.startCustomMode(
               degrees: degrees,
-              reverse: reverse,
+              reverse: direction == CustomDirection.noteToNumber,
               difficulty: difficulty,
               questions: questions,
               overrideKey: selKey,
@@ -605,12 +617,13 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
           isPro: provider.isPro,
           onShowPaywall: _showPaywallSheet,
           onCancel: () { provider.deselectKey(); setState(() => _pendingSetup = null); },
-          onStart: (selKey, degrees, difficulty) {
+          onStart: (selKey, degrees, difficulty, chromatic) {
             setState(() => _pendingSetup = null);
             provider.startNoteToNumberMode(
               degrees: degrees,
               difficulty: difficulty,
               overrideKey: selKey,
+              chromatic: chromatic,
             );
           },
         );
@@ -622,13 +635,14 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
             initialDegrees: _ofWhatResumeDegrees,
             onShowPaywall: () => _showPaywallSheet('ofwhat-degrees'),
             onCancel: () { provider.deselectKey(); setState(() { _pendingSetup = null; _ofWhatResumeNote = null; _ofWhatResumeDegrees = null; }); },
-            onStart: (note, degrees, difficulty, questions) {
+            onStart: (note, degrees, difficulty) {
               setState(() { _pendingSetup = null; _ofWhatResumeNote = null; _ofWhatResumeDegrees = null; });
+              // No question count: the tier decides the length, so finishing a
+              // session and filling a tier are the same act.
               provider.startOfWhatMode(
                 note: note,
                 degrees: degrees,
                 difficulty: difficulty,
-                questions: questions,
               );
             },
           ),
