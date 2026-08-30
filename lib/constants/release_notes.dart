@@ -62,6 +62,41 @@ class Release {
 /// the right behaviour for a pure bug-fix build.
 const List<Release> kReleases = [
   Release(
+    version: '1.10.2',
+    date: '30 AUG 2026',
+    headline: 'The statistics now measure what you would feel on a bandstand.',
+    lines: [
+      ReleaseLine(
+        icon: Icons.emoji_events_rounded,
+        color: Color(0xFFFACC15),
+        title: 'The key ranking means something',
+        detail:
+            'It ranked by raw accuracy over all history, which rewarded not '
+            'climbing: a key dabbled with at six seconds outranked one taken '
+            'to Master. It now ranks how often you answer right inside 1.2 '
+            'seconds — either you know where the ♭3 is or you are counting.',
+      ),
+      ReleaseLine(
+        icon: Icons.speed_rounded,
+        color: Color(0xFF22D3EE),
+        title: 'Response time, not accuracy over time',
+        detail:
+            'Accuracy fell off a cliff the day you unlocked a harder tier, so '
+            'the chart showed a decline for what was clearly progress. Speed '
+            'has no such reversal — it only ever falls as you get better.',
+      ),
+      ReleaseLine(
+        icon: Icons.filter_alt_rounded,
+        color: Color(0xFF818CF8),
+        title: 'Each card reads the modes it is about',
+        detail:
+            'Degree Accuracy takes both directions over a key and leaves the '
+            'harmonizer out. The keyboard heatmap takes everything, but one '
+            'reading per session, so a long evening cannot drown a short one.',
+      ),
+    ],
+  ),
+  Release(
     version: '1.10.1',
     date: '30 AUG 2026',
     headline: 'The animals come faster now, and the harder ones cost more.',

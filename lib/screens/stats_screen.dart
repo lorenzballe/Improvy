@@ -171,6 +171,14 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
     final Map<String, ({int correct, int total})> degreeStats = {};
     for (final session in recentSessions) {
       for (final ans in session.answers) {
+        // Both directions over a key belong here — asking for the note of a
+        // degree and the degree of a note are the same fact approached from
+        // either side, and the bar is about the DEGREE either way.
+        //
+        // "…Of What?" is not. There the degree is given and the answer is a
+        // key, so pooling it would put "the ♭3 of C is E♭" and "E♭ is the ♭3
+        // of what" in one bar — two different questions, one number.
+        if (ans.mode == 'of-what') continue;
         final deg = romanDegree(ans.degree);
         if (deg.isEmpty) continue;
         final cur = degreeStats[deg] ?? (correct: 0, total: 0);
@@ -1108,17 +1116,36 @@ class _KeyboardHeatmapCardState extends State<_KeyboardHeatmapCard> {
     return m[note] ?? note;
   }
 
+  /// Average response time per note, over the recent games.
+  ///
+  /// Every mode counts here — this map is about NOTES, and all three ask about
+  /// the same twelve — but a session contributes one averaged reading per
+  /// note, not one per answer.
+  ///
+  /// Sessions are no longer all the same length — 30, 50, 100 or endless — so
+  /// counting every answer would let one long evening outweigh three short
+  /// ones and quietly decide what the map says for the next month. Averaging
+  /// first makes a session worth a session, whatever it was.
+  ///
+  /// ("…Of What?" needs no special handling here: it records the ROOT it asked
+  /// for, which changes with every question, so it spreads across the map like
+  /// any other mode rather than piling onto the note being held.)
   Map<String, int> _buildHeatmap() {
     // sessionHistory is newest-first, so take(N) = the last N games.
     final recent = widget.sessionHistory.take(_range == '7' ? 7 : 30);
     final Map<String, ({int sum, int n})> acc = {};
     for (final session in recent) {
+      final Map<String, ({int sum, int n})> perSession = {};
       for (final ans in session.answers) {
         if (ans.selectedNote.isEmpty) continue; // timeout — no speed information
         final k = _canon(ans.note);
         if (k.isEmpty) continue;
-        final c = acc[k] ?? (sum: 0, n: 0);
-        acc[k] = (sum: c.sum + ans.responseTime, n: c.n + 1);
+        final c = perSession[k] ?? (sum: 0, n: 0);
+        perSession[k] = (sum: c.sum + ans.responseTime, n: c.n + 1);
+      }
+      for (final e in perSession.entries) {
+        final c = acc[e.key] ?? (sum: 0, n: 0);
+        acc[e.key] = (sum: c.sum + e.value.sum ~/ e.value.n, n: c.n + 1);
       }
     }
     return {for (final e in acc.entries) e.key: e.value.sum ~/ e.value.n};

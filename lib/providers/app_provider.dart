@@ -646,18 +646,52 @@ class AppProvider extends ChangeNotifier {
   ///
   /// "…Of What?" is excluded: it stores a fixed melody note in `tonality`,
   /// which is not a key context at all.
+  /// How comfortable you would be improvising in each key, ranked 1–12.
+  ///
+  /// It used to sort by raw accuracy over all history, which measured the
+  /// wrong thing twice over. Accuracy is confounded by tier — a key taken to
+  /// Master's 1.2s clock collects more mistakes than one dabbled with at
+  /// Apprentice's 6s — so the ranking rewarded NOT climbing. And using every
+  /// answer ever recorded meant a key you were bad at last spring dragged on
+  /// its rank forever, while every other figure on the screen speaks about the
+  /// last 30 games.
+  ///
+  /// What it measures now is **instant recall**: the share of recent answers
+  /// in that key that were right AND arrived inside [kInstantMs]. On a
+  /// bandstand you have about a second — either you know where the ♭3 is or
+  /// you are counting, and counting does not survive a tune.
+  ///
+  /// The threshold is not invented for this: 1.2s is what Master's clock
+  /// already certifies. It is also why the measure has no tier bias — a fixed
+  /// wall treats every tier alike, where the tier's own clock does not.
+  ///
+  /// "…Of What?" is excluded: it is not played in a key.
   Map<String, int> get keyRanks {
-    final agg = <String, ({int correct, int total, int rt, int rtCount})>{};
+    const window = 30;
+    final agg = <String, ({int instant, int total})>{};
+    final seen = <String, int>{};
+
     for (final s in stats.sessionHistory) {
+      // Newest-first, so this walks back through the last [window] games in
+      // which each key actually appeared.
+      final keysHere = <String>{
+        for (final a in s.answers)
+          if (a.mode != TrainingMode.ofWhat.storageKey) a.tonality,
+      };
+      for (final k in keysHere) {
+        seen[k] = (seen[k] ?? 0) + 1;
+      }
       for (final a in s.answers) {
         if (a.mode == TrainingMode.ofWhat.storageKey) continue;
-        final cur = agg[a.tonality] ?? (correct: 0, total: 0, rt: 0, rtCount: 0);
-        final timed = a.selectedNote.isNotEmpty;
+        if ((seen[a.tonality] ?? 0) > window) continue;
+        final cur = agg[a.tonality] ?? (instant: 0, total: 0);
+        final instant = a.isCorrect &&
+            a.selectedNote.isNotEmpty &&
+            a.responseTime > 0 &&
+            a.responseTime <= kInstantMs;
         agg[a.tonality] = (
-          correct: cur.correct + (a.isCorrect ? 1 : 0),
+          instant: cur.instant + (instant ? 1 : 0),
           total: cur.total + 1,
-          rt: cur.rt + (timed ? a.responseTime : 0),
-          rtCount: cur.rtCount + (timed ? 1 : 0),
         );
       }
     }
@@ -665,11 +699,10 @@ class AppProvider extends ChangeNotifier {
     final played = kDefaultKeyOrder.where((k) => (agg[k]?.total ?? 0) > 0).toList()
       ..sort((a, b) {
         final sa = agg[a]!, sb = agg[b]!;
-        final accA = sa.correct / sa.total, accB = sb.correct / sb.total;
-        if (accA != accB) return accB.compareTo(accA);
-        final rtA = sa.rtCount > 0 ? sa.rt / sa.rtCount : double.maxFinite;
-        final rtB = sb.rtCount > 0 ? sb.rt / sb.rtCount : double.maxFinite;
-        if (rtA != rtB) return rtA.compareTo(rtB);
+        final fa = sa.instant / sa.total, fb = sb.instant / sb.total;
+        if (fa != fb) return fb.compareTo(fa);
+        // A tie on fluency goes to whoever has shown it more often.
+        if (sa.total != sb.total) return sb.total.compareTo(sa.total);
         return a.compareTo(b);
       });
 

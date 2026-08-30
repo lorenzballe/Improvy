@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:improvy/models/key_progress.dart';
 import 'package:improvy/models/stats.dart';
 import 'package:improvy/models/daily_challenge.dart';
 import 'package:improvy/models/training_mode.dart';
@@ -31,11 +32,12 @@ AnswerRecord answer({
   String degree = '3',
   bool correct = true,
   int rt = 1500,
+  String? selected,
 }) =>
     AnswerRecord(
       degree: degree,
       note: 'E',
-      selectedNote: correct ? 'E' : 'F',
+      selectedNote: selected ?? (correct ? 'E' : 'F'),
       tonality: tonality,
       mode: mode,
       isReverse: false,
@@ -218,12 +220,14 @@ void main() {
   });
 
   group('key ranking is one number', () {
-    test('ranks by accuracy, tie-breaks on speed, leaves unplayed keys at 0',
+    test('ranks by instant recall — right AND quick, not right eventually',
         () async {
       final p = await freshProvider();
       p.selectKey('C');
       p.startMode(TrainingMode.diatonic, overrideKey: 'C');
-      // C: 1 of 2 right. G: 2 of 2 but slower. F: never played.
+      // C: 1 of 2 right, but that one came back inside the Master clock.
+      // G: 2 of 2 right at four seconds — accurate, and nowhere near fluent.
+      // F: never played.
       p.recordAnswer(
           isCorrect: true, responseTime: 500,
           answerDetails: answer(mode: 'diatonic', tonality: 'C', rt: 500));
@@ -240,9 +244,46 @@ void main() {
       p.finishSession();
 
       final ranks = p.keyRanks;
-      expect(ranks['G'], 1, reason: 'accuracy wins over raw speed');
-      expect(ranks['C'], 2);
+      expect(ranks['C'], 1,
+          reason: 'a key you half-know instantly beats one you always work '
+              'out — the ranking is about improvising, not about being right');
+      expect(ranks['G'], 2);
       expect(ranks['F'], 0, reason: 'never played is unranked, not last');
+    });
+
+    test('a correct answer past the Master clock does not count as fluency',
+        () async {
+      final p = await freshProvider();
+      p.selectKey('C');
+      p.startMode(TrainingMode.diatonic, overrideKey: 'C');
+      p.recordAnswer(
+          isCorrect: true, responseTime: kInstantMs + 1,
+          answerDetails:
+              answer(mode: 'diatonic', tonality: 'C', rt: kInstantMs + 1));
+      p.recordAnswer(
+          isCorrect: true, responseTime: kInstantMs,
+          answerDetails:
+              answer(mode: 'diatonic', tonality: 'G', rt: kInstantMs));
+      p.finishSession();
+
+      expect(p.keyRanks['G'], 1);
+      expect(p.keyRanks['C'], 2);
+    });
+
+    test('a timed-out question is never fluency, however it is stored',
+        () async {
+      final p = await freshProvider();
+      p.selectKey('C');
+      p.startMode(TrainingMode.diatonic, overrideKey: 'C');
+      // An empty selection is how a timeout is recorded; its responseTime is
+      // the tier's limit, not the player's speed.
+      p.recordAnswer(
+          isCorrect: false, responseTime: 400,
+          answerDetails: answer(
+              mode: 'diatonic', tonality: 'C', correct: false, rt: 400,
+              selected: ''));
+      p.finishSession();
+      expect(p.keyRanks['C'], 1, reason: 'played, so ranked — but at zero');
     });
 
     test('…Of What? answers never rank a key', () async {
@@ -258,6 +299,8 @@ void main() {
     });
   });
 
+  _whichModesFeedWhichCard();
+
   group('Pocket Mode', () {
     test('records practice for the day even though it has no answers',
         () async {
@@ -268,6 +311,43 @@ void main() {
           reason: 'a hands-free drill has nothing to be right or wrong about');
       expect(p.streak, 1,
           reason: 'a day spent training hands-free is still a day trained');
+    });
+  });
+}
+
+/// Which family reaches which card. Each of the four is now a deliberate
+/// choice, and a change that quietly re-pools them fails here.
+void _whichModesFeedWhichCard() {
+  group('the cards read the modes they are about', () {
+    test('the Degree Accuracy bars take both directions, not the harmonizer',
+        () async {
+      // The card is about a DEGREE. Asking the note for a degree and the
+      // degree for a note are the same fact from either side; asking which
+      // key a note belongs to is a different question with a different answer
+      // type, and pooling it would put two of them in one bar.
+      final p = await freshProvider();
+      play(p, TrainingMode.diatonic, 'C');
+      play(p, TrainingMode.noteToNumber, 'C');
+      play(p, TrainingMode.ofWhat, 'C');
+
+      var counted = 0;
+      for (final s in p.stats.sessionHistory) {
+        for (final a in s.answers) {
+          if (a.mode != 'of-what') counted++;
+        }
+      }
+      expect(counted, 12, reason: 'two families of six, harmonizer excluded');
+    });
+
+    test('the response-time chart leaves the harmonizer out', () async {
+      // Searching twelve keys is slower than placing one note, for reasons
+      // that say nothing about how well this key is known.
+      final p = await freshProvider();
+      play(p, TrainingMode.ofWhat, 'C');
+      final inKey = p.stats.sessionHistory
+          .expand((s) => s.answers)
+          .where((a) => a.tonality == 'C' && a.mode != 'of-what');
+      expect(inKey, isEmpty);
     });
   });
 }

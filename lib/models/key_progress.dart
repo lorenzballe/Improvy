@@ -16,6 +16,13 @@ const double kTierUnlockFraction = 0.80;
 /// Apprentice, 24 of 30 for Virtuoso, 32 of 40 for Master.
 const List<int> kTierUnlock = [0, 24, 32];
 
+/// What counts as knowing something rather than working it out: 1.2 seconds,
+/// which is Master's clock. Answering inside it leaves no room to count up
+/// from the root, which is exactly what that tier exists to certify — so the
+/// same number can measure fluency anywhere, at any tier, without favouring
+/// the one whose clock happens to be short.
+const int kInstantMs = 1200;
+
 class KeyProgress {
   final String key;
   final List<int> diatonicLevels; // [level1score, level2score, level3score]

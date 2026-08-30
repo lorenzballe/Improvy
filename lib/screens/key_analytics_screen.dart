@@ -174,32 +174,38 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
     }
 
     // Accuracy-over-time chart points (7 buckets, y in 0..200 where 0 = 100%)
-    final chartY = _buildChart(history, tone, _last30 ? 30 : 14);
+    final chartMs = _buildRtChart(history, tone, _last30 ? 30 : 14);
+    final chartY = chartMs.map(_rtToY).toList();
     _selPoint = _selPoint.clamp(0, 6);
-    // Accuracy at the scrubbed point — shown in a fixed spot in the header,
-    // updating as the dot moves (matches the Response Time chart).
-    final selAcc = (100 - chartY[_selPoint] / 200 * 100).round();
+    // Response time at the scrubbed point, in seconds.
+    final selMs = chartMs[_selPoint];
 
-    // Accuracy growth vs the previous equal-length period (same tone), shown
-    // next to the value like the general ACCURACY stat: green up / red down.
-    double? accuracyDelta;
+    // Change against the previous equal-length period. Faster is better, so
+    // the sign is flipped before it reaches the arrow: a negative change in
+    // milliseconds is a positive change in the player.
+    double? speedDelta;
     {
       final toneSessions = history.where((s) =>
           (s.answers as List).any(inKey)).toList(); // newest-first
-      double accOf(Iterable sessions) {
-        int c = 0, t = 0;
+      double? rtOf(Iterable sessions) {
+        int sum = 0, n = 0;
         for (final s in sessions) {
           for (final a in (s.answers as List)) {
-            if (inKey(a)) { t++; if (a.isCorrect) c++; }
+            if (!inKey(a) || (a.selectedNote as String).isEmpty) continue;
+            if ((a.responseTime as int) <= 0) continue;
+            sum += a.responseTime as int;
+            n++;
           }
         }
-        return t > 0 ? c / t : 0;
+        return n > 0 ? sum / n : null;
       }
       final window = _last30 ? 30 : 14;
       if (toneSessions.length > window) {
-        final cur = accOf(toneSessions.take(window));
-        final prev = accOf(toneSessions.skip(window).take(window));
-        if (prev > 0) accuracyDelta = (cur - prev) / prev * 100;
+        final cur = rtOf(toneSessions.take(window));
+        final prev = rtOf(toneSessions.skip(window).take(window));
+        if (cur != null && prev != null && prev > 0) {
+          speedDelta = (prev - cur) / prev * 100;
+        }
       }
     }
 
@@ -319,16 +325,17 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                   children: [
                     Row(
                       children: [
-                        Expanded(child: _SectionTitle(icon: Icons.timeline_rounded, color: color, title: 'Accuracy Over Time')),
-                        // Accuracy growth badge sits in the space freed by the
-                        // compact range toggle (green up / red down).
-                        if (accuracyDelta != null) ...[
-                          Icon(accuracyDelta >= 0 ? Icons.trending_up_rounded : Icons.trending_down_rounded,
-                            color: accuracyDelta >= 0 ? const Color(0xFF10B981) : const Color(0xFFFB7185), size: 16),
+                        Expanded(child: _SectionTitle(icon: Icons.timeline_rounded, color: color, title: 'Response Time')),
+                        // Speed growth badge sits in the space freed by the
+                        // compact range toggle. Already sign-flipped, so up and
+                        // green mean "quicker than you were".
+                        if (speedDelta != null) ...[
+                          Icon(speedDelta >= 0 ? Icons.trending_up_rounded : Icons.trending_down_rounded,
+                            color: speedDelta >= 0 ? const Color(0xFF10B981) : const Color(0xFFFB7185), size: 16),
                           const SizedBox(width: 3),
-                          Text('${accuracyDelta >= 0 ? "+" : ""}${accuracyDelta.toStringAsFixed(1)}%',
+                          Text('${speedDelta >= 0 ? "+" : ""}${speedDelta.toStringAsFixed(1)}%',
                             style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: -0.3,
-                              color: accuracyDelta >= 0 ? const Color(0xFF10B981) : const Color(0xFFFB7185))),
+                              color: speedDelta >= 0 ? const Color(0xFF10B981) : const Color(0xFFFB7185))),
                           const SizedBox(width: 12),
                         ],
                         // Segmented range toggle — same style as the Response Time
@@ -362,14 +369,14 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.baseline,
                         textBaseline: TextBaseline.alphabetic,
                         children: [
-                          Text('$selAcc',
+                          Text(selMs > 0 ? (selMs / 1000).toStringAsFixed(2) : '—',
                             style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: color, height: 1, letterSpacing: -1.5)),
-                          Text('%',
+                          Text('s',
                             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: color.withAlpha(160), letterSpacing: -1)),
                           const SizedBox(width: 10),
                           Padding(
                             padding: const EdgeInsets.only(bottom: 3),
-                            child: Text('ACCURACY',
+                            child: Text('PER ANSWER',
                               style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white.withAlpha(90), letterSpacing: 1.5)),
                           ),
                         ],
@@ -587,22 +594,41 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
   // Build 7 bucket y-values (0..200, where 0 = 100% accuracy) for the tone.
   // "…Of What?" answers are excluded — their `tonality` is a fixed note, not
   // a key context (same rule as every per-key stat on this screen).
-  List<double> _buildChart(List history, String tone, int limit) {
+  /// Average response time in this key, in seven buckets across the window.
+  /// Zero where there is nothing to say.
+  ///
+  /// This card used to plot accuracy, and accuracy is the one measure here
+  /// that moves the WRONG WAY when you improve: the day you unlock Virtuoso
+  /// the clock drops from 6s to 3.2s and your accuracy falls off a cliff. The
+  /// chart showed a decline for what was unambiguously progress, which is why
+  /// it was impossible to read.
+  ///
+  /// Response time has no such reversal. It is measured, not capped — a
+  /// timed-out question is thrown away rather than recorded at the limit — so
+  /// it falls whenever you actually get quicker, at any tier, and climbing a
+  /// tier makes it fall faster rather than jump.
+  ///
+  /// "…Of What?" stays out. It asks you to search twelve keys rather than
+  /// place one note, so its times are slower for a reason that has nothing to
+  /// do with how well you know this key.
+  List<int> _buildRtChart(List history, String tone, int limit) {
     bool inKey(dynamic a) => a.tonality == tone && a.mode != 'of-what';
     final sessions = history.where((s) =>
         (s.answers as List).any(inKey)).toList().reversed.toList();
-    if (sessions.isEmpty) return List.filled(7, 200.0);
+    if (sessions.isEmpty) return List.filled(7, 0);
 
     final n = math.min(limit, sessions.length);
     final relevant = sessions.sublist(sessions.length - n);
-    final buckets = List.generate(7, (_) => [0, 0]); // [correct, total]
+    final buckets = List.generate(7, (_) => [0, 0]); // [sum ms, count]
     for (var i = 0; i < relevant.length; i++) {
       final bi = math.min(((i / relevant.length) * 7).floor(), 6);
       for (final a in (relevant[i].answers as List)) {
-        if (inKey(a)) {
-          buckets[bi][1]++;
-          if (a.isCorrect) buckets[bi][0]++;
-        }
+        // Timed out: its responseTime is the tier's limit, not the player's
+        // speed, and averaging it in would make the line track the difficulty.
+        if (!inKey(a) || (a.selectedNote as String).isEmpty) continue;
+        if ((a.responseTime as int) <= 0) continue;
+        buckets[bi][0] += a.responseTime as int;
+        buckets[bi][1]++;
       }
     }
     for (var i = 0; i < 7; i++) {
@@ -615,11 +641,18 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
         buckets[i] = [buckets[i + 1][0], buckets[i + 1][1]];
       }
     }
-    return buckets.map((b) {
-      final acc = b[1] > 0 ? b[0] / b[1] : 0.0;
-      return 200 - acc * 200;
-    }).toList();
+    return buckets.map((b) => b[1] > 0 ? b[0] ~/ b[1] : 0).toList();
   }
+
+  /// The painter's y axis runs 0 (top, best) to 200 (bottom). Four seconds is
+  /// the floor: past that the difference between slow and slower says nothing
+  /// worth a pixel, and a fixed ceiling keeps the line comparable month to
+  /// month instead of rescaling under you every time your worst day drops off
+  /// the window.
+  static const int _rtFloorMs = 4000;
+
+  static double _rtToY(int ms) =>
+      ms <= 0 ? 200.0 : (ms / _rtFloorMs * 200).clamp(0.0, 200.0);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
