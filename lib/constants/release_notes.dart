@@ -62,6 +62,42 @@ class Release {
 /// the right behaviour for a pure bug-fix build.
 const List<Release> kReleases = [
   Release(
+    version: '1.10.0',
+    date: '30 AUG 2026',
+    headline:
+        'A key is now scored on all three ways of knowing it — so most of them '
+        'just got a lot bigger.',
+    lines: [
+      ReleaseLine(
+        icon: Icons.hexagon_outlined,
+        color: Color(0xFFA855F7),
+        title: 'Three skills, one number',
+        detail:
+            'Naming the note for a degree, naming the degree for a note, and '
+            'naming the key a note belongs to. Each is a third of what it '
+            'means to know a key, and the tile shows the three together.',
+      ),
+      ReleaseLine(
+        icon: Icons.unfold_more_rounded,
+        color: Color(0xFFFBBF24),
+        title: 'Your percentages will look smaller',
+        detail:
+            'Nothing was lost and nothing was reset. The scale got three times '
+            'longer, so a key you had finished now reads 33% — and open it to '
+            'see exactly which two thirds are left.',
+      ),
+      ReleaseLine(
+        icon: Icons.insights_rounded,
+        color: Color(0xFF34D399),
+        title: 'Every key explains itself',
+        detail:
+            'Key Analysis breaks the number into its three parts instead of '
+            'the two it used to show, so the figure on the tile is never a '
+            'black box.',
+      ),
+    ],
+  ),
+  Release(
     version: '1.9.4',
     date: '30 AUG 2026',
     headline:

@@ -72,9 +72,14 @@ void main() {
           reason: 'a 7-degree run must not fill the 12-degree dial');
       expect(c.diatonicLevels, [0, 0, 0],
           reason: 'naming the degree for a note is not the forward skill, and '
-              'must not move the key mastery that drives the animal level');
-      expect(p.totalProgress, 0,
-          reason: 'the global ladder is deliberately untouched for now');
+              'must not move the forward ladder');
+      expect(c.normalProgress, 0);
+      // It DOES move the key's own number, which is the mean of the three
+      // families — that is the whole point of it keeping a record.
+      expect(c.noteToNumberProgress, greaterThan(0));
+      expect(c.totalProgress, greaterThan(0));
+      expect(p.totalProgress, greaterThan(0),
+          reason: 'and so it reaches the global figure the animal reads');
     });
 
     test('a chromatic run credits the other store', () async {

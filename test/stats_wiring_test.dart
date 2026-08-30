@@ -114,7 +114,7 @@ void main() {
       final c = p.progressData.firstWhere((k) => k.key == 'C');
       expect(c.diatonicLevels[0], 6, reason: 'best correct-count this session');
       expect(c.chromaticLevels, [0, 0, 0]);
-      expect(p.progressData.firstWhere((k) => k.key == 'G').totalProgress, 0);
+      expect(p.progressData.firstWhere((k) => k.key == 'G').normalProgress, 0);
     });
 
     test('chromatic raises the chromatic dial', () async {
@@ -135,7 +135,7 @@ void main() {
         expect(p.stats.totalAttempts, 6,
             reason: '${mode.storageKey} must still be recorded');
         final c = p.progressData.firstWhere((k) => k.key == 'C');
-        expect(c.totalProgress, 0,
+        expect(c.normalProgress, 0,
             reason: '${mode.storageKey} can be narrowed to one degree, so it '
                 'must not inflate mastery');
       }
@@ -147,7 +147,7 @@ void main() {
 
       final c = p.progressData.firstWhere((k) => k.key == 'C');
       expect(c.harmonizerLevels[0], 6);
-      expect(c.totalProgress, 0, reason: 'a separate skill, its own dial');
+      expect(c.normalProgress, 0, reason: 'a separate skill, its own dial');
     });
   });
 

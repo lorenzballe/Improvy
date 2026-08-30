@@ -2,34 +2,35 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:improvy/models/key_progress.dart';
 import 'package:improvy/providers/app_provider.dart';
 
-/// The percentage on a key is the number the whole app hangs on: it drives the
-/// home tiles, the Skill Mastery list and the animal level. These pin down the
-/// two containment rules it is built on, and the anchors that fix its scale.
+/// [KeyProgress.normalProgress] is the forward ladder — Degree to Note,
+/// diatonic inside chromatic. These pin down the two containment rules it is
+/// built on, and the anchors that fix its scale. The number on the tile is the
+/// mean of this and its two siblings; see the group at the bottom.
 KeyProgress k({List<int>? d, List<int>? c}) =>
     KeyProgress(key: 'C', diatonicLevels: d, chromaticLevels: c);
 
 void main() {
   group('the anchors', () {
     test('a finished Diatonic is half the key', () {
-      expect(k(d: [30, 40, 50]).totalProgress, 50);
+      expect(k(d: [30, 40, 50]).normalProgress, 50);
     });
 
     test('and it stays half however scrappy the tiers below were', () {
       // Master is the same questions with less time, so a perfect Master says
       // everything the two tiers under it could have said.
-      expect(k(d: [0, 0, 50]).totalProgress, 50);
-      expect(k(d: [3, 11, 50]).totalProgress, 50);
+      expect(k(d: [0, 0, 50]).normalProgress, 50);
+      expect(k(d: [3, 11, 50]).normalProgress, 50);
     });
 
     test('a finished Chromatic is the whole key', () {
       // It contains the diatonic degrees, so there is nothing left to prove.
-      expect(k(c: [30, 40, 50]).totalProgress, 100);
-      expect(k(c: [0, 0, 50]).totalProgress, 100);
+      expect(k(c: [30, 40, 50]).normalProgress, 100);
+      expect(k(c: [0, 0, 50]).normalProgress, 100);
     });
 
     test('47/50 on chromatic Master, and nothing else, is 94%', () {
       // The case the old formula got wrong: it answered 19%.
-      expect(k(c: [0, 0, 47]).totalProgress, 94);
+      expect(k(c: [0, 0, 47]).normalProgress, 94);
     });
   });
 
@@ -39,7 +40,7 @@ void main() {
       // twelve degrees, so the seven cannot be worse than that.
       final key = k(c: [24, 0, 0]);
       expect((key.diatonicReach * 100).round(), 27); // 0.8 over one tier of three
-      expect(key.totalProgress, 27);
+      expect(key.normalProgress, 27);
     });
 
     test('diatonic evidence says nothing about the altered degrees', () {
@@ -62,7 +63,7 @@ void main() {
         [30, 40, 50, 30, 40, 0],
         [30, 40, 50, 30, 40, 50],
       ]) {
-        final now = k(d: grid.sublist(0, 3), c: grid.sublist(3)).totalProgress;
+        final now = k(d: grid.sublist(0, 3), c: grid.sublist(3)).normalProgress;
         expect(now, greaterThanOrEqualTo(previous), reason: 'went down at $grid');
         previous = now;
       }
@@ -76,16 +77,16 @@ void main() {
       final key = k(c: [0, 0, 50]);
       expect(key.diatonicProgress, 0);
       expect(key.chromaticProgress, 42); // 50 of 120
-      expect(key.totalProgress, 100);
+      expect(key.normalProgress, 100);
     });
   });
 
   group('nothing and everything', () {
-    test('an untouched key is zero', () => expect(k().totalProgress, 0));
+    test('an untouched key is zero', () => expect(k().normalProgress, 0));
     test('a full key is one hundred',
-        () => expect(k(d: [30, 40, 50], c: [30, 40, 50]).totalProgress, 100));
+        () => expect(k(d: [30, 40, 50], c: [30, 40, 50]).normalProgress, 100));
     test('over-cap scores cannot push it past 100',
-        () => expect(k(d: [99, 99, 99], c: [99, 99, 99]).totalProgress, 100));
+        () => expect(k(d: [99, 99, 99], c: [99, 99, 99]).normalProgress, 100));
   });
 
   group('the gate and the percentage read the same evidence', () {
@@ -93,7 +94,7 @@ void main() {
       // Otherwise the app contradicts itself: 94% of the key, and Virtuoso
       // still padlocked because that ladder was never walked.
       final key = k(c: [0, 0, 47]);
-      expect(key.totalProgress, 94);
+      expect(key.normalProgress, 94);
       expect(AppProvider.highestUnlockedTier(key.effectiveDiatonic), 3);
     });
 
@@ -110,6 +111,7 @@ void main() {
 
   _bestIsNeverInferred();
   _theThreeFamilies();
+  _theTile();
 
   group('what the gate makes impossible', () {
     test('a tier can only hold a score if the one below is at 80%', () {
@@ -127,7 +129,7 @@ void main() {
       // 80% of both tiers below, and Master not yet played.
       final key = k(c: [24, 32, 0]);
       expect(AppProvider.highestUnlockedTier(key.effectiveChromatic), 3);
-      expect(key.totalProgress, 53);
+      expect(key.normalProgress, 53);
     });
   });
 }
@@ -151,7 +153,7 @@ void _theThreeFamilies() {
   group('one ladder, three times', () {
     test('the core half is worth exactly half, in all three', () {
       // Degree→Note: the seven scale degrees, free in every key.
-      expect(KeyProgress(key: 'C', diatonicLevels: [30, 40, 50]).totalProgress, 50);
+      expect(KeyProgress(key: 'C', diatonicLevels: [30, 40, 50]).normalProgress, 50);
       // Note→Degree: the same seven, asked backwards. Also free.
       expect(
           KeyProgress(key: 'C', ntnDiatonicLevels: [30, 40, 50])
@@ -165,7 +167,7 @@ void _theThreeFamilies() {
     });
 
     test('and the complete half takes each of them to a hundred', () {
-      expect(KeyProgress(key: 'C', chromaticLevels: [30, 40, 50]).totalProgress, 100);
+      expect(KeyProgress(key: 'C', chromaticLevels: [30, 40, 50]).normalProgress, 100);
       expect(
           KeyProgress(key: 'C', ntnChromaticLevels: [30, 40, 50])
               .noteToNumberProgress,
@@ -196,6 +198,53 @@ void _theThreeFamilies() {
       expect(old.harmonizerAllLevels, [0, 0, 0]);
       // Those runs were chord-tone runs, and they still say what they said.
       expect(old.harmonizerProgress, 50);
+    });
+  });
+}
+
+/// The number on the tile: the three families, evenly, and the average of the
+/// twelve tiles is what the animal reads.
+void _theTile() {
+  group('the number on the tile', () {
+    test('one family finished is a third of the key', () {
+      expect(k(d: [30, 40, 50], c: [30, 40, 50]).totalProgress, 33);
+      expect(
+          KeyProgress(key: 'C', ntnChromaticLevels: [30, 40, 50]).totalProgress,
+          33);
+      expect(
+          KeyProgress(key: 'C', harmonizerAllLevels: [30, 40, 50])
+              .totalProgress,
+          33);
+    });
+
+    test('the free half of all three is exactly half the key', () {
+      // Diatonic, Note to Number diatonic and the chord tones are the three
+      // free halves. Nothing a free player can do goes past this.
+      final free = KeyProgress(
+        key: 'C',
+        diatonicLevels: [30, 40, 50],
+        ntnDiatonicLevels: [30, 40, 50],
+        harmonizerLevels: [30, 40, 50],
+      );
+      expect(free.totalProgress, 50);
+    });
+
+    test('everything is a hundred', () {
+      final all = KeyProgress(
+        key: 'C',
+        chromaticLevels: [30, 40, 50],
+        ntnChromaticLevels: [30, 40, 50],
+        harmonizerAllLevels: [30, 40, 50],
+      );
+      expect(all.totalProgress, 100);
+    });
+
+    test('no family can carry another', () {
+      // Three separate skills over the same twelve notes. Fluency one way
+      // says nothing about the other two, so nothing flows sideways.
+      final forward = k(d: [30, 40, 50], c: [30, 40, 50]);
+      expect(forward.noteToNumberProgress, 0);
+      expect(forward.harmonizerProgress, 0);
     });
   });
 }

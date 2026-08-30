@@ -63,11 +63,14 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
     // fixed per-note colour — so the two screens agree.
     final color = AppColors.keyColor(keyIndex.clamp(0, 11));
 
+    // The headline, and the three families it is the mean of. Showing the
+    // parts under the whole is what stops the number being a black box: a key
+    // at 33% should say, on the same screen, which two thirds are missing.
     final mastery = keyData.totalProgress;
-    final diatonic = keyData.diatonicProgress;
-    final chromatic = keyData.chromaticProgress;
-    // "…Of What?" is drilled per NOTE, not per key — it gets its own dial at
-    // the bottom of the screen and stays out of the mastery figure above.
+    final normal = keyData.normalProgress;
+    final noteToNumber = keyData.noteToNumberProgress;
+    // "…Of What?" is drilled per NOTE rather than per key — the one seam in
+    // the figure above, and the reason this row keeps its own name.
     final harmonizer = keyData.harmonizerProgress;
 
     // Locked: feed empty history into every chart/stat below (display only —
@@ -447,9 +450,11 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                   children: [
                     _SectionTitle(icon: Icons.school_rounded, color: color, title: 'Mode Progress'),
                     const SizedBox(height: 20),
-                    _ModeBar(label: 'DIATONIC MODE', pct: diatonic, color: color),
+                    _ModeBar(label: 'DEGREE → NOTE', pct: normal, color: color),
                     const SizedBox(height: 18),
-                    _ModeBar(label: 'CHROMATIC MODE', pct: chromatic, color: color),
+                    _ModeBar(label: 'NOTE → DEGREE', pct: noteToNumber, color: color),
+                    const SizedBox(height: 18),
+                    _ModeBar(label: '…OF WHAT?', pct: harmonizer, color: color),
                   ],
                 ),
               ),

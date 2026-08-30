@@ -172,7 +172,8 @@ class KeyProgress {
   /// Note to Number and the harmonizer are NOT folded in. They are different
   /// skills with their own dials; adding them here would redefine this number
   /// and the animal level with it, which is a decision to take on purpose.
-  int get totalProgress => ladderProgress(diatonicLevels, chromaticLevels);
+  /// Degree → Note: the forward modes, diatonic inside chromatic.
+  int get normalProgress => ladderProgress(diatonicLevels, chromaticLevels);
 
   // ── The same ladder, three times ───────────────────────────────────────────
   //
@@ -212,6 +213,24 @@ class KeyProgress {
       closeRow(harmonizerLevels, wider: harmonizerAllLevels);
 
   List<int> get effectiveHarmonizerAll => closeRow(harmonizerAllLevels);
+
+  /// **The** number on a key: the three families, evenly.
+  ///
+  /// They are three different skills over the same twelve notes, and none of
+  /// them is a shortcut to another. Naming the note for a degree, naming the
+  /// degree for a note, and naming the key a note belongs to are learned
+  /// separately — being fluent one way says nothing about the other two, which
+  /// is exactly why they cannot share a dial and must share a scale.
+  ///
+  /// The harmonizer is indexed by the NOTE rather than by the key, so on the
+  /// tile for C it contributes what you know about the note C rather than
+  /// about the key of C. That is still knowledge about C, and it is the same
+  /// twelve items either way — but it is the one seam in this number, and
+  /// worth remembering before reading too much into a single tile.
+  int get totalProgress =>
+      ((normalProgress + noteToNumberProgress + harmonizerProgress) / 3)
+          .round()
+          .clamp(0, 100);
 
   /// Raw evidence for one mode: what was actually scored in it, with no
   /// inference from the other. This is what the per-mode bars show — a bar
