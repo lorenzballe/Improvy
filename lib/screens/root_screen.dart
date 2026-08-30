@@ -635,7 +635,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
             initialDegrees: _ofWhatResumeDegrees,
             onShowPaywall: () => _showPaywallSheet('ofwhat-degrees'),
             onCancel: () { provider.deselectKey(); setState(() { _pendingSetup = null; _ofWhatResumeNote = null; _ofWhatResumeDegrees = null; }); },
-            onStart: (note, degrees, difficulty) {
+            onStart: (note, degrees, difficulty, all) {
               setState(() { _pendingSetup = null; _ofWhatResumeNote = null; _ofWhatResumeDegrees = null; });
               // No question count: the tier decides the length, so finishing a
               // session and filling a tier are the same act.
@@ -643,6 +643,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
                 note: note,
                 degrees: degrees,
                 difficulty: difficulty,
+                all: all,
               );
             },
           ),

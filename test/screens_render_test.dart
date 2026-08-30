@@ -343,7 +343,7 @@ void main() {
 
       testWidgets('note to number', (t) async {
         await t.show(
-          NoteToNumberSetup(initialKey: 'B♭', isPro: false, onShowPaywall: () {}, onCancel: () {}, onStart: (_, __, ___, ____) {}),
+          NoteToNumberSetup(initialKey: 'B♭', isPro: false, onShowPaywall: () {}, onCancel: () {}, onStart: (_, _, _, _) {}),
           await providerWith(),
           size,
         );
@@ -351,7 +351,7 @@ void main() {
 
       testWidgets('…Of What?, free — the locked extensions', (t) async {
         await t.show(
-          OfWhatSetup(isPro: false, onShowPaywall: () {}, onCancel: () {}, onStart: (_, __, ___) {}),
+          OfWhatSetup(isPro: false, onShowPaywall: () {}, onCancel: () {}, onStart: (_, _, _, _) {}),
           await providerWith(),
           size,
         );

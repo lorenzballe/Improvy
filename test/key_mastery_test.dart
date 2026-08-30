@@ -109,6 +109,7 @@ void main() {
   });
 
   _bestIsNeverInferred();
+  _theThreeFamilies();
 
   group('what the gate makes impossible', () {
     test('a tier can only hold a score if the one below is at 80%', () {
@@ -140,5 +141,61 @@ void _bestIsNeverInferred() {
     // But nothing was ever scored in Diatonic, and the BEST line reads this.
     expect(key.diatonicLevels[0], 0);
     expect(key.diatonicProgress, 0);
+  });
+}
+
+/// The three families share one rule, and the free half of each is exactly
+/// half the score. That symmetry is the paywall's whole story, so it is worth
+/// a test rather than a comment.
+void _theThreeFamilies() {
+  group('one ladder, three times', () {
+    test('the core half is worth exactly half, in all three', () {
+      // Degree→Note: the seven scale degrees, free in every key.
+      expect(KeyProgress(key: 'C', diatonicLevels: [30, 40, 50]).totalProgress, 50);
+      // Note→Degree: the same seven, asked backwards. Also free.
+      expect(
+          KeyProgress(key: 'C', ntnDiatonicLevels: [30, 40, 50])
+              .noteToNumberProgress,
+          50);
+      // …Of What?: the six chord tones. Also free.
+      expect(
+          KeyProgress(key: 'C', harmonizerLevels: [30, 40, 50])
+              .harmonizerProgress,
+          50);
+    });
+
+    test('and the complete half takes each of them to a hundred', () {
+      expect(KeyProgress(key: 'C', chromaticLevels: [30, 40, 50]).totalProgress, 100);
+      expect(
+          KeyProgress(key: 'C', ntnChromaticLevels: [30, 40, 50])
+              .noteToNumberProgress,
+          100);
+      expect(
+          KeyProgress(key: 'C', harmonizerAllLevels: [30, 40, 50])
+              .harmonizerProgress,
+          100);
+    });
+
+    test('the containment runs inward in all three, never outward', () {
+      expect(
+          KeyProgress(key: 'C', ntnDiatonicLevels: [30, 40, 50])
+              .effectiveNtnChromatic,
+          [0, 0, 0]);
+      expect(
+          KeyProgress(key: 'C', harmonizerLevels: [30, 40, 50])
+              .effectiveHarmonizerAll,
+          [0, 0, 0]);
+    });
+
+    test('a save from before the harmonizer split keeps its chord scores', () {
+      final old = KeyProgress.fromJson({
+        'key': 'C',
+        'harmonizerLevels': [30, 40, 50],
+      });
+      expect(old.harmonizerLevels, [30, 40, 50]);
+      expect(old.harmonizerAllLevels, [0, 0, 0]);
+      // Those runs were chord-tone runs, and they still say what they said.
+      expect(old.harmonizerProgress, 50);
+    });
   });
 }

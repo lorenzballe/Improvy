@@ -81,7 +81,7 @@ void main() {
         isPro: true,
         onShowPaywall: () {},
         onCancel: () {},
-        onStart: (_, _, _) {},
+        onStart: (_, _, _, _) {},
       ),
       'shot_of_what',
     );

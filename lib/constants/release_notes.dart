@@ -62,6 +62,34 @@ class Release {
 /// the right behaviour for a pure bug-fix build.
 const List<Release> kReleases = [
   Release(
+    version: '1.9.4',
+    date: '30 AUG 2026',
+    headline:
+        'Every mode is scored the same way now, and half of each one is free.',
+    lines: [
+      ReleaseLine(
+        icon: Icons.stacked_bar_chart_rounded,
+        color: Color(0xFF34D399),
+        title: 'One rule, three modes',
+        detail:
+            'Note to Number and …Of What? are now scored like the main modes: '
+            'half the score is knowing the core cold — the seven scale '
+            'degrees, or the chord tones — and half is extending it to every '
+            'degree.',
+      ),
+      ReleaseLine(
+        glyph: '♯♭',
+        color: Color(0xFF22D3EE),
+        title: 'Chord and All keep their own records',
+        detail:
+            '…Of What? used to pool both into one bar, so a run on the four '
+            'chord tones filled the same dial as a run on all fifteen '
+            'degrees. They are separate now, and your old scores stay where '
+            'they belong.',
+      ),
+    ],
+  ),
+  Release(
     version: '1.9.3',
     date: '30 AUG 2026',
     headline:

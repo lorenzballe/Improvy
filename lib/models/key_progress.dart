@@ -23,7 +23,13 @@ class KeyProgress {
   // "…Of What?" — the harmonizer drill, where this note is given as a degree
   // and the player names the key it belongs to. Tracked per note, on the same
   // three-difficulty scale as the other modes.
+  //
+  // Two rows, like every other ladder here: CHORD is the six chord tones,
+  // ALL is all fifteen degrees and contains them. [harmonizerLevels] is the
+  // chord row — it keeps its old name because it holds the scores already on
+  // people's phones, which were all chord-tone runs.
   final List<int> harmonizerLevels;
+  final List<int> harmonizerAllLevels;
 
   // Note to Number — the same key, asked backwards: the note is played and the
   // answer is its degree. Kept apart from [diatonicLevels] rather than folded
@@ -42,11 +48,13 @@ class KeyProgress {
     List<int>? diatonicLevels,
     List<int>? chromaticLevels,
     List<int>? harmonizerLevels,
+    List<int>? harmonizerAllLevels,
     List<int>? ntnDiatonicLevels,
     List<int>? ntnChromaticLevels,
   })  : diatonicLevels = diatonicLevels ?? [0, 0, 0],
         chromaticLevels = chromaticLevels ?? [0, 0, 0],
         harmonizerLevels = harmonizerLevels ?? [0, 0, 0],
+        harmonizerAllLevels = harmonizerAllLevels ?? [0, 0, 0],
         ntnDiatonicLevels = ntnDiatonicLevels ?? [0, 0, 0],
         ntnChromaticLevels = ntnChromaticLevels ?? [0, 0, 0];
 
@@ -60,20 +68,9 @@ class KeyProgress {
     return (capped.reduce((a, b) => a + b) / 120 * 100).round().clamp(0, 100);
   }
 
-  int get harmonizerProgress {
+  /// Raw evidence for the chord row of the harmonizer.
+  int get harmonizerChordRaw {
     final capped = _cappedLevels(harmonizerLevels);
-    return (capped.reduce((a, b) => a + b) / 120 * 100).round().clamp(0, 100);
-  }
-
-  /// All three tiers together, like every other dial here: the outline on a
-  /// key fills only when Apprentice, Virtuoso and Master have all been taken.
-  int get ntnDiatonicProgress {
-    final capped = _cappedLevels(ntnDiatonicLevels);
-    return (capped.reduce((a, b) => a + b) / 120 * 100).round().clamp(0, 100);
-  }
-
-  int get ntnChromaticProgress {
-    final capped = _cappedLevels(ntnChromaticLevels);
     return (capped.reduce((a, b) => a + b) / 120 * 100).round().clamp(0, 100);
   }
 
@@ -175,8 +172,46 @@ class KeyProgress {
   /// Note to Number and the harmonizer are NOT folded in. They are different
   /// skills with their own dials; adding them here would redefine this number
   /// and the animal level with it, which is a decision to take on purpose.
-  int get totalProgress =>
-      ((diatonicReach + chromaticReach) / 2 * 100).round().clamp(0, 100);
+  int get totalProgress => ladderProgress(diatonicLevels, chromaticLevels);
+
+  // ── The same ladder, three times ───────────────────────────────────────────
+  //
+  // Every family in the app has the same shape: a CORE set, a COMPLETE set
+  // that contains it, and three speeds. Degree→Note has the 7 scale degrees
+  // inside the 12; Note→Degree has the same two sets asked backwards; the
+  // harmonizer has the 6 chord tones inside all 15 degrees.
+  //
+  // So one function serves all three, and the number means the same thing
+  // wherever it appears: half of it is knowing the core cold, half is
+  // extending that to everything. The alternative — weighting each family by
+  // how many degrees its core happens to contain (7/12 here, 6/15 there) —
+  // buys a little precision and costs the one thing a score has to have,
+  // which is meaning the same thing every time you see it.
+
+  /// One number for a two-row family, 0–100.
+  static int ladderProgress(List<int> core, List<int> complete) {
+    final c = _rowMean(closeRow(core, wider: complete));
+    final w = _rowMean(closeRow(complete));
+    return ((c + w) / 2 * 100).round().clamp(0, 100);
+  }
+
+  /// One row's own standing after the closure, 0–100 — what a key cell wears
+  /// while that row is the one being set up.
+  static int rowProgress(List<int> row, {List<int>? wider}) =>
+      (_rowMean(closeRow(row, wider: wider)) * 100).round().clamp(0, 100);
+
+  /// Note to Number: the same twelve keys, asked backwards.
+  int get noteToNumberProgress =>
+      ladderProgress(ntnDiatonicLevels, ntnChromaticLevels);
+
+  /// "…Of What?": chord tones inside all fifteen degrees, per held note.
+  int get harmonizerProgress =>
+      ladderProgress(harmonizerLevels, harmonizerAllLevels);
+
+  List<int> get effectiveHarmonizerChord =>
+      closeRow(harmonizerLevels, wider: harmonizerAllLevels);
+
+  List<int> get effectiveHarmonizerAll => closeRow(harmonizerAllLevels);
 
   /// Raw evidence for one mode: what was actually scored in it, with no
   /// inference from the other. This is what the per-mode bars show — a bar
@@ -189,6 +224,7 @@ class KeyProgress {
     List<int>? diatonicLevels,
     List<int>? chromaticLevels,
     List<int>? harmonizerLevels,
+    List<int>? harmonizerAllLevels,
     List<int>? ntnDiatonicLevels,
     List<int>? ntnChromaticLevels,
   }) {
@@ -197,6 +233,8 @@ class KeyProgress {
       diatonicLevels: diatonicLevels ?? List.from(this.diatonicLevels),
       chromaticLevels: chromaticLevels ?? List.from(this.chromaticLevels),
       harmonizerLevels: harmonizerLevels ?? List.from(this.harmonizerLevels),
+      harmonizerAllLevels:
+          harmonizerAllLevels ?? List.from(this.harmonizerAllLevels),
       ntnDiatonicLevels:
           ntnDiatonicLevels ?? List.from(this.ntnDiatonicLevels),
       ntnChromaticLevels:
@@ -209,6 +247,7 @@ class KeyProgress {
         'diatonicLevels': diatonicLevels,
         'chromaticLevels': chromaticLevels,
         'harmonizerLevels': harmonizerLevels,
+        'harmonizerAllLevels': harmonizerAllLevels,
         'ntnDiatonicLevels': ntnDiatonicLevels,
         'ntnChromaticLevels': ntnChromaticLevels,
       };
@@ -220,6 +259,7 @@ class KeyProgress {
         diatonicLevels: _levels(json['diatonicLevels']),
         chromaticLevels: _levels(json['chromaticLevels']),
         harmonizerLevels: _levels(json['harmonizerLevels']),
+        harmonizerAllLevels: _levels(json['harmonizerAllLevels']),
         ntnDiatonicLevels: _levels(json['ntnDiatonicLevels']),
         ntnChromaticLevels: _levels(json['ntnChromaticLevels']),
       );

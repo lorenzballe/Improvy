@@ -177,11 +177,25 @@ void main() {
     });
 
     test('all three tiers make the dial, not just the one being played', () {
-      final half = KeyProgress(key: 'C', ntnDiatonicLevels: [30, 40, 0]);
-      // 70 of 120 — Master untouched, so the outline cannot be full.
-      expect(half.ntnDiatonicProgress, 58);
-      final done = KeyProgress(key: 'C', ntnDiatonicLevels: [30, 40, 50]);
-      expect(done.ntnDiatonicProgress, 100);
+      // Master untouched, so the outline on that row cannot be full.
+      expect(KeyProgress.rowProgress([30, 40, 0]), 67);
+      expect(KeyProgress.rowProgress([30, 40, 50]), 100);
+    });
+
+    test('Note to Number is one number per key, both directions', () {
+      // The same two-row ladder as the forward modes: the twelve contain the
+      // seven, so a chromatic run credits the diatonic row.
+      final only7 = KeyProgress(key: 'C', ntnDiatonicLevels: [30, 40, 50]);
+      expect(only7.noteToNumberProgress, 50);
+      final all12 = KeyProgress(key: 'C', ntnChromaticLevels: [0, 0, 50]);
+      expect(all12.noteToNumberProgress, 100);
+    });
+
+    test('the harmonizer is the same ladder, chord inside all', () {
+      final chord = KeyProgress(key: 'C', harmonizerLevels: [30, 40, 50]);
+      expect(chord.harmonizerProgress, 50);
+      final all = KeyProgress(key: 'C', harmonizerAllLevels: [0, 0, 50]);
+      expect(all.harmonizerProgress, 100);
     });
   });
 
@@ -232,7 +246,7 @@ void main() {
           isPro: true,
           onShowPaywall: () {},
           onCancel: () {},
-          onStart: (_, _, _) {},
+          onStart: (_, _, _, _) {},
         ),
       );
       expect(find.text('CHORD'), findsOneWidget);

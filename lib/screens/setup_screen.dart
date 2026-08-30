@@ -497,7 +497,8 @@ class _CustomModeSetupState extends State<CustomModeSetup> {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class OfWhatSetup extends StatefulWidget {
-  final void Function(String note, List<String> degrees, int difficulty)
+  final void Function(
+          String note, List<String> degrees, int difficulty, bool all)
       onStart;
   final VoidCallback onCancel;
   final bool isPro;
@@ -539,17 +540,20 @@ class _OfWhatSetupState extends State<OfWhatSetup> {
       _all ? Set.of(kOfWhatDegrees) : Set.of(kOfWhatChordTones);
 
   /// Raw, for the BEST line.
-  List<int> _levels(BuildContext context) =>
-      context.watch<AppProvider>().progressFor(_note).harmonizerLevels;
+  List<int> _levels(BuildContext context) {
+    final p = context.watch<AppProvider>().progressFor(_note);
+    return _all ? p.harmonizerAllLevels : p.harmonizerLevels;
+  }
 
   /// Closed, for the padlocks.
   List<int> _credited(BuildContext context) =>
-      context.watch<AppProvider>().harmonizerLevelsFor(_note);
+      context.watch<AppProvider>().harmonizerLevelsFor(_note, all: _all);
 
   /// See the note on Note to Number's copy: corrected on the events that can
   /// invalidate it, never while painting.
   void _syncTier() {
-    final levels = context.read<AppProvider>().harmonizerLevelsFor(_note);
+    final levels =
+        context.read<AppProvider>().harmonizerLevelsFor(_note, all: _all);
     if (!_TierSelector.unlocked(levels, _diff)) {
       _diff = AppProvider.highestUnlockedTier(levels);
     }
@@ -601,7 +605,7 @@ class _OfWhatSetupState extends State<OfWhatSetup> {
                                   accentColor: _accent,
                                   progressFor: (n) => context
                                       .watch<AppProvider>()
-                                      .harmonizerProgressFor(n),
+                                      .harmonizerRowProgress(n, all: _all),
                                   onSelect: (n) => setState(() {
                                     _note = n;
                                     _syncTier();
@@ -628,7 +632,10 @@ class _OfWhatSetupState extends State<OfWhatSetup> {
                                       widget.onShowPaywall();
                                       return;
                                     }
-                                    setState(() => _all = v == 'All');
+                                    setState(() {
+                                      _all = v == 'All';
+                                      _syncTier();
+                                    });
                                   },
                                 ),
                                 const SizedBox(height: 36),
@@ -657,7 +664,8 @@ class _OfWhatSetupState extends State<OfWhatSetup> {
                     gradColors: const [Color(0xFF22D3EE), Color(0xFF22D3EE)],
                     shadowColor: _accent.withValues(alpha: 0.4),
                     icon: Icons.bolt_rounded,
-                    onTap: () => widget.onStart(_note, _degs.toList(), _diff),
+                    onTap: () =>
+                        widget.onStart(_note, _degs.toList(), _diff, _all),
                   ),
                 ],
               ),

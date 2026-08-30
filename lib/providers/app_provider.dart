@@ -71,6 +71,10 @@ class AppProvider extends ChangeNotifier {
   /// True when the running Note to Number session covers all twelve degrees.
   /// Selects which of [KeyProgress]'s two reverse stores gets credited.
   bool ntnChromatic = false;
+
+  /// True when the running "…Of What?" session asks all fifteen degrees rather
+  /// than the six chord tones. Same job, for the harmonizer's two rows.
+  bool ofWhatAll = false;
   // "…Of What?" mode: the fixed melody note held for the whole session (the
   // degree rotates and the root is the answer).
   String? fixedNote;
@@ -427,17 +431,37 @@ class AppProvider extends ChangeNotifier {
     return chromatic ? p.effectiveNtnChromatic : p.effectiveNtnDiatonic;
   }
 
-  /// 0–100 across all three tiers — what the outline on a key cell fills to.
+  /// 0–100 for the row being set up — what the outline on a key cell fills to
+  /// while that row is the one selected. The setup grid answers "where am I
+  /// weak in the thing I am about to play"; the one-number-per-key lives on
+  /// the home tiles and in Stats.
   int ntnProgress(String key, {required bool chromatic}) {
     final p = progressFor(key);
-    return chromatic ? p.ntnChromaticProgress : p.ntnDiatonicProgress;
+    return chromatic
+        ? KeyProgress.rowProgress(p.ntnChromaticLevels)
+        : KeyProgress.rowProgress(p.ntnDiatonicLevels,
+            wider: p.ntnChromaticLevels);
   }
 
-  /// "…Of What?" is keyed by the note being held, not by a tonality. One row,
-  /// nothing wider contains it, so only the tiers close.
-  List<int> harmonizerLevelsFor(String note) =>
-      KeyProgress.closeRow(progressFor(note).harmonizerLevels);
+  /// One number for Note to Number on a key, both rows, 0–100.
+  int noteToNumberProgress(String key) => progressFor(key).noteToNumberProgress;
 
+  /// "…Of What?" is keyed by the note being held, not by a tonality.
+  List<int> harmonizerLevelsFor(String note, {required bool all}) {
+    final p = progressFor(note);
+    return all ? p.effectiveHarmonizerAll : p.effectiveHarmonizerChord;
+  }
+
+  /// The row being set up, for the outline on a note cell.
+  int harmonizerRowProgress(String note, {required bool all}) {
+    final p = progressFor(note);
+    return all
+        ? KeyProgress.rowProgress(p.harmonizerAllLevels)
+        : KeyProgress.rowProgress(p.harmonizerLevels,
+            wider: p.harmonizerAllLevels);
+  }
+
+  /// One number for the harmonizer on a note, both rows, 0–100.
   int harmonizerProgressFor(String note) => progressFor(note).harmonizerProgress;
 
   /// The hardest tier a set of scores has earned.
@@ -985,7 +1009,9 @@ class AppProvider extends ChangeNotifier {
     required List<String> degrees,
     int? questions,
     int difficulty = 1,
+    bool all = false,
   }) {
+    ofWhatAll = all;
     fixedNote = note;
     customDegrees = degrees;
     isReverse = false;
@@ -1202,11 +1228,14 @@ class AppProvider extends ChangeNotifier {
 
       progressData = progressData.map((item) {
         if (item.key != fixedNote) return item;
-        final levels = List<int>.from(item.harmonizerLevels);
+        final levels = List<int>.from(
+            ofWhatAll ? item.harmonizerAllLevels : item.harmonizerLevels);
         final maxForLevel = diff == 1 ? 30 : diff == 2 ? 40 : 50;
         final best = currentCorrect > levels[diff - 1] ? currentCorrect : levels[diff - 1];
         levels[diff - 1] = best > maxForLevel ? maxForLevel : best;
-        return item.copyWith(harmonizerLevels: levels);
+        return ofWhatAll
+            ? item.copyWith(harmonizerAllLevels: levels)
+            : item.copyWith(harmonizerLevels: levels);
       }).toList();
 
       _storage.saveProgress(progressData);
