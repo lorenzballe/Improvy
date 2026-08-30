@@ -62,6 +62,33 @@ class Release {
 /// the right behaviour for a pure bug-fix build.
 const List<Release> kReleases = [
   Release(
+    version: '1.9.2',
+    date: '30 AUG 2026',
+    headline:
+        'The percentage on a key finally counts everything you have already '
+        'proved.',
+    lines: [
+      ReleaseLine(
+        icon: Icons.calculate_rounded,
+        color: Color(0xFFA855F7),
+        title: 'A number that adds up',
+        detail:
+            'Chromatic contains the seven notes of the scale, and Master asks '
+            'the same questions as Apprentice with less time. Your key '
+            'percentage now takes both into account, so a hard run counts for '
+            'the easier ones you never needed to play.',
+      ),
+      ReleaseLine(
+        icon: Icons.trending_up_rounded,
+        color: Color(0xFF34D399),
+        title: 'Some keys just went up',
+        detail:
+            'Nothing you have done was lost — it was being counted wrongly. '
+            'Nobody goes down, and a few keys jump a long way.',
+      ),
+    ],
+  ),
+  Release(
     version: '1.9.1',
     date: '21 AUG 2026',
     headline:
