@@ -420,10 +420,11 @@ class AppProvider extends ChangeNotifier {
       );
 
   /// Note to Number's three tier scores for a key, in the direction being set
-  /// up (7 degrees or 12).
+  /// up (7 degrees or 12), after the closure — the twelve contain the seven
+  /// there too, and a harder tier proves the easier ones just the same.
   List<int> ntnLevels(String key, {required bool chromatic}) {
     final p = progressFor(key);
-    return chromatic ? p.ntnChromaticLevels : p.ntnDiatonicLevels;
+    return chromatic ? p.effectiveNtnChromatic : p.effectiveNtnDiatonic;
   }
 
   /// 0–100 across all three tiers — what the outline on a key cell fills to.
@@ -432,19 +433,23 @@ class AppProvider extends ChangeNotifier {
     return chromatic ? p.ntnChromaticProgress : p.ntnDiatonicProgress;
   }
 
-  /// "…Of What?" is keyed by the note being held, not by a tonality.
-  List<int> harmonizerLevelsFor(String note) => progressFor(note).harmonizerLevels;
+  /// "…Of What?" is keyed by the note being held, not by a tonality. One row,
+  /// nothing wider contains it, so only the tiers close.
+  List<int> harmonizerLevelsFor(String note) =>
+      KeyProgress.closeRow(progressFor(note).harmonizerLevels);
 
   int harmonizerProgressFor(String note) => progressFor(note).harmonizerProgress;
 
-  /// The hardest tier a set of scores has earned: Virtuoso opens at 27 of
-  /// Apprentice's 30, Master at 37 of Virtuoso's 40 — the same gates the
-  /// forward modes have always used, so "you cannot start at the top" means
-  /// one thing across the whole app.
+  /// The hardest tier a set of scores has earned.
+  ///
+  /// Pass EFFECTIVE levels, not raw ones. The gate and the percentage have to
+  /// read the same evidence, or the app contradicts itself: telling someone
+  /// they are at 94% of a key while refusing to open its second tier is not a
+  /// stricter rule, it is two rules that disagree.
   static int highestUnlockedTier(List<int> levels) {
     if (levels.length < 2) return 1;
-    if (levels[1] >= 37) return 3;
-    if (levels[0] >= 27) return 2;
+    if (levels[1] >= kTierUnlock[2]) return 3;
+    if (levels[0] >= kTierUnlock[1]) return 2;
     return 1;
   }
 
@@ -871,11 +876,10 @@ class AppProvider extends ChangeNotifier {
     setupMode = 'none';
 
     final keyData = progressData.firstWhere((k) => k.key == key, orElse: () => KeyProgress(key: key));
-    final dLevels = keyData.diatonicLevels;
-    diatonicDifficulty = dLevels[0] < 27 ? 1 : dLevels[1] < 37 ? 2 : 3;
-
-    final cLevels = keyData.chromaticLevels;
-    chromaticDifficulty = cLevels[0] < 27 ? 1 : cLevels[1] < 37 ? 2 : 3;
+    // Effective, so a key already proved through Chromatic does not open on
+    // Apprentice as though it had never been played.
+    diatonicDifficulty = highestUnlockedTier(keyData.effectiveDiatonic);
+    chromaticDifficulty = highestUnlockedTier(keyData.effectiveChromatic);
 
     notifyListeners();
   }

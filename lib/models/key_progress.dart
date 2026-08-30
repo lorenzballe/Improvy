@@ -5,6 +5,17 @@ import 'dart:math' as math;
 /// by then it should be recall.
 const List<int> kTierCaps = [30, 40, 50];
 
+/// How much of a tier must be answered before the next one opens.
+///
+/// One fraction for every ladder in the app. It used to be 27 of 30 to reach
+/// Virtuoso and 37 of 40 to reach Master — 90% and 92.5%, two different bars
+/// nobody chose, written out by hand in five places that could drift apart.
+const double kTierUnlockFraction = 0.80;
+
+/// [kTierUnlockFraction] of the tier BELOW, in questions: nothing to open
+/// Apprentice, 24 of 30 for Virtuoso, 32 of 40 for Master.
+const List<int> kTierUnlock = [0, 24, 32];
+
 class KeyProgress {
   final String key;
   final List<int> diatonicLevels; // [level1score, level2score, level3score]
@@ -87,43 +98,64 @@ class KeyProgress {
   // single cell that dominates all the others — was told they knew 19% of the
   // key. They knew 94% of it.
 
-  /// One cell of the grid, as a fraction of what that tier is worth.
-  double _cell(List<int> levels, int tier) =>
+  /// One cell of a row, as a fraction of what that tier is worth.
+  static double _cell(List<int> levels, int tier) =>
       (levels[tier] / kTierCaps[tier]).clamp(0.0, 1.0);
 
-  /// The best chromatic evidence at [tier] or any harder tier.
-  double _chromaticFrom(int tier) {
-    var best = 0.0;
-    for (var t = tier; t < 3; t++) {
-      best = math.max(best, _cell(chromaticLevels, t));
-    }
-    return best;
-  }
-
-  /// What a cell is worth once everything that contains it has had its say:
-  /// the maximum over itself and every harder / wider cell.
-  double _effective(List<int> levels, int tier, {required bool isDiatonic}) {
+  /// The best score in [levels] at [tier] or any harder tier, as a fraction.
+  static double _bestFrom(List<int> levels, int tier) {
     var best = 0.0;
     for (var t = tier; t < 3; t++) {
       best = math.max(best, _cell(levels, t));
     }
-    return isDiatonic ? math.max(best, _chromaticFrom(tier)) : best;
+    return best;
   }
 
-  double _rowMean(List<int> levels, {required bool isDiatonic}) {
+  /// A row of three tier scores after the closure, back in question counts so
+  /// that the dial, the tier gate and the "24/30" the user reads are all the
+  /// same number.
+  ///
+  /// [wider] is the row that CONTAINS this one — chromatic contains diatonic,
+  /// and nothing contains chromatic. Evidence flows down (a harder tier proves
+  /// the easier ones) and inward (a wider set proves the narrower one), never
+  /// the other way.
+  ///
+  /// One function for every ladder in the app: the same shape serves Note to
+  /// Number's two rows, and a lone row (the harmonizer) by passing no [wider].
+  static List<int> closeRow(List<int> row, {List<int>? wider}) => [
+        for (var t = 0; t < 3; t++)
+          (math.max(_bestFrom(row, t),
+                      wider == null ? 0.0 : _bestFrom(wider, t)) *
+                  kTierCaps[t])
+              .round()
+      ];
+
+  /// The three diatonic tiers, counting what chromatic runs already proved.
+  List<int> get effectiveDiatonic =>
+      closeRow(diatonicLevels, wider: chromaticLevels);
+
+  /// The three chromatic tiers. Nothing is wider, so only the tiers close.
+  List<int> get effectiveChromatic => closeRow(chromaticLevels);
+
+  List<int> get effectiveNtnDiatonic =>
+      closeRow(ntnDiatonicLevels, wider: ntnChromaticLevels);
+
+  List<int> get effectiveNtnChromatic => closeRow(ntnChromaticLevels);
+
+  static double _rowMean(List<int> effective) {
     var sum = 0.0;
     for (var t = 0; t < 3; t++) {
-      sum += _effective(levels, t, isDiatonic: isDiatonic);
+      sum += _cell(effective, t);
     }
     return sum / 3;
   }
 
   /// The seven degrees of the scale, across all three speeds, counting what
   /// chromatic runs have already proved. 0–1.
-  double get diatonicReach => _rowMean(diatonicLevels, isDiatonic: true);
+  double get diatonicReach => _rowMean(effectiveDiatonic);
 
   /// The five altered degrees on top of them. 0–1.
-  double get chromaticReach => _rowMean(chromaticLevels, isDiatonic: false);
+  double get chromaticReach => _rowMean(effectiveChromatic);
 
   /// How well this key is known, 0–100.
   ///

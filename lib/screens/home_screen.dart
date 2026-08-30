@@ -1597,6 +1597,7 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                     borderColor: const Color(0xFF3B82F6).withAlpha(80),
                     shadowColor: const Color(0xFF3B82F6).withAlpha(25),
                     levels: kd.diatonicLevels,
+                    credited: kd.effectiveDiatonic,
                     currentDifficulty: provider.diatonicDifficulty,
                     onDifficultyChanged: provider.setDiatonicDifficulty,
                     modeLevel: _getModeLevel(kd.diatonicLevels),
@@ -1620,6 +1621,7 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                     borderColor: const Color(0xFFA855F7).withAlpha(80),
                     shadowColor: const Color(0xFFA855F7).withAlpha(25),
                     levels: kd.chromaticLevels,
+                    credited: kd.effectiveChromatic,
                     currentDifficulty: provider.chromaticDifficulty,
                     onDifficultyChanged: provider.setChromaticDifficulty,
                     modeLevel: _getModeLevel(kd.chromaticLevels),
@@ -1905,7 +1907,13 @@ class _BigModeCard extends StatefulWidget {
   final Color accentColor;
   final Color borderColor;
   final Color shadowColor;
+  /// What was actually scored in this mode — the BEST readout, never inferred.
   final List<int> levels;
+
+  /// The same tiers after the closure: a harder tier proves the easier ones,
+  /// and chromatic proves diatonic. Drives which tiers are open.
+  final List<int> credited;
+
   final int currentDifficulty;
   final ValueChanged<int> onDifficultyChanged;
   final int modeLevel;
@@ -1915,7 +1923,8 @@ class _BigModeCard extends StatefulWidget {
   const _BigModeCard({
     required this.keyName, required this.title, required this.description,
     required this.iconWidget, required this.accentColor, required this.borderColor,
-    required this.shadowColor, required this.levels, required this.currentDifficulty,
+    required this.shadowColor, required this.levels, required this.credited,
+    required this.currentDifficulty,
     required this.onDifficultyChanged, required this.modeLevel,
     required this.isLocked, required this.onTap,
   });
@@ -2027,8 +2036,8 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
   }
 
   void _showLockedMessage(BuildContext context, int d) {
-    final currentScore = widget.levels[d - 2];
-    final needed = d == 2 ? 27 : 37;
+    final currentScore = widget.credited[d - 2];
+    final needed = kTierUnlock[d - 1];
     final levelName = d == 2 ? 'Virtuoso' : 'Master';
     final prevName = d == 2 ? 'Apprentice' : 'Virtuoso';
     showModalBottomSheet(
@@ -2047,11 +2056,11 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
 
   @override
   Widget build(BuildContext context) {
-    final caps = [30, 40, 50];
+    final caps = kTierCaps;
     final diffColors = [const Color(0xFF3B82F6), const Color(0xFFA855F7), const Color(0xFFF43F5E)];
     final diffLabels = ['Apprentice', 'Virtuoso', 'Master'];
-    final isLvl2Unlocked = widget.levels[0] >= 27;
-    final isLvl3Unlocked = widget.levels[1] >= 37;
+    final isLvl2Unlocked = widget.credited[0] >= kTierUnlock[1];
+    final isLvl3Unlocked = widget.credited[1] >= kTierUnlock[2];
 
     // Best score for the selected difficulty, shown where the level badge was.
     // The cap (max questions) changes per difficulty, so we also show a % —

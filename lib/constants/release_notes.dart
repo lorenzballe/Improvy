@@ -62,7 +62,7 @@ class Release {
 /// the right behaviour for a pure bug-fix build.
 const List<Release> kReleases = [
   Release(
-    version: '1.9.2',
+    version: '1.9.3',
     date: '30 AUG 2026',
     headline:
         'The percentage on a key finally counts everything you have already '
@@ -79,8 +79,17 @@ const List<Release> kReleases = [
             'the easier ones you never needed to play.',
       ),
       ReleaseLine(
-        icon: Icons.trending_up_rounded,
+        icon: Icons.lock_open_rounded,
         color: Color(0xFF34D399),
+        title: 'One bar to clear, and it is lower',
+        detail:
+            'Every tier now opens at 80% of the one below it — it used to be '
+            '90% for Virtuoso and 92.5% for Master, two different bars. And a '
+            'key you have already proved opens its tiers straight away.',
+      ),
+      ReleaseLine(
+        icon: Icons.trending_up_rounded,
+        color: Color(0xFFFBBF24),
         title: 'Some keys just went up',
         detail:
             'Nothing you have done was lost — it was being counted wrongly. '

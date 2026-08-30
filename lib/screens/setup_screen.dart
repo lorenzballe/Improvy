@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../constants/app_colors.dart';
 import '../constants/music_constants.dart';
+import '../models/key_progress.dart';
 import '../providers/app_provider.dart';
 import '../services/analytics_service.dart';
 import '../widgets/mastery_border.dart';
@@ -52,9 +53,15 @@ class _NoteToNumberSetupState extends State<NoteToNumberSetup> {
     _key = widget.initialKey;
   }
 
-  List<int> _levels(BuildContext context) => context
-      .watch<AppProvider>()
-      .ntnLevels(_key, chromatic: _chromatic);
+  /// Raw — what was scored here, for the BEST line.
+  List<int> _levels(BuildContext context) {
+    final p = context.watch<AppProvider>().progressFor(_key);
+    return _chromatic ? p.ntnChromaticLevels : p.ntnDiatonicLevels;
+  }
+
+  /// Closed — what has been proved, for the padlocks.
+  List<int> _credited(BuildContext context) =>
+      context.watch<AppProvider>().ntnLevels(_key, chromatic: _chromatic);
 
   /// Land on the hardest tier this key has earned, the way selecting a key on
   /// the home screen does.
@@ -164,6 +171,7 @@ class _NoteToNumberSetupState extends State<NoteToNumberSetup> {
                                 const SizedBox(height: 18),
                                 _TierSelector(
                                   levels: _levels(context),
+                                  credited: _credited(context),
                                   selected: _diff,
                                   accentColor: _accent,
                                   onChange: (d) => setState(() => _diff = d),
@@ -530,7 +538,12 @@ class _OfWhatSetupState extends State<OfWhatSetup> {
   Set<String> get _degs =>
       _all ? Set.of(kOfWhatDegrees) : Set.of(kOfWhatChordTones);
 
+  /// Raw, for the BEST line.
   List<int> _levels(BuildContext context) =>
+      context.watch<AppProvider>().progressFor(_note).harmonizerLevels;
+
+  /// Closed, for the padlocks.
+  List<int> _credited(BuildContext context) =>
       context.watch<AppProvider>().harmonizerLevelsFor(_note);
 
   /// See the note on Note to Number's copy: corrected on the events that can
@@ -627,6 +640,7 @@ class _OfWhatSetupState extends State<OfWhatSetup> {
                                 const SizedBox(height: 18),
                                 _TierSelector(
                                   levels: _levels(context),
+                                  credited: _credited(context),
                                   selected: _diff,
                                   accentColor: _accent,
                                   onChange: (d) => setState(() => _diff = d),
@@ -1363,30 +1377,40 @@ class _SlidingPillRow extends StatelessWidget {
 /// and "…Of What?" offered three interchangeable pills and remembered nothing.
 /// Same ladder here, so "difficulty" means one thing across the app.
 class _TierSelector extends StatelessWidget {
-  /// The key's (or note's) three tier scores for THIS mode.
+  /// What was actually scored in this mode. Drives the BEST readout: a record
+  /// is a run you ran, so this one is never inferred.
   final List<int> levels;
+
+  /// The same three tiers after the closure — a harder tier proves the easier
+  /// ones, a wider set proves the narrower one. Drives the padlocks, because a
+  /// tier already proved must not be shut.
+  final List<int> credited;
+
   final int selected;
   final Color accentColor;
   final ValueChanged<int> onChange;
 
   const _TierSelector({
     required this.levels,
+    required this.credited,
     required this.selected,
     required this.accentColor,
     required this.onChange,
   });
 
   static const labels = ['Apprentice', 'Virtuoso', 'Master'];
-  static const caps = [30, 40, 50];
+  static const caps = kTierCaps;
 
-  /// What the tier above needs from the tier below. Mirrors the key cards.
-  static const gates = [0, 27, 37];
+  /// What the tier above needs from the tier below — one constant for the
+  /// whole app, so this screen and the key cards can never disagree.
+  static const gates = kTierUnlock;
 
   static bool unlocked(List<int> levels, int tier) =>
       tier <= 1 || levels[tier - 2] >= gates[tier - 1];
 
   void _explain(BuildContext context, int tier) {
     final need = gates[tier - 1];
+    final have = credited[tier - 2];
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
@@ -1415,7 +1439,7 @@ class _TierSelector extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               'Reach $need correct in ${labels[tier - 2]} first. '
-              'You are at ${levels[tier - 2]}.',
+              'You are at $have.',
               style: const TextStyle(
                   fontSize: 14, height: 1.5, color: Colors.white70),
             ),
@@ -1442,7 +1466,7 @@ class _TierSelector extends StatelessWidget {
 
     final lockedLabels = <String>{
       for (var t = 2; t <= 3; t++)
-        if (!unlocked(levels, t)) labels[t - 1],
+        if (!unlocked(credited, t)) labels[t - 1],
     };
 
     return Column(
@@ -1455,7 +1479,7 @@ class _TierSelector extends StatelessWidget {
           locked: lockedLabels,
           onChange: (v) {
             final tier = labels.indexOf(v) + 1;
-            if (!unlocked(levels, tier)) {
+            if (!unlocked(credited, tier)) {
               _explain(context, tier);
               return;
             }

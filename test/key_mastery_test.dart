@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:improvy/models/key_progress.dart';
+import 'package:improvy/providers/app_provider.dart';
 
 /// The percentage on a key is the number the whole app hangs on: it drives the
 /// home tiles, the Skill Mastery list and the animal level. These pin down the
@@ -85,5 +86,59 @@ void main() {
         () => expect(k(d: [30, 40, 50], c: [30, 40, 50]).totalProgress, 100));
     test('over-cap scores cannot push it past 100',
         () => expect(k(d: [99, 99, 99], c: [99, 99, 99]).totalProgress, 100));
+  });
+
+  group('the gate and the percentage read the same evidence', () {
+    test('a key proved through Chromatic opens its Diatonic tiers', () {
+      // Otherwise the app contradicts itself: 94% of the key, and Virtuoso
+      // still padlocked because that ladder was never walked.
+      final key = k(c: [0, 0, 47]);
+      expect(key.totalProgress, 94);
+      expect(AppProvider.highestUnlockedTier(key.effectiveDiatonic), 3);
+    });
+
+    test('but Diatonic never opens Chromatic', () {
+      // The containment runs one way: the twelve are not inside the seven.
+      final key = k(d: [30, 40, 50]);
+      expect(AppProvider.highestUnlockedTier(key.effectiveChromatic), 1);
+    });
+
+    test('an unproved key opens on Apprentice only', () {
+      expect(AppProvider.highestUnlockedTier(k().effectiveDiatonic), 1);
+    });
+  });
+
+  _bestIsNeverInferred();
+
+  group('what the gate makes impossible', () {
+    test('a tier can only hold a score if the one below is at 80%', () {
+      // The saved score is the best ever reached and never falls, and a tier
+      // will not open below 80% of the one under it. So a row like
+      // [75%, 75%, 50%] cannot be reached: 75% of Apprentice is 22 or 23 of
+      // 30, under the 24 needed, so Virtuoso was never playable.
+      const apprenticeAt75 = 23; // of 30
+      expect(apprenticeAt75, lessThan(kTierUnlock[1]));
+      expect(AppProvider.highestUnlockedTier([apprenticeAt75, 0, 0]), 1,
+          reason: 'Virtuoso must still be shut at 75%');
+    });
+
+    test('the lowest a row can sit once Master is open', () {
+      // 80% of both tiers below, and Master not yet played.
+      final key = k(c: [24, 32, 0]);
+      expect(AppProvider.highestUnlockedTier(key.effectiveChromatic), 3);
+      expect(key.totalProgress, 53);
+    });
+  });
+}
+/// BEST is a record, and a record is a run you ran. The closure credits you
+/// for tiers you never played — it must never claim you scored in them.
+void _bestIsNeverInferred() {
+  test('the raw score stays raw however much the closure credits', () {
+    final key = k(c: [24, 32, 47]);
+    // Credited everywhere, because chromatic Master proves the rest.
+    expect(key.effectiveDiatonic[0], 28); // 94% of 30
+    // But nothing was ever scored in Diatonic, and the BEST line reads this.
+    expect(key.diatonicLevels[0], 0);
+    expect(key.diatonicProgress, 0);
   });
 }

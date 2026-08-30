@@ -134,12 +134,20 @@ void main() {
   _tierFollowsTheKey();
 
   group('the tier gates', () {
-    test('Apprentice is always open, the two above are earned', () {
+    test('Apprentice is always open, the two above are earned at 80%', () {
       expect(AppProvider.highestUnlockedTier([0, 0, 0]), 1);
-      expect(AppProvider.highestUnlockedTier([26, 0, 0]), 1);
-      expect(AppProvider.highestUnlockedTier([27, 0, 0]), 2);
-      expect(AppProvider.highestUnlockedTier([30, 36, 0]), 2);
-      expect(AppProvider.highestUnlockedTier([30, 37, 0]), 3);
+      expect(AppProvider.highestUnlockedTier([23, 0, 0]), 1);
+      expect(AppProvider.highestUnlockedTier([24, 0, 0]), 2); // 24/30
+      expect(AppProvider.highestUnlockedTier([30, 31, 0]), 2);
+      expect(AppProvider.highestUnlockedTier([30, 32, 0]), 3); // 32/40
+    });
+
+    test('the gate is one fraction, not a number typed out per tier', () {
+      for (var t = 1; t < 3; t++) {
+        expect(kTierUnlock[t], (kTierCaps[t - 1] * kTierUnlockFraction).round(),
+            reason: 'tier ${t + 1} does not open at '
+                '${kTierUnlockFraction * 100}% of the tier below');
+      }
     });
   });
 
