@@ -65,7 +65,23 @@ jobs:
         with:
           path: build/web
 
+  # Only main is ever published.
+  #
+  # On 27 Aug a push to claude/github-mobile-editing-rvr8qr — 94 commits behind
+  # main, last touched in July — ran this workflow from its OWN copy of the
+  # file, which lists that branch, and its build went live on the same Pages
+  # URL. The site then showed a July build for three days while main was ten
+  # releases ahead. Every branch shares one site, so the last branch to run
+  # wins no matter how old it is.
+  #
+  # Building on a branch is still useful (it force-pushes to web-build, which
+  # is how a preview is fetched in a sandbox); publishing from one is not.
+  #
+  # NOTE: this guard travels with the file, so it cannot protect against a
+  # stale branch carrying an older copy. That needs the github-pages
+  # environment's deployment branch policy set to main only, in repo settings.
   deploy:
+    if: github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
     environment:
