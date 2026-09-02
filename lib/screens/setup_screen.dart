@@ -149,21 +149,21 @@ class _NoteToNumberSetupState extends State<NoteToNumberSetup> {
                                 ),
                                 const SizedBox(height: 18),
                                 _SlidingPillRow(
-                                  opts: const ['Diatonic', 'Chromatic'],
-                                  sel: _chromatic ? 'Chromatic' : 'Diatonic',
+                                  opts: [context.l10n.modeDiatonic, context.l10n.modeChromatic],
+                                  sel: _chromatic ? context.l10n.modeChromatic : context.l10n.modeDiatonic,
                                   accentColor: _accent,
-                                  locked: widget.isPro ? const {} : const {'Chromatic'},
+                                  locked: widget.isPro ? const {} : {context.l10n.modeChromatic},
                                   onChange: (v) {
                                     // Diatonic is free in every key; the twelve
                                     // chromatic degrees are what Pro buys here.
-                                    if (v == 'Chromatic' && !widget.isPro) {
+                                    if (v == context.l10n.modeChromatic && !widget.isPro) {
                                       AnalyticsService.instance
                                           .lockedFeature('note_to_number_chromatic');
                                       widget.onShowPaywall();
                                       return;
                                     }
                                     setState(() {
-                                      _chromatic = v == 'Chromatic';
+                                      _chromatic = v == context.l10n.modeChromatic;
                                       _syncTier();
                                     });
                                   },
@@ -260,11 +260,11 @@ class _CustomModeSetupState extends State<CustomModeSetup> {
   int _diff = 1;
   int _questions = 30;
 
-  static const _dirLabels = {
-    CustomDirection.normal: 'Normal',
-    CustomDirection.noteToNumber: 'Note to Number',
-    CustomDirection.ofWhat: '…Of What?',
-  };
+  Map<CustomDirection, String> _dirLabels(BuildContext context) => {
+        CustomDirection.normal: context.l10n.modeNormal,
+        CustomDirection.noteToNumber: context.l10n.modeNoteToNumber,
+        CustomDirection.ofWhat: context.l10n.modeOfWhat,
+      };
 
   // Jazz extensions borrow the colour of the chromatic degree they extend, so
   // ♭9 and ♭2 read as the same note a register apart.
@@ -291,7 +291,6 @@ class _CustomModeSetupState extends State<CustomModeSetup> {
     });
   }
 
-  static const _diffLabels = ['Apprentice', 'Virtuoso', 'Master'];
   // ∞ is 0 on the wire, which the trainer reads as "no last question".
   static const _questionOpts = ['30', '50', '100', '∞'];
   static const _accent = Color(0xFFD857EC);
@@ -385,10 +384,10 @@ class _CustomModeSetupState extends State<CustomModeSetup> {
                                 ),
                                 const SizedBox(height: 18),
                                 _SlidingPillRow(
-                                  opts: _dirLabels.values.toList(),
-                                  sel: _dirLabels[_dir]!,
+                                  opts: _dirLabels(context).values.toList(),
+                                  sel: _dirLabels(context)[_dir]!,
                                   accentColor: _accent,
-                                  onChange: (v) => _setDirection(_dirLabels.entries
+                                  onChange: (v) => _setDirection(_dirLabels(context).entries
                                       .firstWhere((e) => e.value == v)
                                       .key),
                                 ),
@@ -455,10 +454,10 @@ class _CustomModeSetupState extends State<CustomModeSetup> {
                                 ),
                                 const SizedBox(height: 18),
                                 _SlidingPillRow(
-                                  opts: _diffLabels,
-                                  sel: _diffLabels[_diff - 1],
+                                  opts: _TierSelector.labelsFor(context.l10n),
+                                  sel: _TierSelector.labelsFor(context.l10n)[_diff - 1],
                                   accentColor: _accent,
-                                  onChange: (v) => setState(() => _diff = _diffLabels.indexOf(v) + 1),
+                                  onChange: (v) => setState(() => _diff = _TierSelector.labelsFor(context.l10n).indexOf(v) + 1),
                                 ),
                                 const SizedBox(height: 36),
 
@@ -636,19 +635,19 @@ class _OfWhatSetupState extends State<OfWhatSetup> {
                                 ),
                                 const SizedBox(height: 18),
                                 _SlidingPillRow(
-                                  opts: const ['Chord', 'All'],
-                                  sel: _all ? 'All' : 'Chord',
+                                  opts: [context.l10n.setupChord, context.l10n.setupAll],
+                                  sel: _all ? context.l10n.setupAll : context.l10n.setupChord,
                                   accentColor: _accent,
-                                  locked: widget.isPro ? const {} : const {'All'},
+                                  locked: widget.isPro ? const {} : {context.l10n.setupAll},
                                   onChange: (v) {
-                                    if (v == 'All' && !widget.isPro) {
+                                    if (v == context.l10n.setupAll && !widget.isPro) {
                                       AnalyticsService.instance
                                           .lockedFeature('of_what_all_degrees');
                                       widget.onShowPaywall();
                                       return;
                                     }
                                     setState(() {
-                                      _all = v == 'All';
+                                      _all = v == context.l10n.setupAll;
                                       _syncTier();
                                     });
                                   },
@@ -802,10 +801,10 @@ class _PocketModeSetupState extends State<PocketModeSetup> {
                                 ),
                                 const SizedBox(height: 18),
                                 _SlidingPillRow(
-                                  opts: const ['One key', 'Shuffle all'],
-                                  sel: _shuffle ? 'Shuffle all' : 'One key',
+                                  opts: [context.l10n.setupOneKey, context.l10n.setupShuffleAll],
+                                  sel: _shuffle ? context.l10n.setupShuffleAll : context.l10n.setupOneKey,
                                   accentColor: _accent,
-                                  onChange: (v) => setState(() => _shuffle = v == 'Shuffle all'),
+                                  onChange: (v) => setState(() => _shuffle = v == context.l10n.setupShuffleAll),
                                 ),
                                 if (!_shuffle) ...[
                                   const SizedBox(height: 24),
@@ -1368,7 +1367,10 @@ class _SlidingPillRow extends StatelessWidget {
                   behavior: HitTestBehavior.opaque,
                   child: Padding(
                     // Comfortable ≥48dp touch target — the pills were too thin.
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    // A little side room too, so a long word ("APPRENDISTA",
+                    // "DIATONIQUE") scales inside the pill instead of touching
+                    // its edge.
+                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
                     child: Center(
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
