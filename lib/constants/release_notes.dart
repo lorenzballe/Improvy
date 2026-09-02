@@ -62,7 +62,7 @@ class Release {
 /// the right behaviour for a pure bug-fix build.
 const List<Release> kReleases = [
   Release(
-    version: '1.10.4',
+    version: '1.10.5',
     date: '30 AUG 2026',
     headline: 'Every key shows how far you have taken it, at a glance.',
     lines: [

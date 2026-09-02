@@ -369,14 +369,16 @@ void _keyStanding() {
 
     final shown = p.ntnProgress('C', chromatic: false);
     expect(shown, greaterThan(0));
-    expect(find.text('$shown'), findsWidgets,
-        reason: 'the badge must show what the outline is drawing');
+    expect(find.text('$shown%'), findsOneWidget,
+        reason: 'the badge must show what the bar is drawing');
 
     // The 12-degree row was never played, so switching to it drops to zero.
     await t.tap(find.text('CHROMATIC'));
     await t.pump();
     expect(p.ntnProgress('C', chromatic: true), 0);
-    expect(find.text('0'), findsWidgets);
+    // Two zeroes now: the standing beside the grid and the tier record under
+    // the pills. Both are right — the 12-degree row has nothing in it at all.
+    expect(find.text('0%'), findsNWidgets(2));
 
     // And an untouched key reads zero too.
     await t.tap(find.text('DIATONIC'));
@@ -384,6 +386,6 @@ void _keyStanding() {
     await t.tap(find.text('G'));
     await t.pump();
     expect(p.ntnProgress('G', chromatic: false), 0);
-    expect(find.text('0'), findsWidgets);
+    expect(find.text('0%'), findsNWidgets(2));
   });
 }
