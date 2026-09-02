@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:improvy/providers/app_provider.dart';
+import 'package:improvy/screens/explainer_screen.dart';
 import 'package:improvy/screens/setup_screen.dart';
 import 'package:improvy/services/storage_service.dart';
 
@@ -60,6 +61,8 @@ void main() {
     await expectLater(find.byType(MaterialApp), matchesGoldenFile('goldens/$name.png'));
   }
 
+  explainerShots();
+
   testWidgets('note to number', (t) async {
     await shot(
       t,
@@ -98,4 +101,27 @@ void main() {
       'shot_custom',
     );
   });
+}
+
+/// The three explainer pages, for looking at.
+void explainerShots() {
+  for (final (i, page) in ['explainer_1', 'explainer_2', 'explainer_3'].indexed) {
+    testWidgets(page, (t) async {
+      await loadRealFonts();
+      t.view.physicalSize = const Size(780, 1690);
+      t.view.devicePixelRatio = 2.0;
+      addTearDown(t.view.resetPhysicalSize);
+      addTearDown(t.view.resetDevicePixelRatio);
+      await t.pumpWidget(MaterialApp(
+        theme: ThemeData(fontFamily: 'Lexend', useMaterial3: true),
+        home: ExplainerScreen(onDone: () {}),
+      ));
+      await t.pumpAndSettle();
+      for (var k = 0; k < i; k++) {
+        await t.tap(find.text('Next'));
+        await t.pumpAndSettle();
+      }
+      await expectLater(find.byType(MaterialApp), matchesGoldenFile('goldens/shot_$page.png'));
+    });
+  }
 }

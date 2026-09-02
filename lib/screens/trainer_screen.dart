@@ -6,6 +6,7 @@ import '../models/training_mode.dart';
 import '../models/stats.dart';
 import '../constants/app_colors.dart';
 import '../constants/music_constants.dart';
+import '../services/note_sound.dart';
 import '../utils/adaptive_engine.dart';
 import '../utils/music_engine.dart';
 import '../services/haptics_service.dart';
@@ -26,6 +27,8 @@ class TrainerScreen extends StatefulWidget {
   final bool keyboardFromTonic;
   /// One standard name per pitch class instead of key-correct spelling.
   final bool simpleNotes;
+  /// Sound the note on a correct answer.
+  final bool answerSound;
   // Daily Challenge: a predetermined degree sequence (question i asks
   // sequence[i] — no randomness, no adaptive picking) and tailored exit copy.
   final List<String>? questionSequence;
@@ -52,6 +55,7 @@ class TrainerScreen extends StatefulWidget {
     required this.notation,
     this.keyboardFromTonic = false,
     this.simpleNotes = false,
+    this.answerSound = true,
     this.questionSequence,
     this.isDaily = false,
     this.totalTimeMs,
@@ -425,6 +429,12 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
         _streak++;
         if (_streak > _maxStreak) _maxStreak = _streak;
         HapticsService.success();
+        // The note that was right, sounded — in every direction the note is
+        // the thing on screen the tap agreed with: the answer going forward,
+        // the question going back, the root in "…Of What?".
+        if (widget.answerSound) {
+          NoteSound.instance.play(_actualIsReverse ? _degreeLabel : _correctAnswer);
+        }
       } else {
         _streak = 0;
         HapticsService.error();

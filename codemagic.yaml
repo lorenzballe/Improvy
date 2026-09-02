@@ -30,26 +30,54 @@ workflows:
       - name: Get Flutter packages
         script: flutter pub get
 
-      - name: Reset signing — create a certificate we own + App Store profile
+      # Nothing ships red. Both are cheap next to the Xcode build that follows,
+      # and a failing test that reaches TestFlight costs a whole review cycle.
+      - name: Analyze
+        script: flutter analyze --no-fatal-infos
+      - name: Test
+        script: flutter test
+
+      # Signing, two ways.
+      #
+      # PREFERRED — set CERTIFICATE_PRIVATE_KEY in the Codemagic environment
+      # (Codemagic → app → Environment variables, group "signing", secure):
+      # the PEM of one RSA key you generated once and keep. Every build then
+      # reuses the same certificate, nothing in the Apple account is touched,
+      # and any other machine holding that key can sign too.
+      #
+      # FALLBACK — the variable is unset: the build mints a throwaway key,
+      # deletes every distribution certificate in the account so that a new
+      # one can be issued, and signs with it. That works, and it is what the
+      # app shipped with, but it wipes out every other pipeline or Mac in the
+      # account on every run. It stays only so a build cannot fail for want of
+      # a variable; it is not how this should run.
+      - name: Signing — reuse our certificate, or mint one if none is kept
         script: |
           set -e
           keychain initialize
-          echo "Removing existing distribution certificates (we don't hold their private keys)..."
-          for T in IOS_DISTRIBUTION DISTRIBUTION; do
-            app-store-connect certificates list --type "$T" --json 2>/dev/null | jq -r '.[].id' 2>/dev/null || true
-          done | sort -u | while read -r cid; do
-            if [ -n "$cid" ]; then
-              echo "  deleting certificate $cid"
-              app-store-connect certificates delete "$cid" || true
-            fi
-          done
-          echo "Generating our OWN private key, then the certificate + App Store profile..."
-          # fetch-signing-files needs a private key to create the certificate — give it a fresh one.
-          openssl genrsa -out /tmp/cert_key.pem 2048
-          app-store-connect fetch-signing-files "$BUNDLE_ID" \
-            --type IOS_APP_STORE \
-            --certificate-key=@file:/tmp/cert_key.pem \
-            --create
+          if [ -n "${CERTIFICATE_PRIVATE_KEY:-}" ]; then
+            echo "Using the kept private key; no certificate is deleted."
+            app-store-connect fetch-signing-files "$BUNDLE_ID" \
+              --type IOS_APP_STORE \
+              --certificate-key=@env:CERTIFICATE_PRIVATE_KEY \
+              --create
+          else
+            echo "WARNING: CERTIFICATE_PRIVATE_KEY is not set — falling back to the destructive path."
+            echo "Removing existing distribution certificates (we don't hold their private keys)..."
+            for T in IOS_DISTRIBUTION DISTRIBUTION; do
+              app-store-connect certificates list --type "$T" --json 2>/dev/null | jq -r '.[].id' 2>/dev/null || true
+            done | sort -u | while read -r cid; do
+              if [ -n "$cid" ]; then
+                echo "  deleting certificate $cid"
+                app-store-connect certificates delete "$cid" || true
+              fi
+            done
+            openssl genrsa -out /tmp/cert_key.pem 2048
+            app-store-connect fetch-signing-files "$BUNDLE_ID" \
+              --type IOS_APP_STORE \
+              --certificate-key=@file:/tmp/cert_key.pem \
+              --create
+          fi
           keychain add-certificates
           xcode-project use-profiles
 

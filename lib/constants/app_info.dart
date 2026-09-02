@@ -31,10 +31,11 @@ const String kTermsUrl = '$kWebsiteUrl#terms';
 /// ("Apple ID", e.g. '6501234567'). Needed to open the store listing on iOS —
 /// Android finds itself from the package name.
 ///
-/// **Fill this in once the app is created in App Store Connect.** While it is
-/// empty the "Rate Improvy" row simply hides itself on iOS rather than opening
-/// a broken page; nothing else depends on it.
-const String kAppStoreId = '';
+/// While this was empty — for two weeks after the app went live — the "Rate
+/// Improvy" row hid itself on iOS and every shared Daily Challenge sent the
+/// reader to the website instead of the store, which is the one place a
+/// share is worth anything.
+const String kAppStoreId = '6775236759';
 
 /// Play Console → the listing's own address. Must match `applicationId` in
 /// android/app/build.gradle.kts — the id in the URL is what Play resolves, not

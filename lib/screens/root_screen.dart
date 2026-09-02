@@ -13,6 +13,7 @@ import 'trainer_screen.dart';
 import 'session_summary_screen.dart';
 import 'daily_results_screen.dart';
 import 'onboarding_screen.dart';
+import 'explainer_screen.dart';
 import 'setup_screen.dart';
 import 'pocket_mode_screen.dart';
 import '../widgets/paywall_modal.dart';
@@ -36,6 +37,8 @@ class RootScreen extends StatefulWidget {
 
 class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
   int _currentTab = 0;
+  // Between the poster and the app: the three "how it works" screens.
+  bool _explaining = false;
   Map<String, dynamic>? _finishedSession;
   bool _showPaywall = false;
   TrainingMode? _pendingSetup; // which setup screen to show
@@ -465,21 +468,31 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     if (rawBottom > _stableBottomInset) _stableBottomInset = rawBottom;
 
     if (!provider.tutorialCompleted) {
-      return OnboardingScreen(onComplete: () {
-        // A brand-new controller, so the main scaffold's PageView mounts on
-        // Training already. The old code let it mount wherever the controller
-        // had been left and jumped it to page 0 in a post-frame callback —
-        // which is a second layout of the whole home screen, one frame after
-        // the first, and reads exactly like the page building twice.
-        _pageController.dispose();
-        _pageController = PageController();
-        setState(() {
-          _currentTab = 0;
-          _arrivalId++;
+      // Poster, then three screens that say what a degree is, then the app.
+      // The poster alone promised "every note is a number" and dropped the
+      // reader onto twelve keys without saying what the number was.
+      if (_explaining) {
+        return ExplainerScreen(onDone: () {
+          // A brand-new controller, so the main scaffold's PageView mounts on
+          // Training already. The old code let it mount wherever the
+          // controller had been left and jumped it to page 0 in a post-frame
+          // callback — a second layout of the whole home screen, one frame
+          // after the first, which reads exactly like the page building twice.
+          _pageController.dispose();
+          _pageController = PageController();
+          setState(() {
+            _currentTab = 0;
+            _arrivalId++;
+            _explaining = false;
+          });
+          AnalyticsService.instance.capture(Ev.onboardingCompleted);
+          provider.syncAnalyticsProfile();
+          provider.completeTutorial();
         });
-        AnalyticsService.instance.capture(Ev.onboardingCompleted);
-    provider.syncAnalyticsProfile();
-        provider.completeTutorial();
+      }
+      return OnboardingScreen(onComplete: () {
+        AnalyticsService.instance.capture(Ev.onboardingStarted);
+        setState(() => _explaining = true);
       });
     }
 
@@ -552,10 +565,14 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
         config: _pocketConfig!,
         notation: provider.notation,
         simpleNotes: provider.simpleNotes,
+        // A drill that actually ran counts as practice for the day, so the
+        // streak survives a week of hands-free training. Recorded at the
+        // first checkpoint (ten questions, or the app being backgrounded),
+        // not only on Exit — this is the mode most likely to end with the app
+        // swiped away, and a day trained must not depend on a button.
+        onPractice: provider.recordPocketPractice,
         onExit: (questionsHeard) {
-          // A drill that actually ran counts as practice for the day, so the
-          // streak survives a week of hands-free training.
-          provider.recordPocketPractice(questionsHeard);
+          provider.recordPocketPractice(questionsHeard); // zero if already on record
           provider.deselectKey();
           setState(() => _pocketConfig = null);
         },
@@ -693,6 +710,8 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
             SessionSummaryScreen(
               sessionData: _finishedSession!,
               progressData: provider.progressData,
+              isPro: provider.isPro,
+              onShowPaywall: _showPaywallSheet,
               onRetry: () => setState(() { _finishedSession = null; _perfectGlow = false; }),
               onBack: () {
                 final mode = provider.activeMode;
@@ -749,6 +768,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
         notation: provider.notation,
         keyboardFromTonic: provider.keyboardFromTonic,
         simpleNotes: provider.simpleNotes,
+        answerSound: provider.answerSound,
         questionSequence: provider.dailyChallengeActive ? provider.activeDailyDegrees : null,
         isDaily: provider.dailyChallengeActive,
         // One clock for the whole run instead of a per-question limit: ten
@@ -798,7 +818,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
                 onOpenSetup: _openSetup,
                 onStartDaily: provider.startDailyChallenge,
               )),
-              _KeepAlivePage(child: StatsScreen(onShowPaywall: _showPaywallSheet)),
+              _KeepAlivePage(child: StatsScreen(onShowPaywall: _showPaywallSheet, onGoHome: () => _switchTab(0))),
               _KeepAlivePage(child: SettingsScreen(onShowPaywall: _showPaywallSheet, onSimulatePerfect: _triggerPerfectCelebration)),
             ],
           ),

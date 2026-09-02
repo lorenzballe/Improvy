@@ -42,7 +42,9 @@ const _keySignatures = {
 
 class StatsScreen extends StatefulWidget {
   final void Function([String? reason])? onShowPaywall;
-  const StatsScreen({super.key, this.onShowPaywall});
+  /// Where the first-run card sends someone who has nothing to chart yet.
+  final VoidCallback? onGoHome;
+  const StatsScreen({super.key, this.onShowPaywall, this.onGoHome});
   @override
   State<StatsScreen> createState() => _StatsScreenState();
 }
@@ -278,10 +280,21 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
                   Container(height: 1, margin: const EdgeInsets.symmetric(horizontal: 24),
                     decoration: const BoxDecoration(gradient: LinearGradient(colors: [Colors.transparent, Colors.white10, Colors.transparent]))),
                   const SizedBox(height: 12),
-                  Text('STATISTICS BASED ON THE LAST 30 GAMES',
+                  Text(
+                    stats.totalSessions == 0
+                        ? 'NOTHING TO SHOW YET'
+                        : 'STATISTICS BASED ON THE LAST 30 GAMES',
                     style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white.withAlpha(77), letterSpacing: 1.8)),
                 ]),
               ),
+
+              // A page of zeros and an empty heatmap says nothing to someone
+              // who has not played; this says the one thing they need.
+              if (stats.totalSessions == 0)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+                  child: _FirstRunCard(onTap: widget.onGoHome),
+                ),
 
               // ── Response Time ──
               Padding(
@@ -1427,4 +1440,54 @@ class _SkillRow extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Shown in place of the charts' meaning until there is a game to chart.
+class _FirstRunCard extends StatelessWidget {
+  final VoidCallback? onTap;
+  const _FirstRunCard({this.onTap});
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: const Color(0x1A6366F1),
+            border: Border.all(color: const Color(0x4D6366F1)),
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Row(children: [
+            Container(
+              width: 44, height: 44,
+              decoration: BoxDecoration(
+                color: const Color(0xFF6366F1),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 26),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Play one session',
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Colors.white)),
+                  const SizedBox(height: 3),
+                  Text(
+                    'Thirty questions in one key and every chart on this page fills in — '
+                    'your speed, the degrees you miss, the notes that slow you down.',
+                    style: TextStyle(fontSize: 11.5, height: 1.45, color: Colors.white.withAlpha(140)),
+                  ),
+                ],
+              ),
+            ),
+            if (onTap != null) ...[
+              const SizedBox(width: 6),
+              Icon(Icons.chevron_right_rounded, color: Colors.white.withAlpha(90)),
+            ],
+          ]),
+        ),
+      );
 }

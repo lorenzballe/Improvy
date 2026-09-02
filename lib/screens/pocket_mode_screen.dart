@@ -41,14 +41,45 @@ class PocketModeScreen extends StatefulWidget {
   /// not. Pocket Mode asks for no answers, so there is nothing to score — but
   /// a day spent training hands-free is still a day trained.
   final void Function(int questionsHeard) onExit;
+
+  /// Fired once, the first time the drill has clearly been *done* — ten
+  /// questions in, or the app going to the background — so the day counts
+  /// even if the app is killed before Exit is ever tapped. Pocket Mode is the
+  /// one mode designed to run while the phone is in a pocket, which is also
+  /// the mode most likely to end with the app swiped away rather than closed.
+  final void Function(int questionsHeard)? onPractice;
   const PocketModeScreen({super.key, required this.config, this.notation = 'CDE',
-      this.simpleNotes = false, required this.onExit});
+      this.simpleNotes = false, required this.onExit, this.onPractice});
 
   @override
   State<PocketModeScreen> createState() => _PocketModeScreenState();
 }
 
-class _PocketModeScreenState extends State<PocketModeScreen> with TickerProviderStateMixin {
+class _PocketModeScreenState extends State<PocketModeScreen>
+    with TickerProviderStateMixin, WidgetsBindingObserver {
+  /// Whether [PocketModeScreen.onPractice] has fired. The day is counted
+  /// once; everything after that is the same session.
+  bool _practiceRecorded = false;
+
+  /// Enough questions to call it a session rather than a look.
+  static const _practiceAfter = 10;
+
+  void _checkpointPractice() {
+    if (_practiceRecorded || _index <= 0) return;
+    _practiceRecorded = true;
+    widget.onPractice?.call(_index);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Backgrounded is the moment the app can be killed without warning, so
+    // it is the moment to make sure what happened so far is on record.
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      _checkpointPractice();
+    }
+  }
+
   static const _accent = Color(0xFF6366F1); // indigo — Pocket Mode's colour
 
   // The recordings follow the app's note-naming setting: C-D-E is read in
@@ -93,12 +124,14 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
       'questions': widget.config.questions, // 0 = endless
       'simple_notes': widget.simpleNotes,
     });
+    WidgetsBinding.instance.addObserver(this);
     // Auto-start: the user already pressed Start on the setup screen.
     WidgetsBinding.instance.addPostFrameCallback((_) => _play());
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _gen++;
     _voice.dispose();
     _keepAlive.dispose();
@@ -151,7 +184,9 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
     _gen++;
     _voice.stop();
     _keepAlive.stop();
-    widget.onExit(_index);
+    // Already on record from a checkpoint: hand over zero so the day is not
+    // counted twice. Otherwise this is the first and only record.
+    widget.onExit(_practiceRecorded ? 0 : _index);
   }
 
   /// One speakable question: the key, the degree, the name to ask it by, and
@@ -287,6 +322,7 @@ class _PocketModeScreenState extends State<PocketModeScreen> with TickerProvider
 
       _prevDegree = degree;
       if (mounted) setState(() => _index++);
+      if (_index >= _practiceAfter) _checkpointPractice();
     }
     if (mounted && gen == _gen) {
       // The recorded voice only knows degrees and notes, so the session ends on

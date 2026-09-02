@@ -16,12 +16,21 @@ class SessionSummaryScreen extends StatelessWidget {
   final VoidCallback onBack;
   final void Function(int newDiff) onNextDifficulty;
 
+  /// The moment after a run is the one where someone most wants more of it.
+  /// A free player who has just finished Diatonic in a key is looking at the
+  /// half of that key they cannot open — this is where the door gets pointed
+  /// at, once, rather than left for them to walk into from the home screen.
+  final bool isPro;
+  final void Function([String? reason])? onShowPaywall;
+
   const SessionSummaryScreen({
     super.key,
     required this.sessionData,
     required this.progressData,
     required this.onRetry,
     required this.onBack,
+    this.isPro = true,
+    this.onShowPaywall,
     required this.onNextDifficulty,
   });
 
@@ -35,11 +44,28 @@ class SessionSummaryScreen extends StatelessWidget {
     final diff    = sessionData['difficulty'] as int?    ?? 1;
     final errors  = total - correct;
     final acc     = total > 0 ? (correct / total * 100).round() : 0;
-    final passed  = errors <= 3;
     final perfect = errors == 0;
-    final hasNext = diff < 3;
     final isCustom = mode == 'custom' || mode == 'note-to-number' || mode == 'of-what';
     final isDiat  = mode == 'diatonic';
+
+    // "Passed" is the app's own gate, not a number of its own. It used to be
+    // "at most three wrong", which on Apprentice's 30 questions is 90% and on
+    // Master's 50 is 94% — while the tier above actually opens at 80% of the
+    // one below. So the sheet could say NOT YET to a run that had just opened
+    // the next tier, and PLAY NEXT DIFFICULTY to one that had not.
+    final passed = diff >= 3
+        ? correct >= (kTierCaps[2] * kTierUnlockFraction).round()
+        : correct >= kTierUnlock[diff];
+    // The next tier is offered only when it is genuinely open — read from the
+    // same closed ladder the setup screens and the home cards read.
+    final ladder = progressData.firstWhere((k) => k.key == key,
+        orElse: () => KeyProgress(key: key));
+    final credited = isDiat ? ladder.effectiveDiatonic : ladder.effectiveChromatic;
+    final hasNext = diff < 3 && credited[diff - 1] >= kTierUnlock[diff];
+
+    // A free player has just finished the free half of this key. The other
+    // half is Chromatic in every key but C — say so here, once.
+    final showUpsell = !isPro && isDiat && key != 'C' && !isCustom;
 
     final diffLabels = ['Apprentice', 'Virtuoso', 'Master'];
     final modeLabel = switch (mode) {
@@ -98,19 +124,25 @@ class SessionSummaryScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 3),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        NoteText(
-                          note: formatNoteForDisplay(key,
-                              context.select<AppProvider, String>((p) => p.notation)),
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Colors.white.withValues(alpha:0.7)),
-                        ),
-                        Text(
-                          ' · $modeLabel · ${diffLabels[(diff - 1).clamp(0, 2)]}',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white.withValues(alpha:0.4)),
-                        ),
-                      ],
+                    // Scaled, not clipped: "B♭ · Note to Number · Apprentice"
+                    // is already wider than a narrow phone, and a translated
+                    // label will be wider still.
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          NoteText(
+                            note: formatNoteForDisplay(key,
+                                context.select<AppProvider, String>((p) => p.notation)),
+                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Colors.white.withValues(alpha:0.7)),
+                          ),
+                          Text(
+                            ' · $modeLabel · ${diffLabels[(diff - 1).clamp(0, 2)]}',
+                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white.withValues(alpha:0.4)),
+                          ),
+                        ],
+                      ),
                     ),
                   ]),
                 ),
@@ -252,6 +284,12 @@ class SessionSummaryScreen extends StatelessWidget {
               onRetry: onRetry,
               onBack: onBack,
               onNextDifficulty: onNextDifficulty,
+              upsell: showUpsell && onShowPaywall != null
+                  ? _UpsellCard(
+                      keyName: key,
+                      onTap: () => onShowPaywall!('summary_chromatic'),
+                    )
+                  : null,
             ),
           ]),
         ),
@@ -438,10 +476,12 @@ class _BottomActions extends StatelessWidget {
   final VoidCallback onBack;
   final void Function(int) onNextDifficulty;
 
+  final Widget? upsell;
   const _BottomActions({
     required this.passed, required this.hasNext, required this.isCustom,
     required this.modeColor, required this.accentColor, required this.difficulty,
     required this.onRetry, required this.onBack, required this.onNextDifficulty,
+    this.upsell,
   });
 
   @override
@@ -450,6 +490,7 @@ class _BottomActions extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
       child: Column(
         children: [
+          if (upsell != null) ...[upsell!, const SizedBox(height: 10)],
           // Primary: next difficulty (if passed and applicable)
           if (passed && hasNext && !isCustom) ...[
             _PrimaryBtn(
@@ -557,6 +598,52 @@ class _SecondaryBtnState extends State<_SecondaryBtn> {
               ],
             ),
           ),
+        ),
+      );
+}
+
+/// The other half of the key you just played, offered once, at the moment you
+/// most want it. Quiet on purpose: a single row, not a second paywall.
+class _UpsellCard extends StatelessWidget {
+  final String keyName;
+  final VoidCallback onTap;
+  const _UpsellCard({required this.keyName, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(16, 14, 14, 14),
+          decoration: BoxDecoration(
+            color: const Color(0x1AA855F7),
+            border: Border.all(color: const Color(0x66A855F7)),
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Row(children: [
+            const Icon(Icons.lock_open_rounded, color: Color(0xFFA855F7), size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('That was the free half of $keyName',
+                      style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white)),
+                  const SizedBox(height: 2),
+                  Text('Chromatic adds the five altered degrees — the rest of the key.',
+                      style: TextStyle(
+                          fontSize: 11,
+                          height: 1.4,
+                          color: Colors.white.withValues(alpha: 0.6))),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Icon(Icons.chevron_right_rounded, color: Colors.white.withValues(alpha: 0.4)),
+          ]),
         ),
       );
 }

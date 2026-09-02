@@ -46,12 +46,20 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
   // Ordered by hue, so the list reads down the spectrum — amber, green, cyan,
   // purple, fuchsia, pink. Each mode keeps the colour it wears everywhere else
   // in the app, so the row still points at the thing it unlocks.
+  //
+  // Every line here is a door that is actually locked. "Note to Number" sat
+  // in this list for two weeks after the mode went free — a paying customer
+  // finding one sixth of the promise already in their hands is a refund and a
+  // one-star review, and Apple reads these lists too. What Pro unlocks in that
+  // mode is its chromatic half, so that is what the line says now; the same
+  // goes for Pocket Mode, which was not listed at all.
   static const _features = <(String, String, IconData, Color, Color)>[
-    ('Adaptive difficulty', 'auto', Icons.trending_up_rounded, Color(0xFFF59E0B), Color(0xFF2A1B04)),
-    ('Note to Number', 'reverse', Icons.tag_rounded, Color(0xFF34D399), Color(0xFF04301F)),
-    ('…Of What? extensions', '9 11 13', Icons.auto_awesome_rounded, Color(0xFF22D3EE), Color(0xFF04262B)),
-    ('Chromatic Mode', '12 notes', Icons.piano_rounded, Color(0xFFA855F7), Color(0xFF1E0736)),
+    ('Chromatic Mode', 'all 12 keys', Icons.piano_rounded, Color(0xFFA855F7), Color(0xFF1E0736)),
+    ('Note to Number', 'chromatic', Icons.tag_rounded, Color(0xFF34D399), Color(0xFF04301F)),
+    ('…Of What?', 'all 15 degrees', Icons.auto_awesome_rounded, Color(0xFF22D3EE), Color(0xFF04262B)),
+    ('Pocket Mode', 'all 12 degrees', Icons.headphones_rounded, Color(0xFF34D399), Color(0xFF04301F)),
     ('Custom Mode', 'any degree', Icons.tune_rounded, Color(0xFFD857EC), Color(0xFF2E0733)),
+    ('Adaptive difficulty', 'auto', Icons.trending_up_rounded, Color(0xFFF59E0B), Color(0xFF2A1B04)),
     ('Deep analytics', 'per key', Icons.insights_rounded, Color(0xFFF472B6), Color(0xFF3B0A24)),
   ];
 

@@ -352,7 +352,11 @@ class _CustomModeSetupState extends State<CustomModeSetup> {
                         children: [
                           _Header(
                             title: 'Custom Mode',
-                            subtitle: 'PERSONALIZED SESSION',
+                            // The one line that stops "I did a hundred
+                            // questions and nothing moved" being a support
+                            // email. Custom can be narrowed to one degree,
+                            // which is exactly why it cannot fill a dial.
+                            subtitle: 'FREE PRACTICE · DOES NOT COUNT TOWARDS MASTERY',
                             // Monochrome title (solid purple), not a gradient.
                             gradColors: const [Color(0xFFD857EC), Color(0xFFD857EC)],
                             onBack: widget.onCancel,

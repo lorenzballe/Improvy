@@ -62,6 +62,39 @@ class Release {
 /// the right behaviour for a pure bug-fix build.
 const List<Release> kReleases = [
   Release(
+    version: '1.11.0',
+    date: '31 AUG 2026',
+    headline: 'Hear the note you just named, and a proper start for newcomers.',
+    lines: [
+      ReleaseLine(
+        icon: Icons.music_note_rounded,
+        color: Color(0xFF22D3EE),
+        title: 'Every right answer sounds',
+        detail:
+            'Name the ♭3 of A and you hear it. The ear learns alongside the '
+            'number — switch it off in Settings for quiet places.',
+      ),
+      ReleaseLine(
+        icon: Icons.school_rounded,
+        color: Color(0xFFA855F7),
+        title: 'What a degree is, before the first question',
+        detail:
+            'Three short screens after the welcome: the numbers, why they work '
+            'in every key, and what the game asks. Skippable if you already '
+            'know.',
+      ),
+      ReleaseLine(
+        icon: Icons.fact_check_rounded,
+        color: Color(0xFF34D399),
+        title: 'The summary tells the truth',
+        detail:
+            '"Level passed" now means the next tier is actually open — the '
+            'same 80% bar the rest of the app uses — and a free player who '
+            'finishes a key is shown the half they have not seen.',
+      ),
+    ],
+  ),
+  Release(
     version: '1.10.5',
     date: '30 AUG 2026',
     headline: 'Every key shows how far you have taken it, at a glance.',
