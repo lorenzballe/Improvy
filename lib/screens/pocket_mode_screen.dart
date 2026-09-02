@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' show Random, min;
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 import '../constants/app_colors.dart';
 import '../constants/music_constants.dart';
 import '../services/voice_service.dart';
@@ -259,7 +260,7 @@ class _PocketModeScreenState extends State<PocketModeScreen>
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF141020),
-        title: const Text('Audio session',
+        title: Text(context.l10n.pocketAudioSession,
             style: TextStyle(color: Colors.white, fontSize: 16)),
         content: SelectableText(text,
             style: const TextStyle(
@@ -267,7 +268,7 @@ class _PocketModeScreenState extends State<PocketModeScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Close'),
+            child: Text(context.l10n.close),
           ),
         ],
       ),
@@ -430,8 +431,8 @@ class _PocketModeScreenState extends State<PocketModeScreen>
                       child: const Icon(Icons.close_rounded, color: Colors.white70, size: 24),
                     ),
                   ),
-                  const Expanded(
-                    child: Text('POCKET MODE',
+                  Expanded(
+                    child: Text(context.l10n.pocketTitle,
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 4)),
                   ),
@@ -481,13 +482,13 @@ class _PocketModeScreenState extends State<PocketModeScreen>
                       onLongPress: _showAudioDiagnostics,
                       behavior: HitTestBehavior.opaque,
                       child: Row(children: [
-                        Expanded(child: _stat('DEGREES', '${widget.config.degrees.length}')),
+                        Expanded(child: _stat(context.l10n.pocketDegrees, '${widget.config.degrees.length}')),
                         Container(width: 1, height: 28, color: Colors.white10),
-                        Expanded(child: _stat('DELAY', widget.config.delayMs % 1000 == 0
+                        Expanded(child: _stat(context.l10n.pocketDelay, widget.config.delayMs % 1000 == 0
                             ? '${widget.config.delayMs ~/ 1000}s'
                             : '${(widget.config.delayMs / 1000).toStringAsFixed(1)}s')),
                         Container(width: 1, height: 28, color: Colors.white10),
-                        Expanded(child: _stat('SESSION', total == 0 ? '∞' : '${_index.clamp(0, total)}/$total')),
+                        Expanded(child: _stat(context.l10n.pocketSession, total == 0 ? '∞' : '${_index.clamp(0, total)}/$total')),
                       ]),
                     ),
                   ]),
@@ -523,10 +524,10 @@ class _PocketModeScreenState extends State<PocketModeScreen>
 
   Widget _questionArea(Color degColor, Color noteColor) {
     final statusText = switch (_phase) {
-      1 => 'LISTEN',
-      2 => 'YOUR TURN',
-      3 => 'ANSWER',
-      _ => _finished ? 'SESSION COMPLETE' : 'READY',
+      1 => context.l10n.pocketListen,
+      2 => context.l10n.pocketYourTurn,
+      3 => context.l10n.pocketAnswer,
+      _ => _finished ? context.l10n.pocketComplete : context.l10n.pocketReady,
     };
     final statusColor = _phase == 3 ? noteColor : _accent;
     return LayoutBuilder(builder: (ctx, c) {
@@ -714,14 +715,14 @@ class _PocketModeScreenState extends State<PocketModeScreen>
         child: Row(children: [
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-              Text(_finished ? 'SESSION COMPLETE' : (_playing ? 'PLAYING' : 'PAUSED'),
+              Text(_finished ? context.l10n.pocketComplete : (_playing ? context.l10n.pocketPlaying : context.l10n.pocketPaused),
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: _accent, letterSpacing: 2)),
               const SizedBox(height: 3),
               Row(children: [
                 Icon(Icons.lock_outline_rounded, size: 12, color: Colors.white.withValues(alpha: 0.38)),
                 const SizedBox(width: 5),
                 Flexible(
-                  child: Text('Keeps playing with the screen off',
+                  child: Text(context.l10n.pocketScreenOff,
                       maxLines: 1, overflow: TextOverflow.ellipsis,
                       style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white.withValues(alpha: 0.38))),
                 ),

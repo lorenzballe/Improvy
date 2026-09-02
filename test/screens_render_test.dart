@@ -27,6 +27,7 @@ import 'package:improvy/widgets/paywall_modal.dart';
 import 'package:improvy/widgets/whats_new_modal.dart';
 import 'package:improvy/constants/release_notes.dart';
 import 'package:improvy/widgets/quiz_reveal_modal.dart';
+import 'package:improvy/l10n/l10n.dart';
 
 /// Does every screen actually lay out?
 ///
@@ -93,6 +94,8 @@ extension on WidgetTester {
       ChangeNotifierProvider<AppProvider>.value(
         value: provider,
         child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
           theme: ThemeData(
             colorScheme: const ColorScheme.dark(surface: Color(0xFF0F0A1A)),
             scaffoldBackgroundColor: const Color(0xFF0F0A1A),

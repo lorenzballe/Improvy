@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:improvy/providers/app_provider.dart';
 import 'package:improvy/services/storage_service.dart';
 import 'package:improvy/widgets/paywall_modal.dart';
+import 'package:improvy/l10n/l10n.dart';
 
 /// One-off: renders the real paywall widget to a PNG for App Store Connect's
 /// mandatory "App Review screenshot" on the in-app purchase. Apple asks for at
@@ -87,6 +88,8 @@ void main() {
       ChangeNotifierProvider<AppProvider>.value(
         value: p,
         child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
             colorScheme: const ColorScheme.dark(surface: Color(0xFF0F0A1A)),

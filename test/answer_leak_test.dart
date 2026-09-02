@@ -9,6 +9,7 @@ import 'package:improvy/screens/setup_screen.dart';
 import 'package:improvy/services/storage_service.dart';
 import 'package:improvy/screens/trainer_screen.dart';
 import 'package:improvy/utils/music_engine.dart';
+import 'package:improvy/l10n/l10n.dart';
 
 /// The board must not answer the question for you.
 ///
@@ -92,6 +93,8 @@ void main() {
       await t.pumpWidget(ChangeNotifierProvider.value(
         value: provider,
         child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
           home: NoteToNumberSetup(
             initialKey: 'C',
             isPro: isPro,
@@ -137,6 +140,8 @@ void main() {
     await t.pumpWidget(ChangeNotifierProvider.value(
       value: provider,
       child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: NoteToNumberSetup(
           initialKey: 'C',
           isPro: false,

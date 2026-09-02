@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/generated/app_localizations.dart';
+
 /// How many animal levels there are, top to bottom. The Level widget shows
 /// "Level 3 of 8", and that 8 must follow the ladder rather than be retyped.
 const int kAnimalLevelCount = 8;
@@ -48,3 +50,27 @@ AnimalLevel getAnimalLevel(double progress) {
   if (progress >= kAnimalThresholds[0]) return AnimalLevel(level: 2, name: 'Turtle', emoji: '🐢', color: const Color(0xFF22c55e), hex: '#22c55e', quote: 'Steady progress!');
   return AnimalLevel(level: 1, name: 'Snail', emoji: '🐌', color: const Color(0xFFa3e635), hex: '#a3e635', quote: 'Slow and steady wins!');
 }
+
+/// The animal's name in the user's language. Level 1 is the snail.
+String localizedAnimalName(AppLocalizations l, int level) => switch (level) {
+      8 => l.animalCheetah,
+      7 => l.animalFalcon,
+      6 => l.animalHorse,
+      5 => l.animalFox,
+      4 => l.animalRabbit,
+      3 => l.animalPenguin,
+      2 => l.animalTurtle,
+      _ => l.animalSnail,
+    };
+
+/// The animal's line in the user's language.
+String localizedAnimalQuote(AppLocalizations l, int level) => switch (level) {
+      8 => l.animalQuote8,
+      7 => l.animalQuote7,
+      6 => l.animalQuote6,
+      5 => l.animalQuote5,
+      4 => l.animalQuote4,
+      3 => l.animalQuote3,
+      2 => l.animalQuote2,
+      _ => l.animalQuote1,
+    };

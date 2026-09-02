@@ -1,16 +1,17 @@
+import '../l10n/generated/app_localizations.dart';
+
 enum TrainingMode { diatonic, chromatic, custom, noteToNumber, ofWhat, pocket }
 
 extension TrainingModeExtension on TrainingMode {
-  String get displayName {
-    switch (this) {
-      case TrainingMode.diatonic: return 'Diatonic';
-      case TrainingMode.chromatic: return 'Chromatic';
-      case TrainingMode.custom: return 'Custom';
-      case TrainingMode.noteToNumber: return 'Note to Number';
-      case TrainingMode.ofWhat: return '…Of What?';
-      case TrainingMode.pocket: return 'Pocket Mode';
-    }
-  }
+  /// The name shown to the user, in their language.
+  String localizedName(AppLocalizations l) => switch (this) {
+        TrainingMode.diatonic => l.modeDiatonic,
+        TrainingMode.chromatic => l.modeChromatic,
+        TrainingMode.custom => l.modeCustom,
+        TrainingMode.noteToNumber => l.modeNoteToNumber,
+        TrainingMode.ofWhat => l.modeOfWhat,
+        TrainingMode.pocket => l.modePocket,
+      };
 
   String get storageKey {
     switch (this) {

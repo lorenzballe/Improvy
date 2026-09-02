@@ -8,7 +8,10 @@ import '../services/storage_service.dart';
 import '../services/analytics_service.dart';
 import '../services/notification_service.dart';
 import '../services/review_service.dart';
+import 'dart:ui' show PlatformDispatcher;
+
 import '../constants/levels.dart';
+import '../l10n/l10n.dart';
 import '../constants/music_constants.dart';
 import '../constants/release_notes.dart';
 
@@ -105,7 +108,10 @@ class AppProvider extends ChangeNotifier {
     isPro = _storage.loadIsPro();
     adaptiveDifficulty = _storage.loadAdaptiveDifficulty();
     tutorialCompleted = _storage.loadTutorialCompleted();
-    notation = _storage.loadNotation();
+    // First run picks the notation by language — Do Re Mi for the languages
+    // whose musicians write it — and never touches a choice already made.
+    notation = _storage.loadNotationOrNull() ??
+        (L10n.prefersSolfege(PlatformDispatcher.instance.locale) ? 'DoReMi' : 'CDE');
     answerSound = _storage.loadAnswerSound();
     simpleNotes = _storage.loadSimpleNotes();
     keyboardFromTonic = _storage.loadKeyboardFromTonic();
@@ -233,7 +239,7 @@ class AppProvider extends ChangeNotifier {
   void sendTestNotification() {
     final m = _dailyMessages();
     NotificationService.showTestNow(
-        m.isNotEmpty ? m.first : ('Improvy 🎹', 'Time to practise?'));
+        m.isNotEmpty ? m.first : (L10n.current.remGenericTitle, L10n.current.remFallbackBody));
   }
 
   static String _ordinal(int n) => n == 2 ? '2nd' : n == 3 ? '3rd' : '${n}th';
@@ -246,17 +252,17 @@ class AppProvider extends ChangeNotifier {
     final msgs = <ReminderMessage>[];
 
     final weak = _weakSpotMessage();
-    if (weak != null) msgs.add(('Target practice 🎯', weak));
+    final l = L10n.current;
+    if (weak != null) msgs.add((l.remTargetTitle, weak));
 
     if (!dailyResults.containsKey(_dateKey(DateTime.now()))) {
-      msgs.add(('Daily Challenge 🏆',
-          "Today's challenge is in ${todayChallenge.key} major — one attempt, make it count."));
+      msgs.add((l.remDailyTitle, l.remDailyBody(todayChallenge.key)));
     }
 
     for (var i = 0; i < 5; i++) {
       final key = kKeys[rng.nextInt(kKeys.length)];
       final deg = 2 + rng.nextInt(6); // 2..7 (the 1 is trivial)
-      msgs.add(('Quick quiz 🎹', "What's the ${_ordinal(deg)} of $key major? Tap to check."));
+      msgs.add((l.remQuizTitle, l.remQuizBody(_ordinal(deg), key)));
     }
 
     final a = animalLevel;
@@ -267,11 +273,11 @@ class AppProvider extends ChangeNotifier {
       if (p < t) { toNext = t - p; break; }
     }
     msgs.add(toNext != null
-        ? ('${a.name} ${a.emoji}', "You're ${toNext.toStringAsFixed(1)}% from levelling up. Close the gap?")
-        : ('${a.name} ${a.emoji}', 'Maxed out — keep those reflexes razor-sharp.'));
+        ? ('${localizedAnimalName(l, a.level)} ${a.emoji}', l.remLevelBody(toNext.toStringAsFixed(1)))
+        : ('${localizedAnimalName(l, a.level)} ${a.emoji}', l.remMaxedBody));
 
-    msgs.add(('Improvy 🎹', 'Every degree, every key, instantly. Got 3 minutes?'));
-    msgs.add(('Ear training 🎧', 'Fast recall beats slow theory. Quick session?'));
+    msgs.add((l.remGenericTitle, l.remGenericBody));
+    msgs.add((l.remEarTitle, l.remEarBody));
     return msgs;
   }
 
@@ -282,8 +288,7 @@ class AppProvider extends ChangeNotifier {
     final playedToday = _trainedOn(today);
     final s = streak;
     if (s >= 2 && !playedToday) {
-      return ("Don't break your streak! 🔥",
-          'Your $s-day streak ends tonight — 2 minutes to keep it alive.');
+      return (L10n.current.remStreakTitle, L10n.current.remStreakBody(s));
     }
     return null;
   }
@@ -316,8 +321,7 @@ class AppProvider extends ChangeNotifier {
     }
     if (top == null) return null;
     final parts = top.key.split('|');
-    return 'You keep mixing up ${parts[1]} and ${parts[2]} in ${parts[0]} major. '
-        '10 questions to nail it?';
+    return L10n.current.remConfusion(parts[1], parts[2], parts[0]);
   }
 
   /// Days on which something was actually played — not days since install.

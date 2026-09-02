@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' show Random, min;
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 import '../models/training_mode.dart';
 import '../models/stats.dart';
 import '../constants/app_colors.dart';
@@ -499,16 +500,15 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
             children: [
               const Icon(Icons.logout_rounded, color: Color(0xFFFB7185), size: 34),
               const SizedBox(height: 14),
-              const Text('End this session?',
+              Text(context.l10n.trainerExitTitle,
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white)),
               const SizedBox(height: 8),
               Text(
                   widget.isDaily
-                      ? 'One attempt per day, and the clock keeps running — if you leave now, '
-                          '$_attempts/$_questionsPerKey is your score until tomorrow.'
+                      ? context.l10n.trainerExitDaily(_attempts, _questionsPerKey)
                       : _endless
-                          ? 'You are $_attempts questions in — leaving ends the run and keeps the score.'
-                          : 'You are $_attempts/$_questionsPerKey in — the run ends here if you leave.',
+                          ? context.l10n.trainerExitEndless(_attempts)
+                          : context.l10n.trainerExitBody(_attempts, _questionsPerKey),
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 13, height: 1.5, color: Colors.white.withAlpha(150))),
               const SizedBox(height: 20),
@@ -521,13 +521,13 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
                   onPressed: () => Navigator.of(ctx).pop(false),
-                  child: const Text('KEEP PLAYING',
+                  child: Text(context.l10n.trainerKeepPlaying,
                       style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.5, color: Colors.white)),
                 ),
               ),
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(true),
-                child: Text('QUIT',
+                child: Text(context.l10n.trainerQuit,
                     style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.5,
                         color: Colors.white.withAlpha(120))),
               ),
@@ -704,7 +704,7 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
                     totalRemainingMs: widget.totalTimeMs == null ? null : _totalRemainingMs,
                     totalTimeMs: widget.totalTimeMs,
                     currentKey: _currentKey,
-                    contextLabel: _isOfWhat ? 'NOTE' : 'KEY',
+                    contextLabel: _isOfWhat ? context.l10n.trainerNote : context.l10n.trainerKey,
                     // Only …Of What? tints the badge: the fixed note is the
                     // whole question's subject, so it wears its tonal colour.
                     badgeColor: _isOfWhat ? AppColors.noteColors[_fixedNote] : null,
@@ -816,7 +816,7 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
                                     Flexible(
                                       child: FittedBox(
                                         fit: BoxFit.scaleDown,
-                                        child: Text(_pianoMode ? 'GRID VIEW' : 'PIANO KEYBOARD',
+                                        child: Text(_pianoMode ? context.l10n.trainerGridView : context.l10n.trainerPianoKeyboard,
                                           maxLines: 1,
                                           softWrap: false,
                                           style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 4.8)),
@@ -916,7 +916,7 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
                 FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
-                    correct ? 'CORRECT' : 'WRONG',
+                    correct ? context.l10n.trainerCorrect : context.l10n.trainerWrong,
                     maxLines: 1,
                     softWrap: false,
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 4, color: accent),
@@ -929,7 +929,7 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
                   FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Text(
-                      'CORRECT ANSWER',
+                      context.l10n.trainerCorrectAnswer,
                       maxLines: 1,
                       softWrap: false,
                       style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.white.withValues(alpha:0.45)),
@@ -1081,7 +1081,7 @@ class _TopBar extends StatelessWidget {
                                   ),
                                 ),
                               ])
-                            : const Text('PROGRESS',
+                            : Text(context.l10n.trainerProgress,
                                 maxLines: 1,
                                 softWrap: false,
                                 style: TextStyle(
@@ -1183,15 +1183,15 @@ class _TopBar extends StatelessWidget {
               children: [
                 Expanded(
                     child: _StatItem(
-                        label: 'CORRECT',
+                        label: context.l10n.trainerCorrect,
                         // An endless run has no denominator to show.
                         value: total > 0 ? '$correct/$total' : '$correct',
                         valueColor: Colors.white)),
                 Container(width: 1, height: 30, color: Colors.white10),
-                Expanded(child: _StatItem(label: 'ACCURACY', value: '$accuracy%', valueColor: accuracyColor)),
+                Expanded(child: _StatItem(label: context.l10n.trainerAccuracy, value: '$accuracy%', valueColor: accuracyColor)),
                 Container(width: 1, height: 30, color: Colors.white10),
                 Expanded(child: _StatItem(
-                  label: 'STREAK',
+                  label: context.l10n.trainerStreak,
                   value: streak >= 10 ? '🔥$streak' : '$streak',
                   valueColor: streakColor,
                 )),
@@ -1298,7 +1298,7 @@ class _QuestionDisplay extends StatelessWidget {
         FittedBox(
           fit: BoxFit.scaleDown,
           child: Text(
-            isReverse ? 'NOTE' : 'DEGREE',
+            isReverse ? context.l10n.trainerNote : context.l10n.trainerDegree,
             maxLines: 1,
             softWrap: false,
             style: TextStyle(

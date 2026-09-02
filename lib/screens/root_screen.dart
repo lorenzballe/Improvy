@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 import 'package:provider/provider.dart';
 import 'package:confetti/confetti.dart';
 import '../providers/app_provider.dart';
@@ -263,25 +264,12 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
 
   void _showPurchaseError(PurchaseOutcome outcome) {
     final detail = PurchaseService.instance.lastPurchaseError;
+    final l = context.l10n;
     final (title, message) = switch (outcome) {
-      PurchaseOutcome.noProducts => (
-        'Store not ready',
-        'No product is available for purchase right now. Please try again in a '
-            'few minutes.',
-      ),
-      PurchaseOutcome.noEntitlement => (
-        'Almost there',
-        'Your payment went through but PRO could not be activated automatically. '
-            'Use "Restore" in a moment — you will not be charged twice.',
-      ),
-      PurchaseOutcome.notConfigured => (
-        'Billing unavailable',
-        'In-app purchases are not available on this device.',
-      ),
-      _ => (
-        'Purchase failed',
-        'Something went wrong while contacting the store. Please try again.',
-      ),
+      PurchaseOutcome.noProducts => (l.storeNotReadyTitle, l.storeNotReadyBody),
+      PurchaseOutcome.noEntitlement => (l.almostThereTitle, l.almostThereBody),
+      PurchaseOutcome.notConfigured => (l.billingUnavailableTitle, l.billingUnavailableBody),
+      _ => (l.purchaseFailedTitle, l.purchaseFailedBody),
     };
     showDialog<void>(
       context: context,
@@ -1153,12 +1141,12 @@ class _NotifPrimingModal extends StatelessWidget {
                   child: const Icon(Icons.notifications_active_rounded, color: Colors.white, size: 32),
                 ),
                 const SizedBox(height: 20),
-                const Text('Make it stick',
+                Text(context.l10n.notifPromptTitle,
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.3)),
                 const SizedBox(height: 10),
                 Text(
-                  'One quick quiz a day keeps every note sharp and your streak alive. Off whenever you want.',
+                  context.l10n.notifPromptBody,
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 14, height: 1.5, color: Colors.white.withValues(alpha: 0.65)),
                 ),
@@ -1173,7 +1161,7 @@ class _NotifPrimingModal extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [BoxShadow(color: const Color(0xFFEC4899).withValues(alpha: 0.35), blurRadius: 20, offset: const Offset(0, 8))],
                     ),
-                    child: const Text('Yes, remind me',
+                    child: Text(context.l10n.notifPromptYes,
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Colors.white)),
                   ),
@@ -1184,7 +1172,7 @@ class _NotifPrimingModal extends StatelessWidget {
                   behavior: HitTestBehavior.opaque,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: Text('Not now',
+                    child: Text(context.l10n.notNow,
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white.withValues(alpha: 0.5))),
                   ),
                 ),

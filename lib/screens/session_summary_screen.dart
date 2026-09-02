@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 import 'package:provider/provider.dart';
 import '../models/key_progress.dart';
 import '../providers/app_provider.dart';
@@ -67,13 +68,14 @@ class SessionSummaryScreen extends StatelessWidget {
     // half is Chromatic in every key but C — say so here, once.
     final showUpsell = !isPro && isDiat && key != 'C' && !isCustom;
 
-    final diffLabels = ['Apprentice', 'Virtuoso', 'Master'];
+    final l = context.l10n;
+    final diffLabels = [l.tierApprentice, l.tierVirtuoso, l.tierMaster];
     final modeLabel = switch (mode) {
-      'diatonic' => 'Diatonic',
-      'chromatic' => 'Chromatic',
-      'note-to-number' => 'Note to Number',
-      'custom' => 'Custom',
-      'of-what' => '…Of What?',
+      'diatonic' => l.modeDiatonic,
+      'chromatic' => l.modeChromatic,
+      'note-to-number' => l.modeNoteToNumber,
+      'custom' => l.modeCustom,
+      'of-what' => l.modeOfWhat,
       _ => mode,
     };
 
@@ -117,7 +119,7 @@ class SessionSummaryScreen extends StatelessWidget {
                 Expanded(
                   child: Column(children: [
                     Text(
-                      'SESSION COMPLETE',
+                      l.summaryTitle,
                       style: TextStyle(
                         fontSize: 10, fontWeight: FontWeight.w900,
                         color: Colors.white.withValues(alpha:0.35), letterSpacing: 3,
@@ -186,7 +188,7 @@ class SessionSummaryScreen extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    'ACCURACY %',
+                    l.summaryAccuracy,
                     style: TextStyle(
                       fontSize: 11, fontWeight: FontWeight.w900,
                       color: Colors.white.withValues(alpha:0.3), letterSpacing: 3,
@@ -214,10 +216,10 @@ class SessionSummaryScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          perfect ? 'PERFECT SCORE'
+                          perfect ? l.summaryPerfect
                               : passed
-                                  ? (isCustom || !hasNext ? 'COMPLETED' : 'LEVEL PASSED')
-                                  : 'NOT YET — KEEP GOING',
+                                  ? (isCustom || !hasNext ? l.summaryCompleted : l.summaryPassed)
+                                  : l.summaryNotYet,
                           style: TextStyle(
                             fontSize: 11, fontWeight: FontWeight.w900,
                             color: accentColor, letterSpacing: 1.5,
@@ -231,14 +233,14 @@ class SessionSummaryScreen extends StatelessWidget {
                   // ── Stats row ─────────────────────────────────────────
                   Row(children: [
                     Expanded(child: _StatTile(
-                      label: 'CORRECT',
+                      label: l.summaryCorrect,
                       value: '$correct/$total',
                       icon: Icons.check_rounded,
                       color: accentColor,
                     )),
                     const SizedBox(width: 10),
                     Expanded(child: _StatTile(
-                      label: 'ERRORS',
+                      label: l.summaryErrors,
                       value: '$errors',
                       icon: Icons.close_rounded,
                       color: errors == 0
@@ -249,7 +251,7 @@ class SessionSummaryScreen extends StatelessWidget {
                     )),
                     const SizedBox(width: 10),
                     Expanded(child: _StatTile(
-                      label: 'TIME',
+                      label: l.summaryTime,
                       value: '$mins:$secs',
                       icon: Icons.timer_outlined,
                       color: Colors.white.withValues(alpha:0.5),
@@ -412,18 +414,18 @@ class _MasteryCard extends StatelessWidget {
                 ),
                 child: Center(child: AnimalIcon(name: animal.name, color: animal.color, size: 28)),
               ),
-              const SizedBox(width: 14),
+              SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'MODE MASTERY',
+                      context.l10n.summaryModeMastery,
                       style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white.withValues(alpha:0.3), letterSpacing: 2),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      animal.name,
+                      localizedAnimalName(context.l10n, animal.level),
                       style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.3),
                     ),
                   ],
@@ -494,7 +496,7 @@ class _BottomActions extends StatelessWidget {
           // Primary: next difficulty (if passed and applicable)
           if (passed && hasNext && !isCustom) ...[
             _PrimaryBtn(
-              label: 'PLAY NEXT DIFFICULTY',
+              label: context.l10n.summaryNextDifficulty,
               icon: Icons.arrow_forward_rounded,
               gradColors: [modeColor, modeColor.withValues(alpha:0.7)],
               shadowColor: modeColor.withValues(alpha:0.4),
@@ -504,9 +506,9 @@ class _BottomActions extends StatelessWidget {
           ],
           // Secondary row: Retry + Back
           Row(children: [
-            Expanded(child: _SecondaryBtn(label: 'RETRY', icon: Icons.replay_rounded, onTap: onRetry)),
+            Expanded(child: _SecondaryBtn(label: context.l10n.retry, icon: Icons.replay_rounded, onTap: onRetry)),
             const SizedBox(width: 10),
-            Expanded(child: _SecondaryBtn(label: 'HOME', icon: Icons.home_rounded, onTap: onBack)),
+            Expanded(child: _SecondaryBtn(label: context.l10n.home, icon: Icons.home_rounded, onTap: onBack)),
           ]),
         ],
       ),
@@ -627,13 +629,13 @@ class _UpsellCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('That was the free half of $keyName',
+                  Text(context.l10n.summaryUpsellTitle(keyName),
                       style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w800,
                           color: Colors.white)),
                   const SizedBox(height: 2),
-                  Text('Chromatic adds the five altered degrees — the rest of the key.',
+                  Text(context.l10n.summaryUpsellBody,
                       style: TextStyle(
                           fontSize: 11,
                           height: 1.4,

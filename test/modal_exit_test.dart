@@ -6,6 +6,7 @@ import 'package:improvy/constants/release_notes.dart';
 import 'package:improvy/widgets/level_up_modal.dart';
 import 'package:improvy/widgets/quiz_reveal_modal.dart';
 import 'package:improvy/widgets/whats_new_modal.dart';
+import 'package:improvy/l10n/l10n.dart';
 
 /// Every modal that animates IN must animate back OUT.
 ///
@@ -20,7 +21,7 @@ import 'package:improvy/widgets/whats_new_modal.dart';
 /// see no matter how the animation is written.
 void main() {
   Future<void> pumpIn(WidgetTester t, Widget child) async {
-    await t.pumpWidget(MaterialApp(home: Scaffold(body: Stack(children: [child]))));
+    await t.pumpWidget(MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, home: Scaffold(body: Stack(children: [child]))));
     await t.pump(const Duration(milliseconds: 600)); // let the entrance land
   }
 

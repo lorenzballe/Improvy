@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kDebugMode, kIsWeb, TargetPlatform;
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -82,7 +83,7 @@ class SettingsScreen extends StatelessWidget {
     } catch (_) {
       if (!context.mounted) return;
     }
-    _toast(context, 'Write to $kSupportEmail', icon: Icons.mail_rounded);
+    _toast(context, context.l10n.settingsWriteTo(kSupportEmail), icon: Icons.mail_rounded);
   }
 
   /// Opens the developer's Instagram — the installed app when the OS resolves
@@ -101,7 +102,7 @@ class SettingsScreen extends StatelessWidget {
     } catch (_) {
       if (!context.mounted) return;
     }
-    _toast(context, 'Find us on Instagram: @$kInstagramHandle');
+    _toast(context, context.l10n.settingsInstagram(kInstagramHandle));
   }
 
   /// Widgets are added from the OS home screen, not from inside an app — there
@@ -110,15 +111,15 @@ class SettingsScreen extends StatelessWidget {
   static void _showWidgetHelp(BuildContext context) {
     final ios = defaultTargetPlatform == TargetPlatform.iOS;
     final steps = ios
-        ? const [
-            'Touch and hold an empty spot on your home screen',
-            'Tap the + in the top corner',
-            'Search for Improvy and pick a widget',
+        ? [
+            context.l10n.settingsWidgetIos1,
+            context.l10n.settingsWidgetIos2,
+            context.l10n.settingsWidgetIos3,
           ]
-        : const [
-            'Touch and hold an empty spot on your home screen',
-            'Tap Widgets',
-            'Find Improvy and drag a widget out',
+        : [
+            context.l10n.settingsWidgetIos1,
+            context.l10n.settingsWidgetAndroid2,
+            context.l10n.settingsWidgetAndroid3,
           ];
     showDialog<void>(
       context: context,
@@ -136,22 +137,18 @@ class SettingsScreen extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Center(
-                child: Text('TWO WIDGETS',
+              Center(
+                child: Text(context.l10n.settingsWidgetsTwo,
                     style: TextStyle(
                         fontSize: 10, fontWeight: FontWeight.w900,
                         letterSpacing: 2, color: Color(0xFFFCD34D))),
               ),
               const SizedBox(height: 16),
-              _widgetBlurb('Question',
-                  'A scale degree waiting for an answer, a new one every hour. '
-                  'Tap it to reveal the answer.'),
+              _widgetBlurb(context.l10n.settingsWidgetQuestion, context.l10n.settingsWidgetQuestionBody),
               const SizedBox(height: 10),
-              _widgetBlurb('Daily Challenge',
-                  'The key of the day, your score once you have played, and '
-                  'your streak.'),
+              _widgetBlurb(context.l10n.settingsWidgetDaily, context.l10n.settingsWidgetDailyBody),
               const SizedBox(height: 20),
-              Text('HOW TO ADD ONE',
+              Text(context.l10n.settingsWidgetHow,
                   style: TextStyle(
                       fontSize: 10, fontWeight: FontWeight.w900,
                       letterSpacing: 1.6, color: Colors.white.withAlpha(90))),
@@ -178,7 +175,7 @@ class SettingsScreen extends StatelessWidget {
               Center(
                 child: TextButton(
                   onPressed: () => Navigator.of(ctx).pop(),
-                  child: const Text('Got it',
+                  child: Text(context.l10n.gotIt,
                       style: TextStyle(
                           fontWeight: FontWeight.w800, color: Color(0xFFFBBF24))),
                 ),
@@ -225,7 +222,7 @@ class SettingsScreen extends StatelessWidget {
             children: [
               Center(
                 child: Text(
-                  'SETTINGS',
+                  context.l10n.settingsTitle,
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w900,
@@ -237,7 +234,7 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(height: 24),
 
               // ACCOUNT STATUS
-              _sectionLabel('ACCOUNT STATUS'),
+              _sectionLabel(context.l10n.settingsAccountStatus),
               const SizedBox(height: 12),
               GestureDetector(
                 onTap: provider.isPro ? null : onShowPaywall,
@@ -262,7 +259,7 @@ class SettingsScreen extends StatelessWidget {
                                     fit: BoxFit.scaleDown,
                                     alignment: Alignment.centerLeft,
                                     child: Text(
-                                      provider.isPro ? 'Improvy Pro' : 'Free Plan',
+                                      provider.isPro ? context.l10n.settingsProPlan : context.l10n.settingsFreePlan,
                                       maxLines: 1,
                                       softWrap: false,
                                       style: const TextStyle(
@@ -283,8 +280,8 @@ class SettingsScreen extends StatelessWidget {
                             const SizedBox(height: 4),
                             Text(
                               provider.isPro
-                                  ? 'Every mode and key, unlocked.'
-                                  : 'Tap to unlock every mode and key.',
+                                  ? context.l10n.settingsProSub
+                                  : context.l10n.settingsFreeSub,
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
@@ -303,7 +300,7 @@ class SettingsScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(9999),
                         ),
                         child: Text(
-                          provider.isPro ? 'ACTIVE' : 'FREE',
+                          provider.isPro ? context.l10n.settingsActive : context.l10n.free,
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w900,
@@ -319,7 +316,7 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(height: 16),
 
               // TRAINING
-              _sectionLabel('TRAINING'),
+              _sectionLabel(context.l10n.settingsTraining),
               const SizedBox(height: 12),
               _card(
                 shadow: const [BoxShadow(color: Color(0x4D000000), blurRadius: 32, offset: Offset(0, 8))],
@@ -385,7 +382,7 @@ class SettingsScreen extends StatelessWidget {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          'Adaptive Difficulty',
+                                          context.l10n.settingsAdaptive,
                                           style: TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w900,
@@ -395,7 +392,7 @@ class SettingsScreen extends StatelessWidget {
                                         ),
                                         const SizedBox(height: 3),
                                         Text(
-                                          'SMART TRAINING',
+                                          context.l10n.settingsAdaptiveTag,
                                           style: TextStyle(
                                             fontSize: 10,
                                             fontWeight: FontWeight.w700,
@@ -412,10 +409,8 @@ class SettingsScreen extends StatelessWidget {
                               const SizedBox(height: 16),
                               Text(
                                 provider.isPro
-                                    ? 'Degrees you answer slowly or get wrong come up several times more often '
-                                        'than ones you own — right but slow still counts as unlearned. The clock '
-                                        'tightens while you are sharp and eases off when you start missing.'
-                                    : 'PRO feature — upgrade to unlock smart training that adapts to your weaknesses.',
+                                    ? context.l10n.settingsAdaptiveBody
+                                    : context.l10n.settingsAdaptiveLocked,
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w500,
@@ -450,7 +445,7 @@ class SettingsScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 12),
                         Text(
-                          'NOTATION SYSTEM',
+                          context.l10n.settingsNotation,
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w900,
@@ -512,19 +507,19 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(height: 16),
 
               // FREE MODE
-              _sectionLabel('FREE MODE'),
+              _sectionLabel(context.l10n.settingsFreeMode),
               const SizedBox(height: 12),
               _freeModeRow(context),
               const SizedBox(height: 16),
 
               // NOTIFICATIONS
-              _sectionLabel('NOTIFICATIONS'),
+              _sectionLabel(context.l10n.settingsNotifications),
               const SizedBox(height: 12),
               _NotificationsCard(provider: provider),
               const SizedBox(height: 16),
 
               // NEWS & UPDATES
-              _sectionLabel('NEWS & UPDATES'),
+              _sectionLabel(context.l10n.settingsNews),
               const SizedBox(height: 12),
               // Release notes for the version actually installed.
               if (kReleases.isNotEmpty) ...[
@@ -569,9 +564,9 @@ class SettingsScreen extends StatelessWidget {
                             children: [
                               Row(
                                 children: [
-                                  const Flexible(
+                                  Flexible(
                                     child: Text(
-                                      "What's new",
+                                      context.l10n.settingsWhatsNew,
                                       style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white),
                                     ),
                                   ),
@@ -615,7 +610,7 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(height: 16),
 
               // STORE
-              _sectionLabel('STORE'),
+              _sectionLabel(context.l10n.settingsStore),
               const SizedBox(height: 12),
               _card(
                 shadow: const [BoxShadow(color: Color(0x4D000000), blurRadius: 32, offset: Offset(0, 8))],
@@ -640,12 +635,12 @@ class SettingsScreen extends StatelessWidget {
                               offset: Offset(0, 4),
                             )],
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(Icons.star_rounded, color: Colors.white, size: 16),
                               SizedBox(width: 8),
-                              Text('UPGRADE TO PRO', style: TextStyle(
+                              Text(context.l10n.settingsUpgrade, style: TextStyle(
                                 fontSize: 12, fontWeight: FontWeight.w700,
                                 color: Colors.white, letterSpacing: 0.6,
                               )),
@@ -660,7 +655,7 @@ class SettingsScreen extends StatelessWidget {
                         if (ok) provider.setIsPro(true);
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text(ok ? 'PRO restored' : 'No previous purchase found'),
+                            content: Text(ok ? context.l10n.settingsProRestored : context.l10n.paywallNoPurchase),
                             behavior: SnackBarBehavior.floating,
                           ));
                         }
@@ -673,7 +668,7 @@ class SettingsScreen extends StatelessWidget {
                           border: Border.all(color: const Color(0x4DF59E0B)),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(Icons.restore_rounded, color: Color(0xFFFBBF24), size: 16),
@@ -683,7 +678,7 @@ class SettingsScreen extends StatelessWidget {
                             Flexible(
                               child: FittedBox(
                                 fit: BoxFit.scaleDown,
-                                child: Text('RESTORE PURCHASES', maxLines: 1, softWrap: false, style: TextStyle(
+                                child: Text(context.l10n.settingsRestorePurchases, maxLines: 1, softWrap: false, style: TextStyle(
                                   fontSize: 12, fontWeight: FontWeight.w700,
                                   color: Color(0xFFFBBF24), letterSpacing: 0.6,
                                 )),
@@ -701,7 +696,7 @@ class SettingsScreen extends StatelessWidget {
               // HOME SCREEN — widgets can only be placed from the launcher, so
               // this row explains rather than acts.
               if (!kIsWeb) ...[
-                _sectionLabel('HOME SCREEN'),
+                _sectionLabel(context.l10n.settingsHomeScreen),
                 const SizedBox(height: 12),
                 GestureDetector(
                   onTap: () => _showWidgetHelp(context),
@@ -719,7 +714,7 @@ class SettingsScreen extends StatelessWidget {
                               color: Color(0xFF22D3EE), size: 16),
                         ),
                         const SizedBox(width: 12),
-                        const Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -727,7 +722,7 @@ class SettingsScreen extends StatelessWidget {
                                 fit: BoxFit.scaleDown,
                                 alignment: Alignment.centerLeft,
                                 child: Text(
-                                  'Widgets',
+                                  context.l10n.settingsWidgets,
                                   maxLines: 1,
                                   softWrap: false,
                                   style: TextStyle(
@@ -742,7 +737,7 @@ class SettingsScreen extends StatelessWidget {
                                 fit: BoxFit.scaleDown,
                                 alignment: Alignment.centerLeft,
                                 child: Text(
-                                  'A question an hour, right on your home screen',
+                                  context.l10n.settingsWidgetsSub,
                                   maxLines: 1,
                                   softWrap: false,
                                   style: TextStyle(
@@ -764,17 +759,17 @@ class SettingsScreen extends StatelessWidget {
               ],
 
               // SUPPORT
-              _sectionLabel('BACKUP'),
+              _sectionLabel(context.l10n.settingsBackup),
               const SizedBox(height: 12),
               _backupRow(
                 context,
                 icon: Icons.upload_rounded,
-                title: 'Export progress',
-                subtitle: 'One file with every key, score and setting',
+                title: context.l10n.settingsExport,
+                subtitle: context.l10n.settingsExportSub,
                 onTap: () async {
                   final ok = await BackupService.instance.export(provider.storage);
                   if (!ok && context.mounted) {
-                    _toast(context, 'Could not start the export', icon: Icons.error_outline_rounded);
+                    _toast(context, context.l10n.settingsExportFailed, icon: Icons.error_outline_rounded);
                   }
                 },
               ),
@@ -782,8 +777,8 @@ class SettingsScreen extends StatelessWidget {
               _backupRow(
                 context,
                 icon: Icons.download_rounded,
-                title: 'Restore from file',
-                subtitle: 'Replaces what is on this phone',
+                title: context.l10n.settingsRestoreFile,
+                subtitle: context.l10n.settingsRestoreFileSub,
                 onTap: () async {
                   final go = await _confirmRestore(context);
                   if (go != true || !context.mounted) return;
@@ -792,7 +787,7 @@ class SettingsScreen extends StatelessWidget {
                   if (err == null) {
                     await provider.reloadFromStorage();
                     if (context.mounted) {
-                      _toast(context, 'Restored. Everything is back.',
+                      _toast(context, context.l10n.settingsRestored,
                           icon: Icons.check_circle_rounded);
                     }
                   } else if (err.isNotEmpty) {
@@ -802,7 +797,7 @@ class SettingsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 28),
 
-              _sectionLabel('SUPPORT'),
+              _sectionLabel(context.l10n.settingsSupport),
               const SizedBox(height: 12),
               // Hidden until the store listing is reachable (iOS needs
               // kAppStoreId) — a row that goes nowhere is worse than no row.
@@ -822,7 +817,7 @@ class SettingsScreen extends StatelessWidget {
                           child: const Icon(Icons.star_rounded, color: Color(0xFFFBBF24), size: 18),
                         ),
                         const SizedBox(width: 12),
-                        const Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -830,7 +825,7 @@ class SettingsScreen extends StatelessWidget {
                                 fit: BoxFit.scaleDown,
                                 alignment: Alignment.centerLeft,
                                 child: Text(
-                                  'Rate Improvy',
+                                  context.l10n.settingsRate,
                                   maxLines: 1,
                                   softWrap: false,
                                   style: TextStyle(
@@ -845,7 +840,7 @@ class SettingsScreen extends StatelessWidget {
                                 fit: BoxFit.scaleDown,
                                 alignment: Alignment.centerLeft,
                                 child: Text(
-                                  'A rating is how other musicians find it',
+                                  context.l10n.settingsRateSub,
                                   maxLines: 1,
                                   softWrap: false,
                                   style: TextStyle(
@@ -886,11 +881,11 @@ class SettingsScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const FittedBox(
+                            FittedBox(
                               fit: BoxFit.scaleDown,
                               alignment: Alignment.centerLeft,
                               child: Text(
-                                'Contact Support',
+                                context.l10n.settingsContact,
                                 maxLines: 1,
                                 softWrap: false,
                                 style: TextStyle(
@@ -953,7 +948,7 @@ class SettingsScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -961,7 +956,7 @@ class SettingsScreen extends StatelessWidget {
                               fit: BoxFit.scaleDown,
                               alignment: Alignment.centerLeft,
                               child: Text(
-                                'Follow the developer',
+                                context.l10n.settingsFollow,
                                 maxLines: 1,
                                 softWrap: false,
                                 style: TextStyle(
@@ -997,13 +992,13 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(height: 16),
 
               // LEGAL
-              _sectionLabel('LEGAL'),
+              _sectionLabel(context.l10n.settingsLegal),
               const SizedBox(height: 12),
-              _legalRow(context, 'Privacy Policy', Icons.privacy_tip_rounded,
-                  const LegalScreen(title: 'Privacy Policy', body: kPrivacyPolicyBody)),
+              _legalRow(context, context.l10n.privacyPolicy, Icons.privacy_tip_rounded,
+                  LegalScreen(title: context.l10n.privacyPolicy, body: kPrivacyPolicyBody)),
               const SizedBox(height: 10),
-              _legalRow(context, 'Terms of Service', Icons.description_rounded,
-                  const LegalScreen(title: 'Terms of Service', body: kTermsBody)),
+              _legalRow(context, context.l10n.termsOfService, Icons.description_rounded,
+                  LegalScreen(title: context.l10n.termsOfService, body: kTermsBody)),
               const SizedBox(height: 16),
 
               // DEVELOPER DEBUG — shown in debug builds, and on the web
@@ -1161,10 +1156,10 @@ class SettingsScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Free Mode',
+              Text(context.l10n.settingsFreeModeTitle,
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: 0.4)),
               const SizedBox(height: 2),
-              Text('Numbers at your own pace. No timer, no score.',
+              Text(context.l10n.settingsFreeModeSub,
                   style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w500, color: Colors.white.withAlpha(115))),
             ],
           ),
@@ -1221,21 +1216,19 @@ class SettingsScreen extends StatelessWidget {
         builder: (ctx) => AlertDialog(
           backgroundColor: const Color(0xFF1A1625),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text('Restore from a file?',
+          title: Text(context.l10n.settingsRestoreTitle,
               style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
-          content: const Text(
-              'Everything on this phone — every key, score and setting — is '
-              'replaced by what is in the file. Your Pro licence is not '
-              'affected.',
+          content: Text(
+              context.l10n.settingsRestoreBody,
               style: TextStyle(color: Colors.white54, height: 1.4)),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+              child: Text(context.l10n.cancel, style: const TextStyle(color: Colors.white54)),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Choose file',
+              child: Text(context.l10n.settingsChooseFile,
                   style: TextStyle(color: Color(0xFF22D3EE), fontWeight: FontWeight.w800)),
             ),
           ],
@@ -1249,7 +1242,7 @@ class SettingsScreen extends StatelessWidget {
         onTap: () async {
           final sent = await FeedbackSheet.show(context, source: 'settings');
           if (!sent || !context.mounted) return;
-          _toast(context, 'Sent. We read every one of these.',
+          _toast(context, context.l10n.settingsFeedbackSent,
               icon: Icons.check_circle_rounded);
         },
         child: _blurCard(
@@ -1264,7 +1257,7 @@ class SettingsScreen extends StatelessWidget {
               child: const Icon(Icons.forum_rounded, color: Color(0xFF818CF8), size: 17),
             ),
             const SizedBox(width: 12),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -1273,7 +1266,7 @@ class SettingsScreen extends StatelessWidget {
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      'Send Feedback',
+                      context.l10n.settingsFeedback,
                       maxLines: 1,
                       softWrap: false,
                       style: TextStyle(
@@ -1288,7 +1281,7 @@ class SettingsScreen extends StatelessWidget {
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      'Straight to us, without leaving the app',
+                      context.l10n.settingsFeedbackSub,
                       maxLines: 1,
                       softWrap: false,
                       style: TextStyle(
@@ -1369,17 +1362,17 @@ class SettingsScreen extends StatelessWidget {
       builder: (_) => AlertDialog(
         backgroundColor: const Color(0xFF1A1625),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Clear All Data?', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
-        content: const Text('This will permanently delete all your progress and stats.',
+        title: Text(context.l10n.settingsClearTitle, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+        content: Text(context.l10n.settingsClearBody,
             style: TextStyle(color: Colors.white54)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            child: Text(context.l10n.cancel, style: const TextStyle(color: Colors.white54)),
           ),
           TextButton(
             onPressed: () { provider.resetAll(); Navigator.pop(context); },
-            child: const Text('Clear', style: TextStyle(color: Color(0xFFFB7185), fontWeight: FontWeight.w900)),
+            child: Text(context.l10n.clear, style: const TextStyle(color: Color(0xFFFB7185), fontWeight: FontWeight.w900)),
           ),
         ],
       ),
@@ -1442,7 +1435,7 @@ class _SimpleNotesCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Simple Note Names',
+                      Text(context.l10n.settingsSimpleNotes,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w900,
@@ -1450,7 +1443,7 @@ class _SimpleNotesCard extends StatelessWidget {
                             letterSpacing: 0.4,
                           )),
                       const SizedBox(height: 3),
-                      Text('NOTE SPELLING',
+                      Text(context.l10n.settingsSimpleNotesTag,
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
@@ -1465,8 +1458,7 @@ class _SimpleNotesCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'One name per note everywhere — no slashes, no double names. '
-              'C  D\u266D  D  E\u266D  E  F  F\u266F  G  A\u266D  A  B\u266D  B.',
+              context.l10n.settingsSimpleNotesBody,
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w500,
@@ -1530,7 +1522,7 @@ class _AnswerSoundCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Hear the Note',
+                      Text(context.l10n.settingsHearNote,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w900,
@@ -1538,7 +1530,7 @@ class _AnswerSoundCard extends StatelessWidget {
                             letterSpacing: 0.4,
                           )),
                       const SizedBox(height: 3),
-                      Text('ON CORRECT ANSWERS',
+                      Text(context.l10n.settingsHearNoteTag,
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
@@ -1553,8 +1545,7 @@ class _AnswerSoundCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Every right answer plays the note you just named, so the ear learns '
-              'it alongside the number. Off is for quiet places.',
+              context.l10n.settingsHearNoteBody,
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w500,
@@ -1616,7 +1607,7 @@ class _KeyboardFromTonicCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Keyboard from Tonic',
+                      Text(context.l10n.settingsKeyboardTonic,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w900,
@@ -1624,7 +1615,7 @@ class _KeyboardFromTonicCard extends StatelessWidget {
                             letterSpacing: 0.4,
                           )),
                       const SizedBox(height: 3),
-                      Text('PIANO INPUT',
+                      Text(context.l10n.settingsKeyboardTonicTag,
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
@@ -1639,7 +1630,7 @@ class _KeyboardFromTonicCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'The in-game piano starts on your key’s tonic instead of C.',
+              context.l10n.settingsKeyboardTonicBody,
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w500,
@@ -1705,7 +1696,7 @@ class _NotificationsCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Daily reminders',
+                      Text(context.l10n.settingsReminders,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w900,
@@ -1713,7 +1704,7 @@ class _NotificationsCard extends StatelessWidget {
                             letterSpacing: 0.4,
                           )),
                       const SizedBox(height: 3),
-                      Text('QUIZ NUDGE + STREAK SAVER',
+                      Text(context.l10n.settingsRemindersTag,
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
@@ -1728,7 +1719,7 @@ class _NotificationsCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'One quick quiz a day, plus a nudge before your streak breaks.',
+              context.l10n.settingsRemindersBody,
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w500,

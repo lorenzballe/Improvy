@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb;
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -68,14 +69,15 @@ class _DailyResultsScreenState extends State<DailyResultsScreen> {
         : '${secs}s';
   }
 
-  static String _verdict(DailyResult r) {
-    if (r.perfect) return 'FLAWLESS';
+  String _verdict(BuildContext context, DailyResult r) {
+    final l = context.l10n;
+    if (r.perfect) return l.dailyFlawless;
     // Under a 60-second budget, an unfinished run means the clock won.
-    if (!r.completed) return 'OUT OF TIME';
-    if (r.correct >= 8) return 'SHARP';
-    if (r.correct >= 6) return 'SOLID';
-    if (r.correct >= 4) return 'WARMING UP';
-    return 'TOMORROW IS A NEW KEY';
+    if (!r.completed) return l.dailyOutOfTime;
+    if (r.correct >= 8) return l.dailySharp;
+    if (r.correct >= 6) return l.dailySolid;
+    if (r.correct >= 4) return l.dailyWarmingUp;
+    return l.dailyTomorrow;
   }
 
   Future<void> _share(DailyResult r, int streak) async {
@@ -93,8 +95,8 @@ class _DailyResultsScreenState extends State<DailyResultsScreen> {
       // fall back to the clipboard rather than leaving a dead button.
       await Clipboard.setData(ClipboardData(text: text));
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Result copied — paste it anywhere'),
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(context.l10n.dailyCopied),
         behavior: SnackBarBehavior.floating,
       ));
     }
@@ -158,7 +160,7 @@ class _DailyResultsScreenState extends State<DailyResultsScreen> {
                       _doneLink(),
                       const SizedBox(height: 8),
                       Text(
-                        'New challenge in ${_untilMidnight()}',
+                        context.l10n.dailyNewIn(_untilMidnight()),
                         textAlign: TextAlign.center,
                         style: TextStyle(
                             fontSize: 12,
@@ -178,7 +180,7 @@ class _DailyResultsScreenState extends State<DailyResultsScreen> {
   Widget _fallback() => Center(
         child: TextButton(
           onPressed: widget.onDone,
-          child: const Text('Back to Home',
+          child: Text(context.l10n.dailyBackHome,
               style: TextStyle(color: _gold, fontWeight: FontWeight.w800)),
         ),
       );
@@ -192,7 +194,7 @@ class _DailyResultsScreenState extends State<DailyResultsScreen> {
     }
     return Row(children: [
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('DAILY CHALLENGE',
+        Text(context.l10n.dailyTitle,
             style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w900,
@@ -251,7 +253,7 @@ class _DailyResultsScreenState extends State<DailyResultsScreen> {
         ],
       ),
       child: Column(children: [
-        Text(_verdict(r),
+        Text(_verdict(context, r),
             textAlign: TextAlign.center,
             style: TextStyle(
                 fontSize: 13,
@@ -333,7 +335,7 @@ class _DailyResultsScreenState extends State<DailyResultsScreen> {
         border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text('THE RUN',
+        Text(context.l10n.dailyTheRun,
             style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
@@ -377,7 +379,7 @@ class _DailyResultsScreenState extends State<DailyResultsScreen> {
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          Text('CHALLENGE STREAK',
+          Text(context.l10n.dailyStreak,
               style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w800,
@@ -413,11 +415,11 @@ class _DailyResultsScreenState extends State<DailyResultsScreen> {
                   spreadRadius: -8),
             ],
           ),
-          child: const Center(
+          child: Center(
             child: Row(mainAxisSize: MainAxisSize.min, children: [
               Icon(Icons.ios_share_rounded, size: 19, color: Color(0xFF2A1B04)),
               SizedBox(width: 9),
-              Text('Share your result',
+              Text(context.l10n.dailyShare,
                   style: TextStyle(
                       fontSize: 16.5,
                       fontWeight: FontWeight.w800,
@@ -429,7 +431,7 @@ class _DailyResultsScreenState extends State<DailyResultsScreen> {
 
   Widget _doneLink() => TextButton(
         onPressed: widget.onDone,
-        child: Text('Done',
+        child: Text(context.l10n.done,
             style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,

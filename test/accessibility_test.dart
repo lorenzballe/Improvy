@@ -9,6 +9,7 @@ import 'package:improvy/screens/home_screen.dart';
 import 'package:improvy/screens/settings_screen.dart';
 import 'package:improvy/screens/setup_screen.dart';
 import 'package:improvy/services/storage_service.dart';
+import 'package:improvy/l10n/l10n.dart';
 
 /// Larger type must not break the screens, and the controls a screen reader
 /// lands on must say what they are.
@@ -35,6 +36,8 @@ Future<void> pumpAt(WidgetTester t, Widget child, double scale) async {
         textScaler: TextScaler.linear(scale),
       ),
       child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         theme: ThemeData(useMaterial3: true, fontFamily: 'Lexend'),
         home: child,
       ),

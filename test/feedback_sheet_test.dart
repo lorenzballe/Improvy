@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:improvy/providers/app_provider.dart';
 import 'package:improvy/screens/settings_screen.dart';
 import 'package:improvy/services/storage_service.dart';
+import 'package:improvy/l10n/l10n.dart';
 import 'package:improvy/widgets/feedback_sheet.dart';
 
 /// The feedback box is the only channel in the app where the user writes to
@@ -16,6 +17,8 @@ void main() {
   Future<bool?> open(WidgetTester t) async {
     bool? result;
     await t.pumpWidget(MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
       home: Builder(
         builder: (context) => Scaffold(
           body: Center(
@@ -44,6 +47,8 @@ void main() {
   testWidgets('a message closes the sheet and reports itself sent', (t) async {
     bool? sent;
     await t.pumpWidget(MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
       home: Builder(
         builder: (context) => Scaffold(
           body: Center(
@@ -71,7 +76,7 @@ void main() {
       (t) async {
     await open(t);
     for (final k in FeedbackKind.values) {
-      expect(find.text(k.label), findsOneWidget);
+      expect(find.text(k.label(lookupAppLocalizations(const Locale('en')))), findsOneWidget);
     }
   });
 
@@ -99,6 +104,8 @@ void _confirmation() {
     await t.pumpWidget(ChangeNotifierProvider<AppProvider>.value(
       value: provider,
       child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: SettingsScreen(onShowPaywall: ([_]) {}, onSimulatePerfect: () {}),
       ),
     ));

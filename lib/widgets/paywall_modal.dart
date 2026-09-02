@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 
 import '../screens/legal_screen.dart';
 import '../services/purchase_service.dart';
@@ -53,14 +54,14 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
   // one-star review, and Apple reads these lists too. What Pro unlocks in that
   // mode is its chromatic half, so that is what the line says now; the same
   // goes for Pocket Mode, which was not listed at all.
-  static const _features = <(String, String, IconData, Color, Color)>[
-    ('Chromatic Mode', 'all 12 keys', Icons.piano_rounded, Color(0xFFA855F7), Color(0xFF1E0736)),
-    ('Note to Number', 'chromatic', Icons.tag_rounded, Color(0xFF34D399), Color(0xFF04301F)),
-    ('…Of What?', 'all 15 degrees', Icons.auto_awesome_rounded, Color(0xFF22D3EE), Color(0xFF04262B)),
-    ('Pocket Mode', 'all 12 degrees', Icons.headphones_rounded, Color(0xFF34D399), Color(0xFF04301F)),
-    ('Custom Mode', 'any degree', Icons.tune_rounded, Color(0xFFD857EC), Color(0xFF2E0733)),
-    ('Adaptive difficulty', 'auto', Icons.trending_up_rounded, Color(0xFFF59E0B), Color(0xFF2A1B04)),
-    ('Deep analytics', 'per key', Icons.insights_rounded, Color(0xFFF472B6), Color(0xFF3B0A24)),
+  static List<(String, String, IconData, Color, Color)> _featuresFor(AppLocalizations l) => [
+    (l.featChromatic, l.featChromaticMeta, Icons.piano_rounded, const Color(0xFFA855F7), const Color(0xFF1E0736)),
+    (l.featNtn, l.featNtnMeta, Icons.tag_rounded, const Color(0xFF34D399), const Color(0xFF04301F)),
+    (l.featOfWhat, l.featOfWhatMeta, Icons.auto_awesome_rounded, const Color(0xFF22D3EE), const Color(0xFF04262B)),
+    (l.featPocket, l.featPocketMeta, Icons.headphones_rounded, const Color(0xFF34D399), const Color(0xFF04301F)),
+    (l.featCustom, l.featCustomMeta, Icons.tune_rounded, const Color(0xFFD857EC), const Color(0xFF2E0733)),
+    (l.featAdaptive, l.featAdaptiveMeta, Icons.trending_up_rounded, const Color(0xFFF59E0B), const Color(0xFF2A1B04)),
+    (l.featAnalytics, l.featAnalyticsMeta, Icons.insights_rounded, const Color(0xFFF472B6), const Color(0xFF3B0A24)),
   ];
 
   @override
@@ -119,8 +120,8 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
     if (ok) {
       _dismiss();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('No previous purchase found'),
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(context.l10n.paywallNoPurchase),
         behavior: SnackBarBehavior.floating,
       ));
     }
@@ -186,8 +187,8 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
                     // The price belongs on the button you press to pay it —
                     // that is what freed the middle of the screen for the list.
                     _in(0.40, 0.90, child: _BuyButton(
-                      label: 'Unlock lifetime access',
-                      price: '${_livePrice ?? _fallbackPrice} · one-time payment',
+                      label: context.l10n.paywallCta,
+                      price: context.l10n.paywallPrice(_livePrice ?? _fallbackPrice),
                       busy: _purchasing,
                       height: (74 * k).clamp(62.0, 74.0),
                       onTap: _buy,
@@ -245,7 +246,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
       ]),
     ),
     SizedBox(height: 6 * _k),
-    Text('Lifetime licence',
+    Text(context.l10n.paywallLifetime,
       maxLines: 1, overflow: TextOverflow.ellipsis,
       style: TextStyle(fontSize: 14.5 * _k, fontWeight: FontWeight.w400,
         letterSpacing: 0.4,
@@ -270,18 +271,13 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
             maxLines: 1, softWrap: false),
       ),
     );
+    // Whole lines carry the colour now, not one word in each: the word that
+    // deserves it sits in a different place in every language.
+    final l = context.l10n;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      line([
-        const TextSpan(text: 'Every '),
-        const TextSpan(text: 'key', style: TextStyle(color: Color(0xFF22D3EE))),
-        const TextSpan(text: '.'),
-      ]),
-      line([
-        const TextSpan(text: 'Every '),
-        const TextSpan(text: 'mode', style: TextStyle(color: Color(0xFFF472B6))),
-        const TextSpan(text: '.'),
-      ]),
-      line([TextSpan(text: 'Forever.', style: TextStyle(color: _gold))]),
+      line([TextSpan(text: l.paywallLine1, style: const TextStyle(color: Color(0xFF22D3EE)))]),
+      line([TextSpan(text: l.paywallLine2, style: const TextStyle(color: Color(0xFFF472B6)))]),
+      line([TextSpan(text: l.paywallLine3, style: TextStyle(color: _gold))]),
     ]);
   }
 
@@ -298,7 +294,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
       // Wraps to a second line on a narrow phone; the list below sits in an
       // Expanded that measures what is actually left, so a taller label costs
       // the rows a little breathing room rather than overflowing anything.
-      Text('What you get, from musician to musician',
+      Text(context.l10n.paywallWhatYouGet,
         maxLines: 2, overflow: TextOverflow.ellipsis,
         style: TextStyle(fontSize: 12.5 * _k, fontWeight: FontWeight.w600,
           letterSpacing: 1.6,
@@ -309,12 +305,13 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
       // Capped so a tall phone spaces them generously rather than absurdly.
       Expanded(
         child: LayoutBuilder(builder: (context, c) {
-          final rowH = (c.maxHeight / _features.length).clamp(24.0, 92.0);
+          final features = _featuresFor(context.l10n);
+          final rowH = (c.maxHeight / features.length).clamp(24.0, 92.0);
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              for (final f in _features)
+              for (final f in features)
                 SizedBox(
                   height: rowH,
                   child: Row(children: [
@@ -352,11 +349,11 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
   Widget _footerLinks() => FittedBox(
     fit: BoxFit.scaleDown,
     child: Row(mainAxisSize: MainAxisSize.min, children: [
-      _miniLink(_restoring ? 'Restoring…' : 'Restore', _restoring ? null : _restore),
+      _miniLink(_restoring ? context.l10n.paywallRestoring : context.l10n.paywallRestore, _restoring ? null : _restore),
       _dot(),
-      _miniLink('Terms', () => _openLegal('Terms of Service', kTermsBody)),
+      _miniLink(context.l10n.paywallTerms, () => _openLegal(context.l10n.termsOfService, kTermsBody)),
       _dot(),
-      _miniLink('Privacy', () => _openLegal('Privacy Policy', kPrivacyPolicyBody)),
+      _miniLink(context.l10n.paywallPrivacy, () => _openLegal(context.l10n.privacyPolicy, kPrivacyPolicyBody)),
     ]),
   );
 

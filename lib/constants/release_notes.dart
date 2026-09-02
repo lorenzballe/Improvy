@@ -62,6 +62,22 @@ class Release {
 /// the right behaviour for a pure bug-fix build.
 const List<Release> kReleases = [
   Release(
+    version: '1.13.0',
+    date: '1 SEP 2026',
+    headline: 'Improvy now speaks your language.',
+    lines: [
+      ReleaseLine(
+        icon: Icons.translate_rounded,
+        color: Color(0xFF22D3EE),
+        title: 'Italian, Spanish, French, German, Portuguese',
+        detail:
+            'The whole app follows your phone\u2019s language. Musicians who '
+            'write Do Re Mi get that notation from the first screen, and '
+            'Pocket Mode already speaks Italian.',
+      ),
+    ],
+  ),
+  Release(
     version: '1.12.0',
     date: '31 AUG 2026',
     headline: 'Your progress can leave the phone, and the app can be read aloud.',

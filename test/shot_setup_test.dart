@@ -10,6 +10,7 @@ import 'package:improvy/providers/app_provider.dart';
 import 'package:improvy/screens/explainer_screen.dart';
 import 'package:improvy/screens/setup_screen.dart';
 import 'package:improvy/services/storage_service.dart';
+import 'package:improvy/l10n/l10n.dart';
 
 import 'store_screenshot_test.dart' show loadRealFonts;
 
@@ -53,6 +54,8 @@ void main() {
     await t.pumpWidget(ChangeNotifierProvider<AppProvider>.value(
       value: await seeded(),
       child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         theme: ThemeData(fontFamily: 'Lexend', useMaterial3: true),
         home: child,
       ),
@@ -113,6 +116,8 @@ void explainerShots() {
       addTearDown(t.view.resetPhysicalSize);
       addTearDown(t.view.resetDevicePixelRatio);
       await t.pumpWidget(MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         theme: ThemeData(fontFamily: 'Lexend', useMaterial3: true),
         home: ExplainerScreen(onDone: () {}),
       ));

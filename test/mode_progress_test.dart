@@ -9,6 +9,7 @@ import 'package:improvy/providers/app_provider.dart';
 import 'package:improvy/screens/setup_screen.dart';
 import 'package:improvy/services/storage_service.dart';
 import 'package:improvy/widgets/mastery_bar.dart';
+import 'package:improvy/l10n/l10n.dart';
 
 /// Note to Number and "…Of What?" used to leave nothing behind: three sessions
 /// and none produced exactly the same saved state. These pin down the records
@@ -196,6 +197,8 @@ void main() {
   group('the mastery bar', () {
     Future<double> filled(WidgetTester t, double progress) async {
       await t.pumpWidget(MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: Center(
             child: SizedBox(
@@ -238,7 +241,7 @@ void main() {
       addTearDown(t.view.resetDevicePixelRatio);
       await t.pumpWidget(ChangeNotifierProvider<AppProvider>.value(
         value: p,
-        child: MaterialApp(home: child),
+        child: MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, home: child),
       ));
       await t.pump();
     }
@@ -303,6 +306,8 @@ void _tierFollowsTheKey() {
     await t.pumpWidget(ChangeNotifierProvider<AppProvider>.value(
       value: p,
       child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: NoteToNumberSetup(
           initialKey: 'C',
           isPro: true,
@@ -356,6 +361,8 @@ void _keyStanding() {
     await t.pumpWidget(ChangeNotifierProvider<AppProvider>.value(
       value: p,
       child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: NoteToNumberSetup(
           initialKey: 'C',
           isPro: true,

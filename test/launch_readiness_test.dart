@@ -10,6 +10,7 @@ import 'package:improvy/services/storage_service.dart';
 import 'package:improvy/models/key_progress.dart';
 import 'package:improvy/screens/explainer_screen.dart';
 import 'package:improvy/screens/session_summary_screen.dart';
+import 'package:improvy/l10n/l10n.dart';
 
 /// The things an audit found broken on the day the app was declared ready
 /// for advertising. Each is cheap to break again by accident, so each is a
@@ -50,6 +51,8 @@ void main() {
       await t.pumpWidget(ChangeNotifierProvider<AppProvider>.value(
         value: provider,
         child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
           home: SessionSummaryScreen(
             sessionData: data,
             progressData: progress ?? [KeyProgress(key: 'G')],
@@ -112,7 +115,7 @@ void main() {
   group('the explainer', () {
     testWidgets('three pages, then the app', (t) async {
       var done = false;
-      await t.pumpWidget(MaterialApp(home: ExplainerScreen(onDone: () => done = true)));
+      await t.pumpWidget(MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, home: ExplainerScreen(onDone: () => done = true)));
       expect(find.textContaining('Every note'), findsOneWidget);
       await t.tap(find.text('Next'));
       await t.pumpAndSettle();
@@ -127,7 +130,7 @@ void main() {
 
     testWidgets('can be skipped from the first page', (t) async {
       var done = false;
-      await t.pumpWidget(MaterialApp(home: ExplainerScreen(onDone: () => done = true)));
+      await t.pumpWidget(MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, home: ExplainerScreen(onDone: () => done = true)));
       await t.tap(find.text('Skip'));
       expect(done, isTrue);
     });

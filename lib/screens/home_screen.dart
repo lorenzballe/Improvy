@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../services/analytics_service.dart';
@@ -148,7 +149,7 @@ class _HomeMain extends StatelessWidget {
             // ── All Keys Mastery ──
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 0, 0),
-              child: _SectionHeader('ALL KEYS MASTERY'),
+              child: _SectionHeader(context.l10n.homeAllKeys),
             ),
             const SizedBox(height: 12),
             RepaintBoundary(child: _KeyGrid(progressData: provider.progressData, onKeySelect: (key) {
@@ -160,7 +161,7 @@ class _HomeMain extends StatelessWidget {
             // ── Special Modes ──
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 0, 0),
-              child: _SectionHeader('SPECIAL MODES'),
+              child: _SectionHeader(context.l10n.homeSpecialModes),
             ),
             const SizedBox(height: 12),
             RepaintBoundary(child: Padding(
@@ -171,7 +172,7 @@ class _HomeMain extends StatelessWidget {
               child: Column(children: [
                 _BigSpecialCard(
                   title: 'Note to Number',
-                  subtitle: 'Given a note name, identify its numerical degree.',
+                  subtitle: context.l10n.homeNtnDesc,
                   icon: Icons.swap_horiz_rounded,
                   accentColor: const Color(0xFF34D399),
                   borderColor: const Color(0xFF34D399).withAlpha(110),
@@ -190,7 +191,7 @@ class _HomeMain extends StatelessWidget {
                 const SizedBox(height: 12),
                 _BigSpecialCard(
                   title: '…Of What?',
-                  subtitle: 'A note is a given degree — name the root. Harmonize any melody.',
+                  subtitle: context.l10n.homeOfWhatDesc,
                   // A typographic "?" in the app's own heavy face — the thin
                   // material glyph looked generic next to the ♯♭ lettering.
                   iconWidget: const Center(
@@ -207,7 +208,7 @@ class _HomeMain extends StatelessWidget {
                 const SizedBox(height: 12),
                 _BigSpecialCard(
                   title: 'Pocket Mode',
-                  subtitle: 'Hands-free audio drill: a voice asks, waits, then says the note. Plays with the screen off.',
+                  subtitle: context.l10n.homePocketDesc,
                   icon: Icons.headphones_rounded,
                   accentColor: const Color(0xFF6366F1),
                   borderColor: const Color(0xFF6366F1).withAlpha(110),
@@ -222,7 +223,7 @@ class _HomeMain extends StatelessWidget {
                 const SizedBox(height: 12),
                 _BigSpecialCard(
                   title: 'Custom Mode',
-                  subtitle: 'Choose your key, direction, and specific degrees to train on.',
+                  subtitle: context.l10n.homeCustomDesc,
                   icon: Icons.tune_rounded,
                   accentColor: const Color(0xFFD857EC),
                   borderColor: const Color(0xFFD857EC).withAlpha(110),
@@ -244,7 +245,7 @@ class _HomeMain extends StatelessWidget {
             // ── Pick Up Where You Left Off ──
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 0, 0),
-              child: _SectionHeader('PICK UP WHERE YOU LEFT OFF'),
+              child: _SectionHeader(context.l10n.homePickUp),
             ),
             const SizedBox(height: 12),
             Padding(
@@ -309,7 +310,7 @@ class _HomeMain extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Row(children: [
                 Expanded(child: _MiniStatCard(
-                  label: 'TOTAL SESSIONS',
+                  label: context.l10n.homeTotalSessions,
                   value: '${provider.stats.totalSessions}',
                   accentColor: const Color(0xFFEAB308),
                   icon: Icons.bolt_rounded,
@@ -317,7 +318,7 @@ class _HomeMain extends StatelessWidget {
                 )),
                 const SizedBox(width: 12),
                 Expanded(child: _MiniStatCard(
-                  label: 'ACCURACY',
+                  label: context.l10n.homeAccuracy,
                   value: '${provider.overallAccuracy}',
                   accentColor: const Color(0xFF10B981),
                   icon: Icons.adjust,
@@ -504,14 +505,14 @@ class _ProgressCardState extends State<_ProgressCard> with SingleTickerProviderS
     // Must match the real animal progression in levels.dart (getAnimalLevel):
     // Snail → Turtle → Penguin → Rabbit → Fox → Horse → Falcon → Cheetah.
     const thresholds = kAnimalThresholds;
-    const names = ['Turtle', 'Penguin', 'Rabbit', 'Fox', 'Horse', 'Falcon', 'Cheetah'];
+    final names = [for (var lv = 2; lv <= 8; lv++) localizedAnimalName(context.l10n, lv)];
     for (int i = 0; i < thresholds.length; i++) {
       if (widget.totalProgress < thresholds[i]) {
         final rem = (thresholds[i] - widget.totalProgress).toStringAsFixed(1);
-        return '${rem}% to ${names[i]}';
+        return context.l10n.homeToNext(rem, names[i]);
       }
     }
-    return 'MAX LEVEL!';
+    return context.l10n.homeMaxLevel;
   }
 
   @override
@@ -572,10 +573,10 @@ class _ProgressCardState extends State<_ProgressCard> with SingleTickerProviderS
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const FittedBox(
+                          FittedBox(
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
-                            child: Text('TOTAL PROGRESS',
+                            child: Text(context.l10n.homeTotalProgress,
                               maxLines: 1,
                               softWrap: false,
                               style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0x80FFFFFF), letterSpacing: 2)),
@@ -638,7 +639,7 @@ class _ProgressCardState extends State<_ProgressCard> with SingleTickerProviderS
                                   ),
                                   child: FittedBox(
                                     fit: BoxFit.scaleDown,
-                                    child: Text('LVL ${a.level}',
+                                    child: Text(context.l10n.homeLevelShort(a.level),
                                       maxLines: 1,
                                       softWrap: false,
                                       style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Color(0xFF1A1625))),
@@ -651,7 +652,7 @@ class _ProgressCardState extends State<_ProgressCard> with SingleTickerProviderS
                         const SizedBox(height: 6),
                         FittedBox(
                           fit: BoxFit.scaleDown,
-                          child: Text(a.name.toUpperCase(),
+                          child: Text(localizedAnimalName(context.l10n, a.level).toUpperCase(),
                             maxLines: 1,
                             softWrap: false,
                             style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: a.color, letterSpacing: 1)),
@@ -665,11 +666,11 @@ class _ProgressCardState extends State<_ProgressCard> with SingleTickerProviderS
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Flexible(
+                    Flexible(
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.centerLeft,
-                        child: Text('NEXT MILESTONE',
+                        child: Text(context.l10n.homeNextMilestone,
                           maxLines: 1,
                           softWrap: false,
                           style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Color(0x33FFFFFF), letterSpacing: 1.8)),
@@ -748,7 +749,7 @@ class _ProgressCardState extends State<_ProgressCard> with SingleTickerProviderS
                 const SizedBox(height: 12),
 
                 Center(
-                  child: Text('“${a.quote}”',
+                  child: Text('“${localizedAnimalQuote(context.l10n, a.level)}”',
                     style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, fontStyle: FontStyle.italic, color: Color(0x80FFFFFF))),
                 ),
               ],
@@ -884,7 +885,7 @@ class _KeyCardState extends State<_KeyCard> {
     final color = widget.color;
     return Semantics(
       button: true,
-      label: 'Key of ${widget.keyData.key}, $progress percent',
+      label: context.l10n.homeKeyTileLabel(widget.keyData.key, progress),
       excludeSemantics: true,
       child: GestureDetector(
       onTapDown: (_) => setState(() => _pressed = true),
@@ -1189,25 +1190,26 @@ class _WithSession extends StatelessWidget {
   final VoidCallback onResume;
   const _WithSession({required this.session, required this.onResume});
 
-  String _quoteFor(int diff) {
-    const quotes = [
-      "Every master was once a beginner. Let's visualize those first notes!",
-      'Halfway to mastery — your instincts are sharpening. Keep pushing!',
-      'True mastery lives in the details. Trust your instincts and play!',
+  String _quoteFor(BuildContext context, int diff) {
+    final quotes = [
+      context.l10n.homeQuote1,
+      context.l10n.homeQuote2,
+      context.l10n.homeQuote3,
     ];
     return quotes[(diff - 1).clamp(0, quotes.length - 1)];
   }
 
-  String _relativeTime(int ts) {
+  String _relativeTime(BuildContext context, int ts) {
+    final l = context.l10n;
     final diff = DateTime.now().millisecondsSinceEpoch - ts;
     final secs = diff ~/ 1000;
-    if (secs < 60) return 'Just now';
+    if (secs < 60) return l.homeJustNow;
     final mins = secs ~/ 60;
-    if (mins < 60) return '${mins}m ago';
+    if (mins < 60) return l.homeMinutesAgo(mins);
     final hrs = mins ~/ 60;
-    if (hrs < 24) return '${hrs}h ago';
+    if (hrs < 24) return l.homeHoursAgo(hrs);
     final days = hrs ~/ 24;
-    return '${days}d ago';
+    return l.homeDaysAgo(days);
   }
 
   @override
@@ -1216,15 +1218,16 @@ class _WithSession extends StatelessWidget {
     final mode = session['mode'] as String? ?? '';
     final diff = session['difficulty'] as int? ?? 1;
     final ts = session['timestamp'] as int? ?? 0;
-    final diffLabels = ['Apprentice', 'Virtuoso', 'Master'];
+    final l = context.l10n;
+    final diffLabels = [l.tierApprentice, l.tierVirtuoso, l.tierMaster];
     final isPocket = mode == 'pocket';
     final pocketShuffle = session['pocketShuffle'] as bool? ?? false;
     final modeLabel = switch (mode) {
-      'diatonic' => 'Diatonic',
-      'chromatic' => 'Chromatic',
-      'note-to-number' => 'Note to Number',
-      'custom' => 'Custom',
-      'pocket' => 'Pocket Mode',
+      'diatonic' => l.modeDiatonic,
+      'chromatic' => l.modeChromatic,
+      'note-to-number' => l.modeNoteToNumber,
+      'custom' => l.modeCustom,
+      'pocket' => l.modePocket,
       _ => mode.isEmpty ? '' : mode[0].toUpperCase() + mode.substring(1),
     };
     // Pocket: shuffle has no single key; the title is just the mode name.
@@ -1232,8 +1235,8 @@ class _WithSession extends StatelessWidget {
         ? modeLabel
         : '${formatNoteForDisplay(key, context.select<AppProvider, String>((p) => p.notation))} $modeLabel';
     final subtitleText = isPocket
-        ? (pocketShuffle ? 'Shuffle · hands-free' : 'Hands-free audio')
-        : (diff > 0 && diff <= 3 ? '${diffLabels[diff - 1]} Difficulty' : '');
+        ? (pocketShuffle ? l.homeShuffleHandsFree : l.homeHandsFree)
+        : (diff > 0 && diff <= 3 ? l.homeTierDifficulty(diffLabels[diff - 1]) : '');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1250,7 +1253,7 @@ class _WithSession extends StatelessWidget {
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.centerLeft,
-                      child: Text('LAST SESSION • ${_relativeTime(ts)}',
+                      child: Text(context.l10n.homeLastSession(_relativeTime(context, ts)),
                         maxLines: 1,
                         softWrap: false,
                         style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Color(0xFF60A5FA), letterSpacing: 1.5)),
@@ -1289,7 +1292,7 @@ class _WithSession extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-        Text('“${_quoteFor(diff)}”',
+        Text('“${_quoteFor(context, diff)}”',
           style: TextStyle(
             fontSize: 13, fontStyle: FontStyle.italic, fontWeight: FontWeight.w500,
             color: Colors.white.withAlpha(102), height: 1.6,
@@ -1305,10 +1308,10 @@ class _WithSession extends StatelessWidget {
               borderRadius: BorderRadius.circular(18),
               boxShadow: [BoxShadow(color: const Color(0xFF4F46E5).withAlpha(77), blurRadius: 20, offset: const Offset(0, 8))],
             ),
-            child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
               Icon(Icons.play_arrow_rounded, color: Colors.white, size: 22),
               SizedBox(width: 8),
-              Text('Resume Session',
+              Text(context.l10n.homeResume,
                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white)),
             ]),
           ),
@@ -1337,10 +1340,10 @@ class _EmptyState extends StatelessWidget {
             child: Icon(Icons.music_note_rounded, color: Colors.white.withAlpha(77), size: 30),
           ),
           const SizedBox(height: 14),
-          const Text('Ready to start?',
+          Text(context.l10n.homeReadyTitle,
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: -0.45, color: Colors.white)),
           const SizedBox(height: 6),
-          Text('Select a key from above',
+          Text(context.l10n.homeReadyBody,
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 14, color: Colors.white.withAlpha(102))),
         ]),
@@ -1562,8 +1565,8 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                         // with the arrow's centre (does not move the arrow).
                         child: Transform.translate(
                           offset: const Offset(0, -3),
-                          child: const FittedBox(fit: BoxFit.scaleDown,
-                            child: Text('Choose Mode',
+                          child: FittedBox(fit: BoxFit.scaleDown,
+                            child: Text(context.l10n.homeChooseMode,
                               maxLines: 1, softWrap: false,
                               style: TextStyle(fontSize: 38, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.9))),
                         ),
@@ -1574,7 +1577,7 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                   const SizedBox(height: 2),
                   Transform.translate(
                     offset: const Offset(0, -3),
-                    child: const Text('Select how you want to train today',
+                    child: Text(context.l10n.homeChooseModeSub,
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF94A3B8))),
                   ),
@@ -1587,8 +1590,8 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
               child: LayoutBuilder(builder: (context, constraints) {
                 final diatonicCard = _BigModeCard(
                     keyName: keyName,
-                    title: 'Diatonic',
-                    description: 'Master the 7 notes of the scale.',
+                    title: context.l10n.modeDiatonic,
+                    description: context.l10n.homeDiatonicDesc,
                     iconWidget: Container(
                       width: 54, height: 54,
                       decoration: BoxDecoration(
@@ -1611,8 +1614,8 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                 );
                 final chromaticCard = _BigModeCard(
                     keyName: keyName,
-                    title: 'Chromatic',
-                    description: 'Challenge yourself with all 12 semitones.',
+                    title: context.l10n.modeChromatic,
+                    description: context.l10n.homeChromaticDesc,
                     iconWidget: Container(
                       width: 54, height: 54,
                       decoration: BoxDecoration(
@@ -1765,7 +1768,7 @@ class _LockedSheet extends StatelessWidget {
 
                   // Subtitle
                   Text(
-                    'Keep training in $prevName mode to unlock this difficulty.',
+                    context.l10n.homeLockedTier(prevName),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
@@ -1789,7 +1792,7 @@ class _LockedSheet extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'YOUR PROGRESS',
+                              context.l10n.homeYourProgress,
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w900,
@@ -1880,8 +1883,8 @@ class _LockedSheet extends StatelessWidget {
                           BoxShadow(color: accentColor.withValues(alpha:0.35), blurRadius: 24, offset: const Offset(0, 8)),
                         ],
                       ),
-                      child: const Text(
-                        'KEEP TRAINING',
+                      child: Text(
+                        context.l10n.homeKeepTraining,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 13,
@@ -1965,12 +1968,12 @@ class _StartButtonState extends State<_StartButton> {
           borderRadius: BorderRadius.circular(24),
           border: Border.all(color: Colors.white.withAlpha(20)),
         ),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.lock_rounded, color: Colors.white38, size: 16),
             SizedBox(width: 8),
-            Text('PRO ONLY', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 3, color: Colors.white38)),
+            Text(context.l10n.proOnly, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 3, color: Colors.white38)),
           ],
         ),
       );
@@ -2000,7 +2003,7 @@ class _StartButtonState extends State<_StartButton> {
             children: [
               Icon(Icons.play_arrow_rounded, color: Colors.white, size: 20 * widget.k),
               SizedBox(width: 8 * widget.k),
-              Text('START', style: TextStyle(fontSize: 13 * widget.k, fontWeight: FontWeight.w900, letterSpacing: 3, color: Colors.white)),
+              Text(context.l10n.start, style: TextStyle(fontSize: 13 * widget.k, fontWeight: FontWeight.w900, letterSpacing: 3, color: Colors.white)),
             ],
           ),
         ),

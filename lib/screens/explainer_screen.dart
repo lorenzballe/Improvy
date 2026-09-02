@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 
 import '../constants/app_colors.dart';
 import '../widgets/note_text.dart';
@@ -54,7 +55,7 @@ class _ExplainerScreenState extends State<ExplainerScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Row(
               children: [
-                Text('HOW IT WORKS',
+                Text(context.l10n.explainerEyebrow,
                     style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w900,
@@ -66,7 +67,7 @@ class _ExplainerScreenState extends State<ExplainerScreen> {
                   behavior: HitTestBehavior.opaque,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                    child: Text('Skip',
+                    child: Text(context.l10n.skip,
                         style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
@@ -80,33 +81,24 @@ class _ExplainerScreenState extends State<ExplainerScreen> {
             child: PageView(
               controller: _pages,
               onPageChanged: (i) => setState(() => _index = i),
-              children: const [
+              children: [
                 _Page(
-                  eyebrow: '1 OF 3',
-                  title: 'Every note\nhas a number.',
-                  body:
-                      'In C major, C is 1, D is 2, E is 3 — up to B, which is 7. '
-                      'That number is its degree. Musicians think in degrees, not '
-                      'letters, because the number says what the note is doing.',
-                  demo: _ScaleDemo(root: 'C'),
+                  eyebrow: context.l10n.explainerStep(1),
+                  title: context.l10n.explainer1Title,
+                  body: context.l10n.explainer1Body,
+                  demo: const _ScaleDemo(root: 'C'),
                 ),
                 _Page(
-                  eyebrow: '2 OF 3',
-                  title: 'Same numbers,\nany key.',
-                  body:
-                      'Move to G major and the letters change but the numbers do '
-                      'not: G is 1, A is 2, B is 3. Know the numbers and you know '
-                      'every key at once — that is the whole trick of improvising.',
-                  demo: _ScaleDemo(root: 'G'),
+                  eyebrow: context.l10n.explainerStep(2),
+                  title: context.l10n.explainer2Title,
+                  body: context.l10n.explainer2Body,
+                  demo: const _ScaleDemo(root: 'G'),
                 ),
                 _Page(
-                  eyebrow: '3 OF 3',
-                  title: 'We ask,\nyou tap.',
-                  body:
-                      'A key and a degree come up — "the 5 of E flat" — and you tap the '
-                      'note. Fast enough, often enough, and it stops being '
-                      'arithmetic and becomes instinct. Two minutes a day is plenty.',
-                  demo: _QuestionDemo(),
+                  eyebrow: context.l10n.explainerStep(3),
+                  title: context.l10n.explainer3Title,
+                  body: context.l10n.explainer3Body,
+                  demo: const _QuestionDemo(),
                 ),
               ],
             ),
@@ -144,7 +136,7 @@ class _ExplainerScreenState extends State<ExplainerScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(_index == 2 ? "Let's go" : 'Next',
+                        Text(_index == 2 ? context.l10n.letsGo : context.l10n.next,
                             style: const TextStyle(
                                 fontFamily: 'Outfit',
                                 fontSize: 17.5,
@@ -289,7 +281,7 @@ class _QuestionDemo extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.baseline,
               textBaseline: TextBaseline.alphabetic,
               children: [
-                Text('KEY OF ',
+                Text(context.l10n.explainerKeyOf,
                     style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w900,

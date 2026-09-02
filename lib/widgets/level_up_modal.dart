@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 import '../constants/levels.dart';
 import 'animal_icon.dart';
 
@@ -328,7 +329,7 @@ class _ModalCard extends StatelessWidget {
                       children: [
                         // "LEVEL UP!" in animal color
                         Text(
-                          'Level Up!',
+                          context.l10n.levelUp,
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w900,
@@ -354,7 +355,7 @@ class _ModalCard extends StatelessWidget {
                                 fontFamily: 'Lexend',
                               ),
                               children: [
-                                const TextSpan(text: 'You are now a '),
+                                TextSpan(text: context.l10n.levelUpYouAreNow),
                                 WidgetSpan(
                                   alignment: PlaceholderAlignment.middle,
                                   child: ShaderMask(
@@ -362,7 +363,7 @@ class _ModalCard extends StatelessWidget {
                                       colors: [color, color.withValues(alpha:0.67)],
                                     ).createShader(bounds),
                                     child: Text(
-                                      animal.name,
+                                      localizedAnimalName(context.l10n, animal.level),
                                       style: const TextStyle(
                                         fontSize: 22,
                                         fontWeight: FontWeight.w900,
@@ -381,7 +382,7 @@ class _ModalCard extends StatelessWidget {
                         const SizedBox(height: 12),
                         // Quote
                         Text(
-                          '“${animal.quote}”',
+                          '“${localizedAnimalQuote(context.l10n, animal.level)}”',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.white.withValues(alpha:0.6),
@@ -483,8 +484,8 @@ class _AwesomeButtonState extends State<_AwesomeButton> {
               ),
             ],
           ),
-          child: const Text(
-            'Awesome!',
+          child: Text(
+            context.l10n.awesome,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,

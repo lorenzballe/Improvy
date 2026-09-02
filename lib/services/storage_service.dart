@@ -148,6 +148,9 @@ class StorageService {
   bool loadIsPro() => _prefs.getBool(_isProKey) ?? false;
   Future<void> saveIsPro(bool v) => _prefs.setBool(_isProKey, v);
 
+  /// Null when the user has never chosen: the provider then picks by
+  /// language on first run.
+  String? loadNotationOrNull() => _prefs.getString(_notationKey);
   String loadNotation() => _prefs.getString(_notationKey) ?? 'CDE';
   Future<void> saveNotation(String v) => _prefs.setString(_notationKey, v);
 

@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../models/key_progress.dart';
@@ -251,7 +252,7 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                         children: [
                           Icon(Icons.music_note_rounded, size: 13, color: color),
                           const SizedBox(width: 6),
-                          Text('KEY ANALYSIS',
+                          Text(context.l10n.kaTitle,
                             style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.white70, letterSpacing: 2)),
                         ],
                       ),
@@ -305,15 +306,15 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
               // this key — a fresh key would otherwise claim "0ms" and "#1".
               Row(
                 children: [
-                  Expanded(child: _StatCard(label: 'MASTERY', value: '$mastery', suffix: '%', trendUp: trend != null && trend > 0)),
+                  Expanded(child: _StatCard(label: context.l10n.kaMastery, value: '$mastery', suffix: '%', trendUp: trend != null && trend > 0)),
                   const SizedBox(width: 12),
                   Expanded(child: hasToneData
-                      ? _StatCard(label: 'AVG RESP.', value: '$avgResp', suffix: 'ms')
-                      : const _StatCard(label: 'AVG RESP.', value: '—')),
+                      ? _StatCard(label: context.l10n.kaAvgResp, value: '$avgResp', suffix: 'ms')
+                      : _StatCard(label: context.l10n.kaAvgResp, value: '—')),
                   const SizedBox(width: 12),
                   Expanded(child: hasToneData
-                      ? _StatCard(label: 'RANK', value: '$rank', prefix: '#', suffix: '/12')
-                      : const _StatCard(label: 'RANK', value: '—')),
+                      ? _StatCard(label: context.l10n.statsRank, value: '$rank', prefix: '#', suffix: '/12')
+                      : _StatCard(label: context.l10n.statsRank, value: '—')),
                 ],
               ),
               const SizedBox(height: 20),
@@ -325,7 +326,7 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                   children: [
                     Row(
                       children: [
-                        Expanded(child: _SectionTitle(icon: Icons.timeline_rounded, color: color, title: 'Response Time')),
+                        Expanded(child: _SectionTitle(icon: Icons.timeline_rounded, color: color, title: context.l10n.kaAccuracyOverTime)),
                         // Speed growth badge sits in the space freed by the
                         // compact range toggle. Already sign-flipped, so up and
                         // green mean "quicker than you were".
@@ -376,7 +377,7 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                           const SizedBox(width: 10),
                           Padding(
                             padding: const EdgeInsets.only(bottom: 3),
-                            child: Text('PER ANSWER',
+                            child: Text(context.l10n.kaPerAnswer,
                               style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white.withAlpha(90), letterSpacing: 1.5)),
                           ),
                         ],
@@ -409,7 +410,7 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                         Text(_last30 ? '30 GAMES AGO' : '14 GAMES AGO',
                           style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900,
                             color: _selPoint == 0 ? Colors.white70 : Colors.white.withAlpha(77), letterSpacing: 1.5)),
-                        Text('TODAY',
+                        Text(context.l10n.kaToday,
                           style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900,
                             color: _selPoint == 6 ? Colors.white70 : Colors.white.withAlpha(77), letterSpacing: 1.5)),
                       ],
@@ -424,7 +425,7 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _SectionTitle(icon: Icons.analytics_rounded, color: color, title: 'Chromatic Degree Mastery'),
+                    _SectionTitle(icon: Icons.analytics_rounded, color: color, title: context.l10n.kaDegreeMastery),
                     const SizedBox(height: 18),
                     LayoutBuilder(
                       builder: (ctx, box) {
@@ -455,13 +456,13 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _SectionTitle(icon: Icons.school_rounded, color: color, title: 'Mode Progress'),
+                    _SectionTitle(icon: Icons.school_rounded, color: color, title: context.l10n.kaModeProgress),
                     const SizedBox(height: 20),
-                    _ModeBar(label: 'DEGREE → NOTE', pct: normal, color: color),
+                    _ModeBar(label: context.l10n.kaDegreeToNote, pct: normal, color: color),
                     const SizedBox(height: 18),
-                    _ModeBar(label: 'NOTE → DEGREE', pct: noteToNumber, color: color),
+                    _ModeBar(label: context.l10n.kaNoteToDegree, pct: noteToNumber, color: color),
                     const SizedBox(height: 18),
-                    _ModeBar(label: '…OF WHAT?', pct: harmonizer, color: color),
+                    _ModeBar(label: context.l10n.kaOfWhat, pct: harmonizer, color: color),
                   ],
                 ),
               ),
@@ -472,7 +473,7 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _SectionTitle(icon: Icons.compare_arrows_rounded, color: color, title: 'Common Confusions'),
+                    _SectionTitle(icon: Icons.compare_arrows_rounded, color: color, title: context.l10n.kaConfusions),
                     const SizedBox(height: 18),
                     if (topConfusions.isEmpty)
                       Container(
@@ -487,7 +488,7 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                           children: [
                             Icon(Icons.task_alt_rounded, size: 30, color: Colors.white.withAlpha(51)),
                             const SizedBox(height: 8),
-                            Text('NO CONFUSIONS YET. GREAT JOB!',
+                            Text(context.l10n.kaNoConfusions,
                               style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.white.withAlpha(102), letterSpacing: 1.2)),
                           ],
                         ),
@@ -509,7 +510,7 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('NOTE',
+                    Text(context.l10n.kaNote,
                       style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900,
                         color: Colors.white.withAlpha(102), letterSpacing: 1.5)),
                     const SizedBox(height: 14),
@@ -525,11 +526,11 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('Harmonizer',
+                              Text(context.l10n.kaHarmonizer,
                                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700,
                                   color: Colors.white, letterSpacing: 0.2)),
                               const SizedBox(height: 3),
-                              Text('“…Of What?” mastery',
+                              Text(context.l10n.kaHarmonizerSub,
                                 maxLines: 1, overflow: TextOverflow.ellipsis,
                                 style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600,
                                   color: Colors.white.withAlpha(102))),

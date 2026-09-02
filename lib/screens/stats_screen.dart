@@ -1,6 +1,9 @@
 import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import '../l10n/l10n.dart';
+import '../constants/levels.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../models/stats.dart';
@@ -32,11 +35,18 @@ const _degrees = [
   ('VII', Color(0xFFD946EF)),
 ];
 
+// Sharps as positive, flats as negative.
 const _keySignatures = {
-  'C': 'NONE', 'G': '1 SHARP', 'D': '2 SHARPS', 'A': '3 SHARPS',
-  'E': '4 SHARPS', 'B': '5 SHARPS', 'F♯': '6 SHARPS',
-  'D♭': '5 FLATS', 'A♭': '4 FLATS', 'E♭': '3 FLATS', 'B♭': '2 FLATS', 'F': '1 FLAT',
+  'C': 0, 'G': 1, 'D': 2, 'A': 3, 'E': 4, 'B': 5, 'F♯': 6,
+  'D♭': -5, 'A♭': -4, 'E♭': -3, 'B♭': -2, 'F': -1,
 };
+
+String _keySignatureLabel(BuildContext context, String key) {
+  final n = _keySignatures[key];
+  if (n == null) return '';
+  if (n == 0) return context.l10n.statsSigNone;
+  return n > 0 ? context.l10n.statsSigSharp(n) : context.l10n.statsSigFlat(-n);
+}
 
 // ─── MAIN SCREEN ─────────────────────────────────────────────────────────────
 
@@ -164,8 +174,10 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
     });
     final weekDays = List.generate(7, (i) {
       final d = now.subtract(Duration(days: 6 - i));
-      const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-      return days[d.weekday % 7];
+      // The reader's own weekday names, abbreviated, in their language.
+      return DateFormat.E(Localizations.localeOf(context).toString())
+          .format(d)
+          .toUpperCase();
     });
 
     // Degree stats from the last 30 games (sessionHistory is newest-first)
@@ -216,12 +228,12 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
                       boxShadow: [BoxShadow(color: Colors.black.withAlpha(51), blurRadius: 16, offset: const Offset(0, 8))],
                     ),
                     child: Row(mainAxisSize: MainAxisSize.min, children: [
-                      Text('LEVEL ${animalLevel.level}',
+                      Text(context.l10n.statsLevel(animalLevel.level),
                         style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white.withAlpha(128), letterSpacing: 4)),
                       const SizedBox(width: 14),
                       AnimalIcon(name: animalLevel.name, color: animalLevel.color, size: 20),
                       const SizedBox(width: 6),
-                      Text(animalLevel.name.toUpperCase(),
+                      Text(localizedAnimalName(context.l10n, animalLevel.level).toUpperCase(),
                         style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: animalLevel.color, letterSpacing: 2)),
                     ]),
                   ),
@@ -249,7 +261,7 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
                             const SizedBox(height: 6),
                             FittedBox(
                               fit: BoxFit.scaleDown,
-                              child: Text('OVERALL\nPROFICIENCY', textAlign: TextAlign.center,
+                              child: Text(context.l10n.statsOverall, textAlign: TextAlign.center,
                                 style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white.withAlpha(102), letterSpacing: 2.25, height: 1.4)),
                             ),
                           ]),
@@ -261,14 +273,14 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
 
                   // 3 mini stat cards
                   Row(children: [
-                    Expanded(child: _MiniCard(label: 'NOTES', value: _fmt(totalAttempts), glowColor: const Color(0xFF3B82F6))),
+                    Expanded(child: _MiniCard(label: context.l10n.statsNotes, value: _fmt(totalAttempts), glowColor: const Color(0xFF3B82F6))),
                     const SizedBox(width: 10),
                     Expanded(child: _MiniCard(
-                      label: 'ACCURACY', value: '$overallAccuracy', valueSuffix: '%',
+                      label: context.l10n.statsAccuracy, value: '$overallAccuracy', valueSuffix: '%',
                       trend: accuracyChange, glowColor: const Color(0xFF10B981),
                     )),
                     const SizedBox(width: 10),
-                    Expanded(child: _MiniCard(label: 'STREAK', value: '$streak', isStreak: true, glowColor: const Color(0xFFF97316))),
+                    Expanded(child: _MiniCard(label: context.l10n.statsStreak, value: '$streak', isStreak: true, glowColor: const Color(0xFFF97316))),
                   ]),
                 ]),
               ),
@@ -282,8 +294,8 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
                   const SizedBox(height: 12),
                   Text(
                     stats.totalSessions == 0
-                        ? 'NOTHING TO SHOW YET'
-                        : 'STATISTICS BASED ON THE LAST 30 GAMES',
+                        ? context.l10n.statsNothingYet
+                        : context.l10n.statsLast30,
                     style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white.withAlpha(77), letterSpacing: 1.8)),
                 ]),
               ),
@@ -321,10 +333,10 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Row(children: [
+                  Row(children: [
                     Icon(Icons.workspace_premium_rounded, color: Color(0xFFA855F7), size: 22),
                     SizedBox(width: 8),
-                    Text('Skill Mastery', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white)),
+                    Text(context.l10n.statsSkillMastery, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white)),
                   ]),
                   const SizedBox(height: 16),
                   ...provider.progressData.asMap().entries.map((e) {
@@ -549,9 +561,8 @@ class _ResponseTimeCardState extends State<_ResponseTimeCard> {
 
   String _formatGamesAgo(int index) {
     final gamesAgo = (widget.displayTimes.length - 1) - index;
-    if (gamesAgo <= 0) return 'LATEST GAME';
-    if (gamesAgo == 1) return '1 GAME AGO';
-    return '$gamesAgo GAMES AGO';
+    if (gamesAgo <= 0) return context.l10n.statsLatestGame;
+    return context.l10n.statsGamesAgo(gamesAgo);
   }
 
   void _handleDrag(double localX, double width) {
@@ -682,7 +693,7 @@ class _ResponseTimeCardState extends State<_ResponseTimeCard> {
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
               Text('${widget.range} GAMES AGO',
                 style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white.withAlpha(77))),
-              Text('LATEST',
+              Text(context.l10n.statsLatest,
                 style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white.withAlpha(77))),
             ]),
             ],
@@ -719,15 +730,15 @@ class _SpeedEmptyState extends StatelessWidget {
             child: const Icon(Icons.bolt_rounded, color: Color(0xFF60A5FA), size: 24),
           ),
           const SizedBox(height: 14),
-          const Text(
-            'Your speed lives here',
+          Text(
+            context.l10n.statsSpeedTitle,
             style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Colors.white),
           ),
           const SizedBox(height: 6),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Text(
-              'Play a session and watch every answer get quicker.',
+              context.l10n.statsSpeedBody,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12,
@@ -912,10 +923,10 @@ class _DegreeAccuracyCard extends StatelessWidget {
             boxShadow: [BoxShadow(color: Colors.black.withAlpha(77), blurRadius: 40, offset: const Offset(0, 20))],
           ),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Row(children: [
+            Row(children: [
               Icon(Icons.analytics_rounded, color: Color(0xFF34D399), size: 22),
               SizedBox(width: 8),
-              Text('Degree Accuracy',
+              Text(context.l10n.statsDegreeAccuracy,
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.5)),
             ]),
             const SizedBox(height: 24),
@@ -970,13 +981,13 @@ class _DegreeRow extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('PLAYS', style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900,
+            Text(context.l10n.statsPlays, style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900,
               color: Colors.white.withAlpha(77), letterSpacing: 0.8)),
             Text(plays > 0 ? plays.toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (_) => ',') : '0',
               style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.6)),
           ])),
           Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-            Text('ACCURACY', style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900,
+            Text(context.l10n.statsAccuracy, style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900,
               color: Colors.white.withAlpha(77), letterSpacing: 0.8)),
             Text('$accuracy%', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900,
               color: color, letterSpacing: -0.9)),
@@ -1044,7 +1055,7 @@ class _GamesPlayedCard extends StatelessWidget {
             Row(children: [
               const Icon(Icons.bar_chart_rounded, color: Color(0xFFFB923C), size: 22),
               const SizedBox(width: 8),
-              const Expanded(child: Text('Games Played',
+              Expanded(child: Text(context.l10n.statsGamesPlayed,
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.5))),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -1193,11 +1204,11 @@ class _KeyboardHeatmapCardState extends State<_KeyboardHeatmapCard> {
         Row(children: [
           const Icon(Icons.grid_view_rounded, color: Color(0xFFEC4899), size: 22),
           const SizedBox(width: 8),
-          const Expanded(
+          Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Keyboard Heatmap',
+              Text(context.l10n.statsHeatmap,
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white)),
-              Text('PERFORMANCE BY NOTE',
+              Text(context.l10n.statsByNote,
                 style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white38, letterSpacing: 2)),
             ]),
           ),
@@ -1299,10 +1310,10 @@ class _KeyboardHeatmapCardState extends State<_KeyboardHeatmapCard> {
                   Container(width: 8, height: 8,
                     decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFFEF4444))),
                   const SizedBox(width: 6),
-                  Text('SLOW', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900,
+                  Text(context.l10n.statsSlow, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900,
                     color: Colors.white.withAlpha(102), letterSpacing: 1)),
                   const Spacer(),
-                  Text('FAST', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900,
+                  Text(context.l10n.statsFast, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900,
                     color: Colors.white.withAlpha(102), letterSpacing: 1)),
                   const SizedBox(width: 6),
                   Container(width: 8, height: 8,
@@ -1329,7 +1340,7 @@ class _SkillRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final mastery = (keyData.totalProgress as int).clamp(0, 100);
-    final keySig = _keySignatures[keyData.key] ?? '';
+    final keySig = _keySignatureLabel(context, keyData.key);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -1425,7 +1436,7 @@ class _SkillRow extends StatelessWidget {
                   padding: const EdgeInsets.only(left: 16),
                   decoration: BoxDecoration(border: Border(left: BorderSide(color: Colors.white.withAlpha(13)))),
                   child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Text('RANK', style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900,
+                    Text(context.l10n.statsRank, style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900,
                       color: Colors.white.withAlpha(77), letterSpacing: 0.8)),
                     // Unranked keys (no games yet) show an em dash — a literal
                     // "RANK 0" read like a score, not like missing data.
@@ -1472,12 +1483,11 @@ class _FirstRunCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Play one session',
+                  Text(context.l10n.statsFirstRunTitle,
                       style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Colors.white)),
                   const SizedBox(height: 3),
                   Text(
-                    'Thirty questions in one key and every chart on this page fills in — '
-                    'your speed, the degrees you miss, the notes that slow you down.',
+                    context.l10n.statsFirstRunBody,
                     style: TextStyle(fontSize: 11.5, height: 1.45, color: Colors.white.withAlpha(140)),
                   ),
                 ],

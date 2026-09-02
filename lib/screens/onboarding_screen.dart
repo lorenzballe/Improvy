@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 import 'legal_screen.dart';
 
 /// First-launch welcome — the "3a" poster from the redesign: one full-bleed
@@ -190,7 +191,7 @@ class _Poster extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _colourField(side),
+        _colourField(context, side),
         // The design's flexible gap: 4.8pt of it sits inside the colour field
         // (above), 6.4pt below it. On a taller screen this is where the slack
         // goes.
@@ -213,7 +214,7 @@ class _Poster extends StatelessWidget {
     );
   }
 
-  Widget _colourField(double side) => ClipRRect(
+  Widget _colourField(BuildContext context, double side) => ClipRRect(
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(44 * s)),
         child: DecoratedBox(
           decoration: const BoxDecoration(gradient: _field),
@@ -242,11 +243,11 @@ class _Poster extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    stagger(0.0, 0.5, dy: 14, child: _header()),
+                    stagger(0.0, 0.5, dy: 14, child: _header(context)),
                     SizedBox(height: 58 * s),
-                    stagger(0.08, 0.62, dy: 28 * s, child: _headline()),
+                    stagger(0.08, 0.62, dy: 28 * s, child: _headline(context)),
                     SizedBox(height: 26 * s),
-                    stagger(0.2, 0.74, child: _promise()),
+                    stagger(0.2, 0.74, child: _promise(context)),
                     SizedBox(height: 34 * s),
                     stagger(0.28, 0.9, dy: 18 * s, child: _scaleStrip()),
                   ],
@@ -257,7 +258,7 @@ class _Poster extends StatelessWidget {
         ),
       );
 
-  Widget _header() => Row(
+  Widget _header(BuildContext context) => Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text('IMPROVY',
@@ -273,7 +274,7 @@ class _Poster extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.22),
               borderRadius: BorderRadius.circular(999),
             ),
-            child: Text('Mental training',
+            child: Text(context.l10n.onboardingTag,
                 style: TextStyle(
                     fontSize: 11.5 * s,
                     fontWeight: FontWeight.w500,
@@ -282,8 +283,8 @@ class _Poster extends StatelessWidget {
         ],
       );
 
-  Widget _headline() => Text(
-        'Every note\nis a\nnumber.',
+  Widget _headline(BuildContext context) => Text(
+        context.l10n.onboardingHeadline,
         style: TextStyle(
           fontFamily: 'Outfit',
           fontSize: 60 * s,
@@ -298,11 +299,10 @@ class _Poster extends StatelessWidget {
   // IntrinsicHeight, and only a *tight* width constraint is substituted into
   // that measurement. With a loose one this paragraph is measured at the full
   // column width — one line short of how it actually wraps.
-  Widget _promise() => SizedBox(
+  Widget _promise(BuildContext context) => SizedBox(
         width: 296 * s,
         child: Text(
-          'See the number under any note instantly, in all twelve keys — '
-          'no counting, no theory book.',
+          context.l10n.onboardingPromise,
           style: TextStyle(
             fontSize: 16 * s,
             fontWeight: FontWeight.w300,
@@ -396,13 +396,13 @@ class _Poster extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         GestureDetector(
-          onTap: () => onLegal('Privacy Policy', kPrivacyPolicyBody),
-          child: Text('Privacy Policy', style: style),
+          onTap: () => onLegal(context.l10n.privacyPolicy, kPrivacyPolicyBody),
+          child: Text(context.l10n.privacyPolicy, style: style),
         ),
         Text('  ·  ', style: style),
         GestureDetector(
-          onTap: () => onLegal('Terms of Service', kTermsBody),
-          child: Text('Terms of Service', style: style),
+          onTap: () => onLegal(context.l10n.termsOfService, kTermsBody),
+          child: Text(context.l10n.termsOfService, style: style),
         ),
       ],
     );
@@ -445,7 +445,7 @@ class _StartButtonState extends State<_StartButton> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('Start training',
+              Text(context.l10n.onboardingStart,
                   style: TextStyle(
                       fontFamily: 'Outfit',
                       fontSize: 17.5 * s,

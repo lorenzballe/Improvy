@@ -14,6 +14,7 @@ import 'package:improvy/providers/app_provider.dart';
 import 'package:improvy/screens/home_screen.dart';
 import 'package:improvy/screens/trainer_screen.dart';
 import 'package:improvy/services/storage_service.dart';
+import 'package:improvy/l10n/l10n.dart';
 
 /// Renders the two screens where the accidentals are hardest to typeset, so a
 /// change to their alignment can be looked at rather than argued about. Run
@@ -78,6 +79,8 @@ void main() {
       ChangeNotifierProvider<AppProvider>.value(
         value: p,
         child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
             colorScheme: const ColorScheme.dark(surface: Color(0xFF0F0A1A)),

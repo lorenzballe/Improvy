@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 import 'package:provider/provider.dart';
 import '../constants/app_colors.dart';
 import '../constants/music_constants.dart';
@@ -105,8 +106,8 @@ class _NoteToNumberSetupState extends State<NoteToNumberSetup> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _Header(
-                            title: 'Note to Number',
-                            subtitle: 'TRAINING SETUP',
+                            title: context.l10n.modeNoteToNumber,
+                            subtitle: context.l10n.setupTrainingSetup,
                             // Monochrome title (solid green), not a gradient.
                             gradColors: const [Color(0xFF34D399), Color(0xFF34D399)],
                             onBack: widget.onCancel,
@@ -118,8 +119,8 @@ class _NoteToNumberSetupState extends State<NoteToNumberSetup> {
                               children: [
                                 _SectionTitle(
                                   icon: Icons.music_note_rounded,
-                                  title: 'Select Root Key',
-                                  subtitle: 'Choose the foundation for your training.',
+                                  title: context.l10n.setupSelectRootKey,
+                                  subtitle: context.l10n.setupSelectRootKeySub,
                                   trailing: _KeyStanding(
                                     pct: context
                                         .watch<AppProvider>()
@@ -141,10 +142,10 @@ class _NoteToNumberSetupState extends State<NoteToNumberSetup> {
                                 const SizedBox(height: 36),
                                 _SectionTitle(
                                   icon: Icons.bolt_rounded,
-                                  title: 'Training Intensity',
+                                  title: context.l10n.setupIntensity,
                                   subtitle: _chromatic
-                                      ? 'Master all 12 chromatic notes in this key.'
-                                      : 'Focus on the 7 notes of the major scale.',
+                                      ? context.l10n.setupIntensityChromatic
+                                      : context.l10n.setupIntensityDiatonic,
                                 ),
                                 const SizedBox(height: 18),
                                 _SlidingPillRow(
@@ -168,10 +169,10 @@ class _NoteToNumberSetupState extends State<NoteToNumberSetup> {
                                   },
                                 ),
                                 const SizedBox(height: 36),
-                                const _SectionTitle(
+                                _SectionTitle(
                                   icon: Icons.track_changes_rounded,
-                                  title: 'Difficulty',
-                                  subtitle: 'Higher difficulty means less time to answer.',
+                                  title: context.l10n.setupDifficulty,
+                                  subtitle: context.l10n.setupDifficultySub,
                                 ),
                                 const SizedBox(height: 18),
                                 _TierSelector(
@@ -351,12 +352,12 @@ class _CustomModeSetupState extends State<CustomModeSetup> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _Header(
-                            title: 'Custom Mode',
+                            title: context.l10n.featCustom,
                             // The one line that stops "I did a hundred
                             // questions and nothing moved" being a support
                             // email. Custom can be narrowed to one degree,
                             // which is exactly why it cannot fill a dial.
-                            subtitle: 'FREE PRACTICE · DOES NOT COUNT TOWARDS MASTERY',
+                            subtitle: context.l10n.setupPersonalized,
                             // Monochrome title (solid purple), not a gradient.
                             gradColors: const [Color(0xFFD857EC), Color(0xFFD857EC)],
                             onBack: widget.onCancel,
@@ -372,14 +373,14 @@ class _CustomModeSetupState extends State<CustomModeSetup> {
                                 // the whole session hangs on.
                                 _SectionTitle(
                                   icon: Icons.tune_rounded,
-                                  title: 'Mode',
+                                  title: context.l10n.setupMode,
                                   subtitle: switch (_dir) {
                                     CustomDirection.normal =>
-                                      'Name the note for a degree, in this key.',
+                                      context.l10n.setupModeNormalSub,
                                     CustomDirection.noteToNumber =>
-                                      'Name the degree for a note, in this key.',
+                                      context.l10n.setupModeNtnSub,
                                     CustomDirection.ofWhat =>
-                                      'One note held throughout — name the key it belongs to.',
+                                      context.l10n.setupModeOfWhatSub,
                                   },
                                 ),
                                 const SizedBox(height: 18),
@@ -398,9 +399,9 @@ class _CustomModeSetupState extends State<CustomModeSetup> {
                                   // In …Of What? this grid is not a tonality at
                                   // all — it is the melody note being held, and
                                   // calling it a root key would be a lie.
-                                  title: _isOfWhat ? 'Select Note' : 'Select Root Key',
+                                  title: _isOfWhat ? context.l10n.setupSelectNote : context.l10n.setupSelectRootKey,
                                   subtitle: _isOfWhat
-                                      ? 'The note held for the whole session.'
+                                      ? context.l10n.setupSelectNoteSub
                                       : '',
                                 ),
                                 const SizedBox(height: 18),
@@ -414,26 +415,26 @@ class _CustomModeSetupState extends State<CustomModeSetup> {
                                 Row(
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    const Expanded(
+                                    Expanded(
                                       child: _SectionTitle(
                                         icon: Icons.tune_rounded,
-                                        title: 'Select Degrees',
+                                        title: context.l10n.setupSelectDegrees,
                                       ),
                                     ),
                                     if (_isOfWhat) ...[
                                       _QuickBtn(
-                                          label: 'CHORD',
+                                          label: context.l10n.setupQuickChord,
                                           onTap: () => setState(
                                               () => _degs = Set.of(kOfWhatChordTones))),
                                       const SizedBox(width: 8),
                                       _QuickBtn(
-                                          label: 'ALL',
+                                          label: context.l10n.setupQuickAll,
                                           onTap: () => setState(
                                               () => _degs = Set.of(kOfWhatDegrees))),
                                     ] else ...[
-                                      _QuickBtn(label: 'DIATONIC', onTap: _setDiatonic),
+                                      _QuickBtn(label: context.l10n.setupQuickDiatonic, onTap: _setDiatonic),
                                       const SizedBox(width: 8),
-                                      _QuickBtn(label: 'ALL', onTap: _setAll),
+                                      _QuickBtn(label: context.l10n.setupQuickAll, onTap: _setAll),
                                     ],
                                   ],
                                 ),
@@ -447,10 +448,10 @@ class _CustomModeSetupState extends State<CustomModeSetup> {
                                 ),
                                 const SizedBox(height: 36),
 
-                                const _SectionTitle(
+                                _SectionTitle(
                                   icon: Icons.track_changes_rounded,
-                                  title: 'Difficulty',
-                                  subtitle: 'Higher difficulty means less time to answer.',
+                                  title: context.l10n.setupDifficulty,
+                                  subtitle: context.l10n.setupDifficultySub,
                                 ),
                                 const SizedBox(height: 18),
                                 _SlidingPillRow(
@@ -461,10 +462,10 @@ class _CustomModeSetupState extends State<CustomModeSetup> {
                                 ),
                                 const SizedBox(height: 36),
 
-                                const _SectionTitle(
+                                _SectionTitle(
                                   icon: Icons.auto_awesome_rounded,
-                                  title: 'Number of Questions',
-                                  subtitle: 'How many questions for this session?',
+                                  title: context.l10n.setupQuestions,
+                                  subtitle: context.l10n.setupQuestionsSub,
                                 ),
                                 const SizedBox(height: 18),
                                 _QuestionRow(
@@ -593,8 +594,8 @@ class _OfWhatSetupState extends State<OfWhatSetup> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _Header(
-                            title: '…Of What?',
-                            subtitle: 'HARMONIZE SETUP',
+                            title: context.l10n.modeOfWhat,
+                            subtitle: context.l10n.setupHarmonizeSetup,
                             gradColors: const [Color(0xFF22D3EE), Color(0xFF22D3EE)],
                             onBack: widget.onCancel,
                           ),
@@ -605,8 +606,8 @@ class _OfWhatSetupState extends State<OfWhatSetup> {
                               children: [
                                 _SectionTitle(
                                   icon: Icons.music_note_rounded,
-                                  title: 'Select Note',
-                                  subtitle: 'The melody note held for the whole session.',
+                                  title: context.l10n.setupSelectNote,
+                                  subtitle: context.l10n.setupSelectNoteSub,
                                   trailing: _KeyStanding(
                                     pct: context
                                         .watch<AppProvider>()
@@ -628,10 +629,10 @@ class _OfWhatSetupState extends State<OfWhatSetup> {
                                 const SizedBox(height: 36),
                                 _SectionTitle(
                                   icon: Icons.tune_rounded,
-                                  title: 'Degrees to Ask',
+                                  title: context.l10n.setupDegreesToAsk,
                                   subtitle: _all
-                                      ? 'Every degree, extensions included.'
-                                      : 'The four chord tones: 1, 3, 5, 7.',
+                                      ? context.l10n.setupDegreesAll
+                                      : context.l10n.setupDegreesChord,
                                 ),
                                 const SizedBox(height: 18),
                                 _SlidingPillRow(
@@ -653,10 +654,10 @@ class _OfWhatSetupState extends State<OfWhatSetup> {
                                   },
                                 ),
                                 const SizedBox(height: 36),
-                                const _SectionTitle(
+                                _SectionTitle(
                                   icon: Icons.track_changes_rounded,
-                                  title: 'Difficulty',
-                                  subtitle: 'Higher difficulty means less time to answer.',
+                                  title: context.l10n.setupDifficulty,
+                                  subtitle: context.l10n.setupDifficultySub,
                                 ),
                                 const SizedBox(height: 18),
                                 _TierSelector(
@@ -784,8 +785,8 @@ class _PocketModeSetupState extends State<PocketModeSetup> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _Header(
-                            title: 'Pocket Mode',
-                            subtitle: 'HANDS-FREE · AUDIO',
+                            title: context.l10n.modePocket,
+                            subtitle: context.l10n.setupHandsFree,
                             gradColors: _grad,
                             onBack: widget.onCancel,
                           ),
@@ -794,10 +795,10 @@ class _PocketModeSetupState extends State<PocketModeSetup> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const _SectionTitle(
+                                _SectionTitle(
                                   icon: Icons.headphones_rounded,
-                                  title: 'Keys',
-                                  subtitle: 'Train one key, or shuffle through all 12.',
+                                  title: context.l10n.setupKeys,
+                                  subtitle: context.l10n.setupKeysSub,
                                 ),
                                 const SizedBox(height: 18),
                                 _SlidingPillRow(
@@ -819,15 +820,15 @@ class _PocketModeSetupState extends State<PocketModeSetup> {
                                 Row(
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    const Expanded(
+                                    Expanded(
                                       child: _SectionTitle(
                                         icon: Icons.tune_rounded,
-                                        title: 'Degrees',
+                                        title: context.l10n.setupDegrees,
                                       ),
                                     ),
-                                    _QuickBtn(label: 'DIATONIC', onTap: _setDiatonic),
+                                    _QuickBtn(label: context.l10n.setupQuickDiatonic, onTap: _setDiatonic),
                                     const SizedBox(width: 8),
-                                    _QuickBtn(label: 'ALL', locked: !widget.isPro, onTap: _setAll),
+                                    _QuickBtn(label: context.l10n.setupQuickAll, locked: !widget.isPro, onTap: _setAll),
                                   ],
                                 ),
                                 const SizedBox(height: 16),
@@ -848,7 +849,7 @@ class _PocketModeSetupState extends State<PocketModeSetup> {
 
                                 _SectionTitle(
                                   icon: Icons.timer_outlined,
-                                  title: 'Answer Delay',
+                                  title: context.l10n.setupAnswerDelay,
                                   subtitle: '${fmtDelaySeconds(_delayMs / 1000)} before the voice reveals the note.',
                                 ),
                                 const SizedBox(height: 8),
@@ -859,10 +860,10 @@ class _PocketModeSetupState extends State<PocketModeSetup> {
                                 ),
                                 const SizedBox(height: 32),
 
-                                const _SectionTitle(
+                                _SectionTitle(
                                   icon: Icons.auto_awesome_rounded,
-                                  title: 'Length',
-                                  subtitle: 'Number of questions (∞ = until you stop).',
+                                  title: context.l10n.setupLength,
+                                  subtitle: context.l10n.setupLengthSub,
                                 ),
                                 const SizedBox(height: 18),
                                 _QuestionRow(
@@ -1230,7 +1231,7 @@ class _KeyCell extends StatelessWidget {
     return Semantics(
       button: true,
       selected: sel,
-      label: '$noteKey, ${(mastery * 100).round()} percent',
+      label: context.l10n.setupKeyCellLabel(noteKey, (mastery * 100).round()),
       excludeSemantics: true,
       child: GestureDetector(
       onTap: onTap,
@@ -1497,7 +1498,8 @@ class _TierSelector extends StatelessWidget {
     required this.onChange,
   });
 
-  static const labels = ['Apprentice', 'Virtuoso', 'Master'];
+  static List<String> labelsFor(AppLocalizations l) =>
+      [l.tierApprentice, l.tierVirtuoso, l.tierMaster];
   static const caps = kTierCaps;
 
   /// What the tier above needs from the tier below — one constant for the
@@ -1528,7 +1530,7 @@ class _TierSelector extends StatelessWidget {
             Row(children: [
               Icon(Icons.lock_rounded, color: accentColor, size: 18),
               const SizedBox(width: 8),
-              Text('${labels[tier - 1]} is locked'.toUpperCase(),
+              Text(context.l10n.setupTierLocked(labelsFor(context.l10n)[tier - 1]).toUpperCase(),
                   style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w900,
@@ -1537,8 +1539,7 @@ class _TierSelector extends StatelessWidget {
             ]),
             const SizedBox(height: 12),
             Text(
-              'Reach $need correct in ${labels[tier - 2]} first. '
-              'You are at $have.',
+              context.l10n.setupTierLockedBody(need, labelsFor(context.l10n)[tier - 2], have),
               style: const TextStyle(
                   fontSize: 14, height: 1.5, color: Colors.white70),
             ),
@@ -1557,6 +1558,7 @@ class _TierSelector extends StatelessWidget {
     // scale so this row and the one beside the grid stay one rule.
     final color = masteryPctColor(best <= 0 ? 0 : pct);
 
+    final labels = labelsFor(context.l10n);
     final lockedLabels = <String>{
       for (var t = 2; t <= 3; t++)
         if (!unlocked(credited, t)) labels[t - 1],
@@ -1582,7 +1584,7 @@ class _TierSelector extends StatelessWidget {
         const SizedBox(height: 12),
         Row(
           children: [
-            Text('$best/$cap BEST',
+            Text(context.l10n.setupBest(best, cap),
                 style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
@@ -1922,11 +1924,11 @@ class _StartBtnState extends State<_StartBtn> {
                   children: [
                     Icon(widget.icon, color: _ink, size: 24),
                     const SizedBox(width: 10),
-                    const Flexible(
+                    Flexible(
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
-                          'START TRAINING',
+                          context.l10n.startTraining,
                           maxLines: 1,
                           softWrap: false,
                           style: TextStyle(

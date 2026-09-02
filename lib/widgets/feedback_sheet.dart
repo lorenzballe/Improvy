@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 import 'package:flutter/services.dart';
 
 import '../services/analytics_service.dart';
@@ -7,15 +8,20 @@ import '../services/analytics_service.dart';
 /// no bucket is unreadable after twenty entries — and because "it's broken"
 /// and "you should add" want completely different reactions from me.
 enum FeedbackKind {
-  bug('Something is broken', 'bug', Icons.bug_report_rounded, Color(0xFFF43F5E)),
-  idea('An idea', 'idea', Icons.lightbulb_rounded, Color(0xFFFBBF24)),
-  other('Something else', 'other', Icons.chat_bubble_rounded, Color(0xFF6366F1));
+  bug('bug', Icons.bug_report_rounded, Color(0xFFF43F5E)),
+  idea('idea', Icons.lightbulb_rounded, Color(0xFFFBBF24)),
+  other('other', Icons.chat_bubble_rounded, Color(0xFF6366F1));
 
-  const FeedbackKind(this.label, this.id, this.icon, this.color);
-  final String label;
+  const FeedbackKind(this.id, this.icon, this.color);
   final String id;
   final IconData icon;
   final Color color;
+
+  String label(AppLocalizations l) => switch (this) {
+        FeedbackKind.bug => l.feedbackKindBug,
+        FeedbackKind.idea => l.feedbackKindIdea,
+        FeedbackKind.other => l.feedbackKindOther,
+      };
 }
 
 /// The in-app feedback sheet.
@@ -142,8 +148,8 @@ class _FeedbackSheetState extends State<FeedbackSheet> {
                   ),
                 ),
                 const SizedBox(height: 22),
-                const Text(
-                  'Tell us',
+                Text(
+                  context.l10n.feedbackTitle,
                   style: TextStyle(
                     fontFamily: 'Outfit',
                     fontSize: 30,
@@ -155,8 +161,7 @@ class _FeedbackSheetState extends State<FeedbackSheet> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'It comes straight to us. No email app, no account, no name '
-                  'attached unless you write one.',
+                  context.l10n.feedbackBody,
                   style: TextStyle(
                     fontSize: 12.5,
                     height: 1.5,
@@ -176,8 +181,8 @@ class _FeedbackSheetState extends State<FeedbackSheet> {
                 _field(
                   controller: _text,
                   hint: _kind == FeedbackKind.bug
-                      ? 'What happened, and what were you doing?'
-                      : 'Whatever you want to say.',
+                      ? context.l10n.feedbackHintBug
+                      : context.l10n.feedbackHint,
                   maxLines: 5,
                   maxLength: _maxChars,
                   autofocus: true,
@@ -185,7 +190,7 @@ class _FeedbackSheetState extends State<FeedbackSheet> {
                 const SizedBox(height: 10),
                 _field(
                   controller: _email,
-                  hint: 'Your email — only if you want an answer',
+                  hint: context.l10n.feedbackEmail,
                   maxLines: 1,
                   keyboardType: TextInputType.emailAddress,
                 ),
@@ -224,7 +229,7 @@ class _FeedbackSheetState extends State<FeedbackSheet> {
             FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
-                k.label,
+                k.label(context.l10n),
                 maxLines: 1,
                 style: TextStyle(
                   fontSize: 11,
@@ -290,9 +295,9 @@ class _FeedbackSheetState extends State<FeedbackSheet> {
               color: _indigo,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Center(
+            child: Center(
               child: Text(
-                'SEND',
+                context.l10n.feedbackSend,
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w800,

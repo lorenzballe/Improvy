@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui' show FontFeature, ImageFilter;
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 import '../services/analytics_service.dart';
 import '../constants/app_colors.dart';
 import '../constants/music_constants.dart';
@@ -249,8 +250,8 @@ class _FreeModeScreenState extends State<FreeModeScreen>
               child: const Icon(Icons.close_rounded, color: Colors.white70, size: 24),
             ),
           ),
-          const Expanded(
-            child: Text('FREE MODE',
+          Expanded(
+            child: Text(context.l10n.freeModeTitle,
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 4)),
           ),
@@ -324,9 +325,9 @@ class _FreeModeScreenState extends State<FreeModeScreen>
             ),
             const SizedBox(height: 16),
             Row(children: [
-              Expanded(child: _stat('DONE', '$donePart')),
+              Expanded(child: _stat(context.l10n.freeModeDone, '$donePart')),
               Container(width: 1, height: 28, color: Colors.white10),
-              Expanded(child: _stat('LEFT', '${_kTotal - donePart}')),
+              Expanded(child: _stat(context.l10n.freeModeLeft, '${_kTotal - donePart}')),
               Container(width: 1, height: 28, color: Colors.white10),
               Expanded(child: _stat('RUN', '$_kTotal')),
             ]),
@@ -428,7 +429,7 @@ class _Hint extends StatelessWidget {
                   Icon(Icons.touch_app_rounded, size: 14, color: Colors.white.withValues(alpha: 0.75)),
                   const SizedBox(width: 9),
                   Text(
-                    'TAP ANYWHERE FOR THE NEXT',
+                    context.l10n.freeModeTapNext,
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w900,
@@ -481,8 +482,8 @@ class _DoneCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
-            const Text(
-              'NUMBERS DONE',
+            Text(
+              context.l10n.freeModeNumbersDone,
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w900,
@@ -492,7 +493,7 @@ class _DoneCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'No score, no clock — just the reps.',
+              context.l10n.freeModeSub,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 13,
@@ -513,13 +514,13 @@ class _DoneCard extends StatelessWidget {
                     BoxShadow(color: const Color(0xFF7C3AED).withValues(alpha: 0.45), blurRadius: 28, offset: const Offset(0, 10)),
                   ],
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.replay_rounded, size: 15, color: Colors.white),
                     SizedBox(width: 8),
                     Text(
-                      'GO AGAIN',
+                      context.l10n.freeModeGoAgain,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w900,

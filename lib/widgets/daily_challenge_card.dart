@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb;
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -78,8 +79,8 @@ class _DailyChallengeCardState extends State<DailyChallengeCard> {
       // than leaving a dead button.
       await Clipboard.setData(ClipboardData(text: text));
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Result copied — paste it anywhere'),
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(context.l10n.dailyCopied),
         behavior: SnackBarBehavior.floating,
       ));
     }
@@ -218,7 +219,7 @@ class _DailyChallengeCardState extends State<DailyChallengeCard> {
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
             child: Row(children: [
-              const Text('DAILY CHALLENGE',
+              Text(context.l10n.dailyTitle,
                   maxLines: 1,
                   softWrap: false,
                   style: TextStyle(
@@ -289,7 +290,7 @@ class _DailyChallengeCardState extends State<DailyChallengeCard> {
       Expanded(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            Text('DAILY DONE',
+            Text(context.l10n.dailyDone,
                 style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w900,
@@ -333,7 +334,7 @@ class _DailyChallengeCardState extends State<DailyChallengeCard> {
             ),
           ]),
           const SizedBox(height: 4),
-          Text('Next challenge in ${_untilMidnight()}',
+          Text(context.l10n.dailyNextIn(_untilMidnight()),
               style: TextStyle(
                   fontSize: 11.5,
                   fontWeight: FontWeight.w600,

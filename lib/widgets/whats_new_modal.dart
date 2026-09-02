@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../constants/app_info.dart';
@@ -146,7 +147,7 @@ class _WhatsNewModalState extends State<WhatsNewModal>
                 // Two lines by design: the version claims the first, so the
                 // sentence lands rather than trailing off.
                 Text(
-                  'Version ${r.version}\nis here',
+                  context.l10n.whatsNewVersionHere(r.version),
                   style: const TextStyle(
                     fontFamily: 'Outfit',
                     fontSize: 34,
@@ -200,8 +201,8 @@ class _WhatsNewModalState extends State<WhatsNewModal>
                       borderRadius: BorderRadius.circular(16),
                     ),
                     alignment: Alignment.center,
-                    child: const Text(
-                      'CONTINUE',
+                    child: Text(
+                      context.l10n.continueLabel,
                       style: TextStyle(
                         fontFamily: 'Outfit',
                         fontSize: 15,
@@ -217,7 +218,7 @@ class _WhatsNewModalState extends State<WhatsNewModal>
                   onTap: _openChangelog,
                   behavior: HitTestBehavior.opaque,
                   child: Text(
-                    'Full changelog',
+                    context.l10n.fullChangelog,
                     style: TextStyle(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w400,
@@ -237,7 +238,7 @@ class _WhatsNewModalState extends State<WhatsNewModal>
   Widget _versionRule(Release r) => Row(
         children: [
           Text(
-            'VERSION ${r.version}',
+            context.l10n.whatsNewVersion(r.version),
             style: const TextStyle(
               fontSize: 9.5,
               fontWeight: FontWeight.w600,

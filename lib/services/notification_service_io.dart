@@ -1,3 +1,4 @@
+import '../l10n/l10n.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
@@ -97,9 +98,9 @@ class NotificationService {
       // "Forever" needs no bookkeeping: only these two are ever scheduled,
       // and any new game moves the anchor.
       final last = DateTime.fromMillisecondsSinceEpoch(plan.lastPlayedMs!);
-      const comebacks = [
-        (200, 3, 'Scale degrees fade fast when you stop. Your keys miss you.'),
-        (201, 7, 'A week away — your instant recall needs a warm-up. Come back?'),
+      final comebacks = [
+        (200, 3, L10n.current.remComeback3),
+        (201, 7, L10n.current.remComeback7),
       ];
       for (final (id, days, body) in comebacks) {
         final when = DateTime(last.year, last.month, last.day + days, plan.hour, plan.minute);

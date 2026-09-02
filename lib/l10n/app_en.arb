@@ -1,0 +1,680 @@
+{
+  "@@locale": "en",
+  "appName": "Improvy",
+  "next": "Next",
+  "skip": "Skip",
+  "cancel": "Cancel",
+  "done": "Done",
+  "close": "Close",
+  "gotIt": "Got it",
+  "notNow": "Not now",
+  "retry": "RETRY",
+  "home": "HOME",
+  "start": "START",
+  "startTraining": "START TRAINING",
+  "proOnly": "PRO ONLY",
+  "free": "FREE",
+  "modeDiatonic": "Diatonic",
+  "modeChromatic": "Chromatic",
+  "modeCustom": "Custom",
+  "modeNoteToNumber": "Note to Number",
+  "modeOfWhat": "…Of What?",
+  "modePocket": "Pocket Mode",
+  "modeNormal": "Normal",
+  "tierApprentice": "Apprentice",
+  "tierVirtuoso": "Virtuoso",
+  "tierMaster": "Master",
+  "onboardingTag": "Mental training",
+  "onboardingHeadline": "Every note\nis a\nnumber.",
+  "onboardingPromise": "See the number under any note instantly, in all twelve keys — no counting, no theory book.",
+  "onboardingStart": "Start training",
+  "privacyPolicy": "Privacy Policy",
+  "termsOfService": "Terms of Service",
+  "explainerEyebrow": "HOW IT WORKS",
+  "explainerStep": "{n} OF 3",
+  "@explainerStep": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "explainer1Title": "Every note\nhas a number.",
+  "explainer1Body": "In C major, C is 1, D is 2, E is 3 — up to B, which is 7. That number is its degree. Musicians think in degrees, not letters, because the number says what the note is doing.",
+  "explainer2Title": "Same numbers,\nany key.",
+  "explainer2Body": "Move to G major and the letters change but the numbers do not: G is 1, A is 2, B is 3. Know the numbers and you know every key at once — that is the whole trick of improvising.",
+  "explainer3Title": "We ask,\nyou tap.",
+  "explainer3Body": "A key and a degree come up — \"the 5 of E flat\" — and you tap the note. Fast enough, often enough, and it stops being arithmetic and becomes instinct. Two minutes a day is plenty.",
+  "explainerKeyOf": "KEY OF ",
+  "letsGo": "Let's go",
+  "summaryTitle": "SESSION COMPLETE",
+  "summaryPerfect": "PERFECT SCORE",
+  "summaryPassed": "LEVEL PASSED",
+  "summaryCompleted": "COMPLETED",
+  "summaryNotYet": "NOT YET — KEEP GOING",
+  "summaryCorrect": "CORRECT",
+  "summaryErrors": "ERRORS",
+  "summaryTime": "TIME",
+  "summaryAccuracy": "ACCURACY %",
+  "summaryModeMastery": "MODE MASTERY",
+  "summaryNextDifficulty": "PLAY NEXT DIFFICULTY",
+  "summaryUpsellTitle": "That was the free half of {key}",
+  "@summaryUpsellTitle": {
+    "placeholders": {
+      "key": {
+        "type": "String"
+      }
+    }
+  },
+  "summaryUpsellBody": "Chromatic adds the five altered degrees — the rest of the key.",
+  "paywallTitle": "Improvy Pro",
+  "paywallLifetime": "Lifetime licence",
+  "paywallTagline": "Every key. Every mode. Forever.",
+  "paywallEvery": "Every ",
+  "paywallForever": "Forever.",
+  "paywallWhatYouGet": "What you get, from musician to musician",
+  "paywallCta": "Unlock lifetime access",
+  "paywallPrice": "{price} · one-time payment",
+  "@paywallPrice": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "paywallRestore": "Restore",
+  "paywallNoPurchase": "No previous purchase found",
+  "featChromatic": "Chromatic Mode",
+  "featChromaticMeta": "all 12 keys",
+  "featNtn": "Note to Number",
+  "featNtnMeta": "chromatic",
+  "featOfWhat": "…Of What?",
+  "featOfWhatMeta": "all 15 degrees",
+  "featPocket": "Pocket Mode",
+  "featPocketMeta": "all 12 degrees",
+  "featCustom": "Custom Mode",
+  "featCustomMeta": "any degree",
+  "featAdaptive": "Adaptive difficulty",
+  "featAdaptiveMeta": "auto",
+  "featAnalytics": "Deep analytics",
+  "featAnalyticsMeta": "per key",
+  "storeNotReadyTitle": "Store not ready",
+  "storeNotReadyBody": "No product is available for purchase right now. Please try again in a moment.",
+  "almostThereTitle": "Almost there",
+  "almostThereBody": "Your payment went through but PRO could not be activated automatically. Tap Restore purchases in a moment — you will not be charged twice.",
+  "billingUnavailableTitle": "Billing unavailable",
+  "billingUnavailableBody": "In-app purchases are not available on this device.",
+  "purchaseFailedTitle": "Purchase failed",
+  "purchaseFailedBody": "Something went wrong while contacting the store. Please try again.",
+  "notifPromptTitle": "Make it stick",
+  "notifPromptBody": "One quick quiz a day keeps every note sharp and your streak alive. Off whenever you want.",
+  "notifPromptYes": "Yes, remind me",
+  "homeAllKeys": "ALL KEYS MASTERY",
+  "homeSpecialModes": "SPECIAL MODES",
+  "homePickUp": "PICK UP WHERE YOU LEFT OFF",
+  "homeTotalSessions": "TOTAL SESSIONS",
+  "homeAccuracy": "ACCURACY",
+  "homeTotalProgress": "TOTAL PROGRESS",
+  "homeNextMilestone": "NEXT MILESTONE",
+  "homeMaxLevel": "MAX LEVEL!",
+  "homeLevelShort": "LVL {n}",
+  "@homeLevelShort": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "homeToNext": "{pct}% to {animal}",
+  "@homeToNext": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      },
+      "animal": {
+        "type": "String"
+      }
+    }
+  },
+  "homeNtnDesc": "Given a note name, identify its numerical degree.",
+  "homeOfWhatDesc": "A note is a given degree — name the root. Harmonize any melody.",
+  "homePocketDesc": "Hands-free audio drill: a voice asks, waits, then says the note. Plays with the screen off.",
+  "homeCustomDesc": "Choose your key, direction, and specific degrees to train on.",
+  "homeLastSession": "LAST SESSION • {when}",
+  "@homeLastSession": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "homeResume": "Resume Session",
+  "homeReadyTitle": "Ready to start?",
+  "homeReadyBody": "Select a key from above",
+  "homeGamesPlayed": "GAMES PLAYED",
+  "homeChooseMode": "Choose Mode",
+  "homeChooseModeSub": "Select how you want to train today",
+  "homeDiatonicDesc": "Master the 7 notes of the scale.",
+  "homeChromaticDesc": "Challenge yourself with all 12 semitones.",
+  "homeLockedTier": "Keep training in {prev} mode to unlock this difficulty.",
+  "@homeLockedTier": {
+    "placeholders": {
+      "prev": {
+        "type": "String"
+      }
+    }
+  },
+  "homeYourProgress": "YOUR PROGRESS",
+  "homeKeepTraining": "KEEP TRAINING",
+  "homeHandsFree": "Hands-free audio",
+  "homeJustNow": "Just now",
+  "homeMinutesAgo": "{n}m ago",
+  "@homeMinutesAgo": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "homeHoursAgo": "{n}h ago",
+  "@homeHoursAgo": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "homeDaysAgo": "{n}d ago",
+  "@homeDaysAgo": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "homeQuote1": "Every master was once a beginner. Let's visualize those first notes!",
+  "homeQuote2": "Halfway to mastery — your instincts are sharpening. Keep pushing!",
+  "homeQuote3": "True mastery lives in the details. Trust your instincts and play!",
+  "homeKeyTileLabel": "Key of {key}, {pct} percent",
+  "@homeKeyTileLabel": {
+    "placeholders": {
+      "key": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "int"
+      }
+    }
+  },
+  "setupTrainingSetup": "TRAINING SETUP",
+  "setupHarmonizeSetup": "HARMONIZE SETUP",
+  "setupPersonalized": "FREE PRACTICE · DOES NOT COUNT TOWARDS MASTERY",
+  "setupHandsFree": "HANDS-FREE · AUDIO",
+  "setupSelectRootKey": "Select Root Key",
+  "setupSelectRootKeySub": "Choose the foundation for your training.",
+  "setupSelectNote": "Select Note",
+  "setupSelectNoteSub": "The melody note held for the whole session.",
+  "setupIntensity": "Training Intensity",
+  "setupIntensityChromatic": "Master all 12 chromatic notes in this key.",
+  "setupIntensityDiatonic": "Focus on the 7 notes of the major scale.",
+  "setupDifficulty": "Difficulty",
+  "setupDifficultySub": "Higher difficulty means less time to answer.",
+  "setupMode": "Mode",
+  "setupModeNormalSub": "Name the note for a degree, in this key.",
+  "setupModeNtnSub": "Name the degree for a note, in this key.",
+  "setupModeOfWhatSub": "One note held throughout — name the key it belongs to.",
+  "setupSelectDegrees": "Select Degrees",
+  "setupDegreesToAsk": "Degrees to Ask",
+  "setupDegreesAll": "Every degree, extensions included.",
+  "setupDegreesChord": "The four chord tones: 1, 3, 5, 7.",
+  "setupChord": "Chord",
+  "setupAll": "All",
+  "setupQuickChord": "CHORD",
+  "setupQuickAll": "ALL",
+  "setupQuickDiatonic": "DIATONIC",
+  "setupQuestions": "Number of Questions",
+  "setupQuestionsSub": "How many questions for this session?",
+  "setupKeys": "Keys",
+  "setupKeysSub": "Train one key, or shuffle through all 12.",
+  "setupShuffleAll": "Shuffle all",
+  "setupOneKey": "One key",
+  "setupDegrees": "Degrees",
+  "setupAnswerDelay": "Answer Delay",
+  "setupLength": "Length",
+  "setupLengthSub": "Number of questions (∞ = until you stop).",
+  "setupTierLocked": "{tier} is locked",
+  "@setupTierLocked": {
+    "placeholders": {
+      "tier": {
+        "type": "String"
+      }
+    }
+  },
+  "setupTierLockedBody": "Reach {need} correct in {prev} first. You are at {have}.",
+  "@setupTierLockedBody": {
+    "placeholders": {
+      "need": {
+        "type": "int"
+      },
+      "prev": {
+        "type": "String"
+      },
+      "have": {
+        "type": "int"
+      }
+    }
+  },
+  "setupBest": "{best}/{cap} BEST",
+  "@setupBest": {
+    "placeholders": {
+      "best": {
+        "type": "int"
+      },
+      "cap": {
+        "type": "int"
+      }
+    }
+  },
+  "setupKeyCellLabel": "{key}, {pct} percent",
+  "@setupKeyCellLabel": {
+    "placeholders": {
+      "key": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "int"
+      }
+    }
+  },
+  "trainerCorrect": "CORRECT",
+  "trainerWrong": "WRONG",
+  "trainerCorrectAnswer": "CORRECT ANSWER",
+  "trainerNote": "NOTE",
+  "trainerKey": "KEY",
+  "trainerDegree": "DEGREE",
+  "trainerProgress": "PROGRESS",
+  "trainerStreak": "STREAK",
+  "trainerPianoKeyboard": "PIANO KEYBOARD",
+  "trainerExitTitle": "End this session?",
+  "trainerExitDaily": "One attempt per day, and the clock keeps running — if you leave now, {done}/{total} is your score until tomorrow.",
+  "@trainerExitDaily": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "trainerExitEndless": "You are {done} questions in — leaving ends the run and keeps the score.",
+  "@trainerExitEndless": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      }
+    }
+  },
+  "trainerExitBody": "You are {done}/{total} in — the run ends here if you leave.",
+  "@trainerExitBody": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "trainerKeepPlaying": "KEEP PLAYING",
+  "trainerQuit": "QUIT",
+  "paywallLine1": "Every key.",
+  "paywallLine2": "Every mode.",
+  "paywallLine3": "Forever.",
+  "paywallRestoring": "Restoring…",
+  "paywallTerms": "Terms",
+  "paywallPrivacy": "Privacy",
+  "animalSnail": "Snail",
+  "animalTurtle": "Turtle",
+  "animalPenguin": "Penguin",
+  "animalRabbit": "Rabbit",
+  "animalFox": "Fox",
+  "animalHorse": "Horse",
+  "animalFalcon": "Falcon",
+  "animalCheetah": "Cheetah",
+  "homeShuffleHandsFree": "Shuffle · hands-free",
+  "homeTierDifficulty": "{tier} Difficulty",
+  "@homeTierDifficulty": {
+    "placeholders": {
+      "tier": {
+        "type": "String"
+      }
+    }
+  },
+  "trainerGridView": "GRID VIEW",
+  "trainerAccuracy": "ACCURACY",
+  "settingsTitle": "SETTINGS",
+  "settingsAccountStatus": "ACCOUNT STATUS",
+  "settingsFreePlan": "Free Plan",
+  "settingsProPlan": "Improvy Pro",
+  "settingsProSub": "Every mode and key, unlocked.",
+  "settingsFreeSub": "Tap to unlock every mode and key.",
+  "settingsActive": "ACTIVE",
+  "settingsTraining": "TRAINING",
+  "settingsAdaptive": "Adaptive Difficulty",
+  "settingsAdaptiveTag": "SMART TRAINING",
+  "settingsAdaptiveBody": "Degrees you answer slowly or get wrong come up several times more often than ones you own — right but slow still counts as unlearned. The clock tightens while you are sharp and eases off when you start missing.",
+  "settingsAdaptiveLocked": "PRO feature — upgrade to unlock smart training that adapts to your weaknesses.",
+  "settingsSimpleNotes": "Simple Note Names",
+  "settingsSimpleNotesTag": "NOTE SPELLING",
+  "settingsSimpleNotesBody": "One name per note everywhere — no slashes, no double names. C  D♭  D  E♭  E  F  F♯  G  A♭  A  B♭  B.",
+  "settingsHearNote": "Hear the Note",
+  "settingsHearNoteTag": "ON CORRECT ANSWERS",
+  "settingsHearNoteBody": "Every right answer plays the note you just named, so the ear learns it alongside the number. Off is for quiet places.",
+  "settingsKeyboardTonic": "Keyboard from Tonic",
+  "settingsKeyboardTonicTag": "PIANO INPUT",
+  "settingsKeyboardTonicBody": "The in-game piano starts on your key’s tonic instead of C.",
+  "settingsNotation": "NOTATION SYSTEM",
+  "settingsFreeMode": "FREE MODE",
+  "settingsFreeModeTitle": "Free Mode",
+  "settingsFreeModeSub": "Numbers at your own pace. No timer, no score.",
+  "settingsNotifications": "NOTIFICATIONS",
+  "settingsReminders": "Daily reminders",
+  "settingsRemindersTag": "QUIZ NUDGE + STREAK SAVER",
+  "settingsRemindersBody": "One quick quiz a day, plus a nudge before your streak breaks.",
+  "settingsNews": "NEWS & UPDATES",
+  "settingsWhatsNew": "What's new",
+  "settingsStore": "STORE",
+  "settingsUpgrade": "UPGRADE TO PRO",
+  "settingsRestorePurchases": "RESTORE PURCHASES",
+  "settingsProRestored": "PRO restored",
+  "settingsHomeScreen": "HOME SCREEN",
+  "settingsWidgets": "Widgets",
+  "settingsWidgetsSub": "A question an hour, right on your home screen",
+  "settingsBackup": "BACKUP",
+  "settingsExport": "Export progress",
+  "settingsExportSub": "One file with every key, score and setting",
+  "settingsExportFailed": "Could not start the export",
+  "settingsRestoreFile": "Restore from file",
+  "settingsRestoreFileSub": "Replaces what is on this phone",
+  "settingsRestored": "Restored. Everything is back.",
+  "settingsRestoreTitle": "Restore from a file?",
+  "settingsRestoreBody": "Everything on this phone — every key, score and setting — is replaced by what is in the file. Your Pro licence is not affected.",
+  "settingsChooseFile": "Choose file",
+  "settingsSupport": "SUPPORT",
+  "settingsRate": "Rate Improvy",
+  "settingsRateSub": "A rating is how other musicians find it",
+  "settingsFeedback": "Send Feedback",
+  "settingsFeedbackSub": "Straight to us, without leaving the app",
+  "settingsFeedbackSent": "Sent. We read every one of these.",
+  "settingsContact": "Contact Support",
+  "settingsWriteTo": "Write to {email}",
+  "@settingsWriteTo": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsFollow": "Follow the developer",
+  "settingsInstagram": "Find us on Instagram: @{handle}",
+  "@settingsInstagram": {
+    "placeholders": {
+      "handle": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsLegal": "LEGAL",
+  "settingsClearTitle": "Clear All Data?",
+  "settingsClearBody": "This will permanently delete all your progress and stats.",
+  "settingsWidgetsTwo": "TWO WIDGETS",
+  "settingsWidgetQuestion": "Question",
+  "settingsWidgetQuestionBody": "A scale degree waiting for an answer, a new one every hour. Tap it to reveal the answer.",
+  "settingsWidgetDaily": "Daily Challenge",
+  "settingsWidgetDailyBody": "The key of the day, your score once you have played, and your streak.",
+  "settingsWidgetHow": "HOW TO ADD ONE",
+  "settingsWidgetIos1": "Touch and hold an empty spot on your home screen",
+  "settingsWidgetIos2": "Tap the + in the top corner",
+  "settingsWidgetIos3": "Search for Improvy and pick a widget",
+  "settingsWidgetAndroid2": "Tap Widgets",
+  "settingsWidgetAndroid3": "Find Improvy and drag a widget out",
+  "statsLevel": "LEVEL {n}",
+  "@statsLevel": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "statsOverall": "OVERALL\nPROFICIENCY",
+  "statsNotes": "NOTES",
+  "statsStreak": "STREAK",
+  "statsNothingYet": "NOTHING TO SHOW YET",
+  "statsLast30": "STATISTICS BASED ON THE LAST 30 GAMES",
+  "statsSkillMastery": "Skill Mastery",
+  "statsLatestGame": "LATEST GAME",
+  "statsGamesAgo": "{n, plural, =1{1 GAME AGO} other{{n} GAMES AGO}}",
+  "@statsGamesAgo": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "statsNoData": "No data • {when}",
+  "@statsNoData": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "statsResponseTimeWhen": "Response Time • {when}",
+  "@statsResponseTimeWhen": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "statsResponseTime": "Response Time",
+  "statsLatest": "LATEST",
+  "statsSpeedTitle": "Your speed lives here",
+  "statsSpeedBody": "Play a session and watch every answer get quicker.",
+  "statsDegreeAccuracy": "Degree Accuracy",
+  "statsPlays": "PLAYS",
+  "statsAccuracy": "ACCURACY",
+  "statsGamesPlayed": "Games Played",
+  "statsHeatmap": "Keyboard Heatmap",
+  "statsByNote": "PERFORMANCE BY NOTE",
+  "statsSlow": "SLOW",
+  "statsFast": "FAST",
+  "statsRank": "RANK",
+  "statsFirstRunTitle": "Play one session",
+  "statsFirstRunBody": "Thirty questions in one key and every chart on this page fills in — your speed, the degrees you miss, the notes that slow you down.",
+  "kaTitle": "KEY ANALYSIS",
+  "kaMastery": "MASTERY",
+  "kaAvgResp": "AVG RESP.",
+  "kaPerAnswer": "PER ANSWER",
+  "kaToday": "TODAY",
+  "kaAccuracyOverTime": "Response Time",
+  "kaDegreeMastery": "Chromatic Degree Mastery",
+  "kaModeProgress": "Mode Progress",
+  "kaDegreeToNote": "DEGREE → NOTE",
+  "kaNoteToDegree": "NOTE → DEGREE",
+  "kaOfWhat": "…OF WHAT?",
+  "kaConfusions": "Common Confusions",
+  "kaNoConfusions": "NO CONFUSIONS YET. GREAT JOB!",
+  "kaNote": "NOTE",
+  "kaHarmonizer": "Harmonizer",
+  "kaHarmonizerSub": "“…Of What?” mastery",
+  "dailyTitle": "DAILY CHALLENGE",
+  "dailyDone": "DAILY DONE",
+  "dailyFlawless": "FLAWLESS",
+  "dailyOutOfTime": "OUT OF TIME",
+  "dailySharp": "SHARP",
+  "dailySolid": "SOLID",
+  "dailyWarmingUp": "WARMING UP",
+  "dailyTomorrow": "TOMORROW IS A NEW KEY",
+  "dailyCopied": "Result copied — paste it anywhere",
+  "dailyNewIn": "New challenge in {when}",
+  "@dailyNewIn": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "dailyNextIn": "Next challenge in {when}",
+  "@dailyNextIn": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "dailyBackHome": "Back to Home",
+  "dailyTheRun": "THE RUN",
+  "dailyStreak": "CHALLENGE STREAK",
+  "dailyShare": "Share your result",
+  "pocketTitle": "POCKET MODE",
+  "pocketDegrees": "DEGREES",
+  "pocketDelay": "DELAY",
+  "pocketSession": "SESSION",
+  "pocketListen": "LISTEN",
+  "pocketYourTurn": "YOUR TURN",
+  "pocketAnswer": "ANSWER",
+  "pocketReady": "READY",
+  "pocketComplete": "SESSION COMPLETE",
+  "pocketPlaying": "PLAYING",
+  "pocketPaused": "PAUSED",
+  "pocketScreenOff": "Keeps playing with the screen off",
+  "pocketAudioSession": "Audio session",
+  "feedbackTitle": "Tell us",
+  "feedbackBody": "It comes straight to us. No email app, no account, no name attached unless you write one.",
+  "feedbackHintBug": "What happened, and what were you doing?",
+  "feedbackHint": "Whatever you want to say.",
+  "feedbackEmail": "Your email — only if you want an answer",
+  "feedbackSend": "SEND",
+  "feedbackKindBug": "Something is broken",
+  "feedbackKindIdea": "An idea",
+  "feedbackKindOther": "Something else",
+  "levelUp": "Level Up!",
+  "levelUpYouAreNow": "You are now a ",
+  "awesome": "Awesome!",
+  "whatsNewVersionHere": "Version {v}\nis here",
+  "@whatsNewVersionHere": {
+    "placeholders": {
+      "v": {
+        "type": "String"
+      }
+    }
+  },
+  "whatsNewVersion": "VERSION {v}",
+  "@whatsNewVersion": {
+    "placeholders": {
+      "v": {
+        "type": "String"
+      }
+    }
+  },
+  "continueLabel": "CONTINUE",
+  "fullChangelog": "Full changelog",
+  "quizFromHome": "FROM YOUR HOME SCREEN",
+  "quizTrain": "Train ",
+  "freeModeTitle": "FREE MODE",
+  "freeModeTapNext": "TAP ANYWHERE FOR THE NEXT",
+  "freeModeNumbersDone": "NUMBERS DONE",
+  "freeModeSub": "No score, no clock — just the reps.",
+  "freeModeGoAgain": "GO AGAIN",
+  "remTargetTitle": "Target practice 🎯",
+  "remDailyTitle": "Daily Challenge 🏆",
+  "remDailyBody": "Today's challenge is in {key} major — one attempt, make it count.",
+  "@remDailyBody": {
+    "placeholders": {
+      "key": {
+        "type": "String"
+      }
+    }
+  },
+  "remQuizTitle": "Quick quiz 🎹",
+  "remQuizBody": "What's the {degree} of {key} major? Tap to check.",
+  "@remQuizBody": {
+    "placeholders": {
+      "degree": {
+        "type": "String"
+      },
+      "key": {
+        "type": "String"
+      }
+    }
+  },
+  "remLevelBody": "You're {pct}% from levelling up. Close the gap?",
+  "@remLevelBody": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "remMaxedBody": "Maxed out — keep those reflexes razor-sharp.",
+  "remGenericTitle": "Improvy 🎹",
+  "remGenericBody": "Every degree, every key, instantly. Got 3 minutes?",
+  "remEarTitle": "Ear training 🎧",
+  "remEarBody": "Fast recall beats slow theory. Quick session?",
+  "remFallbackBody": "Time to practise?",
+  "remComeback3": "Scale degrees fade fast when you stop. Your keys miss you.",
+  "remComeback7": "A week away — your instant recall needs a warm-up. Come back?",
+  "remStreakTitle": "Don't break your streak! 🔥",
+  "remStreakBody": "Your {n}-day streak ends tonight — 2 minutes to keep it alive.",
+  "@remStreakBody": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "clear": "Clear",
+  "statsSigNone": "NONE",
+  "statsSigSharp": "{n, plural, =1{1 SHARP} other{{n} SHARPS}}",
+  "@statsSigSharp": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "statsSigFlat": "{n, plural, =1{1 FLAT} other{{n} FLATS}}",
+  "@statsSigFlat": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "remConfusion": "You keep mixing up {a} and {b} in {key} major. 10 questions to nail it?",
+  "@remConfusion": {
+    "placeholders": {
+      "a": {
+        "type": "String"
+      },
+      "b": {
+        "type": "String"
+      },
+      "key": {
+        "type": "String"
+      }
+    }
+  },
+  "freeModeDone": "DONE",
+  "freeModeLeft": "LEFT",
+  "animalQuote1": "Slow and steady wins!",
+  "animalQuote2": "Steady progress!",
+  "animalQuote3": "Sliding smoothly!",
+  "animalQuote4": "Fast as a hare!",
+  "animalQuote5": "Clever and quick!",
+  "animalQuote6": "Galloping with precision!",
+  "animalQuote7": "Soaring high! Sharp vision!",
+  "animalQuote8": "Unstoppable! True Maestro!"
+}

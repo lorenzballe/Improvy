@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 
 import '../services/haptics_service.dart';
 import 'note_text.dart';
@@ -114,7 +115,7 @@ class _QuizRevealModalState extends State<QuizRevealModal>
                   ],
                 ),
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  const Text('FROM YOUR HOME SCREEN',
+                  Text(context.l10n.quizFromHome,
                       style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w900,
@@ -185,7 +186,7 @@ class _QuizRevealModalState extends State<QuizRevealModal>
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Text('Train ',
+                            Text(context.l10n.quizTrain,
                                 style: TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w800,
@@ -204,7 +205,7 @@ class _QuizRevealModalState extends State<QuizRevealModal>
                   ),
                   TextButton(
                     onPressed: _dismiss,
-                    child: Text('Not now',
+                    child: Text(context.l10n.notNow,
                         style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
