@@ -124,7 +124,6 @@ class _NoteToNumberSetupState extends State<NoteToNumberSetup> {
                                     pct: context
                                         .watch<AppProvider>()
                                         .ntnProgress(_key, chromatic: _chromatic),
-                                    color: AppColors.noteColors[_key] ?? _accent,
                                   ),
                                 ),
                                 const SizedBox(height: 18),
@@ -608,7 +607,6 @@ class _OfWhatSetupState extends State<OfWhatSetup> {
                                     pct: context
                                         .watch<AppProvider>()
                                         .harmonizerRowProgress(_note, all: _all),
-                                    color: AppColors.noteColors[_note] ?? _accent,
                                   ),
                                 ),
                                 const SizedBox(height: 18),
@@ -1112,7 +1110,11 @@ class _SectionTitle extends StatelessWidget {
       Row(children: [
         Icon(icon, size: 18, color: Colors.white.withValues(alpha:0.6)),
         const SizedBox(width: 8),
-        Flexible(
+        // Expanded, not Flexible-plus-Spacer. Both of those take a share of
+        // the free space, so the title kept half of what it did not use and
+        // the row stopped short of the edge — leaving the figure some 60px
+        // adrift of the record under the tiers, which is flush.
+        Expanded(
           child: FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
@@ -1125,9 +1127,6 @@ class _SectionTitle extends StatelessWidget {
           ),
         ),
         if (trailing != null) ...[
-          // Pushed to the far edge rather than trailing the words: it belongs
-          // to the grid underneath, not to the sentence.
-          const Spacer(),
           const SizedBox(width: 10),
           trailing!,
         ],
@@ -1416,43 +1415,45 @@ class _SlidingPillRow extends StatelessWidget {
   }
 }
 
+/// How a percentage is coloured wherever this screen shows one: grey when
+/// there is nothing yet, then red, amber, green, and gold once it is complete.
+///
+/// One function so the figure beside the grid and the one under the tiers
+/// cannot drift into two different scales — they are the same kind of number
+/// and must be read the same way.
+Color masteryPctColor(int pct) => pct <= 0
+    ? Colors.white.withAlpha(80)
+    : pct >= 100
+        ? const Color(0xFFFACC15)
+        : pct >= 80
+            ? const Color(0xFF10B981)
+            : pct >= 50
+                ? const Color(0xFFF59E0B)
+                : const Color(0xFFFB7185);
+
 /// The selected key's standing in the mode being set up, beside the grid.
 ///
-/// It is the outline on that key's tile, read out. The outline compares twelve
-/// keys at a glance and cannot say 62 rather than 60; this says the number for
-/// the one key you have your finger on. Same source, so they can never
-/// disagree — and it wears the key's own colour, which is how you know they
-/// are the same thing.
+/// It is the bar on that key's tile, read out. The bar compares twelve keys at
+/// a glance and cannot say 62 rather than 60; this says the number for the one
+/// key you have your finger on.
+///
+/// Drawn exactly like the record under the tiers — same size, same weight, the
+/// same colour scale — because it is the same kind of statement about the same
+/// key. A different treatment for each would suggest they mean different
+/// things, and it would leave their right edges in different places.
 class _KeyStanding extends StatelessWidget {
   final int pct;
-  final Color color;
-  const _KeyStanding({required this.pct, required this.color});
+  const _KeyStanding({required this.pct});
 
   @override
-  Widget build(BuildContext context) => Row(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.baseline,
-        textBaseline: TextBaseline.alphabetic,
-        children: [
-          Text(
-            '$pct',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -0.8,
-              // Untouched keys stay quiet: a grey zero does not ask to be read.
-              color: pct > 0 ? color : Colors.white.withValues(alpha: 0.3),
-            ),
-          ),
-          Text(
-            '%',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-              color: (pct > 0 ? color : Colors.white).withValues(alpha: 0.55),
-            ),
-          ),
-        ],
+  Widget build(BuildContext context) => Text(
+        '$pct%',
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w900,
+          letterSpacing: -0.5,
+          color: masteryPctColor(pct),
+        ),
       );
 }
 
@@ -1542,15 +1543,9 @@ class _TierSelector extends StatelessWidget {
     final best = levels[selected - 1];
     final cap = caps[selected - 1];
     final pct = (best / cap * 100).round().clamp(0, 100);
-    final color = best <= 0
-        ? Colors.white.withAlpha(80)
-        : best >= cap
-            ? const Color(0xFFFACC15)
-            : pct >= 80
-                ? const Color(0xFF10B981)
-                : pct >= 50
-                    ? const Color(0xFFF59E0B)
-                    : const Color(0xFFFB7185);
+    // best >= cap and pct >= 100 are the same statement; go through the shared
+    // scale so this row and the one beside the grid stay one rule.
+    final color = masteryPctColor(best <= 0 ? 0 : pct);
 
     final lockedLabels = <String>{
       for (var t = 2; t <= 3; t++)
