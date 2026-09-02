@@ -62,19 +62,19 @@ class Release {
 /// the right behaviour for a pure bug-fix build.
 const List<Release> kReleases = [
   Release(
-    version: '1.10.3',
+    version: '1.10.4',
     date: '30 AUG 2026',
-    headline: 'The key you are about to train tells you where you stand.',
+    headline: 'Every key shows how far you have taken it, at a glance.',
     lines: [
       ReleaseLine(
-        icon: Icons.percent_rounded,
+        icon: Icons.horizontal_rule_rounded,
         color: Color(0xFF34D399),
-        title: 'A number beside the grid',
+        title: 'A bar under every key',
         detail:
-            'Note to Number and …Of What? now show the selected key\u2019s '
-            'standing in that mode, right where you pick it. It is the outline '
-            'on the tile, said in a number — and it follows the direction you '
-            'are set up for.',
+            'Pick a key in Note to Number or …Of What? and each one carries a '
+            'small bar: filled as far as you have taken it, empty for the rest. '
+            'Twelve keys read like twelve columns, and the one you select says '
+            'its exact figure at the top.',
       ),
     ],
   ),

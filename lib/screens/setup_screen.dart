@@ -6,7 +6,7 @@ import '../constants/music_constants.dart';
 import '../models/key_progress.dart';
 import '../providers/app_provider.dart';
 import '../services/analytics_service.dart';
-import '../widgets/mastery_border.dart';
+import '../widgets/mastery_bar.dart';
 import '../widgets/note_text.dart';
 import 'pocket_mode_screen.dart' show PocketConfig;
 
@@ -1228,13 +1228,8 @@ class _KeyCell extends StatelessWidget {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       // No press/illuminate animation — the key colours instantly on tap.
-      child: MasteryBorder(
-        progress: mastery,
-        // On a selected cell the tile is already the note's colour, so the
-        // outline would vanish into it; white reads on both.
-        color: sel ? Colors.white.withValues(alpha: 0.85) : masteryColor,
-        radius: 16,
-        child: Container(
+      child: Container(
+        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           // Selected: vivid note colour with a glossy sheen + soft neon glow.
           // Unselected: quiet glass tile with a hairline border.
@@ -1254,24 +1249,38 @@ class _KeyCell extends StatelessWidget {
               ? [BoxShadow(color: c.withValues(alpha:0.40), blurRadius: 18, offset: const Offset(0, 6), spreadRadius: -4)]
               : null,
         ),
-        child: Center(
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: NoteText(
-              note: formatNoteForDisplay(noteKey,
-                  context.select<AppProvider, String>((p) => p.notation)),
-              style: TextStyle(
-                fontSize: 18, // web: text-lg
-                fontWeight: FontWeight.w900,
-                color: sel ? Colors.white : Colors.white.withValues(alpha:0.5),
-                letterSpacing: -0.5,
-                shadows: sel
-                    ? const [Shadow(color: Color(0x66000000), blurRadius: 4, offset: Offset(0, 1))]
-                    : null,
+        child: Stack(
+          children: [
+            Padding(
+              // Lifted by what the bar occupies, so the letter stays optically
+              // centred in the room left above it.
+              padding: const EdgeInsets.only(bottom: MasteryBar.reserved),
+              child: Center(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: NoteText(
+                    note: formatNoteForDisplay(noteKey,
+                        context.select<AppProvider, String>((p) => p.notation)),
+                    style: TextStyle(
+                      fontSize: 18, // web: text-lg
+                      fontWeight: FontWeight.w900,
+                      color: sel ? Colors.white : Colors.white.withValues(alpha:0.5),
+                      letterSpacing: -0.5,
+                      shadows: sel
+                          ? const [Shadow(color: Color(0x66000000), blurRadius: 4, offset: Offset(0, 1))]
+                          : null,
+                    ),
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
+            MasteryBar(
+              progress: mastery,
+              // The selected tile is already painted the note's colour, so the
+              // bar would vanish into it; white reads on both.
+              color: sel ? Colors.white.withValues(alpha: 0.9) : masteryColor,
+            ),
+          ],
         ),
       ),
     );

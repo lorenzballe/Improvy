@@ -8,7 +8,7 @@ import 'package:improvy/models/key_progress.dart';
 import 'package:improvy/providers/app_provider.dart';
 import 'package:improvy/screens/setup_screen.dart';
 import 'package:improvy/services/storage_service.dart';
-import 'package:improvy/widgets/mastery_border.dart';
+import 'package:improvy/widgets/mastery_bar.dart';
 
 /// Note to Number and "…Of What?" used to leave nothing behind: three sessions
 /// and none produced exactly the same saved state. These pin down the records
@@ -41,18 +41,6 @@ void answer(AppProvider p, String key, String mode, bool correct) {
     ),
   );
 }
-
-/// The painter is private to the widget, so it is identified by name — the
-/// alternative, "any CustomPaint with a foreground painter", also matches the
-/// ones Material puts in every Scaffold.
-Iterable<Element> _outlinePainters(WidgetTester t) =>
-    find.byType(CustomPaint).evaluate().where((e) =>
-        (e.widget as CustomPaint)
-            .foregroundPainter
-            ?.runtimeType
-            .toString()
-            .contains('MasteryPainter') ??
-        false);
 
 void main() {
   group('Note to Number keeps a record', () {
@@ -205,28 +193,39 @@ void main() {
     });
   });
 
-  group('the outline', () {
-    testWidgets('draws nothing at zero, so an untouched key looks untouched',
-        (t) async {
-      await t.pumpWidget(const MaterialApp(
-        home: MasteryBorder(
-          progress: 0,
-          color: Colors.red,
-          child: SizedBox(width: 60, height: 40),
+  group('the mastery bar', () {
+    Future<double> filled(WidgetTester t, double progress) async {
+      await t.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: 100,
+              height: 56,
+              child: Stack(children: [
+                MasteryBar(progress: progress, color: Colors.red),
+              ]),
+            ),
+          ),
         ),
       ));
-      expect(_outlinePainters(t), isEmpty);
+      await t.pump();
+      return t
+          .widget<FractionallySizedBox>(find.byType(FractionallySizedBox))
+          .widthFactor!;
+    }
+
+    testWidgets('an untouched key still shows its empty track', (t) async {
+      // The point of a bar over an outline: the part not yet earned is visible,
+      // so "nothing here yet" is something the tile can actually say.
+      expect(await filled(t, 0), 0);
+      expect(find.byType(MasteryBar), findsOneWidget);
     });
 
-    testWidgets('paints once there is something to show', (t) async {
-      await t.pumpWidget(const MaterialApp(
-        home: MasteryBorder(
-          progress: 0.5,
-          color: Colors.red,
-          child: SizedBox(width: 60, height: 40),
-        ),
-      ));
-      expect(_outlinePainters(t), isNotEmpty);
+    testWidgets('the fill is the progress, and cannot exceed the track',
+        (t) async {
+      expect(await filled(t, 0.62), closeTo(0.62, 1e-9));
+      expect(await filled(t, 1.4), 1.0);
+      expect(await filled(t, -0.2), 0.0);
     });
   });
 
