@@ -187,6 +187,82 @@ class StorageService {
     await _prefs.setInt('notif_minute', m);
   }
 
+  // ── Backup ─────────────────────────────────────────────────────────────────
+  //
+  // Every key this service owns, by name. The export is the raw preference
+  // values, not the models: it survives a model gaining a field, and it
+  // cannot lose anything the app has not yet learned to read.
+  static const _backupKeys = [
+    _progressKey, _dailyResultsKey, _dailyStartedKey, _statsKey,
+    _lastSessionKey, _adaptiveDiffKey, _tutorialKey, _notationKey,
+    _simpleNotesKey, _answerSoundKey, _keyboardFromTonicKey,
+    'last_seen_version', 'notif_perm_asked', 'notif_daily_on',
+    'notif_comeback_on', 'notif_hour', 'notif_minute',
+  ];
+
+  /// Increment when the export shape changes in a way an older app could not
+  /// read. Readers refuse a newer major rather than guess.
+  static const backupFormat = 1;
+
+  /// The whole of a player's progress and settings as one JSON document.
+  /// Pro status is deliberately NOT included: it belongs to the store account,
+  /// not the file, and is restored by "Restore purchases".
+  String exportJson() {
+    final data = <String, Object?>{};
+    for (final k in _backupKeys) {
+      final v = _prefs.get(k);
+      if (v != null) data[k] = v;
+    }
+    return jsonEncode({
+      'app': 'improvy',
+      'format': backupFormat,
+      'exported_at': DateTime.now().toUtc().toIso8601String(),
+      'data': data,
+    });
+  }
+
+  /// Replaces the stored progress and settings with [json]. Throws
+  /// [FormatException] on anything that is not an Improvy backup, and
+  /// writes nothing in that case — a bad file must not half-restore.
+  Future<void> importJson(String json) async {
+    final Object? decoded;
+    try {
+      decoded = jsonDecode(json);
+    } catch (_) {
+      throw const FormatException('not a JSON file');
+    }
+    if (decoded is! Map || decoded['app'] != 'improvy') {
+      throw const FormatException('not an Improvy backup');
+    }
+    final format = decoded['format'];
+    if (format is! int || format > backupFormat) {
+      throw const FormatException('made by a newer version of Improvy');
+    }
+    final data = decoded['data'];
+    if (data is! Map) throw const FormatException('backup has no data');
+
+    // Validate every value before touching a single key.
+    for (final k in _backupKeys) {
+      final v = data[k];
+      if (v == null) continue;
+      if (v is! String && v is! bool && v is! int) {
+        throw FormatException('unexpected value for $k');
+      }
+    }
+    for (final k in _backupKeys) {
+      final v = data[k];
+      if (v == null) {
+        await _prefs.remove(k);
+      } else if (v is String) {
+        await _prefs.setString(k, v);
+      } else if (v is bool) {
+        await _prefs.setBool(k, v);
+      } else if (v is int) {
+        await _prefs.setInt(k, v);
+      }
+    }
+  }
+
   Future<void> resetAll() async {
     await _prefs.remove(_progressKey);
     await _prefs.remove(_statsKey);

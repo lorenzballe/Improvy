@@ -10,6 +10,7 @@ import '../constants/app_info.dart';
 import '../constants/release_notes.dart';
 import '../services/purchase_service.dart';
 import '../services/review_service.dart';
+import '../services/backup_service.dart';
 import 'legal_screen.dart';
 import 'free_mode_screen.dart';
 import '../widgets/pressable_scale.dart';
@@ -677,10 +678,17 @@ class SettingsScreen extends StatelessWidget {
                           children: [
                             Icon(Icons.restore_rounded, color: Color(0xFFFBBF24), size: 16),
                             SizedBox(width: 8),
-                            Text('RESTORE PURCHASES', style: TextStyle(
-                              fontSize: 12, fontWeight: FontWeight.w700,
-                              color: Color(0xFFFBBF24), letterSpacing: 0.6,
-                            )),
+                            // Scaled, not clipped: at the largest type size
+                            // this label is a pixel wider than the button.
+                            Flexible(
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text('RESTORE PURCHASES', maxLines: 1, softWrap: false, style: TextStyle(
+                                  fontSize: 12, fontWeight: FontWeight.w700,
+                                  color: Color(0xFFFBBF24), letterSpacing: 0.6,
+                                )),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -756,6 +764,44 @@ class SettingsScreen extends StatelessWidget {
               ],
 
               // SUPPORT
+              _sectionLabel('BACKUP'),
+              const SizedBox(height: 12),
+              _backupRow(
+                context,
+                icon: Icons.upload_rounded,
+                title: 'Export progress',
+                subtitle: 'One file with every key, score and setting',
+                onTap: () async {
+                  final ok = await BackupService.instance.export(provider.storage);
+                  if (!ok && context.mounted) {
+                    _toast(context, 'Could not start the export', icon: Icons.error_outline_rounded);
+                  }
+                },
+              ),
+              const SizedBox(height: 10),
+              _backupRow(
+                context,
+                icon: Icons.download_rounded,
+                title: 'Restore from file',
+                subtitle: 'Replaces what is on this phone',
+                onTap: () async {
+                  final go = await _confirmRestore(context);
+                  if (go != true || !context.mounted) return;
+                  final err = await BackupService.instance.import(provider.storage);
+                  if (!context.mounted) return;
+                  if (err == null) {
+                    await provider.reloadFromStorage();
+                    if (context.mounted) {
+                      _toast(context, 'Restored. Everything is back.',
+                          icon: Icons.check_circle_rounded);
+                    }
+                  } else if (err.isNotEmpty) {
+                    _toast(context, err, icon: Icons.error_outline_rounded);
+                  }
+                },
+              ),
+              const SizedBox(height: 28),
+
               _sectionLabel('SUPPORT'),
               const SizedBox(height: 12),
               // Hidden until the store listing is reachable (iOS needs
@@ -1127,6 +1173,74 @@ class SettingsScreen extends StatelessWidget {
       ]),
     ),
   );
+
+  Widget _backupRow(BuildContext context,
+          {required IconData icon,
+          required String title,
+          required String subtitle,
+          required VoidCallback onTap}) =>
+      PressableScale(
+        onTap: onTap,
+        child: _blurCard(
+          child: Row(children: [
+            Container(
+              width: 32, height: 32,
+              decoration: BoxDecoration(
+                color: const Color(0x3322D3EE),
+                border: Border.all(color: const Color(0x3322D3EE)),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: const Color(0xFF22D3EE), size: 17),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(title,
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w700,
+                          color: Colors.white, letterSpacing: 0.4)),
+                  const SizedBox(height: 2),
+                  Text(subtitle,
+                      style: TextStyle(
+                          fontSize: 11, fontWeight: FontWeight.w600,
+                          color: Colors.white.withAlpha(115))),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, color: Colors.white.withAlpha(51)),
+          ]),
+        ),
+      );
+
+  /// Restoring overwrites; say so before, not after.
+  Future<bool?> _confirmRestore(BuildContext context) => showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: const Color(0xFF1A1625),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text('Restore from a file?',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+          content: const Text(
+              'Everything on this phone — every key, score and setting — is '
+              'replaced by what is in the file. Your Pro licence is not '
+              'affected.',
+              style: TextStyle(color: Colors.white54, height: 1.4)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Choose file',
+                  style: TextStyle(color: Color(0xFF22D3EE), fontWeight: FontWeight.w800)),
+            ),
+          ],
+        ),
+      );
 
   /// The one support row that cannot fail to open. Contact Support hands the
   /// message to a mail app the phone may not have set up; this is a box and a
@@ -1636,7 +1750,11 @@ class _ToggleSwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
+    // The card around this is the tap target; the switch just has to tell a
+    // screen reader which way it is.
+    return Semantics(
+      toggled: value,
+      child: AnimatedContainer(
       // The pill background fades smoothly while the thumb springs across.
       duration: const Duration(milliseconds: 220),
       curve: Curves.easeOut,
@@ -1669,6 +1787,7 @@ class _ToggleSwitch extends StatelessWidget {
               : null,
         ),
       ),
+    ),
     );
   }
 }

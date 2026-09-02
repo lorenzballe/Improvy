@@ -134,7 +134,10 @@ class _StableInsetsState extends State<_StableInsets> {
     final stableBottom = keyboardOpen ? mq.padding.bottom : _bottom;
     return MediaQuery(
       data: mq.copyWith(
-        textScaler: mq.textScaler.clamp(minScaleFactor: 0.9, maxScaleFactor: 1.1),
+        // 1.3, up from 1.1. The design is tight, but ignoring a reader who
+        // has asked the OS for larger type is not tightness, it is a wall —
+        // and every screen already scales its headline into the room it has.
+        textScaler: mq.textScaler.clamp(minScaleFactor: 0.85, maxScaleFactor: 1.3),
         padding: mq.padding.copyWith(top: _top, bottom: stableBottom),
         viewPadding: mq.viewPadding.copyWith(
           top: _top,

@@ -95,6 +95,9 @@ class AppProvider extends ChangeNotifier {
   DateTime? _dailyStartedAt;
   DailyChallenge? _cachedChallenge;
 
+  /// For the backup rows in Settings, which read and write the store directly.
+  StorageService get storage => _storage;
+
   Future<void> init() async {
     progressData = _storage.loadProgress();
     stats = _storage.loadStats();
@@ -114,6 +117,16 @@ class AppProvider extends ChangeNotifier {
     _initReleaseNotes();
     _recoverPendingSession();
     resyncNotifications();
+    notifyListeners();
+  }
+
+  /// Re-reads everything from storage after a backup has been restored, and
+  /// tells every listener. Pro status is left as the store last said it was.
+  Future<void> reloadFromStorage() async {
+    final pro = isPro;
+    await init();
+    isPro = pro;
+    syncAnalyticsProfile();
     notifyListeners();
   }
 

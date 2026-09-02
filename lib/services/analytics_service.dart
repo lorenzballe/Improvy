@@ -66,6 +66,11 @@ abstract final class Ev {
   /// optional `email`. Read it in PostHog → Activity, filtered on this event.
   static const feedbackSubmitted = 'feedback_submitted';
 
+  // ── Backup ──
+  static const backupExported = 'backup_exported';
+  static const backupImported = 'backup_imported';
+  static const backupFailed = 'backup_failed';
+
   // ── Settings & notifications ──
   static const settingChanged = 'setting_changed';
   static const notifPermissionAsked = 'notification_permission_asked';

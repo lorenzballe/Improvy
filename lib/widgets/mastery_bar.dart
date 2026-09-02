@@ -43,7 +43,10 @@ class MasteryBar extends StatelessWidget {
         right: inset,
         bottom: bottom,
         height: height,
-        child: ClipRRect(
+        // The cell around it already says the percentage; a second reading
+        // of the same number is noise to a screen reader.
+        child: ExcludeSemantics(
+          child: ClipRRect(
           borderRadius: BorderRadius.circular(height / 2),
           child: Stack(children: [
             Positioned.fill(
@@ -54,6 +57,7 @@ class MasteryBar extends StatelessWidget {
               child: ColoredBox(color: color),
             ),
           ]),
+        ),
         ),
       );
 }

@@ -62,6 +62,30 @@ class Release {
 /// the right behaviour for a pure bug-fix build.
 const List<Release> kReleases = [
   Release(
+    version: '1.12.0',
+    date: '31 AUG 2026',
+    headline: 'Your progress can leave the phone, and the app can be read aloud.',
+    lines: [
+      ReleaseLine(
+        icon: Icons.upload_rounded,
+        color: Color(0xFF22D3EE),
+        title: 'Export and restore',
+        detail:
+            'Settings → Backup writes one file with every key, score and '
+            'setting. Reinstall, change phone, switch between iPhone and '
+            'Android — restore it and everything is back.',
+      ),
+      ReleaseLine(
+        icon: Icons.accessibility_new_rounded,
+        color: Color(0xFF34D399),
+        title: 'Larger type, and a screen reader that makes sense',
+        detail:
+            'The app now follows the system text size up to 130%, and keys, '
+            'answer buttons and switches announce what they are.',
+      ),
+    ],
+  ),
+  Release(
     version: '1.11.0',
     date: '31 AUG 2026',
     headline: 'Hear the note you just named, and a proper start for newcomers.',

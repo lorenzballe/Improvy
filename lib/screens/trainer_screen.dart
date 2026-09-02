@@ -1705,7 +1705,12 @@ class _NoteButtonState extends State<_NoteButton> with SingleTickerProviderState
       shadows = const [BoxShadow(color: Color(0x40000000), blurRadius: 24, offset: Offset(0, 8))];
     }
 
-    final button = GestureDetector(
+    final button = Semantics(
+      button: true,
+      enabled: isActive,
+      label: widget.item.label,
+      excludeSemantics: true,
+      child: GestureDetector(
       onTapDown: isActive ? (_) => setState(() => _pressed = true) : null,
       onTapUp: isActive ? (_) { setState(() => _pressed = false); widget.onTap(); } : null,
       onTapCancel: isActive ? () => setState(() => _pressed = false) : null,
@@ -1760,6 +1765,7 @@ class _NoteButtonState extends State<_NoteButton> with SingleTickerProviderState
         ),
         ),
       ),
+    ),
     );
 
     // Bounce (correct) / shake (wrong) on the button the user actually pressed.
@@ -2221,7 +2227,12 @@ class _PianoKeyState extends State<_PianoKey> {
 
     final dy = _pressed ? (isBlack ? 6.0 : 10.0) : 0.0;
 
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      enabled: tappable,
+      label: widget.def.name,
+      excludeSemantics: true,
+      child: GestureDetector(
       onTapDown: tappable ? (_) => setState(() => _pressed = true) : null,
       onTapUp: tappable ? (_) => setState(() => _pressed = false) : null,
       onTapCancel: tappable ? () => setState(() => _pressed = false) : null,
@@ -2257,6 +2268,7 @@ class _PianoKeyState extends State<_PianoKey> {
           ],
         ),
       ),
+    ),
     );
   }
 }

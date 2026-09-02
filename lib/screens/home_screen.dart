@@ -882,7 +882,11 @@ class _KeyCardState extends State<_KeyCard> {
   Widget build(BuildContext context) {
     final progress = widget.keyData.totalProgress;
     final color = widget.color;
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: 'Key of ${widget.keyData.key}, $progress percent',
+      excludeSemantics: true,
+      child: GestureDetector(
       onTapDown: (_) => setState(() => _pressed = true),
       onTapUp: (_) { setState(() => _pressed = false); widget.onTap(); },
       onTapCancel: () => setState(() => _pressed = false),
@@ -982,6 +986,7 @@ class _KeyCardState extends State<_KeyCard> {
               ]),
         ),
       ),
+    ),
     );
   }
 }

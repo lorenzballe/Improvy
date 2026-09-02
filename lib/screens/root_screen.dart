@@ -1321,7 +1321,11 @@ class _FloatingNav extends StatelessWidget {
                     final (icon, label) = items[i];
                     final isActive = currentIndex == i;
                     return Expanded(
-                      child: GestureDetector(
+                      child: Semantics(
+                        button: true,
+                        selected: isActive,
+                        label: items[i].$2,
+                        child: GestureDetector(
                         onTap: () => onTap(i),
                         behavior: HitTestBehavior.opaque,
                         child: Padding(
@@ -1386,6 +1390,7 @@ class _FloatingNav extends StatelessWidget {
                             ],
                           ),
                         ),
+                      ),
                       ),
                     );
                   }),

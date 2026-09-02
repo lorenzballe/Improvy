@@ -1227,7 +1227,12 @@ class _KeyCell extends StatelessWidget {
   Widget build(BuildContext context) {
     final sel = selected;
     final c = displayColor;
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      selected: sel,
+      label: '$noteKey, ${(mastery * 100).round()} percent',
+      excludeSemantics: true,
+      child: GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       // No press/illuminate animation — the key colours instantly on tap.
@@ -1286,6 +1291,7 @@ class _KeyCell extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 }
