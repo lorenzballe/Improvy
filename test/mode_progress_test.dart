@@ -137,6 +137,7 @@ void main() {
   });
 
   _tierFollowsTheKey();
+  _keyStanding();
 
   group('the tier gates', () {
     test('Apprentice is always open, the two above are earned at 80%', () {
@@ -330,5 +331,60 @@ void _tierFollowsTheKey() {
     expect(startedAt, 1,
         reason: 'START must use the tier the page is showing, not the one '
             'left over from the previous key');
+  });
+}
+
+/// The number beside "Select Root Key" is the outline on that key's tile, read
+/// out. Same source, so they can never disagree — and it must follow both the
+/// key and the row being set up.
+void _keyStanding() {
+  testWidgets('the standing beside the grid tracks the key and the row',
+      (t) async {
+    final p = await freshProvider();
+    // C taken a long way in the 7-degree row; G untouched.
+    p.selectKey('C');
+    p.startNoteToNumberMode(degrees: const ['1'], difficulty: 1);
+    for (var i = 0; i < 24; i++) {
+      answer(p, 'C', 'note-to-number', true);
+    }
+    p.finishSession();
+    p.exitTrainer();
+
+    t.view.physicalSize = const Size(390, 1100);
+    t.view.devicePixelRatio = 1.0;
+    addTearDown(t.view.resetPhysicalSize);
+    addTearDown(t.view.resetDevicePixelRatio);
+    await t.pumpWidget(ChangeNotifierProvider<AppProvider>.value(
+      value: p,
+      child: MaterialApp(
+        home: NoteToNumberSetup(
+          initialKey: 'C',
+          isPro: true,
+          onShowPaywall: () {},
+          onCancel: () {},
+          onStart: (_, _, _, _) {},
+        ),
+      ),
+    ));
+    await t.pump();
+
+    final shown = p.ntnProgress('C', chromatic: false);
+    expect(shown, greaterThan(0));
+    expect(find.text('$shown'), findsWidgets,
+        reason: 'the badge must show what the outline is drawing');
+
+    // The 12-degree row was never played, so switching to it drops to zero.
+    await t.tap(find.text('CHROMATIC'));
+    await t.pump();
+    expect(p.ntnProgress('C', chromatic: true), 0);
+    expect(find.text('0'), findsWidgets);
+
+    // And an untouched key reads zero too.
+    await t.tap(find.text('DIATONIC'));
+    await t.pump();
+    await t.tap(find.text('G'));
+    await t.pump();
+    expect(p.ntnProgress('G', chromatic: false), 0);
+    expect(find.text('0'), findsWidgets);
   });
 }

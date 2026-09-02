@@ -62,6 +62,23 @@ class Release {
 /// the right behaviour for a pure bug-fix build.
 const List<Release> kReleases = [
   Release(
+    version: '1.10.3',
+    date: '30 AUG 2026',
+    headline: 'The key you are about to train tells you where you stand.',
+    lines: [
+      ReleaseLine(
+        icon: Icons.percent_rounded,
+        color: Color(0xFF34D399),
+        title: 'A number beside the grid',
+        detail:
+            'Note to Number and …Of What? now show the selected key\u2019s '
+            'standing in that mode, right where you pick it. It is the outline '
+            'on the tile, said in a number — and it follows the direction you '
+            'are set up for.',
+      ),
+    ],
+  ),
+  Release(
     version: '1.10.2',
     date: '30 AUG 2026',
     headline: 'The statistics now measure what you would feel on a bandstand.',

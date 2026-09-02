@@ -116,10 +116,16 @@ class _NoteToNumberSetupState extends State<NoteToNumberSetup> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const _SectionTitle(
+                                _SectionTitle(
                                   icon: Icons.music_note_rounded,
                                   title: 'Select Root Key',
                                   subtitle: 'Choose the foundation for your training.',
+                                  trailing: _KeyStanding(
+                                    pct: context
+                                        .watch<AppProvider>()
+                                        .ntnProgress(_key, chromatic: _chromatic),
+                                    color: AppColors.noteColors[_key] ?? _accent,
+                                  ),
                                 ),
                                 const SizedBox(height: 18),
                                 _KeyGrid(
@@ -594,10 +600,16 @@ class _OfWhatSetupState extends State<OfWhatSetup> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const _SectionTitle(
+                                _SectionTitle(
                                   icon: Icons.music_note_rounded,
                                   title: 'Select Note',
                                   subtitle: 'The melody note held for the whole session.',
+                                  trailing: _KeyStanding(
+                                    pct: context
+                                        .watch<AppProvider>()
+                                        .harmonizerRowProgress(_note, all: _all),
+                                    color: AppColors.noteColors[_note] ?? _accent,
+                                  ),
                                 ),
                                 const SizedBox(height: 18),
                                 _KeyGrid(
@@ -1079,7 +1091,19 @@ class _SectionTitle extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
-  const _SectionTitle({required this.icon, required this.title, this.subtitle = ''});
+
+  /// Sits at the far right of the title line. Used to put the selected key's
+  /// standing beside "Select Root Key" — the same figure its outline in the
+  /// grid below is already drawing, said in words for the one key that matters
+  /// right now.
+  final Widget? trailing;
+
+  const _SectionTitle({
+    required this.icon,
+    required this.title,
+    this.subtitle = '',
+    this.trailing,
+  });
 
   @override
   Widget build(BuildContext context) => Column(
@@ -1100,6 +1124,13 @@ class _SectionTitle extends StatelessWidget {
             ),
           ),
         ),
+        if (trailing != null) ...[
+          // Pushed to the far edge rather than trailing the words: it belongs
+          // to the grid underneath, not to the sentence.
+          const Spacer(),
+          const SizedBox(width: 10),
+          trailing!,
+        ],
       ]),
       if (subtitle.isNotEmpty) ...[
         const SizedBox(height: 4),
@@ -1374,6 +1405,46 @@ class _SlidingPillRow extends StatelessWidget {
       );
     });
   }
+}
+
+/// The selected key's standing in the mode being set up, beside the grid.
+///
+/// It is the outline on that key's tile, read out. The outline compares twelve
+/// keys at a glance and cannot say 62 rather than 60; this says the number for
+/// the one key you have your finger on. Same source, so they can never
+/// disagree — and it wears the key's own colour, which is how you know they
+/// are the same thing.
+class _KeyStanding extends StatelessWidget {
+  final int pct;
+  final Color color;
+  const _KeyStanding({required this.pct, required this.color});
+
+  @override
+  Widget build(BuildContext context) => Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
+        children: [
+          Text(
+            '$pct',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -0.8,
+              // Untouched keys stay quiet: a grey zero does not ask to be read.
+              color: pct > 0 ? color : Colors.white.withValues(alpha: 0.3),
+            ),
+          ),
+          Text(
+            '%',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              color: (pct > 0 ? color : Colors.white).withValues(alpha: 0.55),
+            ),
+          ),
+        ],
+      );
 }
 
 // ── Difficulty tiers, with the record and the gates ──────────────────────────
