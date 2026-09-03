@@ -1847,7 +1847,6 @@ class _PianoKeyboard extends StatelessWidget {
   final String? lastSelected;
   final String notation;
   final double height;
-  final int startWhiteSemitone; // semitone of the leftmost white key (0 = C)
   // Non-null to anchor the octave at the TOP: this semitone becomes the
   // rightmost (highest) key. "…Of What?" anchors on the held melody note;
   // "keyboard from tonic" anchors on the 7th degree, so the tonic starts the
@@ -1870,7 +1869,6 @@ class _PianoKeyboard extends StatelessWidget {
     required this.lastSelected,
     required this.notation,
     required this.height,
-    this.startWhiteSemitone = 0,
     this.topSemitone,
     this.fixedSemitone,
     this.chromaticTonic,
@@ -1981,7 +1979,9 @@ class _PianoKeyboard extends StatelessWidget {
     final spellWhites = chromaticTonic != null;
     final (whites, blacks) = topSemitone != null
         ? _buildKeysEndingAt(topSemitone!, scaleNames, spellWhites)
-        : _buildKeys(startWhiteSemitone, scaleNames, spellWhites);
+        // Always from C: the octave this draws is fixed, and the parameter
+        // that once made it movable was never passed.
+        : _buildKeys(0, scaleNames, spellWhites);
     // Which semitones are valid answer options right now.
     //
     // Above Apprentice every key is live. Lighting only the scale is what made

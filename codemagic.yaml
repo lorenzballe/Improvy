@@ -32,6 +32,11 @@ workflows:
 
       # Nothing ships red. Both are cheap next to the Xcode build that follows,
       # and a failing test that reaches TestFlight costs a whole review cycle.
+      #
+      # --no-fatal-infos only spares the style lints; warnings still fail the
+      # build, which is the point — dead code and unused parameters are how a
+      # refactor leaves litter behind. If this ever goes red on a warning, the
+      # fix is to delete the dead thing, not to widen the flag.
       - name: Analyze
         script: flutter analyze --no-fatal-infos
       - name: Test

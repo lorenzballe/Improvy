@@ -33,8 +33,6 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
   double _hero = 1.0;
 
   static const _gold = Color(0xFFFBBF24);
-  static const _goldSoft = Color(0xFFFCD34D);
-  static const _ink = Color(0xFF2A1B04); // dark brown on gold — high contrast
   /// Shown only until the store answers, and only if it never does — the real
   /// figure is whatever [PurchaseService.proPriceString] returns for the
   /// reader's own region. Kept in step with the euro price published on the
@@ -370,18 +368,6 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
 
   Widget _dot() => Text('  ·  ',
     style: TextStyle(fontSize: 11.5, color: Colors.white.withValues(alpha: 0.25)));
-}
-
-/// Scales a single line down (never up) so a long headline can't wrap or clip.
-class _FitLine extends StatelessWidget {
-  final Widget child;
-  const _FitLine({required this.child});
-
-  @override
-  Widget build(BuildContext context) => SizedBox(
-    width: double.infinity,
-    child: FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: child),
-  );
 }
 
 // ── Aurora: six colour washes bleeding in from the edges ──────────────────────

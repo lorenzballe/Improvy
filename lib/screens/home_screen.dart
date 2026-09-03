@@ -2355,8 +2355,9 @@ class _SharpFlatPainter extends CustomPainter {
       final penX = ox + inkLeftEm * fs;
       for (final stroke in [true, false]) {
         final tp = _tp(g, fs, stroke: stroke);
-        final bl = tp.computeDistanceToActualBaseline(TextBaseline.alphabetic) ??
-            tp.height * 0.8;
+        // A laid-out painter with text in it always has a baseline; the old
+        // fallback here was unreachable and the analyzer said so.
+        final bl = tp.computeDistanceToActualBaseline(TextBaseline.alphabetic);
         tp.paint(canvas, Offset(penX, baseY - bl));
       }
     }
@@ -2377,7 +2378,6 @@ class _ThickGlyph extends StatelessWidget {
   final double size;
   /// Gap between glyphs when more than one is drawn — Noto Music sets the
   /// accidentals tight, and ♯♭ reads as one smudge without it.
-  final double letterSpacing;
   /// Width of the faux-bold stroke. Needs raising when the glyph is scaled
   /// down afterwards, or the extra weight is scaled away with it. Set to 0 to
   /// skip the outline pass entirely — a glyph that already has enough weight
@@ -2387,7 +2387,7 @@ class _ThickGlyph extends StatelessWidget {
   /// ♭; ordinary glyphs want something nearer the Material icons beside them.
   final FontWeight weight;
   const _ThickGlyph(this.glyph, this.size,
-      {this.letterSpacing = 0, this.stroke = 1.1, this.weight = FontWeight.w900});
+      {this.stroke = 1.1, this.weight = FontWeight.w900});
 
   @override
   Widget build(BuildContext context) {
@@ -2399,7 +2399,6 @@ class _ThickGlyph extends StatelessWidget {
         if (stroke > 0)
           Text(glyph, style: TextStyle(
             fontSize: size, fontWeight: weight, height: 1,
-            letterSpacing: letterSpacing,
             fontFamilyFallback: const ['NotoMusic'],
             foreground: Paint()
               ..style = PaintingStyle.stroke
@@ -2409,7 +2408,6 @@ class _ThickGlyph extends StatelessWidget {
           )),
         Text(glyph, style: TextStyle(
           fontSize: size, fontWeight: weight, height: 1, color: Colors.white,
-          letterSpacing: letterSpacing,
           fontFamilyFallback: const ['NotoMusic'],
         )),
       ],
