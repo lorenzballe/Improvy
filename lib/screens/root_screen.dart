@@ -756,7 +756,6 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
         notation: provider.notation,
         keyboardFromTonic: provider.keyboardFromTonic,
         simpleNotes: provider.simpleNotes,
-        answerSound: provider.answerSound,
         questionSequence: provider.dailyChallengeActive ? provider.activeDailyDegrees : null,
         isDaily: provider.dailyChallengeActive,
         // One clock for the whole run instead of a per-question limit: ten

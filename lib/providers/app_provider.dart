@@ -32,8 +32,6 @@ class AppProvider extends ChangeNotifier {
   /// the key-correct spelling that can print F♭, C♭ or a slashed pair.
   bool simpleNotes = false;
 
-  /// Play the note itself on a correct answer.
-  bool answerSound = true;
   // When true, the in-game piano keyboard starts from the current key's tonic
   // (or the white key just below it, if the tonic is a black key) instead of
   // always running C→C.
@@ -112,7 +110,6 @@ class AppProvider extends ChangeNotifier {
     // whose musicians write it — and never touches a choice already made.
     notation = _storage.loadNotationOrNull() ??
         (L10n.prefersSolfege(PlatformDispatcher.instance.locale) ? 'DoReMi' : 'CDE');
-    answerSound = _storage.loadAnswerSound();
     simpleNotes = _storage.loadSimpleNotes();
     keyboardFromTonic = _storage.loadKeyboardFromTonic();
     notifDailyOn = _storage.loadNotifDailyOn();
@@ -1386,15 +1383,6 @@ class AppProvider extends ChangeNotifier {
     _storage.saveNotation(value);
     AnalyticsService.instance.capture(Ev.settingChanged,
         {'setting': 'notation', 'value': value});
-    syncAnalyticsProfile();
-    notifyListeners();
-  }
-
-  void setAnswerSound(bool value) {
-    answerSound = value;
-    _storage.saveAnswerSound(value);
-    AnalyticsService.instance.capture(Ev.settingChanged,
-        {'setting': 'answer_sound', 'value': value});
     syncAnalyticsProfile();
     notifyListeners();
   }

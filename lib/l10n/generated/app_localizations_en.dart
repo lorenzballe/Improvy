@@ -108,28 +108,25 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get explainer1Title => 'Every note\nhas a number.';
+  String get explainer1Title => 'Every key\nhas a number.';
 
   @override
   String get explainer1Body =>
-      'In C major, C is 1, D is 2, E is 3 — up to B, which is 7. That number is its degree. Musicians think in degrees, not letters, because the number says what the note is doing.';
+      'These are the seven notes of C major. Musicians call them by their number — the degree — because the number says what the note is doing, and it works the same in every key.';
 
   @override
-  String get explainer2Title => 'Same numbers,\nany key.';
+  String get explainer2Title => 'Change key.\nThe numbers stay.';
 
   @override
   String get explainer2Body =>
-      'Move to G major and the letters change but the numbers do not: G is 1, A is 2, B is 3. Know the numbers and you know every key at once — that is the whole trick of improvising.';
+      'Tap a key and watch. The letters move, the numbers do not: the 5 is always the 5. Learn the numbers once and you have all twelve keys.';
 
   @override
-  String get explainer3Title => 'We ask,\nyou tap.';
+  String get explainer3Title => 'Try one.';
 
   @override
   String get explainer3Body =>
-      'A key and a degree come up — \"the 5 of E flat\" — and you tap the note. Fast enough, often enough, and it stops being arithmetic and becomes instinct. Two minutes a day is plenty.';
-
-  @override
-  String get explainerKeyOf => 'KEY OF ';
+      'That is the whole game. Fast enough, often enough, and it stops being arithmetic and becomes instinct — two minutes a day is plenty.';
 
   @override
   String get letsGo => 'Let\'s go';
@@ -704,16 +701,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsSimpleNotesBody =>
       'One name per note everywhere — no slashes, no double names. C  D♭  D  E♭  E  F  F♯  G  A♭  A  B♭  B.';
-
-  @override
-  String get settingsHearNote => 'Hear the Note';
-
-  @override
-  String get settingsHearNoteTag => 'ON CORRECT ANSWERS';
-
-  @override
-  String get settingsHearNoteBody =>
-      'Every right answer plays the note you just named, so the ear learns it alongside the number. Off is for quiet places.';
 
   @override
   String get settingsKeyboardTonic => 'Keyboard from Tonic';
@@ -1315,4 +1302,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get animalQuote8 => 'Unstoppable! True Maestro!';
+
+  @override
+  String get explainerTapKey => 'TAP A KEY';
+
+  @override
+  String explainerQuestion(String key, String degree) {
+    return 'In $key, which note is the $degree?';
+  }
+
+  @override
+  String get explainerRight => 'That\'s it.';
+
+  @override
+  String get explainerWrong => 'Not quite — try again.';
+
+  @override
+  String get explainerAgain => 'Another one';
 }

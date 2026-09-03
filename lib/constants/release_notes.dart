@@ -62,6 +62,30 @@ class Release {
 /// the right behaviour for a pure bug-fix build.
 const List<Release> kReleases = [
   Release(
+    version: '1.14.0',
+    date: '1 SEP 2026',
+    headline: 'The first three screens now show the idea instead of describing it.',
+    lines: [
+      ReleaseLine(
+        icon: Icons.piano_rounded,
+        color: Color(0xFFA855F7),
+        title: 'A keyboard you can move',
+        detail:
+            'The numbers sit on the keys. Change the key and watch the letters '
+            'move while the numbers stay — that is the whole idea of the app, '
+            'in one tap.',
+      ),
+      ReleaseLine(
+        icon: Icons.touch_app_rounded,
+        color: Color(0xFF34D399),
+        title: 'Answer one before you start',
+        detail:
+            'The last screen is a real question, with the key lighting up when '
+            'you get it. Nobody reaches the home screen without having played.',
+      ),
+    ],
+  ),
+  Release(
     version: '1.13.0',
     date: '1 SEP 2026',
     headline: 'Improvy now speaks your language.',

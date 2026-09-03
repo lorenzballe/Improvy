@@ -428,8 +428,7 @@ class SettingsScreen extends StatelessWidget {
                     _SimpleNotesCard(provider: provider),
                     const SizedBox(height: 12),
                     _KeyboardFromTonicCard(provider: provider),
-                    const SizedBox(height: 10),
-                    _AnswerSoundCard(provider: provider),
+
                     const SizedBox(height: 20),
 
                     Row(
@@ -1459,93 +1458,6 @@ class _SimpleNotesCard extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               context.l10n.settingsSimpleNotesBody,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-                color: Colors.white.withAlpha(102),
-                height: 1.5,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// The note itself on a correct answer. On by default — it is the lesson —
-/// and switchable for a train carriage or a shared room.
-class _AnswerSoundCard extends StatelessWidget {
-  final AppProvider provider;
-  const _AnswerSoundCard({required this.provider});
-
-  @override
-  Widget build(BuildContext context) {
-    final on = provider.answerSound;
-    const accent = Color(0xFF22D3EE); // cyan
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () => provider.setAnswerSound(!on),
-      child: AnimatedContainer(
-        duration: Duration.zero,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          gradient: on
-              ? const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0x4D22D3EE), Color(0x1422D3EE)],
-                )
-              : null,
-          color: on ? null : Colors.white.withAlpha(8),
-          border: Border.all(color: on ? const Color(0x6622D3EE) : Colors.white.withAlpha(13)),
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: on ? [const BoxShadow(color: Color(0x2622D3EE), blurRadius: 30)] : null,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 48, height: 48,
-                  decoration: BoxDecoration(
-                    color: on ? accent : Colors.white.withAlpha(26),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: on ? [const BoxShadow(color: Color(0x6622D3EE), blurRadius: 25)] : null,
-                  ),
-                  child: Icon(Icons.music_note_rounded,
-                      color: on ? Colors.white : Colors.white.withAlpha(102), size: 26),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(context.l10n.settingsHearNote,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w900,
-                            color: on ? Colors.white : Colors.white.withAlpha(179),
-                            letterSpacing: 0.4,
-                          )),
-                      const SizedBox(height: 3),
-                      Text(context.l10n.settingsHearNoteTag,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white.withAlpha(102),
-                            letterSpacing: 1.5,
-                          )),
-                    ],
-                  ),
-                ),
-                _ToggleSwitch(value: on, color: accent),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              context.l10n.settingsHearNoteBody,
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w500,

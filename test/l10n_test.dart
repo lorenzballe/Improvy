@@ -3,6 +3,11 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:improvy/providers/app_provider.dart';
+import 'package:improvy/services/storage_service.dart';
 
 import 'package:improvy/l10n/l10n.dart';
 import 'package:improvy/screens/explainer_screen.dart';
@@ -49,14 +54,22 @@ void main() {
   });
 
   testWidgets('a screen renders in the device language', (t) async {
-    await t.pumpWidget(MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('it'),
-      home: ExplainerScreen(onDone: () {}),
+    SharedPreferences.setMockInitialValues({});
+    final storage = StorageService();
+    await storage.init();
+    final provider = AppProvider(storage);
+    await provider.init();
+    await t.pumpWidget(ChangeNotifierProvider<AppProvider>.value(
+      value: provider,
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('it'),
+        home: ExplainerScreen(onDone: () {}),
+      ),
     ));
     await t.pump();
-    expect(find.textContaining('Ogni nota'), findsOneWidget);
+    expect(find.textContaining('Ogni tasto'), findsOneWidget);
     expect(find.text('Avanti'), findsOneWidget);
     expect(find.text('Salta'), findsOneWidget);
   });

@@ -108,28 +108,25 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get explainer1Title => 'Cada nota\ntem um número.';
+  String get explainer1Title => 'Cada tecla\ntem um número.';
 
   @override
   String get explainer1Body =>
-      'Em Dó maior, Dó é 1, Ré é 2, Mi é 3 — até ao Si, que é 7. Esse número é o seu grau. Os músicos pensam em graus, não em letras, porque o número diz o que a nota está a fazer.';
+      'Estas são as sete notas de Dó maior. Os músicos chamam-lhes pelo número — o grau — porque o número diz o que a nota está a fazer, e funciona igual em todas as tonalidades.';
 
   @override
-  String get explainer2Title => 'Os mesmos números,\nqualquer tonalidade.';
+  String get explainer2Title => 'Muda de tonalidade.\nOs números ficam.';
 
   @override
   String get explainer2Body =>
-      'Passa a Sol maior: as notas mudam mas os números não. Sol é 1, Lá é 2, Si é 3. Sabe os números e sabes todas as tonalidades de uma vez — é esse o truque da improvisação.';
+      'Toca numa tonalidade e observa. As notas mudam, os números não: o 5 é sempre o 5. Aprende os números uma vez e tens as doze tonalidades.';
 
   @override
-  String get explainer3Title => 'Nós perguntamos,\ntu tocas.';
+  String get explainer3Title => 'Experimenta.';
 
   @override
   String get explainer3Body =>
-      'Aparece uma tonalidade e um grau — \"o 5 de Mi bemol\" — e tocas na nota. Rápido o suficiente, vezes suficientes, e deixa de ser aritmética para ser instinto. Dois minutos por dia chegam.';
-
-  @override
-  String get explainerKeyOf => 'TONALIDADE DE ';
+      'O jogo é isto. Rápido o suficiente, vezes suficientes, e deixa de ser aritmética para ser instinto — dois minutos por dia chegam.';
 
   @override
   String get letsGo => 'Vamos';
@@ -703,16 +700,6 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get settingsSimpleNotesBody =>
       'Um só nome por nota em todo o lado — sem barras, sem nomes duplos. Dó  Ré♭  Ré  Mi♭  Mi  Fá  Fá♯  Sol  Lá♭  Lá  Si♭  Si.';
-
-  @override
-  String get settingsHearNote => 'Ouvir a nota';
-
-  @override
-  String get settingsHearNoteTag => 'NAS RESPOSTAS CERTAS';
-
-  @override
-  String get settingsHearNoteBody =>
-      'Cada resposta certa toca a nota que acabaste de nomear, para o ouvido aprender junto com o número. Desliga em sítios silenciosos.';
 
   @override
   String get settingsKeyboardTonic => 'Teclado a partir da tónica';
@@ -1316,4 +1303,21 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get animalQuote8 => 'Imparável! Verdadeiro Maestro!';
+
+  @override
+  String get explainerTapKey => 'TOCA NUMA TONALIDADE';
+
+  @override
+  String explainerQuestion(String key, String degree) {
+    return 'Em $key, que nota é o $degree?';
+  }
+
+  @override
+  String get explainerRight => 'É isso.';
+
+  @override
+  String get explainerWrong => 'Quase — tenta outra vez.';
+
+  @override
+  String get explainerAgain => 'Outra';
 }

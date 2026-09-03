@@ -113,24 +113,94 @@ void main() {
   });
 
   group('the explainer', () {
+    Future<void> pumpExplainer(WidgetTester t, void Function() done) async {
+      SharedPreferences.setMockInitialValues({});
+      final storage = StorageService();
+      await storage.init();
+      final provider = AppProvider(storage);
+      await provider.init();
+      t.view.physicalSize = const Size(390, 900);
+      t.view.devicePixelRatio = 1.0;
+      addTearDown(t.view.resetPhysicalSize);
+      addTearDown(t.view.resetDevicePixelRatio);
+      await t.pumpWidget(ChangeNotifierProvider<AppProvider>.value(
+        value: provider,
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: ExplainerScreen(onDone: done),
+        ),
+      ));
+      await t.pumpAndSettle();
+    }
+
     testWidgets('three pages, then the app', (t) async {
       var done = false;
-      await t.pumpWidget(MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, home: ExplainerScreen(onDone: () => done = true)));
-      expect(find.textContaining('Every note'), findsOneWidget);
+      await pumpExplainer(t, () => done = true);
+      expect(find.textContaining('Every key'), findsOneWidget);
       await t.tap(find.text('Next'));
       await t.pumpAndSettle();
-      expect(find.textContaining('Same numbers'), findsOneWidget);
+      expect(find.textContaining('Change key'), findsOneWidget);
       await t.tap(find.text('Next'));
       await t.pumpAndSettle();
-      expect(find.textContaining('We ask'), findsOneWidget);
+      expect(find.textContaining('Try one'), findsOneWidget);
       expect(done, isFalse);
       await t.tap(find.text("Let's go"));
       expect(done, isTrue);
     });
 
+    testWidgets('the keyboard renames its keys when the key changes', (t) async {
+      // The whole point of page two: the numbers stay, the letters move.
+      await pumpExplainer(t, () {});
+      await t.tap(find.text('Next'));
+      await t.pumpAndSettle();
+      // Two plain F's on screen in C: one on the keyboard, one on the key
+      // picker. In G the keyboard's becomes F♯ — a Text.rich, not a plain
+      // Text — so only the picker's remains.
+      expect(find.text('F'), findsNWidgets(2));
+      await t.tap(find.text('G').last);
+      await t.pumpAndSettle();
+      expect(find.text('F'), findsOneWidget,
+          reason: 'G major replaces the keyboard F with F♯ — that is the lesson');
+      // And every degree is still on the board.
+      for (var d = 1; d <= 7; d++) {
+        expect(find.text('$d'), findsWidgets, reason: 'degree $d vanished');
+      }
+    });
+
+    testWidgets('the last page is a real question that can be got right',
+        (t) async {
+      await pumpExplainer(t, () {});
+      for (var i = 0; i < 2; i++) {
+        await t.tap(find.text('Next'));
+        await t.pumpAndSettle();
+      }
+      // "In C, which note is the 5?" — the answer is G. The keyboard above
+      // the question labels a key G too, so take the answer button: it comes
+      // after the keyboard in the tree.
+      expect(find.textContaining('which note'), findsOneWidget);
+      await t.tap(find.text('G').last);
+      await t.pumpAndSettle();
+      expect(find.textContaining("That's it"), findsOneWidget);
+    });
+
+    testWidgets('a wrong answer says so and lets you try again', (t) async {
+      await pumpExplainer(t, () {});
+      for (var i = 0; i < 2; i++) {
+        await t.tap(find.text('Next'));
+        await t.pumpAndSettle();
+      }
+      await t.tap(find.text('A').last);
+      await t.pumpAndSettle();
+      expect(find.textContaining('Not quite'), findsOneWidget);
+      await t.tap(find.text('G').last);
+      await t.pumpAndSettle();
+      expect(find.textContaining("That's it"), findsOneWidget);
+    });
+
     testWidgets('can be skipped from the first page', (t) async {
       var done = false;
-      await t.pumpWidget(MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, home: ExplainerScreen(onDone: () => done = true)));
+      await pumpExplainer(t, () => done = true);
       await t.tap(find.text('Skip'));
       expect(done, isTrue);
     });

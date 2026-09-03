@@ -301,44 +301,38 @@ abstract class AppLocalizations {
   /// No description provided for @explainer1Title.
   ///
   /// In en, this message translates to:
-  /// **'Every note\nhas a number.'**
+  /// **'Every key\nhas a number.'**
   String get explainer1Title;
 
   /// No description provided for @explainer1Body.
   ///
   /// In en, this message translates to:
-  /// **'In C major, C is 1, D is 2, E is 3 — up to B, which is 7. That number is its degree. Musicians think in degrees, not letters, because the number says what the note is doing.'**
+  /// **'These are the seven notes of C major. Musicians call them by their number — the degree — because the number says what the note is doing, and it works the same in every key.'**
   String get explainer1Body;
 
   /// No description provided for @explainer2Title.
   ///
   /// In en, this message translates to:
-  /// **'Same numbers,\nany key.'**
+  /// **'Change key.\nThe numbers stay.'**
   String get explainer2Title;
 
   /// No description provided for @explainer2Body.
   ///
   /// In en, this message translates to:
-  /// **'Move to G major and the letters change but the numbers do not: G is 1, A is 2, B is 3. Know the numbers and you know every key at once — that is the whole trick of improvising.'**
+  /// **'Tap a key and watch. The letters move, the numbers do not: the 5 is always the 5. Learn the numbers once and you have all twelve keys.'**
   String get explainer2Body;
 
   /// No description provided for @explainer3Title.
   ///
   /// In en, this message translates to:
-  /// **'We ask,\nyou tap.'**
+  /// **'Try one.'**
   String get explainer3Title;
 
   /// No description provided for @explainer3Body.
   ///
   /// In en, this message translates to:
-  /// **'A key and a degree come up — \"the 5 of E flat\" — and you tap the note. Fast enough, often enough, and it stops being arithmetic and becomes instinct. Two minutes a day is plenty.'**
+  /// **'That is the whole game. Fast enough, often enough, and it stops being arithmetic and becomes instinct — two minutes a day is plenty.'**
   String get explainer3Body;
-
-  /// No description provided for @explainerKeyOf.
-  ///
-  /// In en, this message translates to:
-  /// **'KEY OF '**
-  String get explainerKeyOf;
 
   /// No description provided for @letsGo.
   ///
@@ -1371,24 +1365,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'One name per note everywhere — no slashes, no double names. C  D♭  D  E♭  E  F  F♯  G  A♭  A  B♭  B.'**
   String get settingsSimpleNotesBody;
-
-  /// No description provided for @settingsHearNote.
-  ///
-  /// In en, this message translates to:
-  /// **'Hear the Note'**
-  String get settingsHearNote;
-
-  /// No description provided for @settingsHearNoteTag.
-  ///
-  /// In en, this message translates to:
-  /// **'ON CORRECT ANSWERS'**
-  String get settingsHearNoteTag;
-
-  /// No description provided for @settingsHearNoteBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Every right answer plays the note you just named, so the ear learns it alongside the number. Off is for quiet places.'**
-  String get settingsHearNoteBody;
 
   /// No description provided for @settingsKeyboardTonic.
   ///
@@ -2457,6 +2433,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unstoppable! True Maestro!'**
   String get animalQuote8;
+
+  /// No description provided for @explainerTapKey.
+  ///
+  /// In en, this message translates to:
+  /// **'TAP A KEY'**
+  String get explainerTapKey;
+
+  /// No description provided for @explainerQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'In {key}, which note is the {degree}?'**
+  String explainerQuestion(String key, String degree);
+
+  /// No description provided for @explainerRight.
+  ///
+  /// In en, this message translates to:
+  /// **'That\'s it.'**
+  String get explainerRight;
+
+  /// No description provided for @explainerWrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Not quite — try again.'**
+  String get explainerWrong;
+
+  /// No description provided for @explainerAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Another one'**
+  String get explainerAgain;
 }
 
 class _AppLocalizationsDelegate

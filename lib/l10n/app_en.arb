@@ -39,13 +39,12 @@
       }
     }
   },
-  "explainer1Title": "Every note\nhas a number.",
-  "explainer1Body": "In C major, C is 1, D is 2, E is 3 — up to B, which is 7. That number is its degree. Musicians think in degrees, not letters, because the number says what the note is doing.",
-  "explainer2Title": "Same numbers,\nany key.",
-  "explainer2Body": "Move to G major and the letters change but the numbers do not: G is 1, A is 2, B is 3. Know the numbers and you know every key at once — that is the whole trick of improvising.",
-  "explainer3Title": "We ask,\nyou tap.",
-  "explainer3Body": "A key and a degree come up — \"the 5 of E flat\" — and you tap the note. Fast enough, often enough, and it stops being arithmetic and becomes instinct. Two minutes a day is plenty.",
-  "explainerKeyOf": "KEY OF ",
+  "explainer1Title": "Every key\nhas a number.",
+  "explainer1Body": "These are the seven notes of C major. Musicians call them by their number — the degree — because the number says what the note is doing, and it works the same in every key.",
+  "explainer2Title": "Change key.\nThe numbers stay.",
+  "explainer2Body": "Tap a key and watch. The letters move, the numbers do not: the 5 is always the 5. Learn the numbers once and you have all twelve keys.",
+  "explainer3Title": "Try one.",
+  "explainer3Body": "That is the whole game. Fast enough, often enough, and it stops being arithmetic and becomes instinct — two minutes a day is plenty.",
   "letsGo": "Let's go",
   "summaryTitle": "SESSION COMPLETE",
   "summaryPerfect": "PERFECT SCORE",
@@ -368,9 +367,6 @@
   "settingsSimpleNotes": "Simple Note Names",
   "settingsSimpleNotesTag": "NOTE SPELLING",
   "settingsSimpleNotesBody": "One name per note everywhere — no slashes, no double names. C  D♭  D  E♭  E  F  F♯  G  A♭  A  B♭  B.",
-  "settingsHearNote": "Hear the Note",
-  "settingsHearNoteTag": "ON CORRECT ANSWERS",
-  "settingsHearNoteBody": "Every right answer plays the note you just named, so the ear learns it alongside the number. Off is for quiet places.",
   "settingsKeyboardTonic": "Keyboard from Tonic",
   "settingsKeyboardTonicTag": "PIANO INPUT",
   "settingsKeyboardTonicBody": "The in-game piano starts on your key’s tonic instead of C.",
@@ -676,5 +672,20 @@
   "animalQuote5": "Clever and quick!",
   "animalQuote6": "Galloping with precision!",
   "animalQuote7": "Soaring high! Sharp vision!",
-  "animalQuote8": "Unstoppable! True Maestro!"
+  "animalQuote8": "Unstoppable! True Maestro!",
+  "explainerTapKey": "TAP A KEY",
+  "explainerQuestion": "In {key}, which note is the {degree}?",
+  "@explainerQuestion": {
+    "placeholders": {
+      "key": {
+        "type": "String"
+      },
+      "degree": {
+        "type": "String"
+      }
+    }
+  },
+  "explainerRight": "That's it.",
+  "explainerWrong": "Not quite — try again.",
+  "explainerAgain": "Another one"
 }

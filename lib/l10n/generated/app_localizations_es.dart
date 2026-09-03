@@ -108,28 +108,25 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get explainer1Title => 'Cada nota\ntiene un número.';
+  String get explainer1Title => 'Cada tecla\ntiene un número.';
 
   @override
   String get explainer1Body =>
-      'En Do mayor, Do es 1, Re es 2, Mi es 3 — hasta Si, que es 7. Ese número es su grado. Los músicos piensan en grados, no en letras, porque el número dice qué está haciendo la nota.';
+      'Estas son las siete notas de Do mayor. Los músicos las llaman por su número — el grado — porque el número dice qué está haciendo la nota, y funciona igual en todas las tonalidades.';
 
   @override
-  String get explainer2Title => 'Mismos números,\ncualquier tonalidad.';
+  String get explainer2Title => 'Cambia de tonalidad.\nLos números siguen.';
 
   @override
   String get explainer2Body =>
-      'Pasa a Sol mayor: las notas cambian pero los números no. Sol es 1, La es 2, Si es 3. Conoce los números y conocerás todas las tonalidades a la vez — ese es todo el truco de improvisar.';
+      'Toca una tonalidad y observa. Las notas cambian, los números no: el 5 siempre es el 5. Aprende los números una vez y tienes las doce tonalidades.';
 
   @override
-  String get explainer3Title => 'Preguntamos,\ntú tocas.';
+  String get explainer3Title => 'Prueba una.';
 
   @override
   String get explainer3Body =>
-      'Aparecen una tonalidad y un grado — \"el 5 de Mi bemol\" — y tú tocas la nota. Lo bastante rápido, lo bastante a menudo, y deja de ser aritmética para volverse instinto. Dos minutos al día bastan.';
-
-  @override
-  String get explainerKeyOf => 'TONALIDAD DE ';
+      'Ese es todo el juego. Lo bastante rápido, lo bastante a menudo, y deja de ser aritmética para volverse instinto — dos minutos al día bastan.';
 
   @override
   String get letsGo => 'Vamos';
@@ -703,16 +700,6 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get settingsSimpleNotesBody =>
       'Un solo nombre por nota en todas partes — sin barras, sin nombres dobles. Do  Re♭  Re  Mi♭  Mi  Fa  Fa♯  Sol  La♭  La  Si♭  Si.';
-
-  @override
-  String get settingsHearNote => 'Escuchar la nota';
-
-  @override
-  String get settingsHearNoteTag => 'EN LOS ACIERTOS';
-
-  @override
-  String get settingsHearNoteBody =>
-      'Cada acierto suena la nota que acabas de nombrar, para que el oído aprenda junto al número. Apágalo en lugares silenciosos.';
 
   @override
   String get settingsKeyboardTonic => 'Teclado desde la tónica';
@@ -1317,4 +1304,21 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get animalQuote8 => '¡Imparable! ¡Auténtico Maestro!';
+
+  @override
+  String get explainerTapKey => 'TOCA UNA TONALIDAD';
+
+  @override
+  String explainerQuestion(String key, String degree) {
+    return 'En $key, ¿qué nota es el $degree?';
+  }
+
+  @override
+  String get explainerRight => 'Eso es.';
+
+  @override
+  String get explainerWrong => 'Casi — inténtalo otra vez.';
+
+  @override
+  String get explainerAgain => 'Otra';
 }

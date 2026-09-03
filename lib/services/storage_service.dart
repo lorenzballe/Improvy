@@ -15,7 +15,6 @@ class StorageService {
   static const _isProKey = 'isPro';
   static const _notationKey = 'musical_journey_notation';
   static const _simpleNotesKey = 'musical_journey_simple_notes';
-  static const _answerSoundKey = 'musical_journey_answer_sound';
   static const _keyboardFromTonicKey = 'musical_journey_keyboard_from_tonic';
   static const _pendingKey = 'musical_journey_pending_session';
 
@@ -157,11 +156,6 @@ class StorageService {
   bool loadSimpleNotes() => _prefs.getBool(_simpleNotesKey) ?? false;
   Future<void> saveSimpleNotes(bool v) => _prefs.setBool(_simpleNotesKey, v);
 
-  /// On by default: the note is the lesson, and nobody should have to find a
-  /// switch to get it. The switch exists for practising somewhere quiet.
-  bool loadAnswerSound() => _prefs.getBool(_answerSoundKey) ?? true;
-  Future<void> saveAnswerSound(bool v) => _prefs.setBool(_answerSoundKey, v);
-
   bool loadKeyboardFromTonic() => _prefs.getBool(_keyboardFromTonicKey) ?? false;
   Future<void> saveKeyboardFromTonic(bool v) => _prefs.setBool(_keyboardFromTonicKey, v);
 
@@ -198,7 +192,7 @@ class StorageService {
   static const _backupKeys = [
     _progressKey, _dailyResultsKey, _dailyStartedKey, _statsKey,
     _lastSessionKey, _adaptiveDiffKey, _tutorialKey, _notationKey,
-    _simpleNotesKey, _answerSoundKey, _keyboardFromTonicKey,
+    _simpleNotesKey, _keyboardFromTonicKey,
     'last_seen_version', 'notif_perm_asked', 'notif_daily_on',
     'notif_comeback_on', 'notif_hour', 'notif_minute',
   ];

@@ -138,15 +138,34 @@ void explainerShots() {
       t.view.devicePixelRatio = 2.0;
       addTearDown(t.view.resetPhysicalSize);
       addTearDown(t.view.resetDevicePixelRatio);
-      await t.pumpWidget(MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        theme: ThemeData(fontFamily: 'Lexend', useMaterial3: true),
-        home: ExplainerScreen(onDone: () {}),
+      // A fresh player: the explainer is what someone sees before any of the
+      // seeded progress exists.
+      SharedPreferences.setMockInitialValues({});
+      final storage = StorageService();
+      await storage.init();
+      final provider = AppProvider(storage);
+      await provider.init();
+      await t.pumpWidget(ChangeNotifierProvider<AppProvider>.value(
+        value: provider,
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          theme: ThemeData(fontFamily: 'Lexend', useMaterial3: true),
+          home: ExplainerScreen(onDone: () {}),
+        ),
       ));
       await t.pumpAndSettle();
       for (var k = 0; k < i; k++) {
         await t.tap(find.text('Next'));
+        await t.pumpAndSettle();
+      }
+      // Page 2 shows what it is for only once the key has been moved; page 3
+      // only once the question has been answered.
+      if (i == 1) {
+        await t.tap(find.text('G').last);
+        await t.pumpAndSettle();
+      } else if (i == 2) {
+        await t.tap(find.text('G').last);
         await t.pumpAndSettle();
       }
       await expectLater(find.byType(MaterialApp), matchesGoldenFile('goldens/shot_$page.png'));

@@ -108,28 +108,25 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get explainer1Title => 'Jede Note\nhat eine Zahl.';
+  String get explainer1Title => 'Jede Taste\nhat eine Zahl.';
 
   @override
   String get explainer1Body =>
-      'In C-Dur ist C die 1, D die 2, E die 3 — bis zum H, das die 7 ist. Diese Zahl ist ihre Stufe. Musiker denken in Stufen, nicht in Buchstaben, denn die Zahl sagt, was die Note tut.';
+      'Das sind die sieben Töne von C-Dur. Musiker nennen sie bei ihrer Zahl — der Stufe — weil die Zahl sagt, was der Ton tut, und das funktioniert in jeder Tonart gleich.';
 
   @override
-  String get explainer2Title => 'Gleiche Zahlen,\njede Tonart.';
+  String get explainer2Title => 'Tonart wechseln.\nDie Zahlen bleiben.';
 
   @override
   String get explainer2Body =>
-      'Wechsle nach G-Dur: Die Buchstaben ändern sich, die Zahlen nicht. G ist 1, A ist 2, H ist 3. Wer die Zahlen kennt, kennt alle Tonarten auf einmal — das ist der ganze Trick beim Improvisieren.';
+      'Tippe eine Tonart an und schau. Die Töne wandern, die Zahlen nicht: Die 5 ist immer die 5. Lerne die Zahlen einmal und du hast alle zwölf Tonarten.';
 
   @override
-  String get explainer3Title => 'Wir fragen,\ndu tippst.';
+  String get explainer3Title => 'Probier es.';
 
   @override
   String get explainer3Body =>
-      'Eine Tonart und eine Stufe erscheinen — „die 5 von Es“ — und du tippst die Note. Schnell genug, oft genug, und aus Rechnen wird Instinkt. Zwei Minuten am Tag reichen.';
-
-  @override
-  String get explainerKeyOf => 'TONART ';
+      'Das ist das ganze Spiel. Schnell genug, oft genug, und aus Rechnen wird Instinkt — zwei Minuten am Tag reichen.';
 
   @override
   String get letsGo => 'Los geht\'s';
@@ -703,16 +700,6 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get settingsSimpleNotesBody =>
       'Überall nur ein Name pro Note — keine Schrägstriche, keine Doppelnamen. C  Des  D  Es  E  F  Fis  G  As  A  B  H.';
-
-  @override
-  String get settingsHearNote => 'Note hören';
-
-  @override
-  String get settingsHearNoteTag => 'BEI RICHTIGEN ANTWORTEN';
-
-  @override
-  String get settingsHearNoteBody =>
-      'Jede richtige Antwort spielt die Note, die du gerade benannt hast — so lernt das Ohr mit der Zahl. Aus für leise Orte.';
 
   @override
   String get settingsKeyboardTonic => 'Klaviatur ab Grundton';
@@ -1319,4 +1306,21 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get animalQuote8 => 'Unaufhaltsam! Ein wahrer Maestro!';
+
+  @override
+  String get explainerTapKey => 'TONART ANTIPPEN';
+
+  @override
+  String explainerQuestion(String key, String degree) {
+    return 'Welcher Ton ist in $key die $degree?';
+  }
+
+  @override
+  String get explainerRight => 'Genau.';
+
+  @override
+  String get explainerWrong => 'Fast — versuch es nochmal.';
+
+  @override
+  String get explainerAgain => 'Noch eine';
 }
