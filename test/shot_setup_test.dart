@@ -116,6 +116,22 @@ void main() {
     );
   });
 
+  testWidgets('pocket', (t) async {
+    // Pocket measures nothing — the key tiles must carry no mastery bar, not
+    // an empty one.
+    await shot(
+      t,
+      PocketModeSetup(
+        initialKey: 'C',
+        isPro: true,
+        onShowPaywall: () {},
+        onStart: (_) {},
+        onCancel: () {},
+      ),
+      'shot_pocket',
+    );
+  });
+
   testWidgets('custom', (t) async {
     await shot(
       t,

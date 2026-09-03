@@ -85,6 +85,15 @@ const List<Release> kReleases = [
             'too, now that they keep records of their own.',
       ),
       ReleaseLine(
+        icon: Icons.headphones_rounded,
+        color: Color(0xFFFBBF24),
+        title: 'Pocket Mode says nothing it cannot know',
+        detail:
+            'The key tiles no longer carry a mastery bar. Pocket Mode never '
+            'sees your answer, so it has nothing to measure — an empty bar was '
+            'only ever telling you off for nothing.',
+      ),
+      ReleaseLine(
         icon: Icons.palette_rounded,
         color: Color(0xFF22D3EE),
         title: 'A prettier walkthrough',

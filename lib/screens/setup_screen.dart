@@ -1194,7 +1194,10 @@ class _KeyGrid extends StatelessWidget {
           // accent: it is a property of the key, and reading it as one across
           // a grid of twelve is the whole point.
           masteryColor: AppColors.noteColors[k] ?? accentColor,
-          mastery: (progressFor?.call(k) ?? 0) / 100,
+          // Null, not zero: a mode that keeps no record gets no bar at all,
+          // rather than an empty track that looks like "you have done none of
+          // this" when there was never anything to do.
+          mastery: progressFor == null ? null : progressFor!(k) / 100,
           onTap: () => onSelect(k),
         );
       },
@@ -1209,8 +1212,9 @@ class _KeyCell extends StatelessWidget {
 
   /// 0–1 of this key's mastery in the mode being set up. 0 leaves the cell
   /// exactly as it was: a key never touched should look untouched, not faintly
-  /// started.
-  final double mastery;
+  /// started. Null in the modes that measure nothing (Pocket, Custom) — there
+  /// the tile carries no bar and no room for one.
+  final double? mastery;
   final Color masteryColor;
   final VoidCallback onTap;
 
@@ -1219,7 +1223,7 @@ class _KeyCell extends StatelessWidget {
     required this.displayColor,
     required this.selected,
     required this.onTap,
-    this.mastery = 0,
+    this.mastery,
     this.masteryColor = Colors.white,
   });
 
@@ -1227,10 +1231,13 @@ class _KeyCell extends StatelessWidget {
   Widget build(BuildContext context) {
     final sel = selected;
     final c = displayColor;
+    final m = mastery;
     return Semantics(
       button: true,
       selected: sel,
-      label: context.l10n.setupKeyCellLabel(noteKey, (mastery * 100).round()),
+      label: m == null
+          ? noteKey
+          : context.l10n.setupKeyCellLabel(noteKey, (m * 100).round()),
       excludeSemantics: true,
       child: GestureDetector(
       onTap: onTap,
@@ -1262,7 +1269,7 @@ class _KeyCell extends StatelessWidget {
             Padding(
               // Lifted by what the bar occupies, so the letter stays optically
               // centred in the room left above it.
-              padding: const EdgeInsets.only(bottom: MasteryBar.reserved),
+              padding: EdgeInsets.only(bottom: m == null ? 0 : MasteryBar.reserved),
               child: Center(
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
@@ -1282,12 +1289,13 @@ class _KeyCell extends StatelessWidget {
                 ),
               ),
             ),
-            MasteryBar(
-              progress: mastery,
-              // The selected tile is already painted the note's colour, so the
-              // bar would vanish into it; white reads on both.
-              color: sel ? Colors.white.withValues(alpha: 0.9) : masteryColor,
-            ),
+            if (m != null)
+              MasteryBar(
+                progress: m,
+                // The selected tile is already painted the note's colour, so
+                // the bar would vanish into it; white reads on both.
+                color: sel ? Colors.white.withValues(alpha: 0.9) : masteryColor,
+              ),
           ],
         ),
       ),
