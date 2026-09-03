@@ -1327,4 +1327,14 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get explainerAgain => 'Un\'altra';
+
+  @override
+  String summaryFamilyMastery(String family, String key) {
+    return '$family · $key';
+  }
+
+  @override
+  String summaryKeyOverall(String key) {
+    return '$key in totale';
+  }
 }

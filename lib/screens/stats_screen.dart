@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../l10n/l10n.dart';
+import '../models/key_progress.dart';
 import '../constants/levels.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
@@ -336,7 +337,16 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
                   Row(children: [
                     Icon(Icons.workspace_premium_rounded, color: Color(0xFFA855F7), size: 22),
                     SizedBox(width: 8),
-                    Text(context.l10n.statsSkillMastery, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white)),
+                    // Titles shrink rather than overflow: some translations are
+                    // half again as long as the English.
+                    Expanded(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(context.l10n.statsSkillMastery,
+                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white)),
+                      ),
+                    ),
                   ]),
                   const SizedBox(height: 16),
                   ...provider.progressData.asMap().entries.map((e) {
@@ -713,9 +723,10 @@ class _SpeedEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 150,
-      width: double.infinity,
+    // A minimum, not a fixed height: the body text wraps to a fourth line in
+    // some languages and at large text scales, and used to overflow.
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 150, minWidth: double.infinity),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -926,8 +937,14 @@ class _DegreeAccuracyCard extends StatelessWidget {
             Row(children: [
               Icon(Icons.analytics_rounded, color: Color(0xFF34D399), size: 22),
               SizedBox(width: 8),
-              Text(context.l10n.statsDegreeAccuracy,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.5)),
+              Expanded(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(context.l10n.statsDegreeAccuracy,
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.5)),
+                ),
+              ),
             ]),
             const SizedBox(height: 24),
             ..._degrees.map((deg) {
@@ -1388,29 +1405,15 @@ class _SkillRow extends StatelessWidget {
                   ])),
                 ]),
                 const SizedBox(height: 8),
-                // Progress bar — 8px
-                Container(
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: Colors.black.withAlpha(100),
-                    borderRadius: BorderRadius.circular(9999),
-                  ),
-                  foregroundDecoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(9999),
-                    border: Border.all(color: Colors.white.withAlpha(13), width: 1.0),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(9999),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: FractionallySizedBox(
-                        widthFactor: (mastery / 100).clamp(0.0, 1.0),
-                        child: Container(decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(9999),
-                          boxShadow: [BoxShadow(color: color.withAlpha(128), blurRadius: 8)])),
-                      ),
-                    ),
-                  ),
-                ),
+                // Three bars, not one.
+                //
+                // The percentage above them is the mean of three families —
+                // 40% naming the note for a degree, 40% the degree for a
+                // note, 20% naming the key a note belongs to. A single bar
+                // could say 33% and leave nobody able to tell whether that
+                // was one family finished or three barely started, which is
+                // the only thing worth knowing from a list of twelve keys.
+                _FamilyBars(keyData: keyData, color: color),
               ])),
               const SizedBox(width: 16),
               // Rank — medal colours for the top 3 (web parity).
@@ -1500,4 +1503,66 @@ class _FirstRunCard extends StatelessWidget {
           ]),
         ),
       );
+}
+
+/// The three families of one key, stacked: what you know going forward, what
+/// you know backwards, and what you know about the note itself.
+///
+/// Kept to hairlines rather than three full bars — the row is one of twelve
+/// and its job is a shape you can scan down, not three numbers to read.
+class _FamilyBars extends StatelessWidget {
+  final KeyProgress keyData;
+  final Color color;
+  const _FamilyBars({required this.keyData, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    // Widest first, so the row reads as one silhouette instead of three
+    // unrelated lines; the label says which is which for anyone who looks.
+    final rows = <(String, int, double)>[
+      (context.l10n.kaDegreeToNote, keyData.normalProgress, 1.0),
+      (context.l10n.kaNoteToDegree, keyData.noteToNumberProgress, 0.62),
+      (context.l10n.kaOfWhat, keyData.harmonizerProgress, 0.38),
+    ];
+    return Column(
+      children: [
+        for (final (i, r) in rows.indexed) ...[
+          if (i > 0) const SizedBox(height: 4),
+          Semantics(
+            label: '${r.$1}, ${r.$2}%',
+            excludeSemantics: true,
+            child: Container(
+              height: i == 0 ? 8 : 5,
+              decoration: BoxDecoration(
+                color: Colors.black.withAlpha(100),
+                borderRadius: BorderRadius.circular(9999),
+              ),
+              foregroundDecoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(9999),
+                border: Border.all(color: Colors.white.withAlpha(13)),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(9999),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: FractionallySizedBox(
+                    widthFactor: (r.$2 / 100).clamp(0.0, 1.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: r.$3),
+                        borderRadius: BorderRadius.circular(9999),
+                        boxShadow: i == 0
+                            ? [BoxShadow(color: color.withAlpha(128), blurRadius: 8)]
+                            : null,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
 }

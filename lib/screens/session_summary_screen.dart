@@ -5,9 +5,7 @@ import 'package:provider/provider.dart';
 import '../models/key_progress.dart';
 import '../providers/app_provider.dart';
 import '../constants/app_colors.dart';
-import '../constants/levels.dart';
 import '../widgets/note_text.dart';
-import '../widgets/animal_icon.dart';
 import '../constants/app_scroll.dart';
 
 class SessionSummaryScreen extends StatelessWidget {
@@ -87,10 +85,26 @@ class SessionSummaryScreen extends StatelessWidget {
             : const Color(0xFFF43F5E);
     final modeColor = isDiat ? const Color(0xFF3B82F6) : const Color(0xFFA855F7);
 
-    // Mastery
+    // Mastery. Two numbers, because there are now two worth knowing: the
+    // family this run belongs to, and the key as a whole.
+    //
+    // This used to read the RAW diatonic or chromatic dial and feed it to
+    // getAnimalLevel — a per-mode percentage into the global animal ladder,
+    // which is not what that ladder measures. It also only ever spoke about
+    // the forward modes, from before Note to Number and the harmonizer kept
+    // records of their own.
     final keyData  = progressData.firstWhere((k) => k.key == key, orElse: () => KeyProgress(key: key));
-    final modePct  = (isDiat ? keyData.diatonicProgress : keyData.chromaticProgress).toDouble();
-    final animal   = getAnimalLevel(modePct);
+    final familyPct = switch (mode) {
+      'note-to-number' => keyData.noteToNumberProgress,
+      'of-what' => keyData.harmonizerProgress,
+      _ => keyData.normalProgress,
+    }.toDouble();
+    final familyName = switch (mode) {
+      'note-to-number' => context.l10n.modeNoteToNumber,
+      'of-what' => context.l10n.modeOfWhat,
+      _ => context.l10n.modeDiatonic,
+    };
+    final keyPct = keyData.totalProgress.toDouble();
 
     // Time formatting
     final mins = time ~/ 60;
@@ -260,10 +274,15 @@ class SessionSummaryScreen extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   // ── Mastery card ──────────────────────────────────────
-                  if (!isCustom)
+                  // Custom keeps no record, so it has nothing to report. The
+                  // other four now do — including the two that used to be
+                  // hidden here because they kept none.
+                  if (mode != 'custom')
                     _MasteryCard(
-                      animal: animal,
-                      modeProgress: modePct,
+                      familyName: familyName,
+                      familyProgress: familyPct,
+                      keyName: key,
+                      keyProgress: keyPct,
                       modeColor: modeColor,
                       passed: passed,
                       hasNext: hasNext,
@@ -382,86 +401,130 @@ class _StatTile extends StatelessWidget {
 
 // ── Mastery card ───────────────────────────────────────────────────────────────
 
+/// What this run moved: the family it belongs to, and the key it sits in.
+///
+/// Two bars rather than one, because the key is now the mean of three
+/// families and a single figure could not say which of them just went up.
 class _MasteryCard extends StatelessWidget {
-  final AnimalLevel animal;
-  final double modeProgress;
+  final String familyName;
+  final double familyProgress;
+  final String keyName;
+  final double keyProgress;
   final Color modeColor;
   final bool passed;
   final bool hasNext;
   final int difficulty;
   const _MasteryCard({
-    required this.animal, required this.modeProgress, required this.modeColor,
-    required this.passed, required this.hasNext, required this.difficulty,
+    required this.familyName,
+    required this.familyProgress,
+    required this.keyName,
+    required this.keyProgress,
+    required this.modeColor,
+    required this.passed,
+    required this.hasNext,
+    required this.difficulty,
   });
 
   @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha:0.04),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.white.withValues(alpha:0.07)),
-        ),
-        child: Column(
-          children: [
-            Row(children: [
-              Container(
-                width: 48, height: 48,
-                decoration: BoxDecoration(
-                  color: animal.color.withValues(alpha:0.15),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: animal.color.withValues(alpha:0.3)),
-                ),
-                child: Center(child: AnimalIcon(name: animal.name, color: animal.color, size: 28)),
-              ),
-              SizedBox(width: 14),
+  Widget build(BuildContext context) {
+    final notation = context.select<AppProvider, String>((p) => p.notation);
+    final key = formatNoteForDisplay(keyName, notation);
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            context.l10n.summaryModeMastery,
+            style: TextStyle(
+                fontSize: 9,
+                fontWeight: FontWeight.w900,
+                color: Colors.white.withValues(alpha: 0.3),
+                letterSpacing: 2),
+          ),
+          const SizedBox(height: 14),
+          _Line(
+            label: context.l10n.summaryFamilyMastery(familyName, key),
+            pct: familyProgress,
+            colour: modeColor,
+          ),
+          const SizedBox(height: 14),
+          _Line(
+            label: context.l10n.summaryKeyOverall(key),
+            pct: keyProgress,
+            // Quieter: it is the wider, slower number, and it must not
+            // compete with the one this run actually moved.
+            colour: Colors.white.withValues(alpha: 0.55),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Line extends StatelessWidget {
+  final String label;
+  final double pct;
+  final Color colour;
+  const _Line({required this.label, required this.pct, required this.colour});
+
+  @override
+  Widget build(BuildContext context) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      context.l10n.summaryModeMastery,
-                      style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white.withValues(alpha:0.3), letterSpacing: 2),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      localizedAnimalName(context.l10n, animal.level),
-                      style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.3),
-                    ),
-                  ],
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(label,
+                      maxLines: 1,
+                      softWrap: false,
+                      style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white.withValues(alpha: 0.8))),
                 ),
               ),
-              Text(
-                '${modeProgress.round()}%',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: animal.color, letterSpacing: -0.5),
-              ),
-            ]),
-            const SizedBox(height: 16),
-            Container(
-              height: 6,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha:0.06),
-                borderRadius: BorderRadius.circular(99),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(99),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: FractionallySizedBox(
-                    widthFactor: (modeProgress / 100).clamp(0.0, 1.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(colors: [animal.color, animal.color.withValues(alpha:0.6)]),
-                        borderRadius: BorderRadius.circular(99),
-                        boxShadow: [BoxShadow(color: animal.color.withValues(alpha:0.5), blurRadius: 6)],
-                      ),
+              const SizedBox(width: 10),
+              Text('${pct.round()}%',
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
+                      color: colour)),
+            ],
+          ),
+          const SizedBox(height: 7),
+          Container(
+            height: 6,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.06),
+              borderRadius: BorderRadius.circular(99),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(99),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: FractionallySizedBox(
+                  widthFactor: (pct / 100).clamp(0.0, 1.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: colour,
+                      borderRadius: BorderRadius.circular(99),
                     ),
                   ),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       );
 }
 

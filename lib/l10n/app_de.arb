@@ -392,5 +392,7 @@
   "explainerQuestion": "Welcher Ton ist in {key} die {degree}?",
   "explainerRight": "Genau.",
   "explainerWrong": "Fast — versuch es nochmal.",
-  "explainerAgain": "Noch eine"
+  "explainerAgain": "Noch eine",
+  "summaryFamilyMastery": "{family} · {key}",
+  "summaryKeyOverall": "{key} insgesamt"
 }

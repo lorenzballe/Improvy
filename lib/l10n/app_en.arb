@@ -687,5 +687,24 @@
   },
   "explainerRight": "That's it.",
   "explainerWrong": "Not quite — try again.",
-  "explainerAgain": "Another one"
+  "explainerAgain": "Another one",
+  "summaryFamilyMastery": "{family} · {key}",
+  "summaryKeyOverall": "{key} overall",
+  "@summaryFamilyMastery": {
+    "placeholders": {
+      "family": {
+        "type": "String"
+      },
+      "key": {
+        "type": "String"
+      }
+    }
+  },
+  "@summaryKeyOverall": {
+    "placeholders": {
+      "key": {
+        "type": "String"
+      }
+    }
+  }
 }

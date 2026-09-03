@@ -392,5 +392,7 @@
   "explainerQuestion": "In {key}, qual è il {degree}?",
   "explainerRight": "Esatto.",
   "explainerWrong": "Non proprio — riprova.",
-  "explainerAgain": "Un'altra"
+  "explainerAgain": "Un'altra",
+  "summaryFamilyMastery": "{family} · {key}",
+  "summaryKeyOverall": "{key} in totale"
 }

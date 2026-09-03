@@ -1320,4 +1320,14 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get explainerAgain => 'Outra';
+
+  @override
+  String summaryFamilyMastery(String family, String key) {
+    return '$family · $key';
+  }
+
+  @override
+  String summaryKeyOverall(String key) {
+    return '$key no total';
+  }
 }

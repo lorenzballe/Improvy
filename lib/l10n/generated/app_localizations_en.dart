@@ -1319,4 +1319,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get explainerAgain => 'Another one';
+
+  @override
+  String summaryFamilyMastery(String family, String key) {
+    return '$family · $key';
+  }
+
+  @override
+  String summaryKeyOverall(String key) {
+    return '$key overall';
+  }
 }

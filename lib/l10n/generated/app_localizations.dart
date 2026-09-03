@@ -2463,6 +2463,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Another one'**
   String get explainerAgain;
+
+  /// No description provided for @summaryFamilyMastery.
+  ///
+  /// In en, this message translates to:
+  /// **'{family} · {key}'**
+  String summaryFamilyMastery(String family, String key);
+
+  /// No description provided for @summaryKeyOverall.
+  ///
+  /// In en, this message translates to:
+  /// **'{key} overall'**
+  String summaryKeyOverall(String key);
 }
 
 class _AppLocalizationsDelegate

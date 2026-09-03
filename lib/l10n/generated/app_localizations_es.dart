@@ -1321,4 +1321,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get explainerAgain => 'Otra';
+
+  @override
+  String summaryFamilyMastery(String family, String key) {
+    return '$family · $key';
+  }
+
+  @override
+  String summaryKeyOverall(String key) {
+    return '$key en total';
+  }
 }

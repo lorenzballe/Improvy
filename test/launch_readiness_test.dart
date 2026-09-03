@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:provider/provider.dart';
@@ -10,6 +11,7 @@ import 'package:improvy/services/storage_service.dart';
 import 'package:improvy/models/key_progress.dart';
 import 'package:improvy/screens/explainer_screen.dart';
 import 'package:improvy/screens/session_summary_screen.dart';
+import 'package:improvy/screens/stats_screen.dart';
 import 'package:improvy/l10n/l10n.dart';
 
 /// The things an audit found broken on the day the app was declared ready
@@ -112,6 +114,8 @@ void main() {
     });
   });
 
+  _progressReporting();
+
   group('the explainer', () {
     Future<void> pumpExplainer(WidgetTester t, void Function() done) async {
       SharedPreferences.setMockInitialValues({});
@@ -204,5 +208,119 @@ void main() {
       await t.tap(find.text('Skip'));
       expect(done, isTrue);
     });
+  });
+}
+
+/// The progress model changed shape twice — three families, then 40/40/20 —
+/// and two screens were still reporting the old picture. These pin the new one.
+void _progressReporting() {
+  group('the summary reports what actually moved', () {
+    Future<void> pump(WidgetTester t, String mode, KeyProgress key) async {
+      SharedPreferences.setMockInitialValues({});
+      final storage = StorageService();
+      await storage.init();
+      final provider = AppProvider(storage);
+      await provider.init();
+      t.view.physicalSize = const Size(390, 1100);
+      t.view.devicePixelRatio = 1.0;
+      addTearDown(t.view.resetPhysicalSize);
+      addTearDown(t.view.resetDevicePixelRatio);
+      await t.pumpWidget(ChangeNotifierProvider<AppProvider>.value(
+        value: provider,
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: SessionSummaryScreen(
+            sessionData: {
+              'key': key.key, 'mode': mode, 'correct': 27, 'total': 30,
+              'time': 60000, 'difficulty': 1,
+            },
+            progressData: [key],
+            onRetry: () {},
+            onBack: () {},
+            onNextDifficulty: (_) {},
+          ),
+        ),
+      ));
+      await t.pump(const Duration(seconds: 2));
+    }
+
+    testWidgets('a Note to Number run reports its own family, not the forward one',
+        (t) async {
+      // Before this, the card read the raw diatonic dial — and was hidden
+      // outright for the two modes that now keep records of their own.
+      final key = KeyProgress(
+        key: 'G',
+        diatonicLevels: [30, 40, 50],      // forward: finished
+        ntnDiatonicLevels: [24, 0, 0],     // backwards: just started
+      );
+      await pump(t, 'note-to-number', key);
+      expect(key.noteToNumberProgress, 13);
+      expect(find.text('13%'), findsOneWidget,
+          reason: 'the family this run belongs to');
+      expect(find.text('${key.totalProgress}%'), findsOneWidget,
+          reason: 'and the key as a whole, which is the mean of three');
+      expect(find.text('${key.normalProgress}%'), findsNothing,
+          reason: 'the forward family was not played and must not be reported');
+    });
+
+    testWidgets('…Of What? reports the harmonizer', (t) async {
+      final key = KeyProgress(key: 'C', harmonizerLevels: [30, 40, 50]);
+      await pump(t, 'of-what', key);
+      expect(find.text('50%'), findsOneWidget);
+    });
+
+    testWidgets('Custom still reports nothing, because it records nothing',
+        (t) async {
+      await pump(t, 'custom', KeyProgress(key: 'C'));
+      expect(find.text('MODE MASTERY'), findsNothing);
+    });
+  });
+
+  testWidgets('the Skill Mastery row shows all three families', (t) async {
+    // One bar could say 33% and leave nobody able to tell whether that was one
+    // family finished or three barely started.
+    SharedPreferences.setMockInitialValues({});
+    final storage = StorageService();
+    await storage.init();
+    final provider = AppProvider(storage);
+    await provider.init();
+    provider.completeTutorial();
+    provider.progressData = provider.progressData
+        .map((k) => k.key == 'C'
+            ? k.copyWith(diatonicLevels: [30, 40, 50], ntnDiatonicLevels: [24, 0, 0])
+            : k)
+        .toList();
+    final handle = t.ensureSemantics();
+    // Tall enough to lay the whole page out at once: semantics only covers
+    // what has been built, and the list sits well below one screen.
+    t.view.physicalSize = const Size(390, 5000);
+    t.view.devicePixelRatio = 1.0;
+    addTearDown(t.view.resetPhysicalSize);
+    addTearDown(t.view.resetDevicePixelRatio);
+    await t.pumpWidget(ChangeNotifierProvider<AppProvider>.value(
+      value: provider,
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const StatsScreen(),
+      ),
+    ));
+    await t.pump(const Duration(seconds: 2));
+    final labels = <String>[];
+    void walk(SemanticsNode n) {
+      if (n.label.isNotEmpty) labels.add(n.label);
+      n.visitChildren((c) { walk(c); return true; });
+    }
+    walk(t.getSemantics(find.byType(MaterialApp)));
+    // The row is one tap target, so Flutter merges the three bars' labels into
+    // it — what matters is that a reader is told all three, not how the tree
+    // is shaped.
+    final spoken = labels.join(' | ');
+    // C: forward finished (50), backwards barely started (13), harmonizer none.
+    expect(spoken, contains('DEGREE → NOTE, 50%'));
+    expect(spoken, contains('NOTE → DEGREE, 13%'));
+    expect(spoken, contains('…OF WHAT?, 0%'));
+    handle.dispose();
   });
 }

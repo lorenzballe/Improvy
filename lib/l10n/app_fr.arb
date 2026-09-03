@@ -392,5 +392,7 @@
   "explainerQuestion": "En {key}, quelle note est le {degree} ?",
   "explainerRight": "C'est ça.",
   "explainerWrong": "Presque — réessayez.",
-  "explainerAgain": "Une autre"
+  "explainerAgain": "Une autre",
+  "summaryFamilyMastery": "{family} · {key}",
+  "summaryKeyOverall": "{key} au total"
 }

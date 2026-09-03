@@ -62,6 +62,40 @@ class Release {
 /// the right behaviour for a pure bug-fix build.
 const List<Release> kReleases = [
   Release(
+    version: '1.15.0',
+    date: '3 SEP 2026',
+    headline: 'Every mode you play now counts, and you can see exactly where.',
+    lines: [
+      ReleaseLine(
+        icon: Icons.equalizer_rounded,
+        color: Color(0xFFA855F7),
+        title: 'Three bars, not one average',
+        detail:
+            'Each key in Statistics now shows Degree to Note, Note to Degree '
+            'and \u2026Of What? separately, so a single number can never hide '
+            'which of the three you have actually built.',
+      ),
+      ReleaseLine(
+        icon: Icons.military_tech_rounded,
+        color: Color(0xFF34D399),
+        title: 'The summary reports what moved',
+        detail:
+            'After a session you see the family you just played and the key '
+            'overall — and Note to Degree and \u2026Of What? get that card '
+            'too, now that they keep records of their own.',
+      ),
+      ReleaseLine(
+        icon: Icons.palette_rounded,
+        color: Color(0xFF22D3EE),
+        title: 'A prettier walkthrough',
+        detail:
+            'The three opening screens each have their own colour, and the '
+            'keyboard on them sits in a rounded bed instead of being cut off '
+            'at the edges.',
+      ),
+    ],
+  ),
+  Release(
     version: '1.14.1',
     date: '1 SEP 2026',
     headline: 'Restoring a backup no longer asks the phone for more than it needs.',

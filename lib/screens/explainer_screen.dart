@@ -39,6 +39,46 @@ class _ExplainerScreenState extends State<ExplainerScreen> {
 
   static const _bg = Color(0xFF0F0A1A);
 
+  /// One colour field per page, in the poster's own idiom: a four-stop
+  /// diagonal wash with a warm pool of light bleeding in from a corner.
+  ///
+  /// The poster hands over on a red-to-violet field and these three used to
+  /// drop straight onto flat near-black, so the handover read as the app
+  /// failing to load rather than as three more pages of the same piece. Each
+  /// walks the spectrum further round — red-violet, violet-blue, blue-green —
+  /// so turning the page is visibly progress.
+  static const _fields = [
+    LinearGradient(
+      begin: Alignment(-0.584, -1.105),
+      end: Alignment(0.584, 1.105),
+      colors: [Color(0xFFFF6B5A), Color(0xFFE23B7B), Color(0xFF9333EA), Color(0xFF5B21B6)],
+      stops: [0.0, 0.38, 0.74, 1.0],
+    ),
+    LinearGradient(
+      begin: Alignment(-0.584, -1.105),
+      end: Alignment(0.584, 1.105),
+      colors: [Color(0xFFA855F7), Color(0xFF6366F1), Color(0xFF3B82F6), Color(0xFF1E3A8A)],
+      stops: [0.0, 0.36, 0.72, 1.0],
+    ),
+    // Cool all the way down, with no green in it: the third page is the one
+    // with a green "that's it" on it, and a green field underneath took the
+    // punch out of the only moment on these three screens that is a reward.
+    LinearGradient(
+      begin: Alignment(-0.584, -1.105),
+      end: Alignment(0.584, 1.105),
+      colors: [Color(0xFF22D3EE), Color(0xFF0EA5E9), Color(0xFF4F46E5), Color(0xFF1E1B4B)],
+      stops: [0.0, 0.34, 0.7, 1.0],
+    ),
+  ];
+
+  /// The corner light, one per field: gold under the warm page, cyan under
+  /// the cool one, chartreuse under the green.
+  static const _glows = [
+    Color(0xFFFFDB4D),
+    Color(0xFF67E8F9),
+    Color(0xFF5EEAD4),
+  ];
+
   /// The three keys page 2 offers. C, G and F: one sharp and one flat away
   /// from home, so the letters visibly move without the reader having to know
   /// what a signature is.
@@ -65,8 +105,21 @@ class _ExplainerScreenState extends State<ExplainerScreen> {
     final l = context.l10n;
     return Scaffold(
       backgroundColor: _bg,
-      body: Column(
-        children: [
+      body: Stack(children: [
+        // Crossfaded rather than switched: the page slides under the reader's
+        // thumb, and a hard cut between two fields mid-drag reads as a flash.
+        Positioned.fill(
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 420),
+            child: _ColourField(
+              key: ValueKey(_index),
+              gradient: _fields[_index],
+              glow: _glows[_index],
+            ),
+          ),
+        ),
+        Column(
+          children: [
           SizedBox(height: pad.top + 14),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -193,65 +246,66 @@ class _ExplainerScreenState extends State<ExplainerScreen> {
                 ),
               ),
             ],
-          ),
-        );
-      }
-    }
-
-    class _Page extends StatelessWidget {
-      final String eyebrow;
-      final String title;
-      final String body;
-      final Widget demo;
-      const _Page({
-        required this.eyebrow,
-        required this.title,
-        required this.body,
-        required this.demo,
-      });
-
-      @override
-      Widget build(BuildContext context) => LayoutBuilder(
-            builder: (context, c) => SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
-              // Centred in the space it has, and scrollable when it runs out: a
-              // short page used to leave a third of the screen empty under the
-              // text, which read as something failing to load.
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: c.maxHeight - 36),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                Text(eyebrow,
-                    style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 2,
-                        color: Colors.white.withValues(alpha: 0.35))),
-                const SizedBox(height: 10),
-                Text(title,
-                    style: const TextStyle(
-                        fontFamily: 'Outfit',
-                        fontSize: 36,
-                        fontWeight: FontWeight.w600,
-                        height: 1.04,
-                        letterSpacing: -1.4,
-                        color: Colors.white)),
-                const SizedBox(height: 26),
-                demo,
-                const SizedBox(height: 26),
-                Text(body,
-                    style: TextStyle(
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.w300,
-                        height: 1.55,
-                        color: Colors.white.withValues(alpha: 0.8))),
-              ],
-            ),
-          ),
         ),
-      );
+      ]),
+    );
+  }
+}
+
+class _Page extends StatelessWidget {
+  final String eyebrow;
+  final String title;
+  final String body;
+  final Widget demo;
+  const _Page({
+    required this.eyebrow,
+    required this.title,
+    required this.body,
+    required this.demo,
+  });
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+        builder: (context, c) => SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
+          // Centred in the space it has, and scrollable when it runs out: a
+          // short page used to leave a third of the screen empty under the
+          // text, which read as something failing to load.
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: c.maxHeight - 36),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+            Text(eyebrow,
+                style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 2,
+                    color: Colors.white.withValues(alpha: 0.35))),
+            const SizedBox(height: 10),
+            Text(title,
+                style: const TextStyle(
+                    fontFamily: 'Outfit',
+                    fontSize: 36,
+                    fontWeight: FontWeight.w600,
+                    height: 1.04,
+                    letterSpacing: -1.4,
+                    color: Colors.white)),
+            const SizedBox(height: 26),
+            demo,
+            const SizedBox(height: 26),
+            Text(body,
+                style: TextStyle(
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.w300,
+                    height: 1.55,
+                    color: Colors.white.withValues(alpha: 0.8))),
+          ],
+        ),
+      ),
+    ),
+  );
 }
 
 /// One octave of a real keyboard, with each scale degree written on the key it
@@ -278,51 +332,79 @@ class _Keyboard extends StatelessWidget {
     final scale = calculateMajorScale(musicalKey);
 
     return LayoutBuilder(builder: (context, c) {
-      final w = c.maxWidth;
-      const whiteCount = 7;
-      final kw = w / whiteCount;
+      // The keys sit in a rounded bed rather than running off the edges: the
+      // corners read as an instrument instead of a sawn-off rectangle.
       const h = 132.0;
+      const pad = 6.0;
+      const whiteCount = 7;
+      final inner = c.maxWidth - pad * 2;
+      final kw = inner / whiteCount;
+      final kh = h - pad * 2;
       final bw = kw * 0.62;
 
       return SizedBox(
         height: h,
-        child: Stack(
-          children: [
-            Row(
-              children: [
-                for (var i = 0; i < whiteCount; i++)
-                  Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.only(right: i == whiteCount - 1 ? 0 : 3),
-                      child: _WhiteKey(
-                        degree: '${i + 1}',
-                        note: scale[i],
-                        notation: notation,
-                        lit: litDegree == '${i + 1}',
+        child: Container(
+          padding: const EdgeInsets.all(pad),
+          decoration: BoxDecoration(
+            color: const Color(0xFF17131F),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.34),
+                blurRadius: 20,
+                offset: const Offset(0, 9),
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              Row(
+                children: [
+                  for (var i = 0; i < whiteCount; i++)
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.only(right: i == whiteCount - 1 ? 0 : 3),
+                        child: _WhiteKey(
+                          degree: '${i + 1}',
+                          note: scale[i],
+                          notation: notation,
+                          lit: litDegree == '${i + 1}',
+                        ),
                       ),
                     ),
-                  ),
-              ],
-            ),
-            // Black keys carry no degree here: the seven of the scale are the
-            // idea, and five unlabelled keys are exactly the right amount of
-            // "there is more later".
-            for (final i in _blackAfter)
-              Positioned(
-                left: kw * (i + 1) - bw / 2 - 1.5,
-                top: 0,
-                width: bw,
-                height: h * 0.6,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF17131F),
-                    borderRadius: const BorderRadius.vertical(
-                        bottom: Radius.circular(6)),
-                    border: Border.all(color: Colors.black.withValues(alpha: 0.6)),
+                ],
+              ),
+              // Black keys carry no degree here: the seven of the scale are the
+              // idea, and five unlabelled keys are exactly the right amount of
+              // "there is more later".
+              for (final i in _blackAfter)
+                Positioned(
+                  left: kw * (i + 1) - bw / 2 - 1.5,
+                  top: 0,
+                  width: bw,
+                  height: kh * 0.6,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF241E31),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(3),
+                        bottom: Radius.circular(8),
+                      ),
+                      border: Border.all(color: Colors.black.withValues(alpha: 0.55)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.45),
+                          blurRadius: 6,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       );
     });
@@ -350,7 +432,10 @@ class _WhiteKey extends StatelessWidget {
         // The answered key takes its degree's own colour — the same colour the
         // number has worn since page one.
         color: lit ? colour : const Color(0xFFF4F1F8),
-        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(9)),
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(8),
+          bottom: Radius.circular(10),
+        ),
         boxShadow: lit
             ? [BoxShadow(color: colour.withValues(alpha: 0.55), blurRadius: 22, spreadRadius: -2)]
             : null,
@@ -697,4 +782,58 @@ class _AnswerButton extends StatelessWidget {
       ),
     );
   }
+}
+
+/// The poster's colour field, reused: a four-stop diagonal wash with a soft
+/// pool of warm light in one corner, rounded off at the bottom the way the
+/// poster's is.
+class _ColourField extends StatelessWidget {
+  final Gradient gradient;
+  final Color glow;
+  const _ColourField({super.key, required this.gradient, required this.glow});
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+        decoration: BoxDecoration(gradient: gradient),
+        child: Stack(
+          children: [
+            // Bottom-left, as on the poster: it lifts the corner the content
+            // does not use and keeps the field from reading as flat colour.
+            Positioned(
+              left: -90,
+              bottom: -140,
+              child: Container(
+                width: 380,
+                height: 380,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [glow.withValues(alpha: 0.4), glow.withValues(alpha: 0)],
+                    stops: const [0.0, 0.7],
+                  ),
+                ),
+              ),
+            ),
+            // A wash of the page's own darkness over the lower half: the body
+            // text and the white button need somewhere quiet to sit, and the
+            // bare field left them fighting the gradient.
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      const Color(0xFF0F0A1A).withValues(alpha: 0.10),
+                      const Color(0xFF0F0A1A).withValues(alpha: 0.62),
+                      const Color(0xFF0F0A1A).withValues(alpha: 0.88),
+                    ],
+                    stops: const [0.0, 0.55, 1.0],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
 }

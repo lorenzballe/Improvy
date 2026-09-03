@@ -1331,4 +1331,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get explainerAgain => 'Une autre';
+
+  @override
+  String summaryFamilyMastery(String family, String key) {
+    return '$family · $key';
+  }
+
+  @override
+  String summaryKeyOverall(String key) {
+    return '$key au total';
+  }
 }
