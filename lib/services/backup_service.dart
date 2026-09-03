@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:file_picker/file_picker.dart';
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -45,18 +45,25 @@ class BackupService {
 
   /// Lets the user pick a backup and restores it. Returns null on success,
   /// a short reason on failure, and the empty string if they cancelled.
+  ///
+  /// Uses file_selector, not file_picker: the latter's iOS plugin links
+  /// UIImagePickerController and PHPickerViewController whether or not media
+  /// is ever asked for, and Apple's static scan rejects the binary for the
+  /// camera and photo-library purpose strings that implies — for an app that
+  /// opens one JSON file. file_selector is UIDocumentPickerViewController and
+  /// nothing else, which is exactly the capability this needs.
   Future<String?> import(StorageService storage) async {
     if (!available) return 'Not available on the web';
     try {
-      final picked = await FilePicker.platform.pickFiles(
-        type: FileType.any,
-        withData: true,
+      const type = XTypeGroup(
+        label: 'Improvy backup',
+        extensions: ['json'],
+        uniformTypeIdentifiers: ['public.json', 'public.text'],
+        mimeTypes: ['application/json', 'text/plain'],
       );
-      if (picked == null || picked.files.isEmpty) return '';
-      final f = picked.files.first;
-      final bytes = f.bytes ?? (f.path != null ? await File(f.path!).readAsBytes() : null);
-      if (bytes == null) return 'Could not read that file';
-      await storage.importJson(String.fromCharCodes(bytes));
+      final file = await openFile(acceptedTypeGroups: const [type]);
+      if (file == null) return '';
+      await storage.importJson(await file.readAsString());
       AnalyticsService.instance.capture(Ev.backupImported);
       return null;
     } on FormatException catch (e) {

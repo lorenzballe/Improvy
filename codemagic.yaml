@@ -41,6 +41,12 @@ workflows:
         script: flutter analyze --no-fatal-infos
       - name: Test
         script: flutter test
+      # Apple scans the binary for APIs that touch private data and rejects
+      # the upload when a purpose string is missing — build 35 of 1.14.0 went
+      # that way over a file picker that links the photo library. Catching it
+      # here costs a second; catching it at Apple costs a day.
+      - name: iOS privacy check
+        script: flutter test --tags ios --run-skipped
 
       # Signing, two ways.
       #

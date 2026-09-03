@@ -2,7 +2,7 @@
 description: "Improvy - Music Interval Trainer"
 publish_to: 'none'
 
-version: 1.14.0+100
+version: 1.14.1+101
 
 environment:
   sdk: ^3.12.0
@@ -47,7 +47,7 @@ dependencies:
   # storage; the native widgets (android/…/ImprovyWidgets.kt and
   # ios/ImprovyWidget/) only render it. See lib/services/widget_service.dart.
   home_widget: ^0.7.0
-  file_picker: ^8.1.4
+  file_selector: ^1.0.3
   path_provider: ^2.1.5
 
 dev_dependencies:

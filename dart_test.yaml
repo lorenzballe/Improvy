@@ -12,3 +12,9 @@
 tags:
   golden:
     skip: "visual reference only — see dart_test.yaml to run and re-record"
+  # Reads the pub cache, which a build machine has after `pub get` and a
+  # contributor's laptop may not. Run it before shipping a build:
+  #
+  #   flutter test --tags ios --run-skipped
+  ios:
+    skip: "reads the pub cache — run with --tags ios --run-skipped"

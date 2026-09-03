@@ -62,6 +62,22 @@ class Release {
 /// the right behaviour for a pure bug-fix build.
 const List<Release> kReleases = [
   Release(
+    version: '1.14.1',
+    date: '1 SEP 2026',
+    headline: 'Restoring a backup no longer asks the phone for more than it needs.',
+    lines: [
+      ReleaseLine(
+        icon: Icons.folder_open_rounded,
+        color: Color(0xFF22D3EE),
+        title: 'A file picker, and only that',
+        detail:
+            'Choosing a backup file used the same component that picks photos '
+            'and videos, so the app looked like it wanted your camera roll. It '
+            'now opens documents and nothing else.',
+      ),
+    ],
+  ),
+  Release(
     version: '1.14.0',
     date: '1 SEP 2026',
     headline: 'The first three screens now show the idea instead of describing it.',
