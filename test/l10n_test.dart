@@ -53,6 +53,25 @@ void main() {
     }
   });
 
+  test('the modes are called the same thing in every language', () {
+    // Product names, not words: the store listing, the website and the people
+    // recommending the app all say "Note to Number", so a player reading
+    // "Nota a Numero" would be looking at a different product.
+    const modeNames = [
+      'modeDiatonic', 'modeChromatic', 'modeCustom', 'modeNoteToNumber',
+      'modeOfWhat', 'modePocket', 'modeNormal',
+      'featChromatic', 'featNtn', 'featOfWhat', 'featPocket', 'featCustom',
+      'kaOfWhat', 'kaHarmonizer', 'pocketTitle',
+    ];
+    for (final code in ['it', 'es', 'fr', 'de', 'pt']) {
+      final loc = jsonDecode(File('lib/l10n/app_$code.arb').readAsStringSync())
+          as Map<String, dynamic>;
+      for (final k in modeNames) {
+        expect(loc[k], en[k], reason: '$k in $code');
+      }
+    }
+  });
+
   testWidgets('a screen renders in the device language', (t) async {
     SharedPreferences.setMockInitialValues({});
     final storage = StorageService();

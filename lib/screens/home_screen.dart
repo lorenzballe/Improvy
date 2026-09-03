@@ -2046,8 +2046,9 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
   void _showLockedMessage(BuildContext context, int d) {
     final currentScore = widget.credited[d - 2];
     final needed = kTierUnlock[d - 1];
-    final levelName = d == 2 ? 'Virtuoso' : 'Master';
-    final prevName = d == 2 ? 'Apprentice' : 'Virtuoso';
+    final l = context.l10n;
+    final levelName = d == 2 ? l.tierVirtuoso : l.tierMaster;
+    final prevName = d == 2 ? l.tierApprentice : l.tierVirtuoso;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -2066,7 +2067,10 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
   Widget build(BuildContext context) {
     final caps = kTierCaps;
     final diffColors = [const Color(0xFF3B82F6), const Color(0xFFA855F7), const Color(0xFFF43F5E)];
-    final diffLabels = ['Apprentice', 'Virtuoso', 'Master'];
+    // Localised, like every other reading of the tier: this one was hard-coded
+    // and said APPRENTICE on a card whose summary screen said Apprendista.
+    final l = context.l10n;
+    final diffLabels = [l.tierApprentice, l.tierVirtuoso, l.tierMaster];
     final isLvl2Unlocked = widget.credited[0] >= kTierUnlock[1];
     final isLvl3Unlocked = widget.credited[1] >= kTierUnlock[2];
 

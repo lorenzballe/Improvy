@@ -51,22 +51,22 @@ class AppLocalizationsEs extends AppLocalizations {
   String get free => 'GRATIS';
 
   @override
-  String get modeDiatonic => 'Diatónico';
+  String get modeDiatonic => 'Diatonic';
 
   @override
-  String get modeChromatic => 'Cromático';
+  String get modeChromatic => 'Chromatic';
 
   @override
-  String get modeCustom => 'Personalizado';
+  String get modeCustom => 'Custom';
 
   @override
-  String get modeNoteToNumber => 'Nota a Número';
+  String get modeNoteToNumber => 'Note to Number';
 
   @override
-  String get modeOfWhat => '…¿De qué?';
+  String get modeOfWhat => '…Of What?';
 
   @override
-  String get modePocket => 'Modo Pocket';
+  String get modePocket => 'Pocket Mode';
 
   @override
   String get modeNormal => 'Normal';
@@ -171,7 +171,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get summaryUpsellBody =>
-      'El cromático añade los cinco grados alterados — el resto de la tonalidad.';
+      'Chromatic añade los cinco grados alterados — el resto de la tonalidad.';
 
   @override
   String get paywallTitle => 'Improvy Pro';
@@ -206,31 +206,31 @@ class AppLocalizationsEs extends AppLocalizations {
   String get paywallNoPurchase => 'No se encontró ninguna compra anterior';
 
   @override
-  String get featChromatic => 'Modo Cromático';
+  String get featChromatic => 'Chromatic Mode';
 
   @override
   String get featChromaticMeta => 'las 12 tonalidades';
 
   @override
-  String get featNtn => 'Nota a Número';
+  String get featNtn => 'Note to Number';
 
   @override
   String get featNtnMeta => 'cromático';
 
   @override
-  String get featOfWhat => '…¿De qué?';
+  String get featOfWhat => '…Of What?';
 
   @override
   String get featOfWhatMeta => 'los 15 grados';
 
   @override
-  String get featPocket => 'Modo Pocket';
+  String get featPocket => 'Pocket Mode';
 
   @override
   String get featPocketMeta => 'los 12 grados';
 
   @override
-  String get featCustom => 'Modo Personalizado';
+  String get featCustom => 'Custom Mode';
 
   @override
   String get featCustomMeta => 'cualquier grado';
@@ -1003,7 +1003,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get kaNoteToDegree => 'NOTA → GRADO';
 
   @override
-  String get kaOfWhat => '…¿DE QUÉ?';
+  String get kaOfWhat => '…OF WHAT?';
 
   @override
   String get kaConfusions => 'Confusiones frecuentes';
@@ -1015,10 +1015,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get kaNote => 'NOTA';
 
   @override
-  String get kaHarmonizer => 'Armonizador';
+  String get kaHarmonizer => 'Harmonizer';
 
   @override
-  String get kaHarmonizerSub => 'Dominio de “…¿De qué?”';
+  String get kaHarmonizerSub => 'Dominio de “…Of What?”';
 
   @override
   String get dailyTitle => 'RETO DIARIO';
@@ -1070,7 +1070,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get dailyShare => 'Comparte tu resultado';
 
   @override
-  String get pocketTitle => 'MODO POCKET';
+  String get pocketTitle => 'POCKET MODE';
 
   @override
   String get pocketDegrees => 'GRADOS';

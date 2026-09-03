@@ -85,6 +85,15 @@ const List<Release> kReleases = [
             'too, now that they keep records of their own.',
       ),
       ReleaseLine(
+        icon: Icons.translate_rounded,
+        color: Color(0xFF60A5FA),
+        title: 'One name per mode, in every language',
+        detail:
+            'Note to Number, \u2026Of What?, Pocket Mode and the rest keep '
+            'their names whatever language the app is in. Everything around '
+            'them still follows your phone.',
+      ),
+      ReleaseLine(
         icon: Icons.headphones_rounded,
         color: Color(0xFFFBBF24),
         title: 'Pocket Mode says nothing it cannot know',

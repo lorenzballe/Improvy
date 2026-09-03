@@ -51,22 +51,22 @@ class AppLocalizationsDe extends AppLocalizations {
   String get free => 'GRATIS';
 
   @override
-  String get modeDiatonic => 'Diatonisch';
+  String get modeDiatonic => 'Diatonic';
 
   @override
-  String get modeChromatic => 'Chromatisch';
+  String get modeChromatic => 'Chromatic';
 
   @override
-  String get modeCustom => 'Eigener';
+  String get modeCustom => 'Custom';
 
   @override
-  String get modeNoteToNumber => 'Note zu Zahl';
+  String get modeNoteToNumber => 'Note to Number';
 
   @override
-  String get modeOfWhat => '…Wovon?';
+  String get modeOfWhat => '…Of What?';
 
   @override
-  String get modePocket => 'Pocket-Modus';
+  String get modePocket => 'Pocket Mode';
 
   @override
   String get modeNormal => 'Normal';
@@ -171,7 +171,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get summaryUpsellBody =>
-      'Chromatisch ergänzt die fünf alterierten Stufen — den Rest der Tonart.';
+      'Chromatic ergänzt die fünf alterierten Stufen — den Rest der Tonart.';
 
   @override
   String get paywallTitle => 'Improvy Pro';
@@ -206,31 +206,31 @@ class AppLocalizationsDe extends AppLocalizations {
   String get paywallNoPurchase => 'Kein früherer Kauf gefunden';
 
   @override
-  String get featChromatic => 'Chromatischer Modus';
+  String get featChromatic => 'Chromatic Mode';
 
   @override
   String get featChromaticMeta => 'alle 12 Tonarten';
 
   @override
-  String get featNtn => 'Note zu Zahl';
+  String get featNtn => 'Note to Number';
 
   @override
   String get featNtnMeta => 'chromatisch';
 
   @override
-  String get featOfWhat => '…Wovon?';
+  String get featOfWhat => '…Of What?';
 
   @override
   String get featOfWhatMeta => 'alle 15 Stufen';
 
   @override
-  String get featPocket => 'Pocket-Modus';
+  String get featPocket => 'Pocket Mode';
 
   @override
   String get featPocketMeta => 'alle 12 Stufen';
 
   @override
-  String get featCustom => 'Eigener Modus';
+  String get featCustom => 'Custom Mode';
 
   @override
   String get featCustomMeta => 'jede Stufe';
@@ -1004,7 +1004,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get kaNoteToDegree => 'NOTE → STUFE';
 
   @override
-  String get kaOfWhat => '…WOVON?';
+  String get kaOfWhat => '…OF WHAT?';
 
   @override
   String get kaConfusions => 'Häufige Verwechslungen';
@@ -1016,10 +1016,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get kaNote => 'NOTE';
 
   @override
-  String get kaHarmonizer => 'Harmonisierer';
+  String get kaHarmonizer => 'Harmonizer';
 
   @override
-  String get kaHarmonizerSub => 'Beherrschung von „…Wovon?“';
+  String get kaHarmonizerSub => '„…Of What?“-Beherrschung';
 
   @override
   String get dailyTitle => 'TAGES-CHALLENGE';
@@ -1071,7 +1071,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get dailyShare => 'Ergebnis teilen';
 
   @override
-  String get pocketTitle => 'POCKET-MODUS';
+  String get pocketTitle => 'POCKET MODE';
 
   @override
   String get pocketDegrees => 'STUFEN';
