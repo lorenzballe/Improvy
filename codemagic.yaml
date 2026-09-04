@@ -19,6 +19,10 @@ workflows:
       vars:
         APP_STORE_APPLE_ID: 6775236759
         BUNDLE_ID: "com.improvy.app"
+        # The WidgetKit extension is its own bundle and needs its own profile.
+        # Both must carry the App Group group.com.improvy.app.widget, or the
+        # widgets install and show placeholders forever.
+        WIDGET_BUNDLE_ID: "com.improvy.app.ImprovyWidget"
       flutter: stable
       xcode: latest
       cocoapods: default
@@ -68,10 +72,12 @@ workflows:
           keychain initialize
           if [ -n "${CERTIFICATE_PRIVATE_KEY:-}" ]; then
             echo "Using the kept private key; no certificate is deleted."
-            app-store-connect fetch-signing-files "$BUNDLE_ID" \
-              --type IOS_APP_STORE \
-              --certificate-key=@env:CERTIFICATE_PRIVATE_KEY \
-              --create
+            for B in "$BUNDLE_ID" "$WIDGET_BUNDLE_ID"; do
+              app-store-connect fetch-signing-files "$B" \
+                --type IOS_APP_STORE \
+                --certificate-key=@env:CERTIFICATE_PRIVATE_KEY \
+                --create
+            done
           else
             echo "WARNING: CERTIFICATE_PRIVATE_KEY is not set — falling back to the destructive path."
             echo "Removing existing distribution certificates (we don't hold their private keys)..."
@@ -84,10 +90,12 @@ workflows:
               fi
             done
             openssl genrsa -out /tmp/cert_key.pem 2048
-            app-store-connect fetch-signing-files "$BUNDLE_ID" \
-              --type IOS_APP_STORE \
-              --certificate-key=@file:/tmp/cert_key.pem \
-              --create
+            for B in "$BUNDLE_ID" "$WIDGET_BUNDLE_ID"; do
+              app-store-connect fetch-signing-files "$B" \
+                --type IOS_APP_STORE \
+                --certificate-key=@file:/tmp/cert_key.pem \
+                --create
+            done
           fi
           keychain add-certificates
           xcode-project use-profiles

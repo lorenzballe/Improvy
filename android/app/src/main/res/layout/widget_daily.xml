@@ -10,7 +10,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@drawable/widget_bg_gold"
+    android:background="@drawable/widget_bg_gold_lit"
     android:padding="16dp">
 
     <LinearLayout
@@ -107,6 +107,19 @@
                 android:maxLines="1"
                 android:ellipsize="end"
                 android:fontFamily="@font/lexend_medium" />
+
+            <!-- Which direction today asks, in the key's own colour, so a tap
+                 is never a surprise. -->
+            <TextView
+                android:id="@+id/daily_mode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="3dp"
+                android:textColor="#80FFFFFF"
+                android:textSize="11sp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:fontFamily="@font/lexend_semibold" />
         </LinearLayout>
 
         <FrameLayout

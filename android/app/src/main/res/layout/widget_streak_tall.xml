@@ -10,7 +10,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@drawable/widget_bg"
+    android:background="@drawable/widget_bg_ember"
     android:padding="14dp">
 
     <TextView
@@ -52,6 +52,66 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />
+
+    <!-- The last seven days, oldest first. The number says how long the run
+         is; the dots say what it looks like. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:paddingBottom="8dp">
+
+        <ImageView
+            android:id="@+id/streakt_d0"
+            android:layout_width="9dp"
+            android:layout_height="9dp"
+            android:layout_marginStart="0dp"
+            android:src="@drawable/widget_dot_white"
+            android:contentDescription="@null" />
+        <ImageView
+            android:id="@+id/streakt_d1"
+            android:layout_width="9dp"
+            android:layout_height="9dp"
+            android:layout_marginStart="6dp"
+            android:src="@drawable/widget_dot_white"
+            android:contentDescription="@null" />
+        <ImageView
+            android:id="@+id/streakt_d2"
+            android:layout_width="9dp"
+            android:layout_height="9dp"
+            android:layout_marginStart="6dp"
+            android:src="@drawable/widget_dot_white"
+            android:contentDescription="@null" />
+        <ImageView
+            android:id="@+id/streakt_d3"
+            android:layout_width="9dp"
+            android:layout_height="9dp"
+            android:layout_marginStart="6dp"
+            android:src="@drawable/widget_dot_white"
+            android:contentDescription="@null" />
+        <ImageView
+            android:id="@+id/streakt_d4"
+            android:layout_width="9dp"
+            android:layout_height="9dp"
+            android:layout_marginStart="6dp"
+            android:src="@drawable/widget_dot_white"
+            android:contentDescription="@null" />
+        <ImageView
+            android:id="@+id/streakt_d5"
+            android:layout_width="9dp"
+            android:layout_height="9dp"
+            android:layout_marginStart="6dp"
+            android:src="@drawable/widget_dot_white"
+            android:contentDescription="@null" />
+        <ImageView
+            android:id="@+id/streakt_d6"
+            android:layout_width="9dp"
+            android:layout_height="9dp"
+            android:layout_marginStart="6dp"
+            android:src="@drawable/widget_dot_white"
+            android:contentDescription="@null" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/streakt_caption"

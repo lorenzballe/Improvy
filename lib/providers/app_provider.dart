@@ -751,6 +751,10 @@ class AppProvider extends ChangeNotifier {
 
   DailyResult? get todayDailyResult => dailyResults[_dateKey(DateTime.now())];
 
+  /// Whether the daily challenge was played on a given day. The widgets draw a
+  /// week of these as dots.
+  bool playedDaily(DateTime day) => dailyResults.containsKey(_dateKey(day));
+
   /// The result of the run just played — survives a run that crossed midnight,
   /// where [todayDailyResult] would already be looking at the next day.
   DailyResult? get activeDailyResult =>

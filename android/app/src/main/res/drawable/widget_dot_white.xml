@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One day of the streak week. Tinted at runtime (setColorFilter +
+     setImageAlpha), same trick as widget_tile_white: RemoteViews cannot
+     recolour a background, but ImageView exposes both as remotable methods. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="#FFFFFFFF" />
+</shape>

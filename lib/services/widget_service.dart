@@ -32,20 +32,16 @@ class WidgetService {
   /// in Xcode, and `Improvy.appGroupId` in the Swift sources.
   static const String iOSAppGroupId = 'group.com.improvy.app.widget';
 
-  /// Android provider class names, and the iOS widget *kinds* — the strings
-  /// passed to `StaticConfiguration(kind:)` in ImprovyWidget.swift. They have
-  /// to match exactly or the reload silently refreshes nothing.
-  static const String _androidQuizProvider = 'ImprovyQuizWidgetProvider';
-  static const String _androidDailyProvider = 'ImprovyDailyWidgetProvider';
-  static const String _iOSQuizKind = 'ImprovyQuizWidget';
-  static const String _iOSDailyKind = 'ImprovyDailyWidget';
-
-  /// Every widget the app publishes, as (Android provider, iOS kind). Adding a
-  /// widget means adding it here — the refresh loop below walks this list, so a
-  /// new provider left out of it simply never updates.
+  /// Every widget the app publishes, as (Android provider class, iOS widget
+  /// kind — the string passed to `StaticConfiguration(kind:)` in Swift). Both
+  /// have to match the native side exactly or the reload silently refreshes
+  /// nothing, so `test/native_widgets_test.dart` reads this list and checks
+  /// each entry against the Swift, the Kotlin and the Android manifest. Spell
+  /// them out rather than routing any through a constant: the test reads the
+  /// literals, and an entry it cannot see is an entry it cannot check.
   static const List<(String, String)> _widgets = [
-    (_androidQuizProvider, _iOSQuizKind),
-    (_androidDailyProvider, _iOSDailyKind),
+    ('ImprovyQuizWidgetProvider', 'ImprovyQuizWidget'),
+    ('ImprovyDailyWidgetProvider', 'ImprovyDailyWidget'),
     ('ImprovyQuizWideWidgetProvider', 'ImprovyQuizWideWidget'),
     ('ImprovyLevelWidgetProvider', 'ImprovyLevelWidget'),
     ('ImprovyMapWidgetProvider', 'ImprovyMapWidget'),
@@ -137,6 +133,11 @@ class WidgetService {
         // Which direction today asks, so a tap is never a surprise.
         HomeWidget.saveWidgetData<String>('daily_mode', daily.modeLabel),
         HomeWidget.saveWidgetData<int>('daily_streak', provider.dailyStreak),
+        // The last seven days, oldest first, as "was the daily played". The
+        // streak number alone says how long the run is but not what it looks
+        // like; seven dots say both, and they are what makes the widget worth
+        // a slot rather than a notification.
+        HomeWidget.saveWidgetData<String>('week_json', jsonEncode(_lastWeek(provider))),
 
         // The key of the day in its own colour, so the widget's tile matches
         // the tile the app shows for that key.
@@ -182,6 +183,17 @@ class WidgetService {
       // A widget that fails to refresh must never disturb the app.
       if (kDebugMode) debugPrint('[WidgetService] sync failed: $e');
     }
+  }
+
+  /// Seven booleans, oldest first, ending on today: whether the daily
+  /// challenge was played that day. Deliberately carries no day names — the
+  /// native side cannot localise, and a row of dots needs none.
+  static List<bool> _lastWeek(AppProvider provider) {
+    final today = DateTime.now();
+    return [
+      for (var back = 6; back >= 0; back--)
+        provider.playedDaily(today.subtract(Duration(days: back))),
+    ];
   }
 
   /// A key's colour as `#rrggbb`, from its position in the chromatic order —

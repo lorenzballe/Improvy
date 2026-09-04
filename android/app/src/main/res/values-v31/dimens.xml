@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- From Android 12 the launcher publishes the shape it wants widgets to wear.
+     Following it is the difference between a widget that belongs on the home
+     screen and one that looks pasted onto it. -->
+<resources>
+    <dimen name="widget_radius">@android:dimen/system_app_widget_background_radius</dimen>
+    <dimen name="widget_inner_radius">@android:dimen/system_app_widget_inner_radius</dimen>
+</resources>

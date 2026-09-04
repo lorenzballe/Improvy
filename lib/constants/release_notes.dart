@@ -62,6 +62,42 @@ class Release {
 /// the right behaviour for a pure bug-fix build.
 const List<Release> kReleases = [
   Release(
+    version: '1.16.0',
+    date: '4 SEP 2026',
+    headline: 'The home-screen widgets, rebuilt — and on iPhone, built at all.',
+    lines: [
+      ReleaseLine(
+        icon: Icons.widgets_rounded,
+        color: Color(0xFF22D3EE),
+        title: 'Twelve widgets on iPhone',
+        detail:
+            'There were none. The widget extension had never been added to the '
+            'iOS project, so nothing Improvy wrote ever reached a home screen. '
+            'All twelve are there now: the hourly question, the daily, the key '
+            'map, your level, the streak, the weakest key and the rest.',
+      ),
+      ReleaseLine(
+        icon: Icons.auto_awesome_rounded,
+        color: Color(0xFFA855F7),
+        title: 'A design, not a dark rectangle',
+        detail:
+            'Every widget wears its own accent — a glow from the top corner and '
+            'an edge to match — so a home screen of them reads as separate '
+            'things. The key map fills each of the twelve tiles by how well you '
+            'know that key.',
+      ),
+      ReleaseLine(
+        icon: Icons.local_fire_department_rounded,
+        color: Color(0xFFFB923C),
+        title: 'Your week, in seven dots',
+        detail:
+            'The streak widgets now show the last seven days, not just the '
+            'count — and the whole card turns gold on the day you are about to '
+            'break one.',
+      ),
+    ],
+  ),
+  Release(
     version: '1.15.0',
     date: '3 SEP 2026',
     headline: 'Every mode you play now counts, and you can see exactly where.',

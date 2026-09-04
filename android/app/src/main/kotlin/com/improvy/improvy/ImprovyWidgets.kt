@@ -246,9 +246,9 @@ class ImprovyDailyWidgetProvider : HomeWidgetProvider() {
                     R.id.daily_sub,
                     if (grid.isEmpty()) context.getString(R.string.widget_daily_done_sub) else grid
                 )
-                // Frame drops to neutral once there's nothing left to do today,
-                // and the play button goes with it.
-                views.setInt(R.id.daily_root, "setBackgroundResource", R.drawable.widget_bg)
+                // The frame drops out of the gold "your move" state once there
+                // is nothing left to do today, and the play button goes with it.
+                views.setInt(R.id.daily_root, "setBackgroundResource", R.drawable.widget_bg_violet)
                 views.setViewVisibility(R.id.daily_play_bg, View.INVISIBLE)
                 views.setViewVisibility(R.id.daily_play_glyph, View.INVISIBLE)
             } else {
@@ -265,11 +265,20 @@ class ImprovyDailyWidgetProvider : HomeWidgetProvider() {
                     if (sub.isNullOrEmpty()) context.getString(R.string.widget_daily_sub_placeholder)
                     else sub
                 )
-                views.setInt(R.id.daily_root, "setBackgroundResource", R.drawable.widget_bg_gold)
+                views.setInt(R.id.daily_root, "setBackgroundResource", R.drawable.widget_bg_gold_lit)
                 views.setViewVisibility(R.id.daily_play_bg, View.VISIBLE)
                 views.setViewVisibility(R.id.daily_play_glyph, View.VISIBLE)
                 views.tint(R.id.daily_play_bg, Color.parseColor("#FCD34D"))
             }
+            // Which direction today asks, in the key's own colour — hidden
+            // once it is played, where the score is the whole story.
+            val mode = widgetData.getString("daily_mode", "") ?: ""
+            views.setTextViewText(R.id.daily_mode, if (played) "" else mode)
+            views.setTextColor(R.id.daily_mode, keyColour)
+            views.setViewVisibility(
+                R.id.daily_mode,
+                if (played || mode.isEmpty()) View.GONE else View.VISIBLE
+            )
             views.setTextViewText(R.id.daily_streak, "🔥 $streak")
 
             views.link(context, R.id.daily_root, "improvy://daily")
@@ -433,6 +442,7 @@ class ImprovyStreakWidgetProvider : HomeWidgetProvider() {
             val views = RemoteViews(context.packageName, R.layout.widget_streak)
             views.setTextViewText(R.id.streak_count, "${widgetData.number("daily_streak")}")
             views.setTextViewText(R.id.streak_caption, streakCaption(context, widgetData))
+            views.setInt(R.id.streak_root, "setBackgroundResource", streakSurface(widgetData))
             views.link(context, R.id.streak_root, "improvy://daily")
             appWidgetManager.updateAppWidget(id, views)
         }
@@ -458,10 +468,46 @@ class ImprovyStreakTallWidgetProvider : HomeWidgetProvider() {
                 R.id.streakt_caption,
                 if (atRisk) Color.parseColor("#FCD34D") else Color.parseColor("#73FFFFFF")
             )
+            views.setInt(R.id.streakt_root, "setBackgroundResource", streakSurface(widgetData))
+            views.weekDots(widgetData, if (atRisk) Color.parseColor("#FCD34D") else Color.parseColor("#FB923C"))
             views.link(context, R.id.streakt_root, "improvy://daily")
             appWidgetManager.updateAppWidget(id, views)
         }
     }
+}
+
+/** The seven day-dots of the streak week, oldest first, today last. */
+private val kWeekDotIds = intArrayOf(
+    R.id.streakt_d0, R.id.streakt_d1, R.id.streakt_d2, R.id.streakt_d3,
+    R.id.streakt_d4, R.id.streakt_d5, R.id.streakt_d6
+)
+
+/**
+ * Lights the week. A missing or malformed payload reads as a quiet week rather
+ * than as a week of failures — the widget must never invent a bad record.
+ */
+private fun RemoteViews.weekDots(data: SharedPreferences, colour: Int) {
+    val week = BooleanArray(7)
+    try {
+        val raw = data.getString("week_json", null)
+        if (!raw.isNullOrEmpty()) {
+            val list = JSONArray(raw)
+            for (i in 0 until minOf(list.length(), 7)) week[i] = list.optBoolean(i, false)
+        }
+    } catch (_: Exception) {
+    }
+    for (i in kWeekDotIds.indices) {
+        // Today is the last dot and always wears the accent, lit or not, so
+        // the row reads as a calendar rather than a score.
+        val done = week[i]
+        tint(kWeekDotIds[i], if (done) colour else Color.WHITE, if (done) 255 else 36)
+    }
+}
+
+/** Gold while there is a streak about to break; the quiet ember otherwise. */
+private fun streakSurface(data: SharedPreferences): Int {
+    val atRisk = data.number("daily_streak") > 0 && !data.getBoolean("played_today", false)
+    return if (atRisk) R.drawable.widget_bg_gold_lit else R.drawable.widget_bg_ember
 }
 
 private fun streakCaption(context: Context, data: SharedPreferences): String {
