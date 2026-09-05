@@ -28,6 +28,7 @@ workflows:
         # "doesn't include the App Groups capability", right after the archive
         # succeeds. ios/ImprovyWidget/README.md has the four clicks.
         WIDGET_BUNDLE_ID: "com.improvy.app.ImprovyWidget"
+        APP_GROUP: "group.com.improvy.app.widget"
       flutter: stable
       xcode: latest
       cocoapods: default
@@ -104,6 +105,57 @@ workflows:
           fi
           keychain add-certificates
           xcode-project use-profiles
+
+      # A profile that does not carry the App Group fails at code signing, which
+      # is forty minutes and one Xcode error message away from saying so. This
+      # says it here, in seconds, and names the box that is unticked.
+      #
+      # It only fails on a profile it has actually read and found wanting. If it
+      # finds no profiles at all — a different install path, a Codemagic change
+      # — it says so and gets out of the way rather than failing a build that
+      # would have signed.
+      - name: Check both profiles carry the App Group
+        script: |
+          set -e
+          dir="$HOME/Library/MobileDevice/Provisioning Profiles"
+          seen=0
+          bad=0
+          for p in "$dir"/*.mobileprovision; do
+            [ -e "$p" ] || continue
+            plist=$(mktemp)
+            security cms -D -i "$p" > "$plist" 2>/dev/null || continue
+            app_id=$(/usr/libexec/PlistBuddy -c \
+              'Print :Entitlements:application-identifier' "$plist" 2>/dev/null || true)
+            case "$app_id" in
+              *"$BUNDLE_ID" | *"$WIDGET_BUNDLE_ID")
+                seen=$((seen + 1))
+                if grep -q "$APP_GROUP" "$plist"; then
+                  echo "  ok   $app_id carries $APP_GROUP"
+                else
+                  echo "  MISSING  $app_id does not carry $APP_GROUP"
+                  bad=$((bad + 1))
+                fi
+                ;;
+            esac
+          done
+          if [ "$seen" -eq 0 ]; then
+            echo "no matching profiles found in $dir — skipping the check"
+            exit 0
+          fi
+          if [ "$bad" -gt 0 ]; then
+            echo ""
+            echo "The App Groups capability is not on that App ID, so the profile"
+            echo "minted for it cannot carry the entitlement. Nothing in this repo"
+            echo "can turn it on — it is two clicks in the Apple developer account:"
+            echo ""
+            echo "  developer.apple.com/account → Certificates, Identifiers &"
+            echo "  Profiles → Identifiers → the App ID above → tick App Groups →"
+            echo "  Configure → select $APP_GROUP → Continue → Save"
+            echo ""
+            echo "Then delete that App ID's profile under Profiles, so the next"
+            echo "build mints one that carries it. See ios/ImprovyWidget/README.md."
+            exit 1
+          fi
 
       - name: Install CocoaPods dependencies
         script: find . -name "Podfile" -execdir pod install \;
