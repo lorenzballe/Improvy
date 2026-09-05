@@ -169,42 +169,63 @@ struct DailyView: View {
     private var key: String { Improvy.string("daily_key") }
     private var colour: Color { Improvy.colour("daily_key_color", Ink.gold) }
 
+    private var small: Bool { family == .systemSmall }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Eyebrow(text: family == .systemSmall ? "DAILY" : "DAILY CHALLENGE", accent: played ? .white.opacity(0.45) : Ink.gold) {
+            Eyebrow(text: small ? "DAILY" : "DAILY CHALLENGE",
+                    accent: played ? .white.opacity(0.45) : Ink.gold) {
                 Chip(text: "🔥 \(Improvy.int("daily_streak"))",
                      colour: played ? .white.opacity(0.55) : Ink.gold)
             }
             Spacer(minLength: 8)
-            HStack(spacing: 12) {
-                KeyTile(key: key.isEmpty ? "?" : key, colour: colour,
-                        size: family == .systemSmall ? 42 : 52)
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(played
-                         ? (Improvy.string("daily_score", "Done"))
-                         : (key.isEmpty ? "Daily Challenge" : "Key of \(key)"))
-                        .font(.display(family == .systemSmall ? 19 : 23))
-                        .foregroundStyle(.white)
+            if small {
+                // On the small tile the key IS the headline — repeating it as
+                // "Key of B♭" beside a tile that already says B♭ cost the line
+                // that says what the run actually is.
+                HStack(alignment: .bottom, spacing: 10) {
+                    KeyTile(key: key.isEmpty ? "?" : key,
+                            colour: played ? Ink.violet : colour, size: 52)
+                    Text(played ? Improvy.string("daily_score", "Done") : "today")
+                        .font(.display(played ? 24 : 15))
+                        .foregroundStyle(played ? .white : .white.opacity(0.55))
                         .fitted(0.6)
-                    Text(played
-                         ? Improvy.string("daily_grid", "Next one tomorrow")
-                         : Improvy.string("daily_sub", "10 questions"))
-                        .font(.ui(11, .medium))
-                        .foregroundStyle(.white.opacity(0.5))
-                        .fitted(0.7)
-                    if family != .systemSmall, !played {
-                        Text(Improvy.string("daily_mode"))
-                            .font(.ui(10, .bold))
-                            .foregroundStyle(colour.opacity(0.9))
-                            .fitted(0.7)
-                    }
                 }
-                if family != .systemSmall {
+                Spacer(minLength: 6)
+                Text(played
+                     ? Improvy.string("daily_grid", "Next one tomorrow")
+                     : Improvy.string("daily_sub", "10 questions"))
+                    .font(.ui(11, .medium))
+                    .foregroundStyle(.white.opacity(0.5))
+                    .fitted(0.7)
+            } else {
+                HStack(spacing: 12) {
+                    KeyTile(key: key.isEmpty ? "?" : key, colour: colour, size: 52)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(played
+                             ? Improvy.string("daily_score", "Done")
+                             : (key.isEmpty ? "Daily Challenge" : "Key of \(key)"))
+                            .font(.display(23))
+                            .foregroundStyle(.white)
+                            .fitted(0.6)
+                        Text(played
+                             ? Improvy.string("daily_grid", "Next one tomorrow")
+                             : Improvy.string("daily_sub", "10 questions"))
+                            .font(.ui(11, .medium))
+                            .foregroundStyle(.white.opacity(0.5))
+                            .fitted(0.7)
+                        if !played {
+                            Text(Improvy.string("daily_mode"))
+                                .font(.ui(10, .bold))
+                                .foregroundStyle(colour.opacity(0.9))
+                                .fitted(0.7)
+                        }
+                    }
                     Spacer(minLength: 0)
                     if !played { GlyphButton(system: "play.fill", colour: Ink.gold, size: 46) }
                 }
+                Spacer(minLength: 0)
             }
-            Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         // The gold frame only while there is still something to do today.
