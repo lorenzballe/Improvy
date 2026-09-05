@@ -287,7 +287,7 @@
   "statsByNote": "PRESTAZIONI PER NOTA",
   "statsSlow": "LENTO",
   "statsFast": "VELOCE",
-  "statsRank": "POSIZIONE",
+  "statsRank": "RANK",
   "statsFirstRunTitle": "Gioca una sessione",
   "statsFirstRunBody": "Trenta domande in una tonalità e ogni grafico di questa pagina si riempie — la tua velocità, i gradi che sbagli, le note che ti rallentano.",
   "kaTitle": "ANALISI TONALITÀ",
@@ -298,8 +298,8 @@
   "kaAccuracyOverTime": "Tempo di risposta",
   "kaDegreeMastery": "Padronanza dei gradi cromatici",
   "kaModeProgress": "Progresso per modalità",
-  "kaDegreeToNote": "GRADO → NOTA",
-  "kaNoteToDegree": "NOTA → GRADO",
+  "kaDegreeToNote": "GRADO › NOTA",
+  "kaNoteToDegree": "NOTA › GRADO",
   "kaOfWhat": "…OF WHAT?",
   "kaConfusions": "Confusioni frequenti",
   "kaNoConfusions": "NESSUNA CONFUSIONE. OTTIMO!",
@@ -424,5 +424,6 @@
   "wHandsFree": "SENZA MANI",
   "wPocketSub": "Allenati a schermo spento",
   "wTheory": "IL GRADO DEL GIORNO",
-  "wOpenApp": "Apri Improvy per riempirla."
+  "wOpenApp": "Apri Improvy per riempirla.",
+  "statsSkillMasterySub": "Per tonalità: grado › nota, nota › grado, …Of What?"
 }

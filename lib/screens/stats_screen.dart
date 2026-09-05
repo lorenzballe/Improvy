@@ -348,6 +348,15 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
                       ),
                     ),
                   ]),
+                  const SizedBox(height: 6),
+                  // Three unlabelled bars are three unlabelled bars. One line
+                  // here is what turns them into a reading.
+                  Text(context.l10n.statsSkillMasterySub,
+                      style: TextStyle(
+                          fontSize: 11,
+                          height: 1.35,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white.withAlpha(110))),
                   const SizedBox(height: 16),
                   ...provider.progressData.asMap().entries.map((e) {
                     final color = AppColors.keyColor(e.key);
@@ -1439,8 +1448,14 @@ class _SkillRow extends StatelessWidget {
                   padding: const EdgeInsets.only(left: 16),
                   decoration: BoxDecoration(border: Border(left: BorderSide(color: Colors.white.withAlpha(13)))),
                   child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Text(context.l10n.statsRank, style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900,
-                      color: Colors.white.withAlpha(77), letterSpacing: 0.8)),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(context.l10n.statsRank,
+                          maxLines: 1,
+                          softWrap: false,
+                          style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900,
+                              color: Colors.white.withAlpha(77), letterSpacing: 0.8)),
+                    ),
                     // Unranked keys (no games yet) show an em dash — a literal
                     // "RANK 0" read like a score, not like missing data.
                     Text(rank == 0 ? '—' : '$rank', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900,
@@ -1519,47 +1534,66 @@ class _FamilyBars extends StatelessWidget {
   Widget build(BuildContext context) {
     // Widest first, so the row reads as one silhouette instead of three
     // unrelated lines; the label says which is which for anyone who looks.
-    final rows = <(String, int, double)>[
-      (context.l10n.kaDegreeToNote, keyData.normalProgress, 1.0),
-      (context.l10n.kaNoteToDegree, keyData.noteToNumberProgress, 0.62),
-      (context.l10n.kaOfWhat, keyData.harmonizerProgress, 0.38),
+    final rows = <(String, String, int, double)>[
+      ('1›A', context.l10n.kaDegreeToNote, keyData.normalProgress, 1.0),
+      ('A›1', context.l10n.kaNoteToDegree, keyData.noteToNumberProgress, 0.62),
+      ('?', context.l10n.kaOfWhat, keyData.harmonizerProgress, 0.38),
     ];
     return Column(
       children: [
         for (final (i, r) in rows.indexed) ...[
-          if (i > 0) const SizedBox(height: 4),
+          if (i > 0) const SizedBox(height: 5),
           Semantics(
-            label: '${r.$1}, ${r.$2}%',
+            label: '${r.$2}, ${r.$3}%',
             excludeSemantics: true,
-            child: Container(
-              height: i == 0 ? 8 : 5,
-              decoration: BoxDecoration(
-                color: Colors.black.withAlpha(100),
-                borderRadius: BorderRadius.circular(9999),
+            child: Row(children: [
+              // A tag in the app's own vocabulary — degrees are numbers, notes
+              // are letters — so it needs no translation and no legend to be
+              // read, and three bars stop being three anonymous lines.
+              SizedBox(
+                width: 26,
+                child: Text(r.$1,
+                    textAlign: TextAlign.right,
+                    maxLines: 1,
+                    style: TextStyle(
+                        fontSize: 8,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.2,
+                        color: Colors.white.withAlpha(i == 0 ? 140 : 95))),
               ),
-              foregroundDecoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(9999),
-                border: Border.all(color: Colors.white.withAlpha(13)),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(9999),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: FractionallySizedBox(
-                    widthFactor: (r.$2 / 100).clamp(0.0, 1.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: color.withValues(alpha: r.$3),
-                        borderRadius: BorderRadius.circular(9999),
-                        boxShadow: i == 0
-                            ? [BoxShadow(color: color.withAlpha(128), blurRadius: 8)]
-                            : null,
+              const SizedBox(width: 6),
+              Expanded(
+                child: Container(
+                  height: i == 0 ? 8 : 5,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withAlpha(100),
+                    borderRadius: BorderRadius.circular(9999),
+                  ),
+                  foregroundDecoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(9999),
+                    border: Border.all(color: Colors.white.withAlpha(13)),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(9999),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: FractionallySizedBox(
+                        widthFactor: (r.$3 / 100).clamp(0.0, 1.0),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: color.withValues(alpha: r.$4),
+                            borderRadius: BorderRadius.circular(9999),
+                            boxShadow: i == 0
+                                ? [BoxShadow(color: color.withAlpha(128), blurRadius: 8)]
+                                : null,
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
+            ]),
           ),
         ],
       ],

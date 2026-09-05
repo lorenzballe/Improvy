@@ -1897,13 +1897,13 @@ abstract class AppLocalizations {
   /// No description provided for @kaDegreeToNote.
   ///
   /// In en, this message translates to:
-  /// **'DEGREE → NOTE'**
+  /// **'DEGREE › NOTE'**
   String get kaDegreeToNote;
 
   /// No description provided for @kaNoteToDegree.
   ///
   /// In en, this message translates to:
-  /// **'NOTE → DEGREE'**
+  /// **'NOTE › DEGREE'**
   String get kaNoteToDegree;
 
   /// No description provided for @kaOfWhat.
@@ -2655,6 +2655,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open Improvy to fill this in.'**
   String get wOpenApp;
+
+  /// No description provided for @statsSkillMasterySub.
+  ///
+  /// In en, this message translates to:
+  /// **'Per key: degree › note, note › degree, …Of What?'**
+  String get statsSkillMasterySub;
 }
 
 class _AppLocalizationsDelegate

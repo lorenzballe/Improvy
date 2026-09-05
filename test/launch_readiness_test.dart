@@ -318,8 +318,8 @@ void _progressReporting() {
     // is shaped.
     final spoken = labels.join(' | ');
     // C: forward finished (50), backwards barely started (13), harmonizer none.
-    expect(spoken, contains('DEGREE → NOTE, 50%'));
-    expect(spoken, contains('NOTE → DEGREE, 13%'));
+    expect(spoken, contains('DEGREE › NOTE, 50%'));
+    expect(spoken, contains('NOTE › DEGREE, 13%'));
     expect(spoken, contains('…OF WHAT?, 0%'));
     handle.dispose();
   });

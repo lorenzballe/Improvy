@@ -996,10 +996,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get kaModeProgress => 'Mode Progress';
 
   @override
-  String get kaDegreeToNote => 'DEGREE → NOTE';
+  String get kaDegreeToNote => 'DEGREE › NOTE';
 
   @override
-  String get kaNoteToDegree => 'NOTE → DEGREE';
+  String get kaNoteToDegree => 'NOTE › DEGREE';
 
   @override
   String get kaOfWhat => '…OF WHAT?';
@@ -1439,4 +1439,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get wOpenApp => 'Open Improvy to fill this in.';
+
+  @override
+  String get statsSkillMasterySub =>
+      'Per key: degree › note, note › degree, …Of What?';
 }

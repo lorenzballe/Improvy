@@ -968,7 +968,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get statsFast => 'VELOCE';
 
   @override
-  String get statsRank => 'POSIZIONE';
+  String get statsRank => 'RANK';
 
   @override
   String get statsFirstRunTitle => 'Gioca una sessione';
@@ -1002,10 +1002,10 @@ class AppLocalizationsIt extends AppLocalizations {
   String get kaModeProgress => 'Progresso per modalità';
 
   @override
-  String get kaDegreeToNote => 'GRADO → NOTA';
+  String get kaDegreeToNote => 'GRADO › NOTA';
 
   @override
-  String get kaNoteToDegree => 'NOTA → GRADO';
+  String get kaNoteToDegree => 'NOTA › GRADO';
 
   @override
   String get kaOfWhat => '…OF WHAT?';
@@ -1447,4 +1447,8 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get wOpenApp => 'Apri Improvy per riempirla.';
+
+  @override
+  String get statsSkillMasterySub =>
+      'Per tonalità: grado › nota, nota › grado, …Of What?';
 }

@@ -287,7 +287,7 @@
   "statsByNote": "LEISTUNG PRO NOTE",
   "statsSlow": "LANGSAM",
   "statsFast": "SCHNELL",
-  "statsRank": "RANG",
+  "statsRank": "RANK",
   "statsFirstRunTitle": "Spiel eine Sitzung",
   "statsFirstRunBody": "Dreißig Fragen in einer Tonart, und jedes Diagramm auf dieser Seite füllt sich — dein Tempo, die Stufen, die du verfehlst, die Noten, die dich bremsen.",
   "kaTitle": "TONART-ANALYSE",
@@ -298,8 +298,8 @@
   "kaAccuracyOverTime": "Reaktionszeit",
   "kaDegreeMastery": "Chromatische Stufen",
   "kaModeProgress": "Fortschritt pro Modus",
-  "kaDegreeToNote": "STUFE → NOTE",
-  "kaNoteToDegree": "NOTE → STUFE",
+  "kaDegreeToNote": "STUFE › NOTE",
+  "kaNoteToDegree": "NOTE › STUFE",
   "kaOfWhat": "…OF WHAT?",
   "kaConfusions": "Häufige Verwechslungen",
   "kaNoConfusions": "KEINE VERWECHSLUNGEN. STARK!",
@@ -424,5 +424,6 @@
   "wHandsFree": "FREIHÄNDIG",
   "wPocketSub": "Üben mit ausgeschaltetem Display",
   "wTheory": "DIE STUFE DES TAGES",
-  "wOpenApp": "Öffne Improvy, um sie zu füllen."
+  "wOpenApp": "Öffne Improvy, um sie zu füllen.",
+  "statsSkillMasterySub": "Je Tonart: Stufe › Ton, Ton › Stufe, …Of What?"
 }

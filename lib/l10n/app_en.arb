@@ -497,8 +497,8 @@
   "kaAccuracyOverTime": "Response Time",
   "kaDegreeMastery": "Chromatic Degree Mastery",
   "kaModeProgress": "Mode Progress",
-  "kaDegreeToNote": "DEGREE → NOTE",
-  "kaNoteToDegree": "NOTE → DEGREE",
+  "kaDegreeToNote": "DEGREE › NOTE",
+  "kaNoteToDegree": "NOTE › DEGREE",
   "kaOfWhat": "…OF WHAT?",
   "kaConfusions": "Common Confusions",
   "kaNoConfusions": "NO CONFUSIONS YET. GREAT JOB!",
@@ -770,5 +770,6 @@
   "wHandsFree": "HANDS-FREE",
   "wPocketSub": "Train with the screen off",
   "wTheory": "DEGREE OF THE DAY",
-  "wOpenApp": "Open Improvy to fill this in."
+  "wOpenApp": "Open Improvy to fill this in.",
+  "statsSkillMasterySub": "Per key: degree › note, note › degree, …Of What?"
 }
