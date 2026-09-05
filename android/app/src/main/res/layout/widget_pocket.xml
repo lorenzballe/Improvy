@@ -21,12 +21,12 @@
         android:gravity="center"
         android:background="@drawable/widget_button_indigo">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/widget_pocket_glyph"
-            android:textSize="16sp"
-            android:maxLines="1" />
+        <ImageView
+            android:id="@+id/pocket_icon"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:src="@drawable/ic_widget_headphones"
+            android:importantForAccessibility="no" />
 
         <TextView
             android:layout_width="wrap_content"

@@ -147,19 +147,31 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       AnalyticsService.instance.capture(Ev.widgetTapped, {'widget': 'weakest'});
       _switchTab(0);
       if (key != null && key.isNotEmpty) provider.selectKey(key);
-    } else if (action == 'pocket' || action == 'chromatic' || action == 'custom') {
+    } else if (action == 'pocket' || action == 'custom') {
       AnalyticsService.instance.capture(Ev.widgetTapped, {'widget': action});
       _switchTab(0);
-      final mode = switch (action) {
-        'pocket' => TrainingMode.pocket,
-        'chromatic' => TrainingMode.chromatic,
-        _ => TrainingMode.custom,
-      };
-      _openSetup(mode);
+      _openSetup(action == 'pocket' ? TrainingMode.pocket : TrainingMode.custom);
+    } else if (action == 'chromatic') {
+      // Chromatic has no setup screen — it starts from its Home card — so
+      // _openSetup left _pendingSetup pointing at a screen that does not
+      // exist and the tap did nothing but open the app. It now does what
+      // pressing START on that card does.
+      AnalyticsService.instance.capture(Ev.widgetTapped, {'widget': action});
+      _switchTab(0);
+      if (provider.selectedKey == null) {
+        provider.selectKey(provider.progressData.first.key);
+      }
+      provider.startMode(TrainingMode.chromatic);
     } else if (action == 'stats') {
       AnalyticsService.instance.capture(Ev.widgetTapped, {'widget': 'stats'});
       _switchTab(1);
-    } else if (action == 'train' || action == 'theory') {
+    } else if (action == 'theory') {
+      // The card the widget shows is the day's degree; Key Analysis is where
+      // the app says anything about a degree at all. Home was just "the app
+      // opened", which is what the widget was already accused of doing.
+      AnalyticsService.instance.capture(Ev.widgetTapped, {'widget': action});
+      _switchTab(1);
+    } else if (action == 'train') {
       AnalyticsService.instance.capture(Ev.widgetTapped, {'widget': action});
       _switchTab(0);
     }

@@ -84,16 +84,17 @@ void main() {
         .toSet();
     expect(written, contains('week_json'));
     final swiftKit = File('ios/ImprovyWidget/ImprovyKit.swift').readAsStringSync();
-    // Android localises its widget chrome the Android way, in res/values-xx,
-    // so it has no use for the label pack iOS reads.
-    const androidUsesResources = {'labels_json'};
+    // Keys one platform reads and the other has no use for. Each is a
+    // difference in how the same thing is drawn, not a gap — and naming the
+    // reason here is what keeps this list from becoming a place to hide one.
+    const iOSOnly = {
+      'labels_json': 'Android localises its widget chrome in res/values-xx',
+      'animal_emoji': "Android draws the app's own line art for the animal",
+    };
     for (final key in written) {
-      if (androidUsesResources.contains(key)) {
-        expect(swiftKit, contains('"$key"'), reason: key);
-        continue;
-      }
-      expect(swift.contains('"$key"') || swiftKit.contains('"$key"'), isTrue,
-          reason: '$key is never read on iOS');
+      final onIos = swift.contains('"$key"') || swiftKit.contains('"$key"');
+      expect(onIos, isTrue, reason: '$key is never read on iOS');
+      if (iOSOnly.containsKey(key)) continue;
       expect(kotlin, contains('"$key"'), reason: '$key is never read on Android');
     }
   });

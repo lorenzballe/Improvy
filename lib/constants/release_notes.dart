@@ -87,6 +87,25 @@ const List<Release> kReleases = [
             'know that key.',
       ),
       ReleaseLine(
+        icon: Icons.pets_rounded,
+        color: Color(0xFFA3E635),
+        title: 'The widgets draw the real animal',
+        detail:
+            'The level widget showed an emoji where the app draws its own line '
+            'art. It draws the same animal now, in the level\u2019s colour — '
+            'and the empty squares elsewhere are gone: they were characters '
+            'set in a font that has no glyph for them.',
+      ),
+      ReleaseLine(
+        icon: Icons.touch_app_rounded,
+        color: Color(0xFF6366F1),
+        title: 'Widget taps arrive somewhere',
+        detail:
+            'Chromatic pointed at a setup screen that does not exist, so it '
+            'opened the app and stopped; Theory landed on the home screen. '
+            'Both go where they say they go.',
+      ),
+      ReleaseLine(
         icon: Icons.record_voice_over_rounded,
         color: Color(0xFF34D399),
         title: 'Pocket Mode speaks Italian all the way through',

@@ -269,6 +269,7 @@ class ImprovyDailyWidgetProvider : HomeWidgetProvider() {
                 views.setViewVisibility(R.id.daily_play_bg, View.VISIBLE)
                 views.setViewVisibility(R.id.daily_play_glyph, View.VISIBLE)
                 views.tint(R.id.daily_play_bg, Color.parseColor("#FCD34D"))
+                views.tint(R.id.daily_play_glyph, Color.parseColor("#2A1B04"))
             }
             // Which direction today asks, in the key's own colour — hidden
             // once it is played, where the score is the whole story.
@@ -304,10 +305,11 @@ class ImprovyLevelWidgetProvider : HomeWidgetProvider() {
             val level = widgetData.number("animal_level", 1L).toInt()
             val total = widgetData.number("animal_levels_total", 8L).toInt()
 
-            views.setTextViewText(
-                R.id.level_emoji,
-                widgetData.getString("animal_emoji", "🐌") ?: "🐌"
-            )
+            // The animal the app draws, not an emoji: same line art, tinted
+            // with the level's own colour. Indexed by level rather than by
+            // name — the name is a word and words get translated.
+            views.setImageViewResource(R.id.level_animal, animalDrawable(level))
+            views.tint(R.id.level_animal, colour)
             views.setTextViewText(
                 R.id.level_name,
                 widgetData.getString("animal_name", "Snail") ?: "Snail"
@@ -329,6 +331,25 @@ class ImprovyLevelWidgetProvider : HomeWidgetProvider() {
         }
     }
 }
+
+/**
+ * The eight level animals, in order, drawn from AnimalIcon's own paths — see
+ * tool/gen_animal_drawables.py. Indexed by level (1-8) and clamped, so a
+ * payload from a newer app can never crash an older widget.
+ */
+private val kAnimalDrawables = intArrayOf(
+    R.drawable.ic_animal_snail,
+    R.drawable.ic_animal_turtle,
+    R.drawable.ic_animal_penguin,
+    R.drawable.ic_animal_rabbit,
+    R.drawable.ic_animal_fox,
+    R.drawable.ic_animal_horse,
+    R.drawable.ic_animal_falcon,
+    R.drawable.ic_animal_cheetah
+)
+
+private fun animalDrawable(level: Int): Int =
+    kAnimalDrawables[(level - 1).coerceIn(0, kAnimalDrawables.size - 1)]
 
 // ─── ④ Key mastery map ───────────────────────────────────────────────────────
 
@@ -582,12 +603,22 @@ class ImprovyLauncherWidgetProvider : HomeWidgetProvider() {
             val views = RemoteViews(context.packageName, R.layout.widget_launcher)
             for ((cell, bg, spec) in modes) {
                 val (hex, uri) = spec
-                views.tint(bg, Color.parseColor(hex), 46)
+                val colour = Color.parseColor(hex)
+                views.tint(bg, colour, 46)
+                views.tint(iconFor(cell), colour)
                 views.link(context, cell, uri)
             }
             appWidgetManager.updateAppWidget(id, views)
         }
     }
+}
+
+/** The icon inside a launcher cell. */
+private fun iconFor(cell: Int): Int = when (cell) {
+    R.id.launch_daily -> R.id.launch_daily_icon
+    R.id.launch_pocket -> R.id.launch_pocket_icon
+    R.id.launch_chromatic -> R.id.launch_chromatic_icon
+    else -> R.id.launch_custom_icon
 }
 
 // ─── ⑧ Pocket Mode 2×1 ───────────────────────────────────────────────────────
@@ -601,6 +632,7 @@ class ImprovyPocketWidgetProvider : HomeWidgetProvider() {
     ) = guarded {
         appWidgetIds.forEach { id ->
             val views = RemoteViews(context.packageName, R.layout.widget_pocket)
+            views.tint(R.id.pocket_icon, Color.WHITE)
             views.link(context, R.id.pocket_root, "improvy://pocket")
             appWidgetManager.updateAppWidget(id, views)
         }

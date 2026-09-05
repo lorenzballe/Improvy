@@ -133,15 +133,15 @@
                 android:src="@drawable/widget_pill_white"
                 android:importantForAccessibility="no" />
 
-            <TextView
+            <!-- A drawable, not the character ▶ in Lexend: that font has no
+                 such glyph, so every phone drew an empty box here. -->
+            <ImageView
                 android:id="@+id/daily_play_glyph"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:gravity="center"
-                android:text="@string/widget_play_glyph"
-                android:textColor="#2A1B04"
-                android:textSize="16sp"
-                android:fontFamily="@font/lexend_black" />
+                android:padding="12dp"
+                android:src="@drawable/ic_widget_play"
+                android:importantForAccessibility="no" />
         </FrameLayout>
     </LinearLayout>
 </LinearLayout>

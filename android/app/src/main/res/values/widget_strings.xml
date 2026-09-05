@@ -28,13 +28,11 @@
     <string name="widget_daily_streak_placeholder">🔥 0</string>
     <string name="widget_daily_done">Done</string>
     <string name="widget_daily_done_sub">Next challenge tomorrow</string>
-    <string name="widget_play_glyph">▶</string>
 
     <string name="widget_level_widget_name">Improvy · Level</string>
     <string name="widget_level_description">Your animal, your rank, and how far through you are.</string>
     <string name="widget_level_label">YOUR LEVEL</string>
     <string name="widget_level_mastery">Mastery</string>
-    <string name="widget_level_emoji_placeholder">🐌</string>
     <string name="widget_level_name_placeholder">Snail</string>
     <string name="widget_level_rank_placeholder">Level 1 of 8</string>
     <string name="widget_level_rank">Level %1$d of %2$d</string>
@@ -68,13 +66,9 @@
     <string name="widget_launch_daily">Daily</string>
     <string name="widget_launch_chromatic">Chromatic</string>
     <string name="widget_launch_custom">Custom</string>
-    <string name="widget_bolt_glyph">⚡</string>
-    <string name="widget_chromatic_glyph">♯♭</string>
-    <string name="widget_tune_glyph">🎛</string>
 
     <string name="widget_pocket_widget_name">Improvy · Pocket Mode</string>
     <string name="widget_pocket_description">One tap into the hands-free drill.</string>
-    <string name="widget_pocket_glyph">🎧</string>
     <string name="widget_pocket_label">Pocket Mode</string>
 
     <string name="widget_theory_name">Improvy · Theory of the day</string>

@@ -36,13 +36,13 @@
                     android:src="@drawable/widget_tile_white"
                     android:importantForAccessibility="no" />
 
-                <TextView
+                <ImageView
+                    android:id="@+id/launch_daily_icon"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:text="@string/widget_bolt_glyph"
-                    android:textSize="15sp"
-                    android:maxLines="1" />
+                    android:padding="9dp"
+                    android:src="@drawable/ic_widget_flame"
+                    android:importantForAccessibility="no" />
             </FrameLayout>
 
             <TextView
@@ -75,13 +75,13 @@
                     android:src="@drawable/widget_tile_white"
                     android:importantForAccessibility="no" />
 
-                <TextView
+                <ImageView
+                    android:id="@+id/launch_pocket_icon"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:text="@string/widget_pocket_glyph"
-                    android:textSize="15sp"
-                    android:maxLines="1" />
+                    android:padding="9dp"
+                    android:src="@drawable/ic_widget_headphones"
+                    android:importantForAccessibility="no" />
             </FrameLayout>
 
             <TextView
@@ -114,13 +114,13 @@
                     android:src="@drawable/widget_tile_white"
                     android:importantForAccessibility="no" />
 
-                <TextView
+                <ImageView
+                    android:id="@+id/launch_chromatic_icon"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:text="@string/widget_chromatic_glyph"
-                    android:textSize="15sp"
-                    android:maxLines="1" />
+                    android:padding="9dp"
+                    android:src="@drawable/ic_widget_note"
+                    android:importantForAccessibility="no" />
             </FrameLayout>
 
             <TextView
@@ -153,13 +153,13 @@
                     android:src="@drawable/widget_tile_white"
                     android:importantForAccessibility="no" />
 
-                <TextView
+                <ImageView
+                    android:id="@+id/launch_custom_icon"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:text="@string/widget_tune_glyph"
-                    android:textSize="15sp"
-                    android:maxLines="1" />
+                    android:padding="9dp"
+                    android:src="@drawable/ic_widget_tune"
+                    android:importantForAccessibility="no" />
             </FrameLayout>
 
             <TextView

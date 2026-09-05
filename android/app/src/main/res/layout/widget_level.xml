@@ -37,13 +37,15 @@
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
-            <TextView
-                android:id="@+id/level_emoji"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/widget_level_emoji_placeholder"
-                android:textSize="25sp"
-                android:maxLines="1" />
+            <!-- The same line-art animal the app draws (AnimalIcon), not the
+                 emoji: the widget has to show the creature the player earned,
+                 in the shape they know it. Tinted with the level's colour. -->
+            <ImageView
+                android:id="@+id/level_animal"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/ic_animal_snail"
+                android:importantForAccessibility="no" />
 
             <LinearLayout
                 android:layout_width="0dp"

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The play triangle. It used to be the character ▶ set in Lexend, which has no such glyph: every phone drew an empty box in the middle of the button.
+     White, and tinted at runtime like every other shape in these widgets. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M7 4.5 L19.5 12 L7 19.5 Z"
+        android:fillColor="#FFFFFFFF" />
+</vector>
