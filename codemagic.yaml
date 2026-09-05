@@ -20,8 +20,13 @@ workflows:
         APP_STORE_APPLE_ID: 6775236759
         BUNDLE_ID: "com.improvy.app"
         # The WidgetKit extension is its own bundle and needs its own profile.
-        # Both must carry the App Group group.com.improvy.app.widget, or the
-        # widgets install and show placeholders forever.
+        # Both App IDs must have the App Groups capability enabled in the Apple
+        # developer account, carrying group.com.improvy.app.widget. Enabling it
+        # is a manual step — nothing here can do it — and a profile minted
+        # before it was enabled never gains it, so that profile has to be
+        # deleted once. Without all that the build dies at signing with
+        # "doesn't include the App Groups capability", right after the archive
+        # succeeds. ios/ImprovyWidget/README.md has the four clicks.
         WIDGET_BUNDLE_ID: "com.improvy.app.ImprovyWidget"
       flutter: stable
       xcode: latest

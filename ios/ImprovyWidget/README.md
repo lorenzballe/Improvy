@@ -28,10 +28,26 @@ makes the widgets install and then show placeholders forever.
    the first Codemagic build that runs after this change (`fetch-signing-files
    --create`), so if it is not listed yet, run the build once, let it create the
    ID, then come back and tick the box.
+4. **Profiles → delete the widget's profile** (it is named something like
+   `com improvy app ImprovyWidget ios_app_store 1788614442`). A profile minted
+   before the capability existed does not gain it: Apple marks it invalid and
+   it has to be replaced. `fetch-signing-files --create` mints a fresh one on
+   the next build only when there is none to find.
 
-Codemagic fetches a profile for both bundle IDs (`codemagic.yaml`, the signing
-step). Existing profiles are re-created there each run, so the group is picked
-up on the next build after step 2 — no manual profile juggling.
+Then run the build again.
+
+## The error this produces when step 3 or 4 is skipped
+
+```
+Provisioning profile "com improvy app ImprovyWidget ios_app_store …"
+  doesn't include the App Groups capability.
+  doesn't support the group.com.improvy.app.widget App Group.
+  doesn't include the com.apple.security.application-groups entitlement.
+```
+
+It comes after `Xcode archive done`, which is worth reading properly: the
+extension compiled and archived. Only the signature is missing the capability,
+and that lives in the Apple developer account, not in this repo.
 
 ## Checking it works
 
