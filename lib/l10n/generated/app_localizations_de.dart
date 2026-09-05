@@ -1333,4 +1333,114 @@ class AppLocalizationsDe extends AppLocalizations {
   String summaryKeyOverall(String key) {
     return '$key insgesamt';
   }
+
+  @override
+  String statsTotalGamesChip(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n RUNDEN',
+      one: '1 RUNDE',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homeBestOf(int score, int cap) {
+    return '$score/$cap BESTE';
+  }
+
+  @override
+  String get dailyMajorSuffix => 'Dur';
+
+  @override
+  String dailyStreakDays(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n Tage',
+      one: '1 Tag',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dailyRule(int questions, int seconds) {
+    return '$questions Fragen · $seconds Sekunden';
+  }
+
+  @override
+  String get dailySubjectKeyOf => 'Tonart ';
+
+  @override
+  String get dailySubjectOn => 'Auf ';
+
+  @override
+  String get wQuestion => 'FRAGE';
+
+  @override
+  String get wQuestionLong => 'DIE FRAGE DES TAGES';
+
+  @override
+  String get wReveal => 'Zum Auflösen tippen';
+
+  @override
+  String get wDaily => 'CHALLENGE';
+
+  @override
+  String get wDailyLong => 'TAGES-CHALLENGE';
+
+  @override
+  String get wToday => 'heute';
+
+  @override
+  String get wDone => 'Erledigt';
+
+  @override
+  String get wTomorrow => 'Die nächste morgen';
+
+  @override
+  String get wLevel => 'DEIN LEVEL';
+
+  @override
+  String get wMastery => 'TONART-BEHERRSCHUNG';
+
+  @override
+  String get wStreak => 'SERIE';
+
+  @override
+  String get wDays => 'Tage in Folge';
+
+  @override
+  String get wDayStreak => 'Tage Serie';
+
+  @override
+  String get wAtRisk => 'Heute spielen, sonst ist sie weg';
+
+  @override
+  String get wNeedsWork => 'ZU ÜBEN';
+
+  @override
+  String get wMastered => 'beherrscht';
+
+  @override
+  String get wWeakHint => 'Deine schwächste Tonart. Zum Üben tippen.';
+
+  @override
+  String get wWeakEmpty => 'Spiel zuerst eine Tonart';
+
+  @override
+  String get wStart => 'TRAINING STARTEN';
+
+  @override
+  String get wHandsFree => 'FREIHÄNDIG';
+
+  @override
+  String get wPocketSub => 'Üben mit ausgeschaltetem Display';
+
+  @override
+  String get wTheory => 'DIE STUFE DES TAGES';
+
+  @override
+  String get wOpenApp => 'Öffne Improvy, um sie zu füllen.';
 }

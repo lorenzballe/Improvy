@@ -701,7 +701,7 @@ class _ResponseTimeCardState extends State<_ResponseTimeCard> {
             ),
             const SizedBox(height: 10),
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Text('${widget.range} GAMES AGO',
+              Text(context.l10n.statsGamesAgo(int.tryParse(widget.range) ?? 0),
                 style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white.withAlpha(77))),
               Text(context.l10n.statsLatest,
                 style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white.withAlpha(77))),
@@ -1081,7 +1081,7 @@ class _GamesPlayedCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: const Color(0xFFF97316).withAlpha(51)),
                 ),
-                child: Text('$total GAMES',
+                child: Text(context.l10n.statsTotalGamesChip(total),
                   style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFFFB923C), letterSpacing: 1)),
               ),
             ]),

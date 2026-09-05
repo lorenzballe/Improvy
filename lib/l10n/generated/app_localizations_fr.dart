@@ -1341,4 +1341,115 @@ class AppLocalizationsFr extends AppLocalizations {
   String summaryKeyOverall(String key) {
     return '$key au total';
   }
+
+  @override
+  String statsTotalGamesChip(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n PARTIES',
+      one: '1 PARTIE',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homeBestOf(int score, int cap) {
+    return '$score/$cap RECORD';
+  }
+
+  @override
+  String get dailyMajorSuffix => 'majeur';
+
+  @override
+  String dailyStreakDays(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n jours',
+      one: '1 jour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dailyRule(int questions, int seconds) {
+    return '$questions questions · $seconds secondes';
+  }
+
+  @override
+  String get dailySubjectKeyOf => 'Tonalité de ';
+
+  @override
+  String get dailySubjectOn => 'Sur ';
+
+  @override
+  String get wQuestion => 'QUESTION';
+
+  @override
+  String get wQuestionLong => 'LA QUESTION DU JOUR';
+
+  @override
+  String get wReveal => 'Touchez pour voir';
+
+  @override
+  String get wDaily => 'DÉFI';
+
+  @override
+  String get wDailyLong => 'DÉFI DU JOUR';
+
+  @override
+  String get wToday => 'aujourd\'hui';
+
+  @override
+  String get wDone => 'Fait';
+
+  @override
+  String get wTomorrow => 'Le prochain demain';
+
+  @override
+  String get wLevel => 'VOTRE NIVEAU';
+
+  @override
+  String get wMastery => 'MAÎTRISE DES TONALITÉS';
+
+  @override
+  String get wStreak => 'SÉRIE';
+
+  @override
+  String get wDays => 'jours d’affilée';
+
+  @override
+  String get wDayStreak => 'jours de série';
+
+  @override
+  String get wAtRisk => 'Jouez aujourd’hui pour la garder';
+
+  @override
+  String get wNeedsWork => 'À TRAVAILLER';
+
+  @override
+  String get wMastered => 'maîtrisée';
+
+  @override
+  String get wWeakHint =>
+      'Votre tonalité la plus faible. Touchez pour la travailler.';
+
+  @override
+  String get wWeakEmpty => 'Jouez d’abord une tonalité';
+
+  @override
+  String get wStart => 'COMMENCER';
+
+  @override
+  String get wHandsFree => 'MAINS LIBRES';
+
+  @override
+  String get wPocketSub => 'Travaillez écran éteint';
+
+  @override
+  String get wTheory => 'LE DEGRÉ DU JOUR';
+
+  @override
+  String get wOpenApp => 'Ouvrez Improvy pour la remplir.';
 }

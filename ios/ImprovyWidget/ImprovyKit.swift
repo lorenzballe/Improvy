@@ -31,6 +31,23 @@ enum Improvy {
 
     static func bool(_ key: String) -> Bool { defaults?.bool(forKey: key) ?? false }
 
+    /// The widgets' own labels, in the device's language, written by the app
+    /// (`WidgetService._labels`). Falling back to the English literal means a
+    /// widget is never blank because a string is missing — it is only ever
+    /// less translated than it could be.
+    static let labels: [String: String] = {
+        guard
+            let data = string("labels_json").data(using: .utf8),
+            let map = (try? JSONSerialization.jsonObject(with: data)) as? [String: String]
+        else { return [:] }
+        return map
+    }()
+
+    static func label(_ name: String, _ fallback: String) -> String {
+        let v = labels[name] ?? ""
+        return v.isEmpty ? fallback : v
+    }
+
     /// The last seven days, oldest first, ending today: was the daily played.
     /// An empty or malformed payload reads as a quiet week rather than as a
     /// week of failures.

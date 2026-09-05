@@ -287,8 +287,8 @@ class _DailyResultsScreenState extends State<DailyResultsScreen> {
                   note: formatNoteForDisplay(r.key, notation),
                   style: const TextStyle(
                       fontSize: 13, fontWeight: FontWeight.w800, color: _goldSoft)),
-              const Text(' major',
-                  style: TextStyle(
+              Text(' ${context.l10n.dailyMajorSuffix}',
+                  style: const TextStyle(
                       fontSize: 13, fontWeight: FontWeight.w800, color: _goldSoft)),
             ]),
             border: _gold.withValues(alpha: 0.3),
@@ -386,7 +386,7 @@ class _DailyResultsScreenState extends State<DailyResultsScreen> {
                   letterSpacing: 1.8,
                   color: Colors.white.withValues(alpha: 0.4))),
           const Spacer(),
-          Text('🔥 $streak ${streak == 1 ? 'day' : 'days'}',
+          Text('🔥 ${context.l10n.dailyStreakDays(streak)}',
               style: const TextStyle(
                   fontSize: 13, fontWeight: FontWeight.w900, color: _goldSoft)),
         ]),

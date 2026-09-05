@@ -1,6 +1,7 @@
 import 'package:intl/intl.dart';
 
 import '../constants/app_info.dart';
+import '../l10n/l10n.dart';
 import '../constants/music_constants.dart';
 import '../utils/music_engine.dart';
 import 'training_mode.dart';
@@ -96,7 +97,11 @@ class DailyChallenge {
   /// The rule, in words, for every surface that states it — the card, both home
   /// screen widgets, the store listing. Built from the numbers above so the
   /// promise can never drift from the clock the run actually uses.
-  String get rule => '$questionCount questions · ${totalTimeMs ~/ 1000} seconds';
+  ///
+  /// Reads the device language directly rather than taking a context: the home
+  /// screen widgets are built here too, and they have no BuildContext to hand.
+  String get rule =>
+      L10n.current.dailyRule(questionCount, totalTimeMs ~/ 1000);
 
   /// What today asks, in three words, for the card and the widgets. The player
   /// should know before tapping whether they are naming notes or roots.
@@ -109,7 +114,9 @@ class DailyChallenge {
   /// What comes before [key] wherever the card and widgets announce the run.
   /// …Of What? has no tonality, so calling its note a key would be a plain
   /// lie — the run is built *on* that note, it is not in it.
-  String get subjectPrefix => mode == TrainingMode.ofWhat ? 'On ' : 'Key of ';
+  String get subjectPrefix => mode == TrainingMode.ofWhat
+      ? L10n.current.dailySubjectOn
+      : L10n.current.dailySubjectKeyOf;
 
   /// Mastery tier the daily's answers are filed under (medium). The daily has
   /// no per-question clock, so this no longer sets a countdown — it only keeps

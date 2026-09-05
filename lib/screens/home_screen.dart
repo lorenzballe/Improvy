@@ -2230,7 +2230,7 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
                           Text('$bestPct%',
                             style: TextStyle(fontSize: 20 * k, fontWeight: FontWeight.w900, height: 1, letterSpacing: -0.5, color: bestColor)),
                           SizedBox(height: 3 * k),
-                          Text('$bestScore/$bestCap BEST',
+                          Text(context.l10n.homeBestOf(bestScore, bestCap),
                             style: TextStyle(fontSize: 9 * k, fontWeight: FontWeight.w900, letterSpacing: 1, color: Colors.white.withAlpha(90))),
                         ],
                       ),

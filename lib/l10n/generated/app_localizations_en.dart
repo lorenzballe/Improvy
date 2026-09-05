@@ -1329,4 +1329,114 @@ class AppLocalizationsEn extends AppLocalizations {
   String summaryKeyOverall(String key) {
     return '$key overall';
   }
+
+  @override
+  String statsTotalGamesChip(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n GAMES',
+      one: '1 GAME',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String homeBestOf(int score, int cap) {
+    return '$score/$cap BEST';
+  }
+
+  @override
+  String get dailyMajorSuffix => 'major';
+
+  @override
+  String dailyStreakDays(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n days',
+      one: '1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dailyRule(int questions, int seconds) {
+    return '$questions questions · $seconds seconds';
+  }
+
+  @override
+  String get dailySubjectKeyOf => 'Key of ';
+
+  @override
+  String get dailySubjectOn => 'On ';
+
+  @override
+  String get wQuestion => 'QUESTION';
+
+  @override
+  String get wQuestionLong => 'TODAY\'S QUESTION';
+
+  @override
+  String get wReveal => 'Tap to reveal';
+
+  @override
+  String get wDaily => 'DAILY';
+
+  @override
+  String get wDailyLong => 'DAILY CHALLENGE';
+
+  @override
+  String get wToday => 'today';
+
+  @override
+  String get wDone => 'Done';
+
+  @override
+  String get wTomorrow => 'Next one tomorrow';
+
+  @override
+  String get wLevel => 'YOUR LEVEL';
+
+  @override
+  String get wMastery => 'KEY MASTERY';
+
+  @override
+  String get wStreak => 'STREAK';
+
+  @override
+  String get wDays => 'days in a row';
+
+  @override
+  String get wDayStreak => 'day streak';
+
+  @override
+  String get wAtRisk => 'Play today to keep it';
+
+  @override
+  String get wNeedsWork => 'NEEDS WORK';
+
+  @override
+  String get wMastered => 'mastered';
+
+  @override
+  String get wWeakHint => 'Your weakest key. Tap to train it.';
+
+  @override
+  String get wWeakEmpty => 'Play a key first';
+
+  @override
+  String get wStart => 'START TRAINING';
+
+  @override
+  String get wHandsFree => 'HANDS-FREE';
+
+  @override
+  String get wPocketSub => 'Train with the screen off';
+
+  @override
+  String get wTheory => 'DEGREE OF THE DAY';
+
+  @override
+  String get wOpenApp => 'Open Improvy to fill this in.';
 }

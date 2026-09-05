@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The widgets' own words. Everything a player reads at runtime is written by
+     the app (lib/services/widget_service.dart), already in their language;
+     these are the picker previews and the instant before the first update.
+     Widget names, glyphs and the mode names stay as they are in values/. -->
+<resources>
+    <string name="widget_quiz_label">LA DOMANDA DI OGGI</string>
+    <string name="widget_quiz_hint">Tocca per scoprire</string>
+    <string name="widget_quiz_of">di %1$s</string>
+    <string name="widget_quiz_of_placeholder">di E♭</string>
+    <string name="widget_quiz_description">Un grado della scala a cui rispondere, nuovo ogni ora. Tocca per scoprirlo.</string>
+    <string name="widget_quiz_wide_description">La domanda oraria, con spazio per il contesto.</string>
+    <string name="widget_quiz_wide_sub">Di\' la nota, poi verifica nell\'app.</string>
+    <string name="widget_daily_description">La tonalità del giorno, il tuo punteggio e la tua serie.</string>
+    <string name="widget_daily_label">SFIDA DEL GIORNO</string>
+    <string name="widget_daily_key">Tonalità di %1$s</string>
+    <string name="widget_daily_placeholder">Tonalità di B♭</string>
+    <string name="widget_daily_sub_placeholder">10 domande · 40 secondi</string>
+    <string name="widget_daily_done">Fatta</string>
+    <string name="widget_daily_done_sub">La prossima domani</string>
+    <string name="widget_level_description">Il tuo animale, il tuo grado e quanto sei avanti.</string>
+    <string name="widget_level_label">IL TUO LIVELLO</string>
+    <string name="widget_level_mastery">Padronanza</string>
+    <string name="widget_level_rank">Livello %1$d di %2$d</string>
+    <string name="widget_level_rank_placeholder">Livello 1 di 8</string>
+    <string name="widget_level_name_placeholder">Lumaca</string>
+    <string name="widget_level_quote_placeholder">Piano piano si arriva!</string>
+    <string name="widget_streak_description">Giorni di fila, e un avviso prima di perderli.</string>
+    <string name="widget_streak_label">SERIE</string>
+    <string name="widget_streak_caption">giorni di serie</string>
+    <string name="widget_streak_at_risk">Gioca oggi per non perderla</string>
+    <string name="widget_map_description">Dodici tonalità, illuminate da quanto le conosci.</string>
+    <string name="widget_map_label">PADRONANZA TONALITÀ</string>
+    <string name="widget_weak_description">La tonalità da allenare, a un tocco dall\'allenamento.</string>
+    <string name="widget_weak_label">DA MIGLIORARE</string>
+    <string name="widget_weak_hint">Tocca per allenarla</string>
+    <string name="widget_weak_sub_placeholder">Ancora niente giocato</string>
+    <string name="widget_weak_empty">Gioca una tonalità per scoprirlo</string>
+    <string name="widget_launcher_description">Dritto nella sfida, in Pocket, Chromatic o Custom.</string>
+    <string name="widget_pocket_description">Un tocco per l\'allenamento senza mani.</string>
+    <string name="widget_theory_description">Un grado della scala al giorno, e cosa fa davvero.</string>
+    <string name="widget_theory_label">IL GRADO DEL GIORNO</string>
+    <string name="widget_theory_hint">Tocca per la scheda completa</string>
+    <string name="widget_theory_text_placeholder">La nota che trasforma un accordo maggiore in un dominante.</string>
+</resources>

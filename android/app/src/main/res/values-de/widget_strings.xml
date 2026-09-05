@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The widgets' own words. Everything a player reads at runtime is written by
+     the app (lib/services/widget_service.dart), already in their language;
+     these are the picker previews and the instant before the first update.
+     Widget names, glyphs and the mode names stay as they are in values/. -->
+<resources>
+    <string name="widget_quiz_label">DIE FRAGE DES TAGES</string>
+    <string name="widget_quiz_hint">Zum Auflösen tippen</string>
+    <string name="widget_quiz_of">von %1$s</string>
+    <string name="widget_quiz_of_placeholder">von E♭</string>
+    <string name="widget_quiz_description">Eine Stufe der Tonleiter, jede Stunde neu. Zum Auflösen tippen.</string>
+    <string name="widget_quiz_wide_description">Dieselbe stündliche Frage, mit Platz für den Kontext.</string>
+    <string name="widget_quiz_wide_sub">Nenne den Ton, dann prüfe es in der App.</string>
+    <string name="widget_daily_description">Die Tonart des Tages, dein Ergebnis und deine Serie.</string>
+    <string name="widget_daily_label">TAGES-CHALLENGE</string>
+    <string name="widget_daily_key">Tonart %1$s</string>
+    <string name="widget_daily_placeholder">Tonart B♭</string>
+    <string name="widget_daily_sub_placeholder">10 Fragen · 40 Sekunden</string>
+    <string name="widget_daily_done">Erledigt</string>
+    <string name="widget_daily_done_sub">Die nächste morgen</string>
+    <string name="widget_level_description">Dein Tier, dein Rang und wie weit du bist.</string>
+    <string name="widget_level_label">DEIN LEVEL</string>
+    <string name="widget_level_mastery">Beherrschung</string>
+    <string name="widget_level_rank">Level %1$d von %2$d</string>
+    <string name="widget_level_rank_placeholder">Level 1 von 8</string>
+    <string name="widget_level_name_placeholder">Schnecke</string>
+    <string name="widget_level_quote_placeholder">Langsam, aber stetig!</string>
+    <string name="widget_streak_description">Tage in Folge, und eine Warnung, bevor sie weg sind.</string>
+    <string name="widget_streak_label">SERIE</string>
+    <string name="widget_streak_caption">Tage Serie</string>
+    <string name="widget_streak_at_risk">Heute spielen, sonst ist sie weg</string>
+    <string name="widget_map_description">Zwölf Tonarten, erhellt davon, wie gut du sie kennst.</string>
+    <string name="widget_map_label">TONART-BEHERRSCHUNG</string>
+    <string name="widget_weak_description">Die Tonart, die Übung braucht — einen Tipp entfernt.</string>
+    <string name="widget_weak_label">ZU ÜBEN</string>
+    <string name="widget_weak_hint">Zum Üben tippen</string>
+    <string name="widget_weak_sub_placeholder">Noch nichts gespielt</string>
+    <string name="widget_weak_empty">Spiel eine Tonart, um es zu sehen</string>
+    <string name="widget_launcher_description">Direkt in die Challenge, Pocket, Chromatic oder Custom.</string>
+    <string name="widget_pocket_description">Ein Tipp in die freihändige Übung.</string>
+    <string name="widget_theory_description">Eine Stufe pro Tag, und was sie wirklich tut.</string>
+    <string name="widget_theory_label">DIE STUFE DES TAGES</string>
+    <string name="widget_theory_hint">Für die ganze Karte tippen</string>
+    <string name="widget_theory_text_placeholder">Der Ton, der aus einem Dur-Akkord einen Dominantseptakkord macht.</string>
+</resources>

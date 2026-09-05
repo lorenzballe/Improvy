@@ -706,5 +706,69 @@
         "type": "String"
       }
     }
-  }
+  },
+  "statsTotalGamesChip": "{n, plural, =1{1 GAME} other{{n} GAMES}}",
+  "@statsTotalGamesChip": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "homeBestOf": "{score}/{cap} BEST",
+  "@homeBestOf": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      },
+      "cap": {
+        "type": "int"
+      }
+    }
+  },
+  "dailyMajorSuffix": "major",
+  "dailyStreakDays": "{n, plural, =1{1 day} other{{n} days}}",
+  "@dailyStreakDays": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "dailyRule": "{questions} questions · {seconds} seconds",
+  "@dailyRule": {
+    "placeholders": {
+      "questions": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "dailySubjectKeyOf": "Key of ",
+  "dailySubjectOn": "On ",
+  "wQuestion": "QUESTION",
+  "wQuestionLong": "TODAY'S QUESTION",
+  "wReveal": "Tap to reveal",
+  "wDaily": "DAILY",
+  "wDailyLong": "DAILY CHALLENGE",
+  "wToday": "today",
+  "wDone": "Done",
+  "wTomorrow": "Next one tomorrow",
+  "wLevel": "YOUR LEVEL",
+  "wMastery": "KEY MASTERY",
+  "wStreak": "STREAK",
+  "wDays": "days in a row",
+  "wDayStreak": "day streak",
+  "wAtRisk": "Play today to keep it",
+  "wNeedsWork": "NEEDS WORK",
+  "wMastered": "mastered",
+  "wWeakHint": "Your weakest key. Tap to train it.",
+  "wWeakEmpty": "Play a key first",
+  "wStart": "START TRAINING",
+  "wHandsFree": "HANDS-FREE",
+  "wPocketSub": "Train with the screen off",
+  "wTheory": "DEGREE OF THE DAY",
+  "wOpenApp": "Open Improvy to fill this in."
 }

@@ -10,6 +10,7 @@ import '../utils/music_engine.dart';
 import '../widgets/note_text.dart';
 import '../constants/app_colors.dart';
 import '../constants/levels.dart';
+import '../l10n/l10n.dart';
 import '../constants/theory_cards.dart';
 import '../models/key_progress.dart';
 
@@ -165,6 +166,13 @@ class WidgetService {
         // ── Weakest key ───────────────────────────────────────────────────
         ..._weakestKeyData(provider),
 
+        // ── The widgets' own words ────────────────────────────────────────
+        // Everything else a widget shows was already written here; its labels
+        // were not, and they were English on an Italian phone. iOS reads these
+        // and falls back to its own literals; Android keeps using its res/
+        // strings, which are localised the Android way.
+        HomeWidget.saveWidgetData<String>('labels_json', jsonEncode(_labels())),
+
         // ── Theory of the day ─────────────────────────────────────────────
         HomeWidget.saveWidgetData<String>('theory_degree', _theory(now).$1),
         HomeWidget.saveWidgetData<String>('theory_text', _theory(now).$2),
@@ -183,6 +191,38 @@ class WidgetService {
       // A widget that fails to refresh must never disturb the app.
       if (kDebugMode) debugPrint('[WidgetService] sync failed: $e');
     }
+  }
+
+  /// The chrome of every widget, in the device's language. Keyed by short
+  /// names the native side asks for; a missing key leaves the native default,
+  /// so adding a widget never has to wait for a translation.
+  static Map<String, String> _labels() {
+    final l = L10n.current;
+    return {
+      'question': l.wQuestion,
+      'questionLong': l.wQuestionLong,
+      'reveal': l.wReveal,
+      'daily': l.wDaily,
+      'dailyLong': l.wDailyLong,
+      'today': l.wToday,
+      'done': l.wDone,
+      'tomorrow': l.wTomorrow,
+      'level': l.wLevel,
+      'mastery': l.wMastery,
+      'streak': l.wStreak,
+      'days': l.wDays,
+      'dayStreak': l.wDayStreak,
+      'atRisk': l.wAtRisk,
+      'needsWork': l.wNeedsWork,
+      'mastered': l.wMastered,
+      'weakHint': l.wWeakHint,
+      'weakEmpty': l.wWeakEmpty,
+      'start': l.wStart,
+      'handsFree': l.wHandsFree,
+      'pocketSub': l.wPocketSub,
+      'theory': l.wTheory,
+      'openApp': l.wOpenApp,
+    };
   }
 
   /// Seven booleans, oldest first, ending on today: whether the daily

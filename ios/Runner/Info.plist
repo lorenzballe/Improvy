@@ -59,13 +59,19 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<!-- Portrait only on iPad too. setPreferredOrientations locks the phone,
+	     but iOS ignores it on iPad unless the app is full-screen only — which
+	     is why the app used to rotate there into a layout designed for a
+	     phone held upright. -->
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<!-- No Split View: a training screen handed an arbitrary third of an iPad
+	     is not a screen anyone designed. -->
+	<key>UIRequiresFullScreen</key>
+	<true/>
 	<key>FLTEnableImpeller</key>
 	<true/>
 	<key>ITSAppUsesNonExemptEncryption</key>

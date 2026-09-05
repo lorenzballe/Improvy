@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The widgets' own words. Everything a player reads at runtime is written by
+     the app (lib/services/widget_service.dart), already in their language;
+     these are the picker previews and the instant before the first update.
+     Widget names, glyphs and the mode names stay as they are in values/. -->
+<resources>
+    <string name="widget_quiz_label">LA PREGUNTA DE HOY</string>
+    <string name="widget_quiz_hint">Toca para verla</string>
+    <string name="widget_quiz_of">de %1$s</string>
+    <string name="widget_quiz_of_placeholder">de E♭</string>
+    <string name="widget_quiz_description">Un grado de la escala que responder, nuevo cada hora. Toca para verlo.</string>
+    <string name="widget_quiz_wide_description">La pregunta de cada hora, con sitio para su contexto.</string>
+    <string name="widget_quiz_wide_sub">Di la nota y compruébalo en la app.</string>
+    <string name="widget_daily_description">La tonalidad del día, tu puntuación y tu racha.</string>
+    <string name="widget_daily_label">RETO DIARIO</string>
+    <string name="widget_daily_key">Tonalidad de %1$s</string>
+    <string name="widget_daily_placeholder">Tonalidad de B♭</string>
+    <string name="widget_daily_sub_placeholder">10 preguntas · 40 segundos</string>
+    <string name="widget_daily_done">Hecho</string>
+    <string name="widget_daily_done_sub">El siguiente mañana</string>
+    <string name="widget_level_description">Tu animal, tu rango y cuánto llevas.</string>
+    <string name="widget_level_label">TU NIVEL</string>
+    <string name="widget_level_mastery">Dominio</string>
+    <string name="widget_level_rank">Nivel %1$d de %2$d</string>
+    <string name="widget_level_rank_placeholder">Nivel 1 de 8</string>
+    <string name="widget_level_name_placeholder">Caracol</string>
+    <string name="widget_level_quote_placeholder">¡Despacio pero seguro!</string>
+    <string name="widget_streak_description">Días seguidos, y un aviso antes de perderlos.</string>
+    <string name="widget_streak_label">RACHA</string>
+    <string name="widget_streak_caption">días de racha</string>
+    <string name="widget_streak_at_risk">Juega hoy para conservarla</string>
+    <string name="widget_map_description">Doce tonalidades, iluminadas según lo bien que las conoces.</string>
+    <string name="widget_map_label">DOMINIO DE TONALIDADES</string>
+    <string name="widget_weak_description">La tonalidad que toca practicar, a un toque de entrenarla.</string>
+    <string name="widget_weak_label">A MEJORAR</string>
+    <string name="widget_weak_hint">Toca para entrenarla</string>
+    <string name="widget_weak_sub_placeholder">Nada jugado aún</string>
+    <string name="widget_weak_empty">Juega una tonalidad para saberlo</string>
+    <string name="widget_launcher_description">Directo al reto, a Pocket, Chromatic o Custom.</string>
+    <string name="widget_pocket_description">Un toque para el ejercicio sin manos.</string>
+    <string name="widget_theory_description">Un grado de la escala al día, y lo que hace de verdad.</string>
+    <string name="widget_theory_label">EL GRADO DEL DÍA</string>
+    <string name="widget_theory_hint">Toca para la ficha completa</string>
+    <string name="widget_theory_text_placeholder">La nota que convierte un acorde mayor en un dominante.</string>
+</resources>

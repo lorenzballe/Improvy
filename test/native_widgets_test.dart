@@ -84,7 +84,14 @@ void main() {
         .toSet();
     expect(written, contains('week_json'));
     final swiftKit = File('ios/ImprovyWidget/ImprovyKit.swift').readAsStringSync();
+    // Android localises its widget chrome the Android way, in res/values-xx,
+    // so it has no use for the label pack iOS reads.
+    const androidUsesResources = {'labels_json'};
     for (final key in written) {
+      if (androidUsesResources.contains(key)) {
+        expect(swiftKit, contains('"$key"'), reason: key);
+        continue;
+      }
       expect(swift.contains('"$key"') || swiftKit.contains('"$key"'), isTrue,
           reason: '$key is never read on iOS');
       expect(kotlin, contains('"$key"'), reason: '$key is never read on Android');

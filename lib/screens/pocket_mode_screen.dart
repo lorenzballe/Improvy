@@ -768,10 +768,10 @@ class _PocketModeScreenState extends State<PocketModeScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const FittedBox(
+          FittedBox(
             fit: BoxFit.scaleDown,
-            child: Text('KEY', maxLines: 1, softWrap: false,
-                style: TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.white60, letterSpacing: 1.5)),
+            child: Text(context.l10n.trainerKey, maxLines: 1, softWrap: false,
+                style: const TextStyle(fontSize: 7, fontWeight: FontWeight.w900, color: Colors.white60, letterSpacing: 1.5)),
           ),
           FittedBox(
             fit: BoxFit.scaleDown,

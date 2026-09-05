@@ -106,7 +106,8 @@ struct QuizView: View {
     var body: some View {
         HStack(spacing: 14) {
             VStack(alignment: .leading, spacing: 0) {
-                Eyebrow(wide ? "TODAY'S QUESTION" : "QUESTION")
+                Eyebrow(wide ? Improvy.label("questionLong", "TODAY'S QUESTION")
+                              : Improvy.label("question", "QUESTION"))
                 Spacer(minLength: 6)
                 Text(entry.degree)
                     .font(.display(wide ? 46 : 40))
@@ -121,7 +122,7 @@ struct QuizView: View {
                         .padding(.top, 1)
                 }
                 Spacer(minLength: 6)
-                Text("Tap to reveal")
+                Text(Improvy.label("reveal", "Tap to reveal"))
                     .font(.ui(10, .medium))
                     .foregroundStyle(.white.opacity(0.42))
                     .fitted(0.8)
@@ -173,7 +174,8 @@ struct DailyView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Eyebrow(text: small ? "DAILY" : "DAILY CHALLENGE",
+            Eyebrow(text: small ? Improvy.label("daily", "DAILY")
+                                : Improvy.label("dailyLong", "DAILY CHALLENGE"),
                     accent: played ? .white.opacity(0.45) : Ink.gold) {
                 Chip(text: "🔥 \(Improvy.int("daily_streak"))",
                      colour: played ? .white.opacity(0.55) : Ink.gold)
@@ -186,14 +188,15 @@ struct DailyView: View {
                 HStack(alignment: .bottom, spacing: 10) {
                     KeyTile(key: key.isEmpty ? "?" : key,
                             colour: played ? Ink.violet : colour, size: 52)
-                    Text(played ? Improvy.string("daily_score", "Done") : "today")
+                    Text(played ? Improvy.string("daily_score", Improvy.label("done", "Done"))
+                              : Improvy.label("today", "today"))
                         .font(.display(played ? 24 : 15))
                         .foregroundStyle(played ? .white : .white.opacity(0.55))
                         .fitted(0.6)
                 }
                 Spacer(minLength: 6)
                 Text(played
-                     ? Improvy.string("daily_grid", "Next one tomorrow")
+                     ? Improvy.string("daily_grid", Improvy.label("tomorrow", "Next one tomorrow"))
                      : Improvy.string("daily_sub", "10 questions"))
                     .font(.ui(11, .medium))
                     .foregroundStyle(.white.opacity(0.5))
@@ -209,7 +212,7 @@ struct DailyView: View {
                             .foregroundStyle(.white)
                             .fitted(0.6)
                         Text(played
-                             ? Improvy.string("daily_grid", "Next one tomorrow")
+                             ? Improvy.string("daily_grid", Improvy.label("tomorrow", "Next one tomorrow"))
                              : Improvy.string("daily_sub", "10 questions"))
                             .font(.ui(11, .medium))
                             .foregroundStyle(.white.opacity(0.5))
@@ -253,7 +256,7 @@ struct LevelView: View {
     var body: some View {
         let pct = min(max(Improvy.int("progress_pct"), 0), 100)
         VStack(alignment: .leading, spacing: 0) {
-            Eyebrow(text: "YOUR LEVEL", accent: colour) {
+            Eyebrow(text: Improvy.label("level", "YOUR LEVEL"), accent: colour) {
                 Text("\(Improvy.int("animal_level", 1))/\(Improvy.int("animal_levels_total", 8))")
                     .font(.ui(10, .black))
                     .foregroundStyle(.white.opacity(0.40))
@@ -331,13 +334,13 @@ struct MapView: View {
         let keys = KeyDatum.all
         let columns = tall ? 4 : 6
         VStack(alignment: .leading, spacing: tall ? 10 : 8) {
-            Eyebrow(text: "KEY MASTERY", accent: Ink.cyan) {
+            Eyebrow(text: Improvy.label("mastery", "KEY MASTERY"), accent: Ink.cyan) {
                 Text("\(Improvy.int("progress_pct"))%")
                     .font(.ui(11, .black))
                     .foregroundStyle(.white.opacity(0.55))
             }
             if keys.isEmpty {
-                Text("Open Improvy to fill this in.")
+                Text(Improvy.label("openApp", "Open Improvy to fill this in."))
                     .font(.ui(12, .medium))
                     .foregroundStyle(.white.opacity(0.45))
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
@@ -350,7 +353,9 @@ struct MapView: View {
                         (geo.size.width - gap * CGFloat(columns - 1)) / CGFloat(columns),
                         (geo.size.height - gap * CGFloat(rows - 1)) / CGFloat(rows)
                     ))
-                    VStack(spacing: gap) {
+                    // The large widget has more height than the rows need;
+                    // spreading them beats a block of tiles above a hole.
+                    VStack(spacing: tall ? nil : gap) {
                         ForEach(0..<rows, id: \.self) { row in
                             HStack(spacing: gap) {
                                 ForEach(0..<columns, id: \.self) { col in
@@ -427,7 +432,8 @@ struct StreakView: View {
                             .font(.display(40))
                             .foregroundStyle(.white)
                             .fitted()
-                        Text(atRisk ? "Play today to keep it" : "day streak")
+                        Text(atRisk ? Improvy.label("atRisk", "Play today to keep it")
+                              : Improvy.label("dayStreak", "day streak"))
                             .font(.ui(12, .semibold))
                             .foregroundStyle(atRisk ? Ink.gold : .white.opacity(0.5))
                             .fitted(0.7)
@@ -440,7 +446,7 @@ struct StreakView: View {
                 }
             } else {
                 VStack(alignment: .leading, spacing: 0) {
-                    Eyebrow("STREAK", accent: colour)
+                    Eyebrow(Improvy.label("streak", "STREAK"), accent: colour)
                     Spacer(minLength: 4)
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
                         flame(size: 30)
@@ -452,7 +458,8 @@ struct StreakView: View {
                     Spacer(minLength: 4)
                     WeekDots(colour: colour)
                         .padding(.bottom, 7)
-                    Text(atRisk ? "Play today to keep it" : "days in a row")
+                    Text(atRisk ? Improvy.label("atRisk", "Play today to keep it")
+                              : Improvy.label("days", "days in a row"))
                         .font(.ui(11, .semibold))
                         .foregroundStyle(atRisk ? Ink.gold : .white.opacity(0.45))
                         .lineLimit(2)
@@ -502,7 +509,7 @@ struct WeakestView: View {
         let key = Improvy.string("weak_key")
         let colour = Improvy.colour("weak_color", Ink.rose)
         VStack(alignment: .leading, spacing: 0) {
-            Eyebrow("NEEDS WORK", accent: colour)
+            Eyebrow(Improvy.label("needsWork", "NEEDS WORK"), accent: colour)
             Spacer(minLength: 6)
             HStack(spacing: 10) {
                 KeyTile(key: key.isEmpty ? "?" : key, colour: colour, size: 52)
@@ -511,14 +518,16 @@ struct WeakestView: View {
                         .font(.display(26))
                         .foregroundStyle(colour)
                         .fitted(0.6)
-                    Text(key.isEmpty ? "Play a key first" : "mastered")
+                    Text(key.isEmpty ? Improvy.label("weakEmpty", "Play a key first")
+                              : Improvy.label("mastered", "mastered"))
                         .font(.ui(10, .medium))
                         .foregroundStyle(.white.opacity(0.45))
                         .fitted(0.7)
                 }
             }
             Spacer(minLength: 6)
-            Text(key.isEmpty ? "Tap to start training" : "Your weakest key. Tap to train it.")
+            Text(key.isEmpty ? Improvy.label("weakEmpty", "Tap to start training")
+                 : Improvy.label("weakHint", "Your weakest key. Tap to train it."))
                 .font(.ui(10.5, .medium))
                 .foregroundStyle(.white.opacity(0.45))
                 .lineLimit(2)
@@ -566,7 +575,7 @@ struct LauncherView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Eyebrow("START TRAINING", accent: Ink.indigo)
+            Eyebrow(Improvy.label("start", "START TRAINING"), accent: Ink.indigo)
             HStack(spacing: 9) {
                 ForEach(Self.modes) { mode in
                     let colour = mode.colour
@@ -613,7 +622,7 @@ struct ImprovyLauncherWidget: Widget {
 struct PocketView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Eyebrow("HANDS-FREE", accent: Ink.indigo)
+            Eyebrow(Improvy.label("handsFree", "HANDS-FREE"), accent: Ink.indigo)
             Spacer(minLength: 6)
             GlyphButton(system: "headphones", colour: Ink.indigo, size: 46)
             Spacer(minLength: 6)
@@ -621,7 +630,7 @@ struct PocketView: View {
                 .font(.display(19))
                 .foregroundStyle(.white)
                 .fitted(0.6)
-            Text("Train with the screen off")
+            Text(Improvy.label("pocketSub", "Train with the screen off"))
                 .font(.ui(10.5, .medium))
                 .foregroundStyle(.white.opacity(0.45))
                 .lineLimit(2)
@@ -661,7 +670,7 @@ struct TheoryView: View {
             }
             .frame(width: 64, height: 64)
             VStack(alignment: .leading, spacing: 5) {
-                Eyebrow("DEGREE OF THE DAY", accent: colour)
+                Eyebrow(Improvy.label("theory", "DEGREE OF THE DAY"), accent: colour)
                 Text(Improvy.string("theory_text", "Open Improvy to see today's card."))
                     .font(.ui(13, .semibold))
                     .foregroundStyle(.white.opacity(0.88))

@@ -1,10 +1,31 @@
 @Tags(['golden'])
 library;
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show FontLoader;
 import 'package:flutter_test/flutter_test.dart';
 
 import 'store_screenshot_test.dart' show loadRealFonts;
+
+/// The runner has no emoji font of its own, so 🔥 and the animals draw as empty
+/// boxes — on a phone they are the system's. Loaded from the host when it has
+/// one, skipped silently when it does not: this is a picture, not a check.
+Future<void> loadEmoji() async {
+  const candidates = [
+    '/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf',
+    '/System/Library/Fonts/Apple Color Emoji.ttc',
+  ];
+  for (final path in candidates) {
+    final file = File(path);
+    if (!file.existsSync()) continue;
+    final loader = FontLoader('Emoji')
+      ..addFont(Future.value(file.readAsBytesSync().buffer.asByteData()));
+    await loader.load();
+    return;
+  }
+}
 
 /// A picture of the twelve home-screen widgets.
 ///
@@ -20,14 +41,24 @@ void main() {
 
   testWidgets('the widget gallery', (t) async {
     await loadRealFonts();
-    t.view.physicalSize = const Size(1500, 3560);
-    t.view.devicePixelRatio = 2.0;
+    await loadEmoji();
+    // The capture comes out at logical size, so the page is laid out at the
+    // widgets' true point sizes and then drawn at 2× — vector all the way, so
+    // the PNG is crisp rather than an upscale.
+    const page = Size(752, 1075);
+    t.view.physicalSize = Size(page.width * 2, page.height * 2);
+    t.view.devicePixelRatio = 1.0;
     addTearDown(t.view.resetPhysicalSize);
     addTearDown(t.view.resetDevicePixelRatio);
 
-    await t.pumpWidget(const MaterialApp(
+    await t.pumpWidget(MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: _Gallery(),
+      home: Transform.scale(
+        scale: 2,
+        alignment: Alignment.topLeft,
+        child: SizedBox(
+            width: page.width, height: page.height, child: const _Gallery()),
+      ),
     ));
     await t.pump();
     await expectLater(find.byType(_Gallery), matchesGoldenFile('goldens/widget_gallery.png'));
@@ -63,7 +94,7 @@ class _Gallery extends StatelessWidget {
         child: DefaultTextStyle(
           // ♭ and ♯ live in NotoMusic, as they do in the app. Emoji have no
           // font in the test runner at all and draw as boxes here only.
-          style: const TextStyle(fontFamily: 'Lexend', fontFamilyFallback: ['NotoMusic']),
+          style: const TextStyle(fontFamily: 'Lexend', fontFamilyFallback: ['NotoMusic', 'Emoji']),
           child: Wrap(
             spacing: 22,
             runSpacing: 22,
@@ -520,6 +551,10 @@ class _Map extends StatelessWidget {
                 (c.maxHeight - gap * (rows - 1)) / rows,
               ].reduce((a, b) => a < b ? a : b);
               return Column(
+                // The large widget has more height than four rows of tiles
+                // need; spreading them beats a block of tiles above a hole.
+                mainAxisAlignment:
+                    tall ? MainAxisAlignment.spaceBetween : MainAxisAlignment.start,
                 children: [
                   for (var r = 0; r < rows; r++) ...[
                     if (r > 0) SizedBox(height: gap),

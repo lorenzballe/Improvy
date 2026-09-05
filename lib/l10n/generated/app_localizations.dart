@@ -2475,6 +2475,186 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{key} overall'**
   String summaryKeyOverall(String key);
+
+  /// No description provided for @statsTotalGamesChip.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 GAME} other{{n} GAMES}}'**
+  String statsTotalGamesChip(int n);
+
+  /// No description provided for @homeBestOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{score}/{cap} BEST'**
+  String homeBestOf(int score, int cap);
+
+  /// No description provided for @dailyMajorSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'major'**
+  String get dailyMajorSuffix;
+
+  /// No description provided for @dailyStreakDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 day} other{{n} days}}'**
+  String dailyStreakDays(int n);
+
+  /// No description provided for @dailyRule.
+  ///
+  /// In en, this message translates to:
+  /// **'{questions} questions · {seconds} seconds'**
+  String dailyRule(int questions, int seconds);
+
+  /// No description provided for @dailySubjectKeyOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Key of '**
+  String get dailySubjectKeyOf;
+
+  /// No description provided for @dailySubjectOn.
+  ///
+  /// In en, this message translates to:
+  /// **'On '**
+  String get dailySubjectOn;
+
+  /// No description provided for @wQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'QUESTION'**
+  String get wQuestion;
+
+  /// No description provided for @wQuestionLong.
+  ///
+  /// In en, this message translates to:
+  /// **'TODAY\'S QUESTION'**
+  String get wQuestionLong;
+
+  /// No description provided for @wReveal.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to reveal'**
+  String get wReveal;
+
+  /// No description provided for @wDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'DAILY'**
+  String get wDaily;
+
+  /// No description provided for @wDailyLong.
+  ///
+  /// In en, this message translates to:
+  /// **'DAILY CHALLENGE'**
+  String get wDailyLong;
+
+  /// No description provided for @wToday.
+  ///
+  /// In en, this message translates to:
+  /// **'today'**
+  String get wToday;
+
+  /// No description provided for @wDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get wDone;
+
+  /// No description provided for @wTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Next one tomorrow'**
+  String get wTomorrow;
+
+  /// No description provided for @wLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR LEVEL'**
+  String get wLevel;
+
+  /// No description provided for @wMastery.
+  ///
+  /// In en, this message translates to:
+  /// **'KEY MASTERY'**
+  String get wMastery;
+
+  /// No description provided for @wStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'STREAK'**
+  String get wStreak;
+
+  /// No description provided for @wDays.
+  ///
+  /// In en, this message translates to:
+  /// **'days in a row'**
+  String get wDays;
+
+  /// No description provided for @wDayStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'day streak'**
+  String get wDayStreak;
+
+  /// No description provided for @wAtRisk.
+  ///
+  /// In en, this message translates to:
+  /// **'Play today to keep it'**
+  String get wAtRisk;
+
+  /// No description provided for @wNeedsWork.
+  ///
+  /// In en, this message translates to:
+  /// **'NEEDS WORK'**
+  String get wNeedsWork;
+
+  /// No description provided for @wMastered.
+  ///
+  /// In en, this message translates to:
+  /// **'mastered'**
+  String get wMastered;
+
+  /// No description provided for @wWeakHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your weakest key. Tap to train it.'**
+  String get wWeakHint;
+
+  /// No description provided for @wWeakEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Play a key first'**
+  String get wWeakEmpty;
+
+  /// No description provided for @wStart.
+  ///
+  /// In en, this message translates to:
+  /// **'START TRAINING'**
+  String get wStart;
+
+  /// No description provided for @wHandsFree.
+  ///
+  /// In en, this message translates to:
+  /// **'HANDS-FREE'**
+  String get wHandsFree;
+
+  /// No description provided for @wPocketSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Train with the screen off'**
+  String get wPocketSub;
+
+  /// No description provided for @wTheory.
+  ///
+  /// In en, this message translates to:
+  /// **'DEGREE OF THE DAY'**
+  String get wTheory;
+
+  /// No description provided for @wOpenApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Improvy to fill this in.'**
+  String get wOpenApp;
 }
 
 class _AppLocalizationsDelegate

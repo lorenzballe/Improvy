@@ -87,6 +87,24 @@ const List<Release> kReleases = [
             'know that key.',
       ),
       ReleaseLine(
+        icon: Icons.tablet_mac_rounded,
+        color: Color(0xFF60A5FA),
+        title: 'A real app on iPad',
+        detail:
+            'Every screen here is drawn for a phone held upright, and an iPad '
+            'was getting all of it stretched to 1024 points wide. The app now '
+            'keeps to a centred column of phone width, and stays portrait.',
+      ),
+      ReleaseLine(
+        icon: Icons.translate_rounded,
+        color: Color(0xFF34D399),
+        title: 'The last English left over',
+        detail:
+            'The widgets speak your language now, and so do the bits the app '
+            'had missed: the daily challenge rule, the streak in days, the '
+            'game counts in Statistics.',
+      ),
+      ReleaseLine(
         icon: Icons.local_fire_department_rounded,
         color: Color(0xFFFB923C),
         title: 'Your week, in seven dots',
