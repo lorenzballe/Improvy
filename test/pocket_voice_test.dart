@@ -67,6 +67,28 @@ void main() {
       expect(missing, isEmpty, reason: 'notes with no playable clip: $missing');
     });
 
+    test('$name · the simplified spellings can be spoken too', () {
+      // With "Simple Note Names" on, Pocket says what simplifySpelling gives,
+      // not the key-correct spelling — a different set of words, and one the
+      // rest of this file never looked at. A name with no clip there is a
+      // question silently thrown away for everyone who has the setting on.
+      final missing = <String>{};
+      for (final key in kAllKeys) {
+        final scale = calculateMajorScale(key);
+        for (final d in pool) {
+          final note = simplifySpelling(getNoteFromChromaticDegree(d, scale, key));
+          for (final spelling in note.split('/').map((e) => e.trim())) {
+            if (spelling.isEmpty) continue;
+            final clip = VoiceService.noteClip(spelling, lang);
+            if (clip == null || !allFiles.contains(clip)) {
+              missing.add('$spelling (simple, in $key)');
+            }
+          }
+        }
+      }
+      expect(missing, isEmpty, reason: 'notes with no playable clip: $missing');
+    });
+
     test('$name · every key can be named', () {
       for (final key in kAllKeys) {
         final clip = VoiceService.noteClip(key, lang);
@@ -131,9 +153,13 @@ void main() {
     for (final key in kAllKeys) {
       final scale = calculateMajorScale(key);
       for (final d in pool) {
-        final note = getNoteFromChromaticDegree(d, scale, key);
-        final clip = VoiceService.noteClip(note, VoiceLang.it)!;
-        if (!clip.startsWith('it/')) borrowed.add(clip.split('/').last);
+        final spelled = getNoteFromChromaticDegree(d, scale, key);
+        // Both spellings the mode can say: key-correct, and simplified for
+        // anyone who has asked never to see a double accidental.
+        for (final note in {spelled, simplifySpelling(spelled)}) {
+          final clip = VoiceService.noteClip(note, VoiceLang.it)!;
+          if (!clip.startsWith('it/')) borrowed.add(clip.split('/').last);
+        }
       }
     }
     expect(borrowed, italianGaps,
