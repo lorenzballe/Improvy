@@ -230,16 +230,6 @@
   "settingsHomeScreen": "SCHERMATA HOME",
   "settingsWidgets": "Widget",
   "settingsWidgetsSub": "Una domanda all'ora, direttamente sulla schermata Home",
-  "settingsBackup": "BACKUP",
-  "settingsExport": "Esporta i progressi",
-  "settingsExportSub": "Un file con ogni tonalità, punteggio e impostazione",
-  "settingsExportFailed": "Impossibile avviare l'esportazione",
-  "settingsRestoreFile": "Ripristina da file",
-  "settingsRestoreFileSub": "Sostituisce ciò che c'è su questo telefono",
-  "settingsRestored": "Ripristinato. È tornato tutto.",
-  "settingsRestoreTitle": "Ripristinare da un file?",
-  "settingsRestoreBody": "Tutto ciò che c'è su questo telefono — ogni tonalità, punteggio e impostazione — viene sostituito da quello che c'è nel file. La tua licenza Pro non viene toccata.",
-  "settingsChooseFile": "Scegli file",
   "settingsSupport": "SUPPORTO",
   "settingsRate": "Valuta Improvy",
   "settingsRateSub": "Una recensione è come gli altri musicisti la trovano",
@@ -424,6 +414,5 @@
   "wHandsFree": "SENZA MANI",
   "wPocketSub": "Allenati a schermo spento",
   "wTheory": "IL GRADO DEL GIORNO",
-  "wOpenApp": "Apri Improvy per riempirla.",
-  "statsSkillMasterySub": "Per tonalità: grado › nota, nota › grado, …Of What?"
+  "wOpenApp": "Apri Improvy per riempirla."
 }

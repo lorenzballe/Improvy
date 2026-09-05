@@ -1486,66 +1486,6 @@ abstract class AppLocalizations {
   /// **'A question an hour, right on your home screen'**
   String get settingsWidgetsSub;
 
-  /// No description provided for @settingsBackup.
-  ///
-  /// In en, this message translates to:
-  /// **'BACKUP'**
-  String get settingsBackup;
-
-  /// No description provided for @settingsExport.
-  ///
-  /// In en, this message translates to:
-  /// **'Export progress'**
-  String get settingsExport;
-
-  /// No description provided for @settingsExportSub.
-  ///
-  /// In en, this message translates to:
-  /// **'One file with every key, score and setting'**
-  String get settingsExportSub;
-
-  /// No description provided for @settingsExportFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not start the export'**
-  String get settingsExportFailed;
-
-  /// No description provided for @settingsRestoreFile.
-  ///
-  /// In en, this message translates to:
-  /// **'Restore from file'**
-  String get settingsRestoreFile;
-
-  /// No description provided for @settingsRestoreFileSub.
-  ///
-  /// In en, this message translates to:
-  /// **'Replaces what is on this phone'**
-  String get settingsRestoreFileSub;
-
-  /// No description provided for @settingsRestored.
-  ///
-  /// In en, this message translates to:
-  /// **'Restored. Everything is back.'**
-  String get settingsRestored;
-
-  /// No description provided for @settingsRestoreTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Restore from a file?'**
-  String get settingsRestoreTitle;
-
-  /// No description provided for @settingsRestoreBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Everything on this phone — every key, score and setting — is replaced by what is in the file. Your Pro licence is not affected.'**
-  String get settingsRestoreBody;
-
-  /// No description provided for @settingsChooseFile.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose file'**
-  String get settingsChooseFile;
-
   /// No description provided for @settingsSupport.
   ///
   /// In en, this message translates to:
@@ -2655,12 +2595,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open Improvy to fill this in.'**
   String get wOpenApp;
-
-  /// No description provided for @statsSkillMasterySub.
-  ///
-  /// In en, this message translates to:
-  /// **'Per key: degree › note, note › degree, …Of What?'**
-  String get statsSkillMasterySub;
 }
 
 class _AppLocalizationsDelegate

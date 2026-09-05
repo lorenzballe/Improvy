@@ -766,38 +766,6 @@ class AppLocalizationsDe extends AppLocalizations {
       'Jede Stunde eine Frage, direkt auf dem Home-Bildschirm';
 
   @override
-  String get settingsBackup => 'BACKUP';
-
-  @override
-  String get settingsExport => 'Fortschritt exportieren';
-
-  @override
-  String get settingsExportSub =>
-      'Eine Datei mit jeder Tonart, jedem Ergebnis, jeder Einstellung';
-
-  @override
-  String get settingsExportFailed => 'Export konnte nicht gestartet werden';
-
-  @override
-  String get settingsRestoreFile => 'Aus Datei wiederherstellen';
-
-  @override
-  String get settingsRestoreFileSub => 'Ersetzt, was auf diesem Telefon ist';
-
-  @override
-  String get settingsRestored => 'Wiederhergestellt. Alles ist wieder da.';
-
-  @override
-  String get settingsRestoreTitle => 'Aus einer Datei wiederherstellen?';
-
-  @override
-  String get settingsRestoreBody =>
-      'Alles auf diesem Telefon — jede Tonart, jedes Ergebnis, jede Einstellung — wird durch den Inhalt der Datei ersetzt. Deine Pro-Lizenz bleibt unberührt.';
-
-  @override
-  String get settingsChooseFile => 'Datei wählen';
-
-  @override
   String get settingsSupport => 'SUPPORT';
 
   @override
@@ -1443,8 +1411,4 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get wOpenApp => 'Öffne Improvy, um sie zu füllen.';
-
-  @override
-  String get statsSkillMasterySub =>
-      'Je Tonart: Stufe › Ton, Ton › Stufe, …Of What?';
 }

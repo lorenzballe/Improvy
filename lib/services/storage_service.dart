@@ -204,6 +204,14 @@ class StorageService {
   /// The whole of a player's progress and settings as one JSON document.
   /// Pro status is deliberately NOT included: it belongs to the store account,
   /// not the file, and is restored by "Restore purchases".
+  /// The whole save file as JSON, and back.
+  ///
+  /// Settings no longer offers Export / Restore — nobody was going to move a
+  /// file by hand — so nothing in the app calls these today. They stay because
+  /// they are the save file's only serialisation, they are versioned
+  /// ([backupFormat]) and covered by test/backup_test.dart, and any backup
+  /// worth having later (a cloud one, a migration) starts here rather than
+  /// from scratch.
   String exportJson() {
     final data = <String, Object?>{};
     for (final k in _backupKeys) {

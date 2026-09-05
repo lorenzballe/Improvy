@@ -16,13 +16,13 @@ void main() {
   // list it only ever spelled 23 notes, and splitting takes it to 27.
   const pool = kChromaticDegreesSplit;
 
-  /// Clips the Italian voice does not have yet, and so borrows from English.
+  /// Clips the Italian voice does not have, and so borrows from English.
   ///
-  /// This set is a debt, not a design: while a name is in here an Italian
-  /// session hears that one word in English. It must only ever shrink. Delete
-  /// an entry the moment its recording lands — the tests below then prove the
-  /// Italian clip is really being used.
-  const italianGaps = <String>{'d_6', 'n_Db'};
+  /// Empty, and it must stay that way: every word Pocket Mode can say is
+  /// recorded in both languages. While a name is in here an Italian session
+  /// hears that one word in English — the test below fails the moment one
+  /// appears, which is the only way anyone would notice.
+  const italianGaps = <String>{};
 
   Set<String> filesIn(String lang) => Directory('assets/audio/voice/$lang')
       .listSync()

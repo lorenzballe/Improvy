@@ -387,16 +387,6 @@
   "settingsHomeScreen": "HOME SCREEN",
   "settingsWidgets": "Widgets",
   "settingsWidgetsSub": "A question an hour, right on your home screen",
-  "settingsBackup": "BACKUP",
-  "settingsExport": "Export progress",
-  "settingsExportSub": "One file with every key, score and setting",
-  "settingsExportFailed": "Could not start the export",
-  "settingsRestoreFile": "Restore from file",
-  "settingsRestoreFileSub": "Replaces what is on this phone",
-  "settingsRestored": "Restored. Everything is back.",
-  "settingsRestoreTitle": "Restore from a file?",
-  "settingsRestoreBody": "Everything on this phone — every key, score and setting — is replaced by what is in the file. Your Pro licence is not affected.",
-  "settingsChooseFile": "Choose file",
   "settingsSupport": "SUPPORT",
   "settingsRate": "Rate Improvy",
   "settingsRateSub": "A rating is how other musicians find it",
@@ -770,6 +760,5 @@
   "wHandsFree": "HANDS-FREE",
   "wPocketSub": "Train with the screen off",
   "wTheory": "DEGREE OF THE DAY",
-  "wOpenApp": "Open Improvy to fill this in.",
-  "statsSkillMasterySub": "Per key: degree › note, note › degree, …Of What?"
+  "wOpenApp": "Open Improvy to fill this in."
 }

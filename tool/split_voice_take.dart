@@ -37,10 +37,26 @@ const _minWordMs = 120;
 const _padHeadMs = 30;
 const _padTailMs = 70;
 
+/// Every clip in the shipped set peaks at exactly this — −1 dBFS. The words are
+/// heard inside one sentence, so a clip cut from a quieter take is not "a bit
+/// quiet", it is a step down in the middle of the question. Each slice is
+/// brought to the same peak on the way out, which is what makes a take
+/// recorded on another day sit with the rest.
+const _targetPeak = 29162;
+
 void main(List<String> args) {
   final voiceDir = voiceDirFor(langFrom(args));
   final flags = args.where((a) => a.startsWith('--')).toSet();
-  final rest = args.where((a) => !a.startsWith('--')).toList();
+  // `--lang it` is two words: the value is not a positional argument, and
+  // counting it as one made every --lang run print the usage line instead.
+  final rest = <String>[];
+  for (var i = 0; i < args.length; i++) {
+    if (args[i] == '--lang') {
+      i++;
+      continue;
+    }
+    if (!args[i].startsWith('--')) rest.add(args[i]);
+  }
   final dryRun = flags.contains('--dry-run');
 
   if (rest.length != 2 || !groups.containsKey(rest[1])) {
@@ -111,11 +127,28 @@ void main(List<String> args) {
     for (var j = 0; j < mono.length; j++) {
       mono[j] = wav.samples[(from + j) * wav.channels];
     }
+    _normalise(mono);
     writeWav(File('$voiceDir/${expected[i].file}'), mono, wav.sampleRate);
   }
   print('\nwrote ${expected.length} clips to $voiceDir');
   print('now run: dart tool/sync_voice_clips.dart '
       '&& flutter test test/pocket_voice_test.dart');
+}
+
+/// Brings a slice to [_targetPeak]. Silence is left alone — scaling nothing by
+/// a huge factor only raises the noise floor.
+void _normalise(Int16List samples) {
+  var peak = 0;
+  for (final s in samples) {
+    final a = s < 0 ? -s : s;
+    if (a > peak) peak = a;
+  }
+  if (peak < 500) return;
+  final gain = _targetPeak / peak;
+  for (var i = 0; i < samples.length; i++) {
+    final v = (samples[i] * gain).round();
+    samples[i] = v > 32767 ? 32767 : (v < -32768 ? -32768 : v);
+  }
 }
 
 void _dump(List<_Word> words, List<Clip> expected, int rate) {

@@ -47,7 +47,6 @@ dependencies:
   # storage; the native widgets (android/…/ImprovyWidgets.kt and
   # ios/ImprovyWidget/) only render it. See lib/services/widget_service.dart.
   home_widget: ^0.7.0
-  file_selector: ^1.0.3
   path_provider: ^2.1.5
 
 dev_dependencies:

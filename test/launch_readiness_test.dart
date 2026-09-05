@@ -277,9 +277,10 @@ void _progressReporting() {
     });
   });
 
-  testWidgets('the Skill Mastery row shows all three families', (t) async {
-    // One bar could say 33% and leave nobody able to tell whether that was one
-    // family finished or three barely started.
+  testWidgets('the Skill Mastery row shows the key overall', (t) async {
+    // One bar, and it is the weighted mean of the three families — 40% forward,
+    // 40% backwards, 20% harmonizer. The breakdown is a tap away in Key
+    // Analysis; what this list has to get right is the number itself.
     SharedPreferences.setMockInitialValues({});
     final storage = StorageService();
     await storage.init();
@@ -313,14 +314,15 @@ void _progressReporting() {
       n.visitChildren((c) { walk(c); return true; });
     }
     walk(t.getSemantics(find.byType(MaterialApp)));
-    // The row is one tap target, so Flutter merges the three bars' labels into
-    // it — what matters is that a reader is told all three, not how the tree
-    // is shaped.
     final spoken = labels.join(' | ');
-    // C: forward finished (50), backwards barely started (13), harmonizer none.
-    expect(spoken, contains('DEGREE › NOTE, 50%'));
-    expect(spoken, contains('NOTE › DEGREE, 13%'));
-    expect(spoken, contains('…OF WHAT?, 0%'));
+    // C: forward finished (50), backwards barely started (13), harmonizer none
+    // — 50×0.4 + 13×0.4 + 0×0.2 = 25.2, which the row states as 25%.
+    final c = provider.progressData.firstWhere((k) => k.key == 'C');
+    expect(c.normalProgress, 50);
+    expect(c.noteToNumberProgress, 13);
+    expect(c.harmonizerProgress, 0);
+    expect(c.totalProgress, 25);
+    expect(spoken, contains('25'));
     handle.dispose();
   });
 }

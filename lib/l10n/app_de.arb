@@ -230,16 +230,6 @@
   "settingsHomeScreen": "HOME-BILDSCHIRM",
   "settingsWidgets": "Widgets",
   "settingsWidgetsSub": "Jede Stunde eine Frage, direkt auf dem Home-Bildschirm",
-  "settingsBackup": "BACKUP",
-  "settingsExport": "Fortschritt exportieren",
-  "settingsExportSub": "Eine Datei mit jeder Tonart, jedem Ergebnis, jeder Einstellung",
-  "settingsExportFailed": "Export konnte nicht gestartet werden",
-  "settingsRestoreFile": "Aus Datei wiederherstellen",
-  "settingsRestoreFileSub": "Ersetzt, was auf diesem Telefon ist",
-  "settingsRestored": "Wiederhergestellt. Alles ist wieder da.",
-  "settingsRestoreTitle": "Aus einer Datei wiederherstellen?",
-  "settingsRestoreBody": "Alles auf diesem Telefon — jede Tonart, jedes Ergebnis, jede Einstellung — wird durch den Inhalt der Datei ersetzt. Deine Pro-Lizenz bleibt unberührt.",
-  "settingsChooseFile": "Datei wählen",
   "settingsSupport": "SUPPORT",
   "settingsRate": "Improvy bewerten",
   "settingsRateSub": "Über Bewertungen finden andere Musiker die App",
@@ -424,6 +414,5 @@
   "wHandsFree": "FREIHÄNDIG",
   "wPocketSub": "Üben mit ausgeschaltetem Display",
   "wTheory": "DIE STUFE DES TAGES",
-  "wOpenApp": "Öffne Improvy, um sie zu füllen.",
-  "statsSkillMasterySub": "Je Tonart: Stufe › Ton, Ton › Stufe, …Of What?"
+  "wOpenApp": "Öffne Improvy, um sie zu füllen."
 }

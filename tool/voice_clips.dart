@@ -112,8 +112,15 @@ List<Clip> get required => [...degreeClips, ...noteClips];
 /// Everything worth recording in one sitting: 57 files.
 List<Clip> get everything => [...degreeClips, ...noteClips, ...spareClips];
 
+/// The two clips the Italian take was missing, recorded on their own
+/// afterwards. A group of their own so they can be cut without re-reading the
+/// whole script — the same handle any later re-recording of a word or two
+/// wants. Order is the order they are said in the take.
+const lateItalian = <Clip>[Clip('d_6', 'six'), Clip('n_Db', 'D flat')];
+
 /// Named groups, for `--list` and for the splitter's second argument.
 final groups = <String, List<Clip>>{
+  'late-it': lateItalian,
   'degrees': degreeClips,
   'notes': noteClips,
   'spare': spareClips,

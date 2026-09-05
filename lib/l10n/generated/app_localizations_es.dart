@@ -766,38 +766,6 @@ class AppLocalizationsEs extends AppLocalizations {
       'Una pregunta cada hora, en tu pantalla de inicio';
 
   @override
-  String get settingsBackup => 'COPIA DE SEGURIDAD';
-
-  @override
-  String get settingsExport => 'Exportar progreso';
-
-  @override
-  String get settingsExportSub =>
-      'Un archivo con cada tonalidad, puntuación y ajuste';
-
-  @override
-  String get settingsExportFailed => 'No se pudo iniciar la exportación';
-
-  @override
-  String get settingsRestoreFile => 'Restaurar desde archivo';
-
-  @override
-  String get settingsRestoreFileSub => 'Sustituye lo que hay en este teléfono';
-
-  @override
-  String get settingsRestored => 'Restaurado. Está todo de vuelta.';
-
-  @override
-  String get settingsRestoreTitle => '¿Restaurar desde un archivo?';
-
-  @override
-  String get settingsRestoreBody =>
-      'Todo lo que hay en este teléfono — cada tonalidad, puntuación y ajuste — se sustituye por lo que hay en el archivo. Tu licencia Pro no se ve afectada.';
-
-  @override
-  String get settingsChooseFile => 'Elegir archivo';
-
-  @override
   String get settingsSupport => 'SOPORTE';
 
   @override
@@ -1441,8 +1409,4 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get wOpenApp => 'Abre Improvy para rellenarla.';
-
-  @override
-  String get statsSkillMasterySub =>
-      'Por tonalidad: grado › nota, nota › grado, …Of What?';
 }

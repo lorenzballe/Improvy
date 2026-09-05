@@ -87,6 +87,15 @@ const List<Release> kReleases = [
             'know that key.',
       ),
       ReleaseLine(
+        icon: Icons.record_voice_over_rounded,
+        color: Color(0xFF34D399),
+        title: 'Pocket Mode speaks Italian all the way through',
+        detail:
+            'The sixth degree and D flat had never been recorded, so an '
+            'Italian session said those two words in English — about one '
+            'question in eight. Both are recorded now.',
+      ),
+      ReleaseLine(
         icon: Icons.tablet_mac_rounded,
         color: Color(0xFF60A5FA),
         title: 'A real app on iPad',

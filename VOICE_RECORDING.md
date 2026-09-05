@@ -8,28 +8,38 @@ ever say, and there is one folder per language:
 | folder | spoken when | state |
 |--------|-------------|-------|
 | `en/` | note naming is **C-D-E** | 49/49 — complete |
-| `it/` | note naming is **Do-Re-Mi** | 47/49 — see below |
+| `it/` | note naming is **Do-Re-Mi** | 49/49 — complete |
 
 The language follows the app's note-naming setting, not the phone's locale:
 what is written on screen and what is said in your ear have to be the same
 words. See `VoiceLang.forNotation`.
 
-## Still to record — Italian
+## Nothing outstanding
 
-| file | say | why it matters |
-|------|-----|----------------|
-| `d_6.wav` | sei | the sixth degree — diatonic, so it comes up constantly |
-| `n_Db.wav` | Re bemolle | the answer wherever a degree lands on D♭ |
-
-Until they arrive those two are spoken **in English** inside an Italian
-session. That is deliberate and it is the lesser of two evils: dropping them
-would quietly remove the sixth degree from Italian training altogether. It is
-a debt — `italianGaps` in `test/pocket_voice_test.dart` names it, and the test
-fails if the set of borrowed clips ever changes, in either direction.
+Both languages are complete. `italianGaps` in `test/pocket_voice_test.dart` is
+empty and the test fails the moment an Italian session would borrow an English
+word again — which is the only way anyone would notice, since borrowing is
+silent by design.
 
 What is never allowed is a clip standing in for a *different name*: the screen
 reading ♭5 while the voice says "sharp four" is what taught the wrong name
 once already. Another language is a blemish; another name is a lie.
+
+## Re-recording one or two words
+
+You do not have to read the whole script again. Record just those words into
+one take, in the order the group lists them, and cut it with a group of the
+same size — `late-it` is the pair that was recorded this way (`d_6`, `n_Db`):
+
+```bash
+dart tool/split_voice_take.dart take.wav late-it --lang it --dry-run
+dart tool/split_voice_take.dart take.wav late-it --lang it --force
+dart tool/sync_voice_clips.dart --lang it
+```
+
+The splitter brings every slice to the same peak as the shipped set (−1 dBFS),
+so a take recorded on another day sits with the rest instead of stepping down
+in the middle of a question.
 
 `dart tool/sync_voice_clips.dart --check --lang it` prints exactly what is
 missing and exits non-zero while anything is. `--lang` defaults to English.

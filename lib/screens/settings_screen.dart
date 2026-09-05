@@ -11,7 +11,6 @@ import '../constants/app_info.dart';
 import '../constants/release_notes.dart';
 import '../services/purchase_service.dart';
 import '../services/review_service.dart';
-import '../services/backup_service.dart';
 import 'legal_screen.dart';
 import 'free_mode_screen.dart';
 import '../widgets/pressable_scale.dart';
@@ -757,45 +756,6 @@ class SettingsScreen extends StatelessWidget {
                 const SizedBox(height: 16),
               ],
 
-              // SUPPORT
-              _sectionLabel(context.l10n.settingsBackup),
-              const SizedBox(height: 12),
-              _backupRow(
-                context,
-                icon: Icons.upload_rounded,
-                title: context.l10n.settingsExport,
-                subtitle: context.l10n.settingsExportSub,
-                onTap: () async {
-                  final ok = await BackupService.instance.export(provider.storage);
-                  if (!ok && context.mounted) {
-                    _toast(context, context.l10n.settingsExportFailed, icon: Icons.error_outline_rounded);
-                  }
-                },
-              ),
-              const SizedBox(height: 10),
-              _backupRow(
-                context,
-                icon: Icons.download_rounded,
-                title: context.l10n.settingsRestoreFile,
-                subtitle: context.l10n.settingsRestoreFileSub,
-                onTap: () async {
-                  final go = await _confirmRestore(context);
-                  if (go != true || !context.mounted) return;
-                  final err = await BackupService.instance.import(provider.storage);
-                  if (!context.mounted) return;
-                  if (err == null) {
-                    await provider.reloadFromStorage();
-                    if (context.mounted) {
-                      _toast(context, context.l10n.settingsRestored,
-                          icon: Icons.check_circle_rounded);
-                    }
-                  } else if (err.isNotEmpty) {
-                    _toast(context, err, icon: Icons.error_outline_rounded);
-                  }
-                },
-              ),
-              const SizedBox(height: 28),
-
               _sectionLabel(context.l10n.settingsSupport),
               const SizedBox(height: 12),
               // Hidden until the store listing is reachable (iOS needs
@@ -1167,72 +1127,6 @@ class SettingsScreen extends StatelessWidget {
       ]),
     ),
   );
-
-  Widget _backupRow(BuildContext context,
-          {required IconData icon,
-          required String title,
-          required String subtitle,
-          required VoidCallback onTap}) =>
-      PressableScale(
-        onTap: onTap,
-        child: _blurCard(
-          child: Row(children: [
-            Container(
-              width: 32, height: 32,
-              decoration: BoxDecoration(
-                color: const Color(0x3322D3EE),
-                border: Border.all(color: const Color(0x3322D3EE)),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: const Color(0xFF22D3EE), size: 17),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(title,
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.w700,
-                          color: Colors.white, letterSpacing: 0.4)),
-                  const SizedBox(height: 2),
-                  Text(subtitle,
-                      style: TextStyle(
-                          fontSize: 11, fontWeight: FontWeight.w600,
-                          color: Colors.white.withAlpha(115))),
-                ],
-              ),
-            ),
-            Icon(Icons.chevron_right_rounded, color: Colors.white.withAlpha(51)),
-          ]),
-        ),
-      );
-
-  /// Restoring overwrites; say so before, not after.
-  Future<bool?> _confirmRestore(BuildContext context) => showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          backgroundColor: const Color(0xFF1A1625),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text(context.l10n.settingsRestoreTitle,
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
-          content: Text(
-              context.l10n.settingsRestoreBody,
-              style: TextStyle(color: Colors.white54, height: 1.4)),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: Text(context.l10n.cancel, style: const TextStyle(color: Colors.white54)),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: Text(context.l10n.settingsChooseFile,
-                  style: TextStyle(color: Color(0xFF22D3EE), fontWeight: FontWeight.w800)),
-            ),
-          ],
-        ),
-      );
 
   /// The one support row that cannot fail to open. Contact Support hands the
   /// message to a mail app the phone may not have set up; this is a box and a

@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../l10n/l10n.dart';
-import '../models/key_progress.dart';
 import '../constants/levels.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
@@ -348,15 +347,6 @@ class _StatsScreenState extends State<StatsScreen> with SingleTickerProviderStat
                       ),
                     ),
                   ]),
-                  const SizedBox(height: 6),
-                  // Three unlabelled bars are three unlabelled bars. One line
-                  // here is what turns them into a reading.
-                  Text(context.l10n.statsSkillMasterySub,
-                      style: TextStyle(
-                          fontSize: 11,
-                          height: 1.35,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white.withAlpha(110))),
                   const SizedBox(height: 16),
                   ...provider.progressData.asMap().entries.map((e) {
                     final color = AppColors.keyColor(e.key);
@@ -1414,15 +1404,13 @@ class _SkillRow extends StatelessWidget {
                   ])),
                 ]),
                 const SizedBox(height: 8),
-                // Three bars, not one.
-                //
-                // The percentage above them is the mean of three families —
-                // 40% naming the note for a degree, 40% the degree for a
-                // note, 20% naming the key a note belongs to. A single bar
-                // could say 33% and leave nobody able to tell whether that
-                // was one family finished or three barely started, which is
-                // the only thing worth knowing from a list of twelve keys.
-                _FamilyBars(keyData: keyData, color: color),
+                // One bar: the key overall, which is the weighted mean of the
+                // three families — 40% naming the note for a degree, 40% the
+                // degree for a note, 20% naming the key a note belongs to.
+                // The breakdown lives one tap away in Key Analysis, where it
+                // has the room to be labelled; three bars in a list of twelve
+                // rows were three anonymous lines.
+                _MasteryBar(value: mastery / 100, color: color),
               ])),
               const SizedBox(width: 16),
               // Rank — medal colours for the top 3 (web parity).
@@ -1520,83 +1508,42 @@ class _FirstRunCard extends StatelessWidget {
       );
 }
 
-/// The three families of one key, stacked: what you know going forward, what
-/// you know backwards, and what you know about the note itself.
+/// The key's mastery, as one bar.
 ///
-/// Kept to hairlines rather than three full bars — the row is one of twelve
-/// and its job is a shape you can scan down, not three numbers to read.
-class _FamilyBars extends StatelessWidget {
-  final KeyProgress keyData;
+/// The number beside it already says the percentage; the bar is what makes a
+/// column of twelve keys scannable without reading a single number.
+class _MasteryBar extends StatelessWidget {
+  final double value; // 0–1
   final Color color;
-  const _FamilyBars({required this.keyData, required this.color});
+  const _MasteryBar({required this.value, required this.color});
 
   @override
-  Widget build(BuildContext context) {
-    // Widest first, so the row reads as one silhouette instead of three
-    // unrelated lines; the label says which is which for anyone who looks.
-    final rows = <(String, String, int, double)>[
-      ('1›A', context.l10n.kaDegreeToNote, keyData.normalProgress, 1.0),
-      ('A›1', context.l10n.kaNoteToDegree, keyData.noteToNumberProgress, 0.62),
-      ('?', context.l10n.kaOfWhat, keyData.harmonizerProgress, 0.38),
-    ];
-    return Column(
-      children: [
-        for (final (i, r) in rows.indexed) ...[
-          if (i > 0) const SizedBox(height: 5),
-          Semantics(
-            label: '${r.$2}, ${r.$3}%',
-            excludeSemantics: true,
-            child: Row(children: [
-              // A tag in the app's own vocabulary — degrees are numbers, notes
-              // are letters — so it needs no translation and no legend to be
-              // read, and three bars stop being three anonymous lines.
-              SizedBox(
-                width: 26,
-                child: Text(r.$1,
-                    textAlign: TextAlign.right,
-                    maxLines: 1,
-                    style: TextStyle(
-                        fontSize: 8,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.2,
-                        color: Colors.white.withAlpha(i == 0 ? 140 : 95))),
-              ),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Container(
-                  height: i == 0 ? 8 : 5,
-                  decoration: BoxDecoration(
-                    color: Colors.black.withAlpha(100),
-                    borderRadius: BorderRadius.circular(9999),
-                  ),
-                  foregroundDecoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(9999),
-                    border: Border.all(color: Colors.white.withAlpha(13)),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(9999),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: FractionallySizedBox(
-                        widthFactor: (r.$3 / 100).clamp(0.0, 1.0),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: color.withValues(alpha: r.$4),
-                            borderRadius: BorderRadius.circular(9999),
-                            boxShadow: i == 0
-                                ? [BoxShadow(color: color.withAlpha(128), blurRadius: 8)]
-                                : null,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+  Widget build(BuildContext context) => Container(
+        height: 8,
+        decoration: BoxDecoration(
+          color: Colors.black.withAlpha(100),
+          borderRadius: BorderRadius.circular(9999),
+        ),
+        foregroundDecoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(9999),
+          border: Border.all(color: Colors.white.withAlpha(13)),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(9999),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: FractionallySizedBox(
+              widthFactor: value.clamp(0.0, 1.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(9999),
+                  boxShadow: [BoxShadow(color: color.withAlpha(128), blurRadius: 8)],
                 ),
               ),
-            ]),
+            ),
           ),
-        ],
-      ],
-    );
-  }
+        ),
+      );
 }
+

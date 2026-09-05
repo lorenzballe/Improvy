@@ -767,37 +767,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'A question an hour, right on your home screen';
 
   @override
-  String get settingsBackup => 'BACKUP';
-
-  @override
-  String get settingsExport => 'Export progress';
-
-  @override
-  String get settingsExportSub => 'One file with every key, score and setting';
-
-  @override
-  String get settingsExportFailed => 'Could not start the export';
-
-  @override
-  String get settingsRestoreFile => 'Restore from file';
-
-  @override
-  String get settingsRestoreFileSub => 'Replaces what is on this phone';
-
-  @override
-  String get settingsRestored => 'Restored. Everything is back.';
-
-  @override
-  String get settingsRestoreTitle => 'Restore from a file?';
-
-  @override
-  String get settingsRestoreBody =>
-      'Everything on this phone — every key, score and setting — is replaced by what is in the file. Your Pro licence is not affected.';
-
-  @override
-  String get settingsChooseFile => 'Choose file';
-
-  @override
   String get settingsSupport => 'SUPPORT';
 
   @override
@@ -1439,8 +1408,4 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get wOpenApp => 'Open Improvy to fill this in.';
-
-  @override
-  String get statsSkillMasterySub =>
-      'Per key: degree › note, note › degree, …Of What?';
 }
