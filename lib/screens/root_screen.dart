@@ -147,20 +147,37 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       AnalyticsService.instance.capture(Ev.widgetTapped, {'widget': 'weakest'});
       _switchTab(0);
       if (key != null && key.isNotEmpty) provider.selectKey(key);
-    } else if (action == 'pocket' || action == 'custom') {
+    } else if (action == 'pocket') {
       AnalyticsService.instance.capture(Ev.widgetTapped, {'widget': action});
       _switchTab(0);
-      _openSetup(action == 'pocket' ? TrainingMode.pocket : TrainingMode.custom);
+      _openSetup(TrainingMode.pocket);
+    } else if (action == 'custom') {
+      // Custom Mode is Pro just to open. A widget must not be a side door
+      // around that — the card on Home shows the paywall, so this does too.
+      AnalyticsService.instance.capture(Ev.widgetTapped, {'widget': action});
+      _switchTab(0);
+      if (!provider.isPro) {
+        AnalyticsService.instance.lockedFeature('custom_mode');
+        _showPaywallSheet('widget-custom');
+        return;
+      }
+      if (provider.selectedKey == null) {
+        provider.selectKey(provider.progressData.first.key);
+      }
+      _openSetup(TrainingMode.custom);
     } else if (action == 'chromatic') {
       // Chromatic has no setup screen — it starts from its Home card — so
       // _openSetup left _pendingSetup pointing at a screen that does not
       // exist and the tap did nothing but open the app. It now does what
       // pressing START on that card does.
+      //
+      // Chromatic is free in C and Pro everywhere else. Rather than answer a
+      // tap that says "Chromatic" with a paywall, a free player gets the mode
+      // they asked for in the key they are allowed to play it in.
       AnalyticsService.instance.capture(Ev.widgetTapped, {'widget': action});
       _switchTab(0);
-      if (provider.selectedKey == null) {
-        provider.selectKey(provider.progressData.first.key);
-      }
+      final key = provider.selectedKey ?? provider.progressData.first.key;
+      provider.selectKey(provider.isPro || key == 'C' ? key : 'C');
       provider.startMode(TrainingMode.chromatic);
     } else if (action == 'stats') {
       AnalyticsService.instance.capture(Ev.widgetTapped, {'widget': 'stats'});

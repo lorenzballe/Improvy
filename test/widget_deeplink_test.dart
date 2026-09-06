@@ -10,6 +10,7 @@ import 'package:improvy/screens/root_screen.dart';
 import 'package:improvy/screens/setup_screen.dart';
 import 'package:improvy/screens/stats_screen.dart';
 import 'package:improvy/screens/trainer_screen.dart';
+import 'package:improvy/widgets/paywall_modal.dart';
 import 'package:improvy/widgets/quiz_reveal_modal.dart';
 import 'package:improvy/services/storage_service.dart';
 import 'package:improvy/services/widget_service.dart';
@@ -98,23 +99,49 @@ void main() {
       expect(p.selectedKey, 'A♭');
     });
 
-    testWidgets('pocket and custom open their setup', (t) async {
+    testWidgets('pocket opens its setup', (t) async {
       await pumpRoot(t);
       await tap(t, 'improvy://pocket');
       expect(find.byType(PocketModeSetup), findsOneWidget);
+    });
 
-      await pumpRoot(t);
+    testWidgets('custom opens its setup for Pro', (t) async {
+      final p = await pumpRoot(t);
+      p.setIsPro(true);
       await tap(t, 'improvy://custom');
       expect(find.byType(CustomModeSetup), findsOneWidget);
+    });
+
+    testWidgets('custom shows the paywall for everyone else', (t) async {
+      // A widget must not be a side door around a Pro gate.
+      await pumpRoot(t);
+      await tap(t, 'improvy://custom');
+      expect(find.byType(CustomModeSetup), findsNothing);
+      expect(find.byType(PaywallModal), findsOneWidget);
     });
 
     testWidgets('chromatic starts a chromatic run', (t) async {
       // It has no setup screen, so pointing the tap at one left the app on
       // Home doing nothing at all.
       final p = await pumpRoot(t);
+      p.setIsPro(true);
+      p.selectKey('G');
       await tap(t, 'improvy://chromatic');
       expect(p.activeMode, TrainingMode.chromatic);
+      expect(p.selectedKey, 'G');
       expect(find.byType(TrainerScreen), findsOneWidget);
+    });
+
+    testWidgets('chromatic gives a free player the key they may play',
+        (t) async {
+      // Free is chromatic in C only. The tap says "Chromatic", so it gets
+      // chromatic — in C, rather than a paywall out of nowhere or a run in a
+      // key that was never paid for.
+      final p = await pumpRoot(t);
+      p.selectKey('G');
+      await tap(t, 'improvy://chromatic');
+      expect(p.selectedKey, 'C');
+      expect(p.activeMode, TrainingMode.chromatic);
     });
 
     testWidgets('stats and theory both land on the stats page', (t) async {
