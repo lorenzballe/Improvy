@@ -101,9 +101,10 @@ const List<Release> kReleases = [
         color: Color(0xFF6366F1),
         title: 'Widget taps arrive somewhere',
         detail:
-            'Chromatic pointed at a setup screen that does not exist, so it '
-            'opened the app and stopped; Theory landed on the home screen. '
-            'Both go where they say they go.',
+            'On Android every tap opened a second copy of the app on top of '
+            'the first, on the home screen, whatever had been pressed — one '
+            'line in the manifest meant it could never find the app already '
+            'running. Taps land in it now, on the screen they name.',
       ),
       ReleaseLine(
         icon: Icons.record_voice_over_rounded,

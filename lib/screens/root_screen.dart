@@ -191,6 +191,14 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     } else if (action == 'train') {
       AnalyticsService.instance.capture(Ev.widgetTapped, {'widget': action});
       _switchTab(0);
+    } else {
+      // Nothing matched. Silence here is what "the widget just opens the app"
+      // looks like from the outside, and it is indistinguishable from a tap
+      // that never arrived — so say which it was.
+      AnalyticsService.instance.capture(Ev.widgetTapped, {
+        'widget': 'unhandled',
+        'uri': uri.toString(),
+      });
     }
   }
 

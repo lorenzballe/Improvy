@@ -11,11 +11,21 @@
         android:label="Improvy"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <!-- No android:taskAffinity="". An activity with no affinity belongs to
+             no task, so a PendingIntent from a widget — which the system starts
+             with FLAG_ACTIVITY_NEW_TASK — could never find the running app to
+             land in: it built a second task with a second Improvy on top of the
+             first, and swiping back revealed the one underneath. singleTop only
+             reuses an activity inside the target task, so onNewIntent never
+             fired and every widget tap took the cold-start path in a brand-new
+             engine, arriving on Home whatever it had been asked for.
+
+             With the default affinity (the package name) the tap lands in the
+             task that is already there. -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:launchMode="singleTop"
-            android:taskAffinity=""
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
