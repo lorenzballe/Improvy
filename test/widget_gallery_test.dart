@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show FontLoader;
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:improvy/widgets/animal_icon.dart';
+
 import 'store_screenshot_test.dart' show loadRealFonts;
 
 /// The runner has no emoji font of its own, so 🔥 and the animals draw as empty
@@ -486,7 +488,8 @@ class _Level extends StatelessWidget {
                         color: Colors.white.withValues(alpha: 0.40)))),
             const Spacer(),
             Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-              const Text('🦊', style: TextStyle(fontSize: 30)),
+              // The same line art the app draws, in the level's colour.
+              const AnimalIcon(name: 'Fox', color: _mint, size: 30),
               const SizedBox(width: 8),
               const Text('38%',
                   style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800, color: Colors.white)),
@@ -583,8 +586,12 @@ class _Map extends StatelessWidget {
             SizedBox(height: gap),
             const _Bar(0.38, _cyan, height: 7),
             const SizedBox(height: 8),
-            const Text('🦊  Fox',
-                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: _mint)),
+            Row(children: const [
+              AnimalIcon(name: 'Fox', color: _mint, size: 16),
+              SizedBox(width: 7),
+              Text('Fox',
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: _mint)),
+            ]),
           ],
         ],
       ),
