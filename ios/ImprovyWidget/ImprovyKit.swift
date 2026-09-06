@@ -135,9 +135,13 @@ enum Ink {
 }
 
 /// The surface every widget sits on: a soft vertical ink gradient with a glow
-/// in the widget's own accent bleeding in from the top-left corner, and a
-/// hairline edge. The glow is what stops twelve dark rectangles from reading as
-/// one undifferentiated block on a busy home screen.
+/// in the widget's own accent bleeding in from the top-left corner. The glow is
+/// what stops twelve dark rectangles from reading as one undifferentiated block
+/// on a busy home screen.
+///
+/// No border. The system already frames a widget; an outline drawn inside that
+/// frame reads as a second, lit rectangle sitting in the middle of the home
+/// screen rather than as the edge of the card.
 struct Surface: ViewModifier {
     var accent: Color = Ink.gold
     /// Raised for the states worth interrupting someone for — an unplayed
@@ -161,13 +165,6 @@ struct Surface: ViewModifier {
                     )
                 }
             }
-            .overlay(
-                ContainerRelativeShape()
-                    .strokeBorder(
-                        accent.opacity(lit ? 0.55 : 0.16),
-                        lineWidth: lit ? 1.4 : 1
-                    )
-            )
     }
 }
 

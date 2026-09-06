@@ -137,8 +137,9 @@ class _Gallery extends StatelessWidget {
       );
 }
 
-/// The surface every widget sits on: ink, an accent glow from the top-left, a
-/// hairline in the accent.
+/// The surface every widget sits on: ink and an accent glow from the top-left.
+/// No border — the launcher frames the widget, and an outline inside that frame
+/// reads as a lit rectangle in the middle of the home screen.
 class _Surface extends StatelessWidget {
   final Color accent;
   final bool lit;
@@ -155,7 +156,6 @@ class _Surface extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [_inkTop, _inkBottom],
         ),
-        border: Border.all(color: accent.withValues(alpha: lit ? 0.55 : 0.16), width: lit ? 1.4 : 1),
       ),
       child: Stack(
         children: [
