@@ -3,6 +3,7 @@ import 'dart:math' show Random, min;
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../l10n/l10n.dart';
+import '../models/key_progress.dart';
 import '../models/training_mode.dart';
 import '../models/stats.dart';
 import '../constants/app_colors.dart';
@@ -142,16 +143,17 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
   ///
   /// Apprentice stays roomy: it is where someone works the interval out on
   /// their fingers, and rushing that teaches nothing. The two tiers above it
-  /// are where the app is supposed to bite. Virtuoso is down a fifth from the
-  /// 4s it used to allow.
+  /// are where the app is supposed to bite, and after a few thousand answers
+  /// they had stopped biting: players were finishing the app.
   ///
-  /// Master is 1.2s, tightened from 1.5s. Seeing the degree, deciding, and
-  /// reaching the button costs somewhere near half a second before any
-  /// thinking happens, so what is left is not enough time to count up from the
-  /// root — which is exactly the point. The tier certifies recall, not
-  /// derivation, and 1.5s was still leaving room to derive.
-  int get _nominalTimeLimit =>
-      widget.difficulty == 1 ? 6000 : widget.difficulty == 2 ? 3200 : 1200;
+  /// Virtuoso is 2.24s — 30% off the 3.2s it allowed (itself down from 4s).
+  /// Master is 1.02s — 15% off the 1.2s it allowed (itself down from 1.5s).
+  /// Seeing the degree, deciding, and reaching the button costs somewhere near
+  /// half a second before any thinking happens, so what Master leaves is not
+  /// enough time to count up from the root — which is exactly the point. The
+  /// tier certifies recall, not derivation, and 1.2s was still leaving room
+  /// to derive.
+  int get _nominalTimeLimit => kTierClockMs[widget.difficulty - 1];
 
   /// The limit actually in force for the next question.
   ///

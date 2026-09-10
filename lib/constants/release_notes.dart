@@ -67,6 +67,26 @@ const List<Release> kReleases = [
     headline: 'The home-screen widgets, rebuilt — and on iPhone, built at all.',
     lines: [
       ReleaseLine(
+        icon: Icons.timer_rounded,
+        color: Color(0xFFFB7185),
+        title: 'Virtuoso and Master bite again',
+        detail:
+            'A few thousand answers in, the app was getting finished. Virtuoso '
+            'now gives 2.24s a question instead of 3.2, and Master 1.02s '
+            'instead of 1.2. Apprentice keeps its 6s: that is where an '
+            'interval gets worked out, and rushing it teaches nothing.',
+      ),
+      ReleaseLine(
+        icon: Icons.fact_check_rounded,
+        color: Color(0xFF10B981),
+        title: 'The mode card tells the truth',
+        detail:
+            'Score 49/50 at chromatic Master and the diatonic card said 0%. It '
+            'now shows what that run proved — 97% at Apprentice — while the '
+            'BEST line stays what you actually scored there. The animal on '
+            'each card follows the same rule.',
+      ),
+      ReleaseLine(
         icon: Icons.widgets_rounded,
         color: Color(0xFF22D3EE),
         title: 'Twelve widgets on iPhone',

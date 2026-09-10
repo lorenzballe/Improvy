@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:improvy/constants/music_constants.dart';
 import 'package:improvy/models/daily_challenge.dart';
+import 'package:improvy/models/key_progress.dart';
 import 'package:improvy/models/training_mode.dart';
 import 'package:improvy/providers/app_provider.dart';
 import 'package:improvy/services/storage_service.dart';
@@ -110,14 +111,14 @@ void main() {
   test('the clock follows the question count instead of drifting from it', () {
     for (final c in aYear()) {
       expect(c.totalTimeMs, DailyChallenge.questionCount * c.msPerQuestion);
-      // The daily should be harder than an ordinary Virtuoso question (3.2s)
-      // in the two directions that compare to one.
       // Whole seconds, so the stated rule is the real budget and not a
       // rounded-down version of it.
       expect(c.totalTimeMs % 1000, 0, reason: '${c.mode} has a ragged clock');
       if (c.mode != TrainingMode.ofWhat) {
-        // Tighter than the trainer's own medium tier, which is the point.
+        // Between Virtuoso's 2.24s and the old 3.2s: one attempt a day on a
+        // key the player did not pick, with no adaptive clock to open up.
         expect(c.msPerQuestion, lessThan(3200));
+        expect(c.msPerQuestion, greaterThan(kTierClockMs[1]));
         expect(c.totalTimeMs, 36000);
         expect(c.rule, '15 questions · 36 seconds');
       } else {

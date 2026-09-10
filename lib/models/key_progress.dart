@@ -5,6 +5,14 @@ import 'dart:math' as math;
 /// by then it should be recall.
 const List<int> kTierCaps = [30, 40, 50];
 
+/// Each tier's clock per question, ms: Apprentice / Virtuoso / Master.
+///
+/// Apprentice stays roomy — it is where the interval gets worked out on the
+/// fingers, and rushing that teaches nothing. The two above are where the app
+/// bites, and with a few thousand answers behind them players were finishing
+/// it: Virtuoso is 30% off the 3.2s it allowed, Master 15% off its 1.2s.
+const List<int> kTierClockMs = [6000, 2240, 1020];
+
 /// How much of a tier must be answered before the next one opens.
 ///
 /// One fraction for every ladder in the app. It used to be 27 of 30 to reach
@@ -16,11 +24,13 @@ const double kTierUnlockFraction = 0.80;
 /// Apprentice, 24 of 30 for Virtuoso, 32 of 40 for Master.
 const List<int> kTierUnlock = [0, 24, 32];
 
-/// What counts as knowing something rather than working it out: 1.2 seconds,
-/// which is Master's clock. Answering inside it leaves no room to count up
-/// from the root, which is exactly what that tier exists to certify — so the
-/// same number can measure fluency anywhere, at any tier, without favouring
-/// the one whose clock happens to be short.
+/// What counts as knowing something rather than working it out: 1.2 seconds.
+/// Answering inside it leaves no room to count up from the root, which is
+/// what Master exists to certify — its clock is now a touch tighter still, at
+/// 1.02s, so every correct Master answer is inside this wall by definition.
+/// The wall stays fixed rather than following the clock: it measures fluency
+/// anywhere, at any tier, without favouring the one whose clock is short, and
+/// moving it would silently re-rank every key on the stats page.
 const int kInstantMs = 1200;
 
 class KeyProgress {
@@ -75,7 +85,7 @@ class KeyProgress {
   //     Chromatic        c1    <     c2   <    c3       ↑ the diatonic degrees
   //
   //   * Vertically: the tiers ask the SAME questions with less time. Answering
-  //     94% of them at 1.2s means you would answer at least as many at 3s.
+  //     94% of them at 1.02s means you would answer at least as many at 2.2s.
   //   * Horizontally: the chromatic set is the 12 degrees, which contains the
   //     7 diatonic ones. 94% over all 12 leaves at most three wrong answers in
   //     fifty, so no subset of them — the diatonic seven included — can be

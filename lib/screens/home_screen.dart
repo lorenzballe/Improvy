@@ -1608,7 +1608,7 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                     credited: kd.effectiveDiatonic,
                     currentDifficulty: provider.diatonicDifficulty,
                     onDifficultyChanged: provider.setDiatonicDifficulty,
-                    modeLevel: _getModeLevel(kd.diatonicLevels),
+                    modeLevel: _getModeLevel(kd.effectiveDiatonic),
                     isLocked: false,
                     onTap: () { HapticsService.impactMedium(); provider.startMode(TrainingMode.diatonic); },
                 );
@@ -1632,7 +1632,7 @@ class _KeyDetailState extends State<_KeyDetail> with SingleTickerProviderStateMi
                     credited: kd.effectiveChromatic,
                     currentDifficulty: provider.chromaticDifficulty,
                     onDifficultyChanged: provider.setChromaticDifficulty,
-                    modeLevel: _getModeLevel(kd.chromaticLevels),
+                    modeLevel: _getModeLevel(kd.effectiveChromatic),
                     isLocked: !isPro && keyName != 'C',
                     onTap: () {
                       HapticsService.impactMedium();
@@ -2077,12 +2077,18 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
     // Best score for the selected difficulty, shown where the level badge was.
     // The cap (max questions) changes per difficulty, so we also show a % —
     // coloured by how strong the record is (grey when never played).
+    // Two different facts on one card. The record line ("n/m BEST") is what
+    // was actually scored at this tier — raw, never inferred. The percentage
+    // is how far this tier is CREDITED: a 98% chromatic Master proves the
+    // diatonic Apprentice at 98% too, and a card that said 0% there was lying
+    // to someone who had just demonstrated the opposite.
     final bestScore = widget.levels[widget.currentDifficulty - 1];
     final bestCap = caps[widget.currentDifficulty - 1];
-    final bestPct = bestCap > 0 ? (bestScore / bestCap * 100).round() : 0;
-    final bestColor = bestScore <= 0
+    final credited = widget.credited[widget.currentDifficulty - 1];
+    final bestPct = bestCap > 0 ? (credited / bestCap * 100).round() : 0;
+    final bestColor = credited <= 0
         ? Colors.white.withAlpha(80)
-        : bestScore >= bestCap
+        : credited >= bestCap
             ? const Color(0xFFfacc15) // perfect → gold
             : bestPct >= 80
                 ? const Color(0xFF10B981) // green

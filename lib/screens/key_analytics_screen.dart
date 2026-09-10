@@ -600,7 +600,7 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
   ///
   /// This card used to plot accuracy, and accuracy is the one measure here
   /// that moves the WRONG WAY when you improve: the day you unlock Virtuoso
-  /// the clock drops from 6s to 3.2s and your accuracy falls off a cliff. The
+  /// the clock drops from 6s to 2.24s and your accuracy falls off a cliff. The
   /// chart showed a decline for what was unambiguously progress, which is why
   /// it was impossible to read.
   ///

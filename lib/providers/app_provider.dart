@@ -668,7 +668,7 @@ class AppProvider extends ChangeNotifier {
   ///
   /// It used to sort by raw accuracy over all history, which measured the
   /// wrong thing twice over. Accuracy is confounded by tier — a key taken to
-  /// Master's 1.2s clock collects more mistakes than one dabbled with at
+  /// Master's 1.02s clock collects more mistakes than one dabbled with at
   /// Apprentice's 6s — so the ranking rewarded NOT climbing. And using every
   /// answer ever recorded meant a key you were bad at last spring dragged on
   /// its rank forever, while every other figure on the screen speaks about the
@@ -680,8 +680,9 @@ class AppProvider extends ChangeNotifier {
   /// you are counting, and counting does not survive a tune.
   ///
   /// The threshold is not invented for this: 1.2s is what Master's clock
-  /// already certifies. It is also why the measure has no tier bias — a fixed
-  /// wall treats every tier alike, where the tier's own clock does not.
+  /// certified when the wall was set, and every answer Master accepts today
+  /// (1.02s) is inside it. It is also why the measure has no tier bias — a
+  /// fixed wall treats every tier alike, where the tier's own clock does not.
   ///
   /// "…Of What?" is excluded: it is not played in a key.
   Map<String, int> get keyRanks {

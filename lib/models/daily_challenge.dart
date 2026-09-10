@@ -65,11 +65,12 @@ class DailyChallenge {
   /// per-question limit — the clock below is pooled — but the honest way to
   /// size the pool.
   ///
-  /// 2.4s, down from 2.8s and well under the trainer's medium tier (3.2s): the
-  /// daily is meant to be the hardest thing you do that day. A confident answer
-  /// takes about 2s, so a clean run still lands with a little spare — but the
-  /// spare is now thin enough that a run of hesitations really does run out,
-  /// which is the difference between a test and a formality.
+  /// 2.4s, down from 2.8s: the daily is meant to be a test, not a formality. A
+  /// confident answer takes about 2s, so a clean run still lands with a little
+  /// spare — but the spare is thin enough that a run of hesitations really
+  /// does run out. It sits just above Virtuoso's 2.24s on purpose: the daily
+  /// is one attempt a day, on a key the player did not choose, with no
+  /// adaptive clock to open back up when it goes wrong.
   ///
   /// …Of What? gets 3.2s because it is a genuinely longer question: you hold a
   /// note, apply a degree, and name the root it implies. Every player still
