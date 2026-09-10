@@ -40,14 +40,16 @@ void main() {
       // 24/30 chromatic Apprentice means at most 6 wrong out of 30 across all
       // twelve degrees, so the seven cannot be worse than that.
       final key = k(c: [24, 0, 0]);
-      expect((key.diatonicReach * 100).round(), 27); // 0.8 over one tier of three
+      // The closed diatonic row is credited the whole 24 at Apprentice…
+      expect(key.effectiveDiatonic[0], 24);
+      // …which is 0.8 of one tier out of three, on the diatonic half.
       expect(key.normalProgress, 27);
     });
 
     test('diatonic evidence says nothing about the altered degrees', () {
       // The containment runs one way only: the seven are inside the twelve,
       // the twelve are not inside the seven.
-      expect(k(d: [30, 40, 50]).chromaticReach, 0);
+      expect(k(d: [30, 40, 50]).effectiveChromatic, [0, 0, 0]);
     });
 
     test('a harder tier never counts for less than an easier one', () {
@@ -72,12 +74,14 @@ void main() {
     });
   });
 
-  group('the per-mode bars stay raw', () {
-    test('a chromatic run does not fill the diatonic bar', () {
-      // The headline percentage infers; a bar labelled DIATONIC must report.
+  group('the raw scores stay raw', () {
+    test('a chromatic run is credited to the diatonic row, never scored in it',
+        () {
+      // The percentage infers — the closure is the whole point — but the
+      // record of what was actually played must not. BEST reads the raw row.
       final key = k(c: [0, 0, 50]);
-      expect(key.diatonicProgress, 0);
-      expect(key.chromaticProgress, 42); // 50 of 120
+      expect(key.diatonicLevels, [0, 0, 0]);
+      expect(key.effectiveDiatonic, [30, 40, 50]);
       expect(key.normalProgress, 100);
     });
   });
@@ -143,8 +147,7 @@ void _bestIsNeverInferred() {
     // Credited everywhere, because chromatic Master proves the rest.
     expect(key.effectiveDiatonic[0], 28); // 94% of 30
     // But nothing was ever scored in Diatonic, and the BEST line reads this.
-    expect(key.diatonicLevels[0], 0);
-    expect(key.diatonicProgress, 0);
+    expect(key.diatonicLevels, [0, 0, 0]);
   });
 }
 

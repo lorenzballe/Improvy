@@ -238,18 +238,26 @@ class _DailyChallengeCardState extends State<DailyChallengeCard> {
             ]),
           ),
           const SizedBox(height: 5),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Text(challenge.subjectPrefix,
-                  style: const TextStyle(
-                      fontSize: 19, fontWeight: FontWeight.w700, color: Colors.white)),
-              NoteText(
-                  note: formatNoteForDisplay(challenge.key, provider.notation),
-                  style: TextStyle(
-                      fontSize: 19, fontWeight: FontWeight.w700, color: keyColor)),
-            ],
+          // Shrinks before it overflows. "Key of B♭" fitted in English at
+          // normal type; "Tonalità di Si♭" at 130% does not, and this row is
+          // between a 44pt tile and a chevron with nowhere to go.
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Text(challenge.subjectPrefix,
+                    style: const TextStyle(
+                        fontSize: 19, fontWeight: FontWeight.w700, color: Colors.white)),
+                NoteText(
+                    note: formatNoteForDisplay(challenge.key, provider.notation),
+                    style: TextStyle(
+                        fontSize: 19, fontWeight: FontWeight.w700, color: keyColor)),
+              ],
+            ),
           ),
           const SizedBox(height: 4),
           // Just the rule: adding "· one attempt" overflowed the card on a

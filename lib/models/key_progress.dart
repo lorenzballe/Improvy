@@ -65,22 +65,6 @@ class KeyProgress {
         ntnDiatonicLevels = ntnDiatonicLevels ?? [0, 0, 0],
         ntnChromaticLevels = ntnChromaticLevels ?? [0, 0, 0];
 
-  int get diatonicProgress {
-    final capped = _cappedLevels(diatonicLevels);
-    return (capped.reduce((a, b) => a + b) / 120 * 100).round().clamp(0, 100);
-  }
-
-  int get chromaticProgress {
-    final capped = _cappedLevels(chromaticLevels);
-    return (capped.reduce((a, b) => a + b) / 120 * 100).round().clamp(0, 100);
-  }
-
-  /// Raw evidence for the chord row of the harmonizer.
-  int get harmonizerChordRaw {
-    final capped = _cappedLevels(harmonizerLevels);
-    return (capped.reduce((a, b) => a + b) / 120 * 100).round().clamp(0, 100);
-  }
-
   // ── Mastery ────────────────────────────────────────────────────────────────
   //
   // The six scores are not six independent facts. They sit in a 2x3 grid with
@@ -153,13 +137,6 @@ class KeyProgress {
     }
     return sum / 3;
   }
-
-  /// The seven degrees of the scale, across all three speeds, counting what
-  /// chromatic runs have already proved. 0–1.
-  double get diatonicReach => _rowMean(effectiveDiatonic);
-
-  /// The five altered degrees on top of them. 0–1.
-  double get chromaticReach => _rowMean(effectiveChromatic);
 
   /// How well this key is known, 0–100.
   ///
@@ -254,13 +231,6 @@ class KeyProgress {
           harmonizerProgress * kHarmonizerWeight)
       .round()
       .clamp(0, 100);
-
-  /// Raw evidence for one mode: what was actually scored in it, with no
-  /// inference from the other. This is what the per-mode bars show — a bar
-  /// labelled DIATONIC must report diatonic runs, not what chromatic runs
-  /// imply about them.
-  List<int> _cappedLevels(List<int> levels) =>
-      List.generate(3, (i) => levels[i].clamp(0, kTierCaps[i]));
 
   KeyProgress copyWith({
     List<int>? diatonicLevels,
