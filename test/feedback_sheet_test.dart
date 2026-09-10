@@ -111,10 +111,17 @@ void _confirmation() {
     ));
     await t.pumpAndSettle();
 
-    await t.scrollUntilVisible(find.text('Send Feedback'), 300);
+    // The page is the first Scrollable; the promo-code field below brings
+    // its own, and scrollUntilVisible needs to be told which one to drive.
+    await t.scrollUntilVisible(find.text('Send Feedback'), 300,
+        scrollable: find.byType(Scrollable).first);
     await t.tap(find.text('Send Feedback'));
     await t.pumpAndSettle();
-    await t.enterText(find.byType(TextField).first, 'the buttons give it away');
+    // The sheet's own box — Settings now has a text field of its own (the
+    // promo code) sitting behind the sheet, earlier in the tree.
+    await t.enterText(
+        find.descendant(of: find.byType(FeedbackSheet), matching: find.byType(TextField)).first,
+        'the buttons give it away');
     await t.pump();
     await t.tap(find.text('SEND'));
     await t.pumpAndSettle();

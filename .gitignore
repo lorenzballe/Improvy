@@ -43,3 +43,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Firestore rules test harness (npm install in tool/firestore_rules)
+tool/firestore_rules/node_modules/
+tool/firestore_rules/firestore-debug.log
+tool/firestore_rules/*.log

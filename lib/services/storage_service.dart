@@ -13,6 +13,9 @@ class StorageService {
   static const _adaptiveDiffKey = 'musical_journey_adaptive_difficulty';
   static const _tutorialKey = 'musical_journey_tutorial_completed';
   static const _isProKey = 'isPro';
+  // Pro granted by a promo code — the account's, cached here so the app
+  // opens unlocked before Firestore answers. See AppProvider.setCodePro.
+  static const _promoCodeKey = 'pro_promo_code';
   static const _notationKey = 'musical_journey_notation';
   static const _simpleNotesKey = 'musical_journey_simple_notes';
   static const _keyboardFromTonicKey = 'musical_journey_keyboard_from_tonic';
@@ -146,6 +149,9 @@ class StorageService {
 
   bool loadIsPro() => _prefs.getBool(_isProKey) ?? false;
   Future<void> saveIsPro(bool v) => _prefs.setBool(_isProKey, v);
+  String? loadPromoCode() => _prefs.getString(_promoCodeKey);
+  Future<void> savePromoCode(String? code) =>
+      code == null ? _prefs.remove(_promoCodeKey) : _prefs.setString(_promoCodeKey, code);
 
   /// Null when the user has never chosen: the provider then picks by
   /// language on first run.

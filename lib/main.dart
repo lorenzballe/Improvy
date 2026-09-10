@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'providers/app_provider.dart';
 import 'services/storage_service.dart';
+import 'services/account_service.dart';
 import 'services/purchase_service.dart';
 import 'services/analytics_service.dart';
 import 'services/keep_alive_audio.dart';
@@ -61,6 +62,11 @@ void main() async {
   PurchaseService.instance.onProChanged = provider.setIsPro;
   await attempt('purchases', PurchaseService.instance.init);
   await attempt('analytics', AnalyticsService.instance.init);
+  // Accounts. After purchases, because a signed-in user is handed to
+  // RevenueCat the moment Firebase reports them. Inert until
+  // firebase_options.dart carries a real project.
+  AccountService.instance.onCodeProChanged = provider.setCodePro;
+  await attempt('account', AccountService.instance.init);
   // No manual app_open: captureApplicationLifecycleEvents gives
   // Application Opened / Installed / Updated / Backgrounded, which is both
   // more than this said and more reliable about when it happened.

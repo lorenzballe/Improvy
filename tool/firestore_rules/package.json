@@ -1,0 +1,13 @@
+{
+  "name": "improvy-firestore-rules",
+  "private": true,
+  "description": "Runs firestore.rules against the emulator. `npm test` from this directory; needs Java 11+ and network for the emulator jar.",
+  "scripts": {
+    "test": "firebase emulators:exec --only firestore --project improvy-rules-test 'node --test rules.test.mjs'"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^4.0.1",
+    "firebase": "^11.0.0",
+    "firebase-tools": "^14.0.0"
+  }
+}

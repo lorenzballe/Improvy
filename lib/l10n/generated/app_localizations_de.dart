@@ -1411,4 +1411,167 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get wOpenApp => 'Öffne Improvy, um sie zu füllen.';
+
+  @override
+  String get settingsAccount => 'KONTO';
+
+  @override
+  String get accountSignedOutTitle => 'Nicht angemeldet';
+
+  @override
+  String get accountSignedOutSub =>
+      'Melde dich an, und Pro folgt dir auf jedes Handy, Android oder iPhone.';
+
+  @override
+  String get accountSignIn => 'ANMELDEN';
+
+  @override
+  String get accountSignedInSub =>
+      'Pro und dein Promo-Code folgen diesem Konto.';
+
+  @override
+  String get accountSignOut => 'ABMELDEN';
+
+  @override
+  String get accountDelete => 'Konto löschen';
+
+  @override
+  String get accountDeleteTitle => 'Konto löschen?';
+
+  @override
+  String get accountDeleteBody =>
+      'Deine Anmeldung wird entfernt, ein Promo-Code darauf geht verloren. Der Fortschritt bleibt auf diesem Handy, und ein Kauf lässt sich immer aus dem Store wiederherstellen.';
+
+  @override
+  String get accountDeleteConfirm => 'LÖSCHEN';
+
+  @override
+  String get accountDeleted => 'Konto gelöscht';
+
+  @override
+  String get accountUnavailable =>
+      'Konten sind in dieser Version nicht verfügbar.';
+
+  @override
+  String get accountSheetTitle => 'Anmelden';
+
+  @override
+  String get accountSheetBody =>
+      'Ein Konto, jedes Handy. Deine Pro-Lizenz und dein Promo-Code folgen ihm.';
+
+  @override
+  String get accountApple => 'Weiter mit Apple';
+
+  @override
+  String get accountGoogle => 'Weiter mit Google';
+
+  @override
+  String get accountEmail => 'Weiter mit E-Mail';
+
+  @override
+  String get accountEmailHint => 'E-Mail';
+
+  @override
+  String get accountPasswordHint => 'Passwort';
+
+  @override
+  String get accountEmailSignIn => 'ANMELDEN';
+
+  @override
+  String get accountEmailCreate => 'KONTO ERSTELLEN';
+
+  @override
+  String get accountForgot => 'Passwort vergessen?';
+
+  @override
+  String accountResetSent(String email) {
+    return 'E-Mail zum Zurücksetzen an $email gesendet';
+  }
+
+  @override
+  String get accountSwitchToCreate => 'Neu hier? Konto erstellen';
+
+  @override
+  String get accountSwitchToSignIn => 'Schon ein Konto? Anmelden';
+
+  @override
+  String accountWelcome(String email) {
+    return 'Angemeldet als $email';
+  }
+
+  @override
+  String get accountErrorWrong => 'E-Mail oder Passwort falsch.';
+
+  @override
+  String get accountErrorWeak => 'Passwort zu kurz: mindestens 6 Zeichen.';
+
+  @override
+  String get accountErrorInUse =>
+      'Diese E-Mail hat schon ein Konto. Melde dich an.';
+
+  @override
+  String get accountErrorInvalidEmail =>
+      'Das sieht nicht nach einer E-Mail-Adresse aus.';
+
+  @override
+  String get accountErrorOffline => 'Keine Verbindung. Versuch es noch einmal.';
+
+  @override
+  String get accountErrorRecent =>
+      'Zur Sicherheit zuerst neu anmelden, dann löschen.';
+
+  @override
+  String get accountErrorGeneric =>
+      'Anmeldung fehlgeschlagen. Versuch es noch einmal.';
+
+  @override
+  String get settingsPromo => 'PROMO-CODES';
+
+  @override
+  String get promoTitle => 'Hast du einen Code?';
+
+  @override
+  String get promoBody => 'Ein Code schaltet Pro auf deinem Konto frei.';
+
+  @override
+  String get promoHint => 'CODE EINGEBEN';
+
+  @override
+  String get promoRedeem => 'EINLÖSEN';
+
+  @override
+  String promoRedeemedWith(String code) {
+    return 'Pro freigeschaltet mit Code $code';
+  }
+
+  @override
+  String get promoSignInFirst =>
+      'Melde dich zuerst an, damit der Code bei deinem Konto bleibt.';
+
+  @override
+  String get promoSuccess => 'Code angenommen. Pro gehört dir.';
+
+  @override
+  String get promoMalformed => 'Das ist kein Code. Prüfe die Schreibweise.';
+
+  @override
+  String get promoUnknown => 'Diesen Code gibt es nicht.';
+
+  @override
+  String get promoInactive => 'Dieser Code ist nicht mehr aktiv.';
+
+  @override
+  String get promoExhausted => 'Dieser Code ist aufgebraucht.';
+
+  @override
+  String get promoExpired => 'Dieser Code ist abgelaufen.';
+
+  @override
+  String get promoAlready => 'Dieses Konto hat schon einen Code benutzt.';
+
+  @override
+  String get promoOffline => 'Keine Verbindung. Versuch es noch einmal.';
+
+  @override
+  String get promoError => 'Etwas ist schiefgelaufen. Versuch es noch einmal.';
 }

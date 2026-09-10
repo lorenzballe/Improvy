@@ -56,6 +56,15 @@ abstract final class Ev {
   static const purchaseNoOffering = 'pro_purchase_no_offering';
   static const restore = 'pro_restore';
 
+  // ── Accounts & codes ──
+  static const signInStarted = 'sign_in_started';
+  static const signedIn = 'signed_in';
+  static const signInFailed = 'sign_in_failed';
+  static const signedOut = 'signed_out';
+  static const accountDeleted = 'account_deleted';
+  static const promoRedeemed = 'promo_redeemed';
+  static const promoRejected = 'promo_rejected';
+
   // ── Feedback ──
   /// The sheet was opened. Together with [feedbackSubmitted] this says how
   /// many people start writing and give up — which is the only way to know

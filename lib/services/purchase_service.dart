@@ -210,6 +210,36 @@ class PurchaseService {
     await _refresh(force: true);
   }
 
+  /// Hands the RevenueCat customer to a signed-in account, so a purchase made
+  /// on this phone is found again on the next one — and across the platform
+  /// border, which a store restore can never cross.
+  Future<void> identify(String uid) async {
+    if (!_configured) return;
+    try {
+      await Purchases.logIn(uid);
+    } catch (e) {
+      if (kDebugMode) debugPrint('[PurchaseService] logIn failed: $e');
+    }
+    await _refresh(force: true);
+  }
+
+  /// Back to an anonymous customer on sign-out. The store receipt on this
+  /// phone still counts, so it is restored straight away rather than leaving
+  /// a paying user locked out of what they bought until they think to tap
+  /// Restore.
+  Future<void> reset() async {
+    if (!_configured) return;
+    try {
+      if (!await Purchases.isAnonymous) await Purchases.logOut();
+    } catch (e) {
+      if (kDebugMode) debugPrint('[PurchaseService] logOut failed: $e');
+    }
+    try {
+      await Purchases.restorePurchases();
+    } catch (_) {}
+    await _refresh(force: true);
+  }
+
   // ── internals ──────────────────────────────────────────────────────────────
 
   /// Digs the store's own explanation out of a RevenueCat [PlatformException].

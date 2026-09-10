@@ -1408,4 +1408,166 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get wOpenApp => 'Open Improvy to fill this in.';
+
+  @override
+  String get settingsAccount => 'ACCOUNT';
+
+  @override
+  String get accountSignedOutTitle => 'Not signed in';
+
+  @override
+  String get accountSignedOutSub =>
+      'Sign in and Pro follows you to any phone, Android or iPhone.';
+
+  @override
+  String get accountSignIn => 'SIGN IN';
+
+  @override
+  String get accountSignedInSub =>
+      'Pro and your promo code follow this account.';
+
+  @override
+  String get accountSignOut => 'SIGN OUT';
+
+  @override
+  String get accountDelete => 'Delete account';
+
+  @override
+  String get accountDeleteTitle => 'Delete your account?';
+
+  @override
+  String get accountDeleteBody =>
+      'Your sign-in is removed and a promo code on it is given up. Progress stays on this phone, and a purchase can always be restored from the store.';
+
+  @override
+  String get accountDeleteConfirm => 'DELETE';
+
+  @override
+  String get accountDeleted => 'Account deleted';
+
+  @override
+  String get accountUnavailable => 'Accounts are not available in this build.';
+
+  @override
+  String get accountSheetTitle => 'Sign in';
+
+  @override
+  String get accountSheetBody =>
+      'One account, every phone. Your Pro licence and promo code follow it.';
+
+  @override
+  String get accountApple => 'Continue with Apple';
+
+  @override
+  String get accountGoogle => 'Continue with Google';
+
+  @override
+  String get accountEmail => 'Continue with email';
+
+  @override
+  String get accountEmailHint => 'Email';
+
+  @override
+  String get accountPasswordHint => 'Password';
+
+  @override
+  String get accountEmailSignIn => 'SIGN IN';
+
+  @override
+  String get accountEmailCreate => 'CREATE ACCOUNT';
+
+  @override
+  String get accountForgot => 'Forgot password?';
+
+  @override
+  String accountResetSent(String email) {
+    return 'Reset email sent to $email';
+  }
+
+  @override
+  String get accountSwitchToCreate => 'New here? Create an account';
+
+  @override
+  String get accountSwitchToSignIn => 'Already have an account? Sign in';
+
+  @override
+  String accountWelcome(String email) {
+    return 'Signed in as $email';
+  }
+
+  @override
+  String get accountErrorWrong => 'Wrong email or password.';
+
+  @override
+  String get accountErrorWeak =>
+      'Password too short: use at least 6 characters.';
+
+  @override
+  String get accountErrorInUse =>
+      'That email already has an account. Sign in instead.';
+
+  @override
+  String get accountErrorInvalidEmail =>
+      'That does not look like an email address.';
+
+  @override
+  String get accountErrorOffline => 'No connection. Try again.';
+
+  @override
+  String get accountErrorRecent =>
+      'For safety, sign in again first, then delete.';
+
+  @override
+  String get accountErrorGeneric => 'Sign-in failed. Try again.';
+
+  @override
+  String get settingsPromo => 'PROMOTIONAL CODES';
+
+  @override
+  String get promoTitle => 'Have a code?';
+
+  @override
+  String get promoBody => 'A code unlocks Pro on your account.';
+
+  @override
+  String get promoHint => 'ENTER CODE';
+
+  @override
+  String get promoRedeem => 'REDEEM';
+
+  @override
+  String promoRedeemedWith(String code) {
+    return 'Pro unlocked with code $code';
+  }
+
+  @override
+  String get promoSignInFirst =>
+      'Sign in first, so the code stays with your account.';
+
+  @override
+  String get promoSuccess => 'Code accepted. Pro is yours.';
+
+  @override
+  String get promoMalformed => 'That is not a code. Check for typos.';
+
+  @override
+  String get promoUnknown => 'That code does not exist.';
+
+  @override
+  String get promoInactive => 'That code is no longer active.';
+
+  @override
+  String get promoExhausted => 'That code has been used up.';
+
+  @override
+  String get promoExpired => 'That code has expired.';
+
+  @override
+  String get promoAlready => 'This account already used a code.';
+
+  @override
+  String get promoOffline => 'No connection. Try again.';
+
+  @override
+  String get promoError => 'Something went wrong. Try again.';
 }

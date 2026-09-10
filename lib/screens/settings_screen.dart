@@ -15,6 +15,8 @@ import 'legal_screen.dart';
 import 'free_mode_screen.dart';
 import '../widgets/pressable_scale.dart';
 import '../widgets/feedback_sheet.dart';
+import '../widgets/account_card.dart';
+import '../widgets/promo_code_card.dart';
 
 /// Instagram's own mark — the rounded camera body, the lens and the flash dot.
 /// Drawn as strokes so it stays crisp at any size, and tinted white by the
@@ -311,6 +313,15 @@ class SettingsScreen extends StatelessWidget {
                     ],
                   ),
                 ),
+              ),
+              const SizedBox(height: 16),
+
+              // ACCOUNT — so that Pro follows the person, not the phone.
+              _sectionLabel(context.l10n.settingsAccount),
+              const SizedBox(height: 12),
+              _card(
+                shadow: const [BoxShadow(color: Color(0x4D000000), blurRadius: 32, offset: Offset(0, 8))],
+                child: const AccountCard(),
               ),
               const SizedBox(height: 16),
 
@@ -688,6 +699,15 @@ class SettingsScreen extends StatelessWidget {
                     ),
                   ],
                 ),
+              ),
+              const SizedBox(height: 16),
+
+              // PROMOTIONAL CODES — spent on the account, see PromoCodeCard.
+              _sectionLabel(context.l10n.settingsPromo),
+              const SizedBox(height: 12),
+              _card(
+                shadow: const [BoxShadow(color: Color(0x4D000000), blurRadius: 32, offset: Offset(0, 8))],
+                child: const PromoCodeCard(),
               ),
               const SizedBox(height: 16),
 

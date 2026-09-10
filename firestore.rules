@@ -1,0 +1,89 @@
+rules_version = '2';
+
+// Improvy — promotional codes.
+//
+// Two collections, and the rules ARE the product: there is no server. A code
+// can only be checked by someone who already knows it (get, never list), and
+// it can only be spent by writing a redemption for yourself in the same
+// batch as the +1 on its counter. Neither write is accepted without the
+// other, so nobody can burn a code's uses, and nobody can claim Pro without
+// spending one.
+//
+// The app decides "Pro by code" from the existence of redemptions/{uid}.
+// Revoke a person by deleting their redemption; retire a code by setting
+// active to false (people who already redeemed it keep Pro).
+//
+//   codes/{CODE}         { active: bool, maxUses: int, uses: int,
+//                          expiresAt?: timestamp, note?: string }
+//   redemptions/{uid}    { code: string, at: timestamp }
+service cloud.firestore {
+  match /databases/{db}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function codeDoc(id) {
+      return get(/databases/$(db)/documents/codes/$(id));
+    }
+
+    function codeAfter(id) {
+      return getAfter(/databases/$(db)/documents/codes/$(id));
+    }
+
+    function redemptionAfter(uid) {
+      return getAfter(/databases/$(db)/documents/redemptions/$(uid));
+    }
+
+    // A code that can still be spent right now.
+    function redeemable(c) {
+      return c.data.active == true
+        && c.data.uses is int
+        && c.data.maxUses is int
+        && c.data.uses < c.data.maxUses
+        && (!('expiresAt' in c.data) || c.data.expiresAt > request.time);
+    }
+
+    match /codes/{code} {
+      // Look one up by name; never enumerate them.
+      allow get: if signedIn();
+      allow list: if false;
+
+      // Codes are written from the console only.
+      allow create, delete: if false;
+
+      // The only change an app may make: +1, while redeemable, and only in
+      // the batch that also records who spent it.
+      allow update: if signedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['uses'])
+        && request.resource.data.uses == resource.data.uses + 1
+        && redeemable(resource)
+        && redemptionAfter(request.auth.uid).data.code == code;
+    }
+
+    match /redemptions/{uid} {
+      allow get: if signedIn() && request.auth.uid == uid;
+      allow list: if false;
+
+      // One per account, ever; it must name a redeemable code, carry the
+      // server's clock, and arrive in the same batch as that code's +1.
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['code', 'at'])
+        && request.resource.data.code is string
+        && request.resource.data.at == request.time
+        && redeemable(codeDoc(request.resource.data.code))
+        && codeAfter(request.resource.data.code).data.uses
+            == codeDoc(request.resource.data.code).data.uses + 1;
+
+      allow update: if false;
+
+      // Deleting your own redemption gives up Pro-by-code (account deletion
+      // does this). The code's use stays spent.
+      allow delete: if signedIn() && request.auth.uid == uid;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

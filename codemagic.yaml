@@ -57,6 +57,11 @@ workflows:
       # here costs a second; catching it at Apple costs a day.
       - name: iOS privacy check
         script: flutter test --tags ios --run-skipped
+      # Google Sign-In's return URL scheme and the Sign in with Apple
+      # entitlement both derive from firebase_options.dart. A no-op while that
+      # file is placeholders. See FIREBASE_SETUP.md.
+      - name: Sync iOS with the Firebase project
+        script: dart run tool/sync_firebase_ios.dart
 
       # Signing, two ways.
       #
@@ -120,6 +125,11 @@ workflows:
           dir="$HOME/Library/MobileDevice/Provisioning Profiles"
           seen=0
           bad=0
+          # Once the app asks for Sign in with Apple, its own profile must
+          # carry that too — same manual click on the App ID, same stale
+          # profile to delete. The widget's profile never needs it.
+          want_apple=0
+          grep -q 'com.apple.developer.applesignin' ios/Runner/Runner.entitlements && want_apple=1
           for p in "$dir"/*.mobileprovision; do
             [ -e "$p" ] || continue
             plist=$(mktemp)
@@ -135,6 +145,20 @@ workflows:
                   echo "  MISSING  $app_id does not carry $APP_GROUP"
                   bad=$((bad + 1))
                 fi
+                case "$app_id" in
+                  *"$WIDGET_BUNDLE_ID") ;;
+                  *)
+                    if [ "$want_apple" -eq 1 ]; then
+                      if grep -q 'com.apple.developer.applesignin' "$plist"; then
+                        echo "  ok   $app_id carries Sign in with Apple"
+                      else
+                        echo "  MISSING  $app_id does not carry Sign in with Apple"
+                        echo "           (tick 'Sign In with Apple' on the App ID, delete its profile — FIREBASE_SETUP.md)"
+                        bad=$((bad + 1))
+                      fi
+                    fi
+                    ;;
+                esac
                 ;;
             esac
           done

@@ -62,10 +62,28 @@ class Release {
 /// the right behaviour for a pure bug-fix build.
 const List<Release> kReleases = [
   Release(
-    version: '1.16.0',
-    date: '4 SEP 2026',
-    headline: 'The home-screen widgets, rebuilt — and on iPhone, built at all.',
+    version: '1.17.0',
+    date: '11 SEP 2026',
+    headline: 'Pro follows you now, not your phone.',
     lines: [
+      ReleaseLine(
+        icon: Icons.account_circle_rounded,
+        color: Color(0xFF6366F1),
+        title: 'An account, in Settings',
+        detail:
+            'Sign in with Apple, Google or an email — from Settings, never '
+            'from the door. Your Pro licence is tied to it and shows up on '
+            'any phone you sign in on, iPhone or Android.',
+      ),
+      ReleaseLine(
+        icon: Icons.confirmation_number_rounded,
+        color: Color(0xFFFBBF24),
+        title: 'Promotional codes',
+        detail:
+            'A new card in Settings takes a code and unlocks Pro on your '
+            'account. One code per account; it needs no store and follows you '
+            'like a purchase.',
+      ),
       ReleaseLine(
         icon: Icons.timer_rounded,
         color: Color(0xFFFB7185),
@@ -86,6 +104,13 @@ const List<Release> kReleases = [
             'BEST line stays what you actually scored there. The animal on '
             'each card follows the same rule.',
       ),
+    ],
+  ),
+  Release(
+    version: '1.16.0',
+    date: '4 SEP 2026',
+    headline: 'The home-screen widgets, rebuilt — and on iPhone, built at all.',
+    lines: [
       ReleaseLine(
         icon: Icons.widgets_rounded,
         color: Color(0xFF22D3EE),

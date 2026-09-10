@@ -1408,4 +1408,167 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get wOpenApp => 'Abre o Improvy para preencher.';
+
+  @override
+  String get settingsAccount => 'CONTA';
+
+  @override
+  String get accountSignedOutTitle => 'Sem sessão iniciada';
+
+  @override
+  String get accountSignedOutSub =>
+      'Inicie sessão e o Pro segue-o para qualquer telemóvel, Android ou iPhone.';
+
+  @override
+  String get accountSignIn => 'INICIAR SESSÃO';
+
+  @override
+  String get accountSignedInSub =>
+      'O Pro e o seu código promocional seguem esta conta.';
+
+  @override
+  String get accountSignOut => 'TERMINAR SESSÃO';
+
+  @override
+  String get accountDelete => 'Eliminar conta';
+
+  @override
+  String get accountDeleteTitle => 'Eliminar a sua conta?';
+
+  @override
+  String get accountDeleteBody =>
+      'O seu acesso é removido e um código promocional nela é perdido. O progresso fica neste telemóvel e uma compra pode sempre ser restaurada a partir da loja.';
+
+  @override
+  String get accountDeleteConfirm => 'ELIMINAR';
+
+  @override
+  String get accountDeleted => 'Conta eliminada';
+
+  @override
+  String get accountUnavailable =>
+      'As contas não estão disponíveis nesta versão.';
+
+  @override
+  String get accountSheetTitle => 'Iniciar sessão';
+
+  @override
+  String get accountSheetBody =>
+      'Uma conta, todos os telemóveis. A sua licença Pro e o código promocional seguem-na.';
+
+  @override
+  String get accountApple => 'Continuar com a Apple';
+
+  @override
+  String get accountGoogle => 'Continuar com o Google';
+
+  @override
+  String get accountEmail => 'Continuar com email';
+
+  @override
+  String get accountEmailHint => 'Email';
+
+  @override
+  String get accountPasswordHint => 'Palavra-passe';
+
+  @override
+  String get accountEmailSignIn => 'INICIAR SESSÃO';
+
+  @override
+  String get accountEmailCreate => 'CRIAR CONTA';
+
+  @override
+  String get accountForgot => 'Esqueceu a palavra-passe?';
+
+  @override
+  String accountResetSent(String email) {
+    return 'Email de reposição enviado para $email';
+  }
+
+  @override
+  String get accountSwitchToCreate => 'Novo por aqui? Crie uma conta';
+
+  @override
+  String get accountSwitchToSignIn => 'Já tem conta? Inicie sessão';
+
+  @override
+  String accountWelcome(String email) {
+    return 'Sessão iniciada como $email';
+  }
+
+  @override
+  String get accountErrorWrong => 'Email ou palavra-passe errados.';
+
+  @override
+  String get accountErrorWeak =>
+      'Palavra-passe demasiado curta: pelo menos 6 caracteres.';
+
+  @override
+  String get accountErrorInUse => 'Esse email já tem conta. Inicie sessão.';
+
+  @override
+  String get accountErrorInvalidEmail =>
+      'Isso não parece um endereço de email.';
+
+  @override
+  String get accountErrorOffline => 'Sem ligação. Tente de novo.';
+
+  @override
+  String get accountErrorRecent =>
+      'Por segurança, inicie sessão de novo e depois elimine.';
+
+  @override
+  String get accountErrorGeneric =>
+      'Não foi possível iniciar sessão. Tente de novo.';
+
+  @override
+  String get settingsPromo => 'CÓDIGOS PROMOCIONAIS';
+
+  @override
+  String get promoTitle => 'Tem um código?';
+
+  @override
+  String get promoBody => 'Um código desbloqueia o Pro na sua conta.';
+
+  @override
+  String get promoHint => 'INTRODUZIR CÓDIGO';
+
+  @override
+  String get promoRedeem => 'RESGATAR';
+
+  @override
+  String promoRedeemedWith(String code) {
+    return 'Pro desbloqueado com o código $code';
+  }
+
+  @override
+  String get promoSignInFirst =>
+      'Inicie sessão primeiro, para que o código fique na sua conta.';
+
+  @override
+  String get promoSuccess => 'Código aceite. O Pro é seu.';
+
+  @override
+  String get promoMalformed => 'Isso não é um código. Verifique a escrita.';
+
+  @override
+  String get promoUnknown => 'Esse código não existe.';
+
+  @override
+  String get promoInactive => 'Esse código já não está ativo.';
+
+  @override
+  String get promoExhausted => 'Esse código esgotou-se.';
+
+  @override
+  String get promoExpired => 'Esse código expirou.';
+
+  @override
+  String get promoAlready => 'Esta conta já usou um código.';
+
+  @override
+  String get promoOffline => 'Sem ligação. Tente de novo.';
+
+  @override
+  String get promoError => 'Algo correu mal. Tente de novo.';
 }

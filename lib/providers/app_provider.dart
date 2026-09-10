@@ -23,7 +23,16 @@ class AppProvider extends ChangeNotifier {
   // State
   List<KeyProgress> progressData = [];
   AppStats stats = AppStats();
-  bool isPro = false;
+  /// Pro, from either door. The store says so through [setIsPro]; a promo
+  /// code spent on the signed-in account says so through [setCodePro]. Each
+  /// remembers its own answer so that a refund cannot cancel a code and a
+  /// sign-out cannot cancel a purchase.
+  bool get isPro => _storePro || _codePro;
+  bool _storePro = false;
+  bool _codePro = false;
+
+  /// The code this account redeemed, for the Settings card. Null if none.
+  String? promoCode;
   bool adaptiveDifficulty = false;
   bool tutorialCompleted = false;
   String notation = 'CDE'; // 'CDE' or 'DoReMi'
@@ -103,7 +112,9 @@ class AppProvider extends ChangeNotifier {
     progressData = _storage.loadProgress();
     stats = _storage.loadStats();
     dailyResults = _storage.loadDailyResults();
-    isPro = _storage.loadIsPro();
+    _storePro = _storage.loadIsPro();
+    promoCode = _storage.loadPromoCode();
+    _codePro = promoCode != null;
     adaptiveDifficulty = _storage.loadAdaptiveDifficulty();
     tutorialCompleted = _storage.loadTutorialCompleted();
     // First run picks the notation by language — Do Re Mi for the languages
@@ -126,9 +137,9 @@ class AppProvider extends ChangeNotifier {
   /// Re-reads everything from storage after a backup has been restored, and
   /// tells every listener. Pro status is left as the store last said it was.
   Future<void> reloadFromStorage() async {
-    final pro = isPro;
+    final pro = _storePro;
     await init();
-    isPro = pro;
+    _storePro = pro;
     syncAnalyticsProfile();
     notifyListeners();
   }
@@ -1350,19 +1361,34 @@ class AppProvider extends ChangeNotifier {
   }
 
   void setIsPro(bool value) {
-    if (value != isPro) {
-      // Push the profile immediately: every event after this must be able to
-      // say it came from a paying user.
-      Future.microtask(syncAnalyticsProfile);
-    }
-    isPro = value;
+    final was = isPro;
+    _storePro = value;
     _storage.saveIsPro(value);
-    if (!value) {
+    // Push the profile immediately: every event after this must be able to
+    // say it came from a paying user.
+    if (was != isPro) Future.microtask(syncAnalyticsProfile);
+    if (!isPro) {
       adaptiveDifficulty = false;
       _storage.saveAdaptiveDifficulty(false);
     }
     notifyListeners();
   }
+
+  /// Pro by promo code, as learned from the signed-in account: true with the
+  /// code when a redemption exists (or was just made), false on sign-out.
+  void setCodePro(bool byCode, [String? code]) {
+    final was = isPro;
+    _codePro = byCode;
+    promoCode = byCode ? code : null;
+    _storage.savePromoCode(promoCode);
+    if (was != isPro) Future.microtask(syncAnalyticsProfile);
+    if (!isPro) {
+      adaptiveDifficulty = false;
+      _storage.saveAdaptiveDifficulty(false);
+    }
+    notifyListeners();
+  }
+
 
   void setViewingKeyStats(bool value) {
     if (viewingKeyStats == value) return;

@@ -2595,6 +2595,300 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open Improvy to fill this in.'**
   String get wOpenApp;
+
+  /// No description provided for @settingsAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'ACCOUNT'**
+  String get settingsAccount;
+
+  /// No description provided for @accountSignedOutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Not signed in'**
+  String get accountSignedOutTitle;
+
+  /// No description provided for @accountSignedOutSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in and Pro follows you to any phone, Android or iPhone.'**
+  String get accountSignedOutSub;
+
+  /// No description provided for @accountSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'SIGN IN'**
+  String get accountSignIn;
+
+  /// No description provided for @accountSignedInSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Pro and your promo code follow this account.'**
+  String get accountSignedInSub;
+
+  /// No description provided for @accountSignOut.
+  ///
+  /// In en, this message translates to:
+  /// **'SIGN OUT'**
+  String get accountSignOut;
+
+  /// No description provided for @accountDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get accountDelete;
+
+  /// No description provided for @accountDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete your account?'**
+  String get accountDeleteTitle;
+
+  /// No description provided for @accountDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your sign-in is removed and a promo code on it is given up. Progress stays on this phone, and a purchase can always be restored from the store.'**
+  String get accountDeleteBody;
+
+  /// No description provided for @accountDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'DELETE'**
+  String get accountDeleteConfirm;
+
+  /// No description provided for @accountDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Account deleted'**
+  String get accountDeleted;
+
+  /// No description provided for @accountUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Accounts are not available in this build.'**
+  String get accountUnavailable;
+
+  /// No description provided for @accountSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get accountSheetTitle;
+
+  /// No description provided for @accountSheetBody.
+  ///
+  /// In en, this message translates to:
+  /// **'One account, every phone. Your Pro licence and promo code follow it.'**
+  String get accountSheetBody;
+
+  /// No description provided for @accountApple.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Apple'**
+  String get accountApple;
+
+  /// No description provided for @accountGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Google'**
+  String get accountGoogle;
+
+  /// No description provided for @accountEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with email'**
+  String get accountEmail;
+
+  /// No description provided for @accountEmailHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get accountEmailHint;
+
+  /// No description provided for @accountPasswordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get accountPasswordHint;
+
+  /// No description provided for @accountEmailSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'SIGN IN'**
+  String get accountEmailSignIn;
+
+  /// No description provided for @accountEmailCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'CREATE ACCOUNT'**
+  String get accountEmailCreate;
+
+  /// No description provided for @accountForgot.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot password?'**
+  String get accountForgot;
+
+  /// No description provided for @accountResetSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset email sent to {email}'**
+  String accountResetSent(String email);
+
+  /// No description provided for @accountSwitchToCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'New here? Create an account'**
+  String get accountSwitchToCreate;
+
+  /// No description provided for @accountSwitchToSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account? Sign in'**
+  String get accountSwitchToSignIn;
+
+  /// No description provided for @accountWelcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed in as {email}'**
+  String accountWelcome(String email);
+
+  /// No description provided for @accountErrorWrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong email or password.'**
+  String get accountErrorWrong;
+
+  /// No description provided for @accountErrorWeak.
+  ///
+  /// In en, this message translates to:
+  /// **'Password too short: use at least 6 characters.'**
+  String get accountErrorWeak;
+
+  /// No description provided for @accountErrorInUse.
+  ///
+  /// In en, this message translates to:
+  /// **'That email already has an account. Sign in instead.'**
+  String get accountErrorInUse;
+
+  /// No description provided for @accountErrorInvalidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'That does not look like an email address.'**
+  String get accountErrorInvalidEmail;
+
+  /// No description provided for @accountErrorOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'No connection. Try again.'**
+  String get accountErrorOffline;
+
+  /// No description provided for @accountErrorRecent.
+  ///
+  /// In en, this message translates to:
+  /// **'For safety, sign in again first, then delete.'**
+  String get accountErrorRecent;
+
+  /// No description provided for @accountErrorGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign-in failed. Try again.'**
+  String get accountErrorGeneric;
+
+  /// No description provided for @settingsPromo.
+  ///
+  /// In en, this message translates to:
+  /// **'PROMOTIONAL CODES'**
+  String get settingsPromo;
+
+  /// No description provided for @promoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Have a code?'**
+  String get promoTitle;
+
+  /// No description provided for @promoBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A code unlocks Pro on your account.'**
+  String get promoBody;
+
+  /// No description provided for @promoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'ENTER CODE'**
+  String get promoHint;
+
+  /// No description provided for @promoRedeem.
+  ///
+  /// In en, this message translates to:
+  /// **'REDEEM'**
+  String get promoRedeem;
+
+  /// No description provided for @promoRedeemedWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Pro unlocked with code {code}'**
+  String promoRedeemedWith(String code);
+
+  /// No description provided for @promoSignInFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in first, so the code stays with your account.'**
+  String get promoSignInFirst;
+
+  /// No description provided for @promoSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Code accepted. Pro is yours.'**
+  String get promoSuccess;
+
+  /// No description provided for @promoMalformed.
+  ///
+  /// In en, this message translates to:
+  /// **'That is not a code. Check for typos.'**
+  String get promoMalformed;
+
+  /// No description provided for @promoUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'That code does not exist.'**
+  String get promoUnknown;
+
+  /// No description provided for @promoInactive.
+  ///
+  /// In en, this message translates to:
+  /// **'That code is no longer active.'**
+  String get promoInactive;
+
+  /// No description provided for @promoExhausted.
+  ///
+  /// In en, this message translates to:
+  /// **'That code has been used up.'**
+  String get promoExhausted;
+
+  /// No description provided for @promoExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'That code has expired.'**
+  String get promoExpired;
+
+  /// No description provided for @promoAlready.
+  ///
+  /// In en, this message translates to:
+  /// **'This account already used a code.'**
+  String get promoAlready;
+
+  /// No description provided for @promoOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'No connection. Try again.'**
+  String get promoOffline;
+
+  /// No description provided for @promoError.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Try again.'**
+  String get promoError;
 }
 
 class _AppLocalizationsDelegate
