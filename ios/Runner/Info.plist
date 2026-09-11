@@ -91,6 +91,18 @@
 	     here iOS has nothing to hand the tap to. -->
 	<key>CFBundleURLTypes</key>
 	<array>
+		<!-- Google Sign-In returns here. Generated from firebase_options.dart
+		     by tool/sync_firebase_ios.dart; do not edit by hand. -->
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>google-sign-in</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.376089080639-sjcuk0sml31vmtrlcq04ogrqfk99ut72</string>
+			</array>
+		</dict>
 		<dict>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>

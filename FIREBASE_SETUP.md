@@ -2,12 +2,22 @@
 
 L'app ha un'area **Account** (Google, Apple, email) e una **Codici
 promozionali** nelle Impostazioni. Entrambe girano su Firebase, piano
-gratuito, senza server da scrivere. Finché `lib/firebase_options.dart`
-contiene i segnaposto `REPLACE_ME`, le due card dicono "non disponibile in
-questa versione" e tutto il resto dell'app è identico a prima: la build passa,
-i test passano, niente si rompe.
+gratuito, senza server da scrivere.
 
-Tempo stimato: 40 minuti, tutto dal browser. Serve un solo giro.
+Progetto: **`improvy-f470f`**. Le due app sono registrate, i valori sono
+dentro `lib/firebase_options.dart` e `lib/config/firebase_config.dart`, e
+`ios/` è già allineato.
+
+## Cosa resta da fare
+
+- [ ] **SHA-1 di Play in Firebase** — senza, l'accesso con Google non parte
+      su Android (punto 2).
+- [ ] **Regole Firestore pubblicate** — senza, i codici non funzionano e i
+      dati sono esposti (punto 3).
+- [ ] **"Sign In with Apple" sull'App ID** e profilo eliminato — senza, la
+      build iOS si ferma alla firma (punto 4).
+- [ ] *(facoltativo)* **Services ID Apple** per far funzionare "Continua con
+      Apple" anche su Android (punto 2).
 
 ## 1. Progetto Firebase
 
@@ -86,10 +96,11 @@ Codemagic aggiunge l'entitlement all'app da solo, e solo quando il punto 5 è
 fatto: prima di allora la build resta com'è. Il controllo firma in
 `codemagic.yaml` ti dice in chiaro se manca la capability.
 
-## 5. I valori nell'app
+## 5. I valori nell'app — fatto
 
-Firebase → ⚙️ **Impostazioni progetto** → in basso le due app. Per ciascuna
-c'è un blocco di valori. Riempi `lib/firebase_options.dart`:
+Sono già dentro il repo. Questa tabella serve solo se un giorno rigeneri il
+progetto o ruoti una chiave. Firebase → ⚙️ **Impostazioni progetto** → in
+basso le due app:
 
 | Campo Dart | Dove sta in Firebase |
 |---|---|
@@ -102,6 +113,10 @@ c'è un blocco di valori. Riempi `lib/firebase_options.dart`:
 
 Poi in `lib/config/firebase_config.dart` metti in `googleWebClientId` l'ID
 client web copiato al punto 2.
+
+L'**ID client web** sta in `lib/config/firebase_config.dart`. È la voce
+`client_type: 3` dentro `oauth_client` in `google-services.json`, la stessa
+che la console mostra in Authentication → Google → Configurazione SDK web.
 
 In alternativa, sul PC con Flutter: `dart pub global activate flutterfire_cli`
 e `flutterfire configure --project=<project-id>

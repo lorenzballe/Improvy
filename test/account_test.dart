@@ -83,36 +83,72 @@ void main() {
     });
   });
 
-  group('until the Firebase project exists', () {
-    test('the options are placeholders and the app knows it', () {
-      expect(FirebaseConfig.isConfigured, isFalse);
-      expect(FirebaseConfig.googleIosClientId, isNull);
+  group('the Firebase project', () {
+    test('is improvy-f470f, with both platforms under com.improvy.app', () {
+      // The Kotlin namespace is com.improvy.improvy, which is only where the
+      // sources live. Registering THAT in Firebase mints an OAuth client for
+      // an app that does not exist, and Google sign-in fails on a device with
+      // nothing in the logs to say why.
+      expect(FirebaseConfig.isConfigured, isTrue);
       for (final o in [DefaultFirebaseOptions.android, DefaultFirebaseOptions.ios]) {
-        expect(o.apiKey, startsWith(FirebaseConfig.placeholder));
-        expect(o.projectId, startsWith(FirebaseConfig.placeholder));
+        expect(o.projectId, 'improvy-f470f');
+        expect(o.messagingSenderId, '376089080639');
+        expect(o.apiKey, isNot(startsWith(FirebaseConfig.placeholder)));
       }
       expect(DefaultFirebaseOptions.ios.iosBundleId, 'com.improvy.app');
+      expect(File('android/app/build.gradle.kts').readAsStringSync(),
+          contains('applicationId = "com.improvy.app"'));
     });
 
-    test('every door answers "not available" instead of throwing', () async {
+    test('each app carries its own key and id', () {
+      // Two apps in one project: same project, different API key and app id.
+      // Pasting one app's block into both is the easy mistake here.
+      final a = DefaultFirebaseOptions.android;
+      final i = DefaultFirebaseOptions.ios;
+      expect(a.apiKey, isNot(i.apiKey));
+      expect(a.appId, contains(':android:'));
+      expect(i.appId, contains(':ios:'));
+    });
+
+    test('the OAuth clients are the project\'s own', () {
+      // Every client ID starts with the project number. One copied from
+      // another project is the one mistake that still compiles.
+      const sender = '376089080639';
+      expect(FirebaseConfig.googleIosClientId, startsWith('$sender-'));
+      expect(FirebaseConfig.googleIosClientId, endsWith('.apps.googleusercontent.com'));
+      expect(FirebaseConfig.googleWebClientId, startsWith('$sender-'));
+      expect(FirebaseConfig.googleWebClientId, endsWith('.apps.googleusercontent.com'));
+      // Web and iOS are different clients; using one for the other is a
+      // silent failure on whichever platform got the wrong one.
+      expect(FirebaseConfig.googleWebClientId, isNot(FirebaseConfig.googleIosClientId));
+      expect(FirebaseConfig.authDomain, 'improvy-f470f.firebaseapp.com');
+    });
+
+    test('ios/ is in step with the options', () {
+      // tool/sync_firebase_ios.dart writes both of these. A rotated client id
+      // or a regenerated firebase_options.dart leaves them stale, and the
+      // failure is a sign-in sheet that opens, succeeds, and never returns.
+      final reversed = FirebaseConfig.googleIosClientId!.split('.').reversed.join('.');
+      expect(File('ios/Runner/Info.plist').readAsStringSync(), contains(reversed));
+      expect(File('ios/Runner/Runner.entitlements').readAsStringSync(),
+          contains('com.apple.developer.applesignin'));
+    });
+
+    test('a service that never initialised answers, instead of throwing', () {
+      // init() is best-effort at startup: a device that cannot reach Firebase
+      // must cost the account, not the launch.
       final a = AccountService.instance;
       expect(a.isReady, isFalse);
+    });
+
+    test('every door answers "not available" before init', () async {
+      final a = AccountService.instance;
       expect(await a.signInWithGoogle(), AccountOutcome.notConfigured);
       expect(await a.signInWithApple(), AccountOutcome.notConfigured);
       expect(await a.signInWithEmail('a@b.c', 'secret1'), AccountOutcome.notConfigured);
       expect(await a.createWithEmail('a@b.c', 'secret1'), AccountOutcome.notConfigured);
       expect(await a.deleteAccount(), AccountOutcome.notConfigured);
       await a.signOut(); // and this simply returns
-    });
-
-    test('nothing in ios/ has been touched yet', () {
-      // The Sign in with Apple entitlement only signs once the App ID has
-      // the capability, so it must not appear before the project does — or
-      // the next build dies at codesign for a feature that cannot work yet.
-      expect(File('ios/Runner/Runner.entitlements').readAsStringSync(),
-          isNot(contains('applesignin')));
-      expect(File('ios/Runner/Info.plist').readAsStringSync(),
-          isNot(contains('googleusercontent')));
     });
   });
 

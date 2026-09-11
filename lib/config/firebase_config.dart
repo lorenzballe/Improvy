@@ -17,11 +17,15 @@ abstract final class FirebaseConfig {
   static bool isPlaceholder(String? value) =>
       value == null || value.isEmpty || value.startsWith(placeholder);
 
-  /// The project's **Web** OAuth client ID, which Google Sign-In needs on both
-  /// phones to mint an ID token Firebase will accept. Firebase console →
+  /// The project's **Web** OAuth client ID. Google Sign-In on Android asks
+  /// Credential Manager for an ID token with this as its audience, and
+  /// Firebase accepts it because the client belongs to the same project.
+  ///
+  /// This is the `client_type: 3` entry in google-services.json, under the
+  /// app's own `oauth_client` — the same value the console shows under
   /// Authentication → Sign-in method → Google → Web SDK configuration.
   static const googleWebClientId =
-      'REPLACE_ME_WEB_CLIENT_ID.apps.googleusercontent.com';
+      '376089080639-6d9s3vn3hrhnj8274ldnk2dh16bla79h.apps.googleusercontent.com';
 
   /// The iOS OAuth client, from the same place as the rest of the iOS block.
   static String? get googleIosClientId {

@@ -93,15 +93,17 @@ bool _syncEntitlements({required bool check}) {
     stderr.writeln('$_entitlements lacks $key');
     return true;
   }
-  const marker = '\t<key>com.apple.security.application-groups</key>';
+  // The top of the dict: anywhere else risks landing between a key and the
+  // comment above it that explains it.
+  const marker = '<dict>\n';
   if (!s.contains(marker)) throw StateError('$_entitlements: unexpected shape');
-  final entry = '\t<!-- Sign in with Apple. Needs the capability on the App ID in the\n'
+  final entry = '$marker'
+      '\t<!-- Sign in with Apple. Needs the capability on the App ID in the\n'
       '\t     Apple developer account, like App Groups — see FIREBASE_SETUP.md. -->\n'
       '\t<key>$key</key>\n'
       '\t<array>\n'
       '\t\t<string>Default</string>\n'
-      '\t</array>\n'
-      '$marker';
+      '\t</array>\n';
   f.writeAsStringSync(s.replaceFirst(marker, entry));
   stdout.writeln('$_entitlements: added $key');
   return true;
