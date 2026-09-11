@@ -31,14 +31,20 @@ target 'Runner' do
   use_frameworks!
   use_modular_headers!
 
-  # Firestore's C++ core compiled from source adds fifteen-odd minutes to
-  # every build, which on a 60-minute Codemagic budget is the difference
-  # between a build and a timeout. Invertase ships the same version as a
-  # precompiled binary. The tag has to be the Firebase iOS SDK version that
-  # firebase_core pins — see the test in test/account_test.dart that keeps
-  # the two in step.
-  pod 'FirebaseFirestore', :git => 'https://github.com/invertase/firestore-ios-sdk-frameworks.git', :tag => '12.18.0'
-
+  # NOTHING Firebase goes here. This Flutter resolves firebase_core,
+  # firebase_auth and cloud_firestore through Swift Package Manager, and only
+  # the plugins that have no SPM support (flutter_local_notifications,
+  # home_widget, sign_in_with_apple) still come through CocoaPods. Naming
+  # FirebaseFirestore here as well — which is how the build-time trick of
+  # pulling Invertase's precompiled Firestore was written — links the same
+  # framework twice and the archive dies on:
+  #
+  #   Multiple commands produce '… FirebaseFirestore/Metadata.appintents'
+  #
+  # after "Xcode archive done", so the whole build is spent first. The trick
+  # is not needed either: the SPM package fetches Firestore's C++ core as
+  # prebuilt binaries (abseil-cpp-binary, grpc-binary, leveldb), which is what
+  # the compile-from-source time was being paid for.
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
   target 'RunnerTests' do
     inherit! :search_paths

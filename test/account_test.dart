@@ -153,26 +153,31 @@ void main() {
   });
 
   group('the build stays in step', () {
-    test('the precompiled Firestore matches the SDK firebase_core pins', () {
-      final podfile = File('ios/Podfile').readAsStringSync();
-      final tag = RegExp(r"firestore-ios-sdk-frameworks\.git', :tag => '([\d.]+)'")
-          .firstMatch(podfile)
-          ?.group(1);
-      expect(tag, isNotNull, reason: 'the Podfile should pin the binary Firestore');
-      final lock = File('pubspec.lock').readAsStringSync();
-      final core = RegExp(r'  firebase_core:\n(?:.*\n){1,9}?    version: "([^"]+)"')
-          .firstMatch(lock)
-          ?.group(1);
-      expect(core, isNotNull);
-      final home = Platform.environment['HOME'] ?? '/root';
-      final pinned = File('$home/.pub-cache/hosted/pub.dev/firebase_core-$core/ios/firebase_sdk_version.rb');
-      if (!pinned.existsSync()) {
-        markTestSkipped('pub cache not at $home/.pub-cache');
-        return;
+    test('the Podfile names nothing Firebase', () {
+      // Firebase comes in through Swift Package Manager. Naming any of it in
+      // the Podfile as well links the same framework twice, and the archive
+      // dies on "Multiple commands produce ... Metadata.appintents" — after
+      // "Xcode archive done", so the failure costs a whole build and reads
+      // like a signing problem rather than a duplicate dependency.
+      // Comments are allowed to name it — the one above the removal explains
+      // exactly this — so only real pod lines count.
+      final lines = File('ios/Podfile')
+          .readAsStringSync()
+          .split('\n')
+          .where((l) => !l.trimLeft().startsWith('#'));
+      final declared = RegExp("pod ['\"]([^'\"]+)");
+      final pods = lines
+          .map((l) => declared.firstMatch(l)?.group(1))
+          .whereType<String>()
+          .toList();
+      for (final pod in pods) {
+        expect(pod.toLowerCase(), isNot(contains('firebase')), reason: pod);
+        expect(pod.toLowerCase(), isNot(contains('google')), reason: pod);
       }
-      final sdk = RegExp(r"'([\d.]+)'").firstMatch(pinned.readAsStringSync())?.group(1);
-      expect(tag, sdk,
-          reason: 'a mismatched tag fails pod install on Codemagic; bump the Podfile tag');
+      // And the matcher itself still sees a pod line, so this cannot pass by
+      // failing to look.
+      expect(declared.firstMatch("  pod 'FirebaseFirestore', :git => '…'")?.group(1),
+          'FirebaseFirestore');
     });
 
     test('Codemagic syncs ios/ from the options before it builds', () {
