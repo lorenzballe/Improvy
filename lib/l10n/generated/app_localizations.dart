@@ -1534,18 +1534,6 @@ abstract class AppLocalizations {
   /// **'Write to {email}'**
   String settingsWriteTo(String email);
 
-  /// No description provided for @settingsFollow.
-  ///
-  /// In en, this message translates to:
-  /// **'Follow the developer'**
-  String get settingsFollow;
-
-  /// No description provided for @settingsInstagram.
-  ///
-  /// In en, this message translates to:
-  /// **'Find us on Instagram: @{handle}'**
-  String settingsInstagram(String handle);
-
   /// No description provided for @settingsLegal.
   ///
   /// In en, this message translates to:

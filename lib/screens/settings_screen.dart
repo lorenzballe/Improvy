@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kDebugMode, kIsWeb, TargetPlatform;
 import 'package:flutter/material.dart';
 import '../l10n/l10n.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../providers/app_provider.dart';
@@ -17,19 +16,6 @@ import '../widgets/pressable_scale.dart';
 import '../widgets/feedback_sheet.dart';
 import '../widgets/account_card.dart';
 import '../widgets/promo_code_card.dart';
-
-/// Instagram's own mark — the rounded camera body, the lens and the flash dot.
-/// Drawn as strokes so it stays crisp at any size, and tinted white by the
-/// caller: worn on Instagram's gradient tile, which is how their brand
-/// guidelines say to present it when linking to a profile.
-const String _kInstagramGlyph =
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" '
-    'stroke="#000000" stroke-width="2" stroke-linecap="round" '
-    'stroke-linejoin="round">'
-    '<rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>'
-    '<path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>'
-    '<line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>'
-    '</svg>';
 
 class SettingsScreen extends StatelessWidget {
   final void Function([String? reason]) onShowPaywall;
@@ -85,25 +71,6 @@ class SettingsScreen extends StatelessWidget {
       if (!context.mounted) return;
     }
     _toast(context, context.l10n.settingsWriteTo(kSupportEmail), icon: Icons.mail_rounded);
-  }
-
-  /// Opens the developer's Instagram — the installed app when the OS resolves
-  /// the universal link, the browser otherwise.
-  ///
-  /// Same contract as [_contactSupport]: a device that cannot open it must not
-  /// leave the tap silently doing nothing, so the handle is spelled out and the
-  /// user can find it themselves.
-  static Future<void> _openInstagram(BuildContext context) async {
-    try {
-      final ok = await launchUrl(
-        Uri.parse(kInstagramUrl),
-        mode: LaunchMode.externalApplication,
-      );
-      if (ok || !context.mounted) return;
-    } catch (_) {
-      if (!context.mounted) return;
-    }
-    _toast(context, context.l10n.settingsInstagram(kInstagramHandle));
   }
 
   /// Widgets are added from the OS home screen, not from inside an app — there
@@ -900,74 +867,6 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 10),
-              // The person behind the app. Instagram's gradient is its own, not
-              // the app's palette, so it is worn only by the small icon tile —
-              // the same restraint every other row here shows.
-              PressableScale(
-                onTap: () => _openInstagram(context),
-                child: _blurCard(
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 32, height: 32,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            begin: Alignment.bottomLeft,
-                            end: Alignment.topRight,
-                            colors: [Color(0xFFF9CE34), Color(0xFFEE2A7B), Color(0xFF6228D7)],
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Center(
-                          child: SvgPicture.string(
-                            _kInstagramGlyph,
-                            width: 18, height: 18,
-                            colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            FittedBox(
-                              fit: BoxFit.scaleDown,
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                context.l10n.settingsFollow,
-                                maxLines: 1,
-                                softWrap: false,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                  letterSpacing: 0.4,
-                                ),
-                              ),
-                            ),
-                            FittedBox(
-                              fit: BoxFit.scaleDown,
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                '@$kInstagramHandle',
-                                maxLines: 1,
-                                softWrap: false,
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFFEE2A7B),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Icon(Icons.chevron_right_rounded, color: Colors.white.withAlpha(51)),
-                    ],
-                  ),
-                ),
-              ),
               const SizedBox(height: 16),
 
               // LEGAL

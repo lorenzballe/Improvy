@@ -793,14 +793,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get settingsFollow => 'Follow the developer';
-
-  @override
-  String settingsInstagram(String handle) {
-    return 'Find us on Instagram: @$handle';
-  }
-
-  @override
   String get settingsLegal => 'LEGAL';
 
   @override

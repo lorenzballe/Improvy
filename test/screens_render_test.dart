@@ -164,10 +164,9 @@ void main() {
           await providerWith(),
           size,
         );
-        // Outward-facing rows people are told exist: the handle is published
-        // on the row itself, so a wrong or vanished one is a visible promise
-        // broken, not just a dead tap.
-        expect(find.text('@$kInstagramHandle'), findsOneWidget);
+        // An outward-facing row people are told exists: the address is
+        // published on the row itself, so a wrong or vanished one is a
+        // visible promise broken, not just a dead tap.
         expect(find.text(kSupportEmail), findsOneWidget);
       });
 

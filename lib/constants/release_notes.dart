@@ -87,12 +87,12 @@ const List<Release> kReleases = [
       ReleaseLine(
         icon: Icons.timer_rounded,
         color: Color(0xFFFB7185),
-        title: 'Virtuoso and Master bite again',
+        title: 'Every tier bites again',
         detail:
-            'A few thousand answers in, the app was getting finished. Virtuoso '
-            'now gives 2.24s a question instead of 3.2, and Master 1.02s '
-            'instead of 1.2. Apprentice keeps its 6s: that is where an '
-            'interval gets worked out, and rushing it teaches nothing.',
+            'A few thousand answers in, the app was getting finished. A '
+            'question now gives 5s at Apprentice instead of 6, 2.24s at '
+            'Virtuoso instead of 3.2, and 1.02s at Master instead of 1.2. '
+            'Still room to work an interval out by hand, and no more.',
       ),
       ReleaseLine(
         icon: Icons.fact_check_rounded,

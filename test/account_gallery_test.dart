@@ -83,6 +83,14 @@ void main() {
         ),
       ),
     ));
+    // Google's mark is an Image.asset, and asset decoding is real async I/O
+    // that a widget test's fake clock never lets finish — without this the
+    // button draws with an empty square where the G should be.
+    await t.runAsync(() async {
+      await precacheImage(
+          const AssetImage('assets/brand/google-g.png'), t.element(find.byType(MaterialApp)));
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+    });
     await t.pump(const Duration(milliseconds: 400));
     if (after != null) await after();
     // The app, not the page: the page is [size], and it is the view above it
@@ -94,7 +102,7 @@ void main() {
   testWidgets('the sign-in sheet', (t) async {
     await page(
       t,
-      const Size(840, 660),
+      const Size(840, 665),
       const _Page(children: [
         _Panel(title: 'TRE PORTE', child: AccountSheet()),
         _Panel(title: 'CON EMAIL', child: AccountSheet()),

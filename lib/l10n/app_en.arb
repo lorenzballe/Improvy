@@ -402,15 +402,6 @@
       }
     }
   },
-  "settingsFollow": "Follow the developer",
-  "settingsInstagram": "Find us on Instagram: @{handle}",
-  "@settingsInstagram": {
-    "placeholders": {
-      "handle": {
-        "type": "String"
-      }
-    }
-  },
   "settingsLegal": "LEGAL",
   "settingsClearTitle": "Clear All Data?",
   "settingsClearBody": "This will permanently delete all your progress and stats.",

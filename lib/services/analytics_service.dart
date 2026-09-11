@@ -42,7 +42,6 @@ abstract final class Ev {
   static const keyStatsOpened = 'key_stats_opened';
   static const widgetTapped = 'widget_tapped';
   static const whatsNewOpened = 'whats_new_opened';
-  static const instagramOpened = 'instagram_opened';
 
   // ── Money ──
   /// The one free users fire most: what they wanted and could not have.

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import '../l10n/l10n.dart';
 import '../services/account_service.dart';
+import 'brand_marks.dart';
 
 /// The sign-in sheet, opened from the Account card in Settings — never from
 /// onboarding. Nobody has to have an account to play; the account exists so
@@ -42,6 +43,7 @@ class _AccountSheetState extends State<AccountSheet> {
   bool _emailOpen = false;
   bool _creating = false;
   bool _busy = false;
+  _Door? _pressed;
   String? _message;
   bool _messageIsError = true;
 
@@ -137,48 +139,18 @@ class _AccountSheetState extends State<AccountSheet> {
                 Text(l.accountSheetBody,
                     style: TextStyle(fontSize: 12.5, height: 1.5, color: Colors.white.withAlpha(115))),
                 const SizedBox(height: 22),
-                if (_isApplePhone) ...[
-                  _door(
-                    key: const Key('account-apple'),
-                    icon: Icons.apple_rounded,
-                    label: l.accountApple,
-                    fill: Colors.white,
-                    ink: Colors.black,
-                    onTap: () => _run(AccountService.instance.signInWithApple),
-                  ),
-                  const SizedBox(height: 10),
+                // Apple first on an iPhone, Google first everywhere else:
+                // each platform asks to lead on its own hardware, and Apple
+                // additionally requires equal prominence, which is why the
+                // two are the same button rather than one loud and one quiet.
+                for (final door in _isApplePhone
+                    ? [_Door.apple, _Door.google]
+                    : [_Door.google, _Door.apple]) ...[
+                  _brandButton(l, door),
+                  const SizedBox(height: 11),
                 ],
-                _door(
-                  key: const Key('account-google'),
-                  icon: Icons.g_mobiledata_rounded,
-                  label: l.accountGoogle,
-                  fill: Colors.white.withAlpha(20),
-                  ink: Colors.white,
-                  outline: true,
-                  onTap: () => _run(AccountService.instance.signInWithGoogle),
-                ),
-                if (!_isApplePhone) ...[
-                  const SizedBox(height: 10),
-                  _door(
-                    key: const Key('account-apple'),
-                    icon: Icons.apple_rounded,
-                    label: l.accountApple,
-                    fill: Colors.white.withAlpha(20),
-                    ink: Colors.white,
-                    outline: true,
-                    onTap: () => _run(AccountService.instance.signInWithApple),
-                  ),
-                ],
-                const SizedBox(height: 10),
-                _door(
-                  key: const Key('account-email'),
-                  icon: Icons.mail_rounded,
-                  label: l.accountEmail,
-                  fill: _emailOpen ? _indigo.withAlpha(60) : Colors.white.withAlpha(20),
-                  ink: Colors.white,
-                  outline: true,
-                  onTap: () => setState(() => _emailOpen = !_emailOpen),
-                ),
+                const SizedBox(height: 2),
+                _emailLink(l),
                 AnimatedSize(
                   duration: const Duration(milliseconds: 220),
                   curve: Curves.easeOutCubic,
@@ -308,44 +280,104 @@ class _AccountSheetState extends State<AccountSheet> {
         ),
       );
 
-  Widget _door({
-    required Key key,
-    required IconData icon,
-    required String label,
-    required Color fill,
-    required Color ink,
-    required VoidCallback onTap,
-    bool outline = false,
-  }) =>
-      GestureDetector(
-        key: key,
-        onTap: _busy ? null : onTap,
-        child: Container(
-          height: 52,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: fill,
-            border: outline ? Border.all(color: Colors.white.withAlpha(30)) : null,
-            borderRadius: BorderRadius.circular(16),
+  /// The brand buttons, in the light style both companies publish: their
+  /// mark at its own colours on white, a black label, and nothing of ours on
+  /// top of it. No border and no tint — the two are told apart by their
+  /// marks, which is the whole point of using the real ones.
+  Widget _brandButton(AppLocalizations l, _Door door) {
+    final isApple = door == _Door.apple;
+    final down = _pressed == door;
+    return GestureDetector(
+      key: Key(isApple ? 'account-apple' : 'account-google'),
+      behavior: HitTestBehavior.opaque,
+      onTapDown: (_) => setState(() => _pressed = door),
+      onTapCancel: () => setState(() => _pressed = null),
+      onTapUp: (_) => setState(() => _pressed = null),
+      onTap: _busy
+          ? null
+          : () => _run(isApple
+              ? AccountService.instance.signInWithApple
+              : AccountService.instance.signInWithGoogle),
+      child: AnimatedScale(
+        scale: down ? 0.985 : 1,
+        duration: const Duration(milliseconds: 120),
+        child: AnimatedOpacity(
+          opacity: down ? 0.86 : 1,
+          duration: const Duration(milliseconds: 120),
+          child: Container(
+            height: 57,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (isApple)
+                  const Icon(Icons.apple, size: 21, color: Colors.black)
+                else
+                  const GoogleMark(size: 19),
+                const SizedBox(width: 9),
+                // Flexible, so a longer label in another language shortens
+                // rather than running off the end of the button.
+                Flexible(
+                  child: Text(
+                    isApple ? l.accountApple : l.accountGoogle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -0.2,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
+        ),
+      ),
+    );
+  }
+
+  /// Email is ours, so it is not dressed up as a third brand: a quiet line
+  /// under the two buttons that opens the form in place.
+  Widget _emailLink(AppLocalizations l) => GestureDetector(
+        key: const Key('account-email'),
+        behavior: HitTestBehavior.opaque,
+        onTap: _busy ? null : () => setState(() => _emailOpen = !_emailOpen),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(0, 13, 0, 7),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 22, color: ink),
-              const SizedBox(width: 10),
-              Flexible(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(label,
-                      maxLines: 1,
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: ink)),
+              Text(
+                l.accountEmail,
+                style: TextStyle(
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.1,
+                  color: Colors.white.withAlpha(_emailOpen ? 235 : 170),
                 ),
+              ),
+              const SizedBox(width: 4),
+              AnimatedRotation(
+                turns: _emailOpen ? 0.5 : 0,
+                duration: const Duration(milliseconds: 200),
+                child: Icon(Icons.keyboard_arrow_down_rounded,
+                    size: 19, color: Colors.white.withAlpha(_emailOpen ? 200 : 130)),
               ),
             ],
           ),
         ),
       );
+
 }
+
+/// Which brand button is being drawn.
+enum _Door { apple, google }
 
 /// One sentence per outcome. Shared with the Account card's delete flow.
 abstract final class AccountSheetText {

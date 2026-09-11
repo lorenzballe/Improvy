@@ -69,6 +69,8 @@ flutter:
   generate: true
 
   assets:
+    # Google's own mark, at their plate size. See lib/widgets/brand_marks.dart.
+    - assets/brand/
     - assets/images/
     - assets/audio/
     - assets/audio/voice/en/

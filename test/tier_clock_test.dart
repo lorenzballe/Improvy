@@ -7,9 +7,9 @@ import 'package:improvy/models/training_mode.dart';
 /// fluency wall — is downstream of how long a question gives you, so a change
 /// here is a change to what "Master" means and is pinned on purpose.
 void main() {
-  test('Virtuoso lost 30% of its time and Master 15%', () {
-    // Apprentice untouched: 6s is where an interval gets worked out by hand.
-    expect(kTierClockMs[0], 6000);
+  test('every tier is tighter than it was', () {
+    // Apprentice keeps room to work an interval out by hand, and no more.
+    expect(kTierClockMs[0], 5000);
     expect(kTierClockMs[1], (3200 * 0.70).round()); // 2240
     expect(kTierClockMs[2], (1200 * 0.85).round()); // 1020
   });

@@ -680,7 +680,7 @@ class AppProvider extends ChangeNotifier {
   /// It used to sort by raw accuracy over all history, which measured the
   /// wrong thing twice over. Accuracy is confounded by tier — a key taken to
   /// Master's 1.02s clock collects more mistakes than one dabbled with at
-  /// Apprentice's 6s — so the ranking rewarded NOT climbing. And using every
+  /// Apprentice's 5s — so the ranking rewarded NOT climbing. And using every
   /// answer ever recorded meant a key you were bad at last spring dragged on
   /// its rank forever, while every other figure on the screen speaks about the
   /// last 30 games.

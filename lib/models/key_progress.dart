@@ -7,11 +7,12 @@ const List<int> kTierCaps = [30, 40, 50];
 
 /// Each tier's clock per question, ms: Apprentice / Virtuoso / Master.
 ///
-/// Apprentice stays roomy — it is where the interval gets worked out on the
-/// fingers, and rushing that teaches nothing. The two above are where the app
-/// bites, and with a few thousand answers behind them players were finishing
-/// it: Virtuoso is 30% off the 3.2s it allowed, Master 15% off its 1.2s.
-const List<int> kTierClockMs = [6000, 2240, 1020];
+/// Every tier came down once the app started being finished. Apprentice is
+/// 5s, a second off the 6 it allowed: still roomy enough to work an interval
+/// out on the fingers, which is what that tier is for, but no longer long
+/// enough to look away and come back. Virtuoso is 30% off the 3.2s it
+/// allowed, Master 15% off its 1.2s.
+const List<int> kTierClockMs = [5000, 2240, 1020];
 
 /// How much of a tier must be answered before the next one opens.
 ///

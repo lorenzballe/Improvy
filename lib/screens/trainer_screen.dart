@@ -141,10 +141,11 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
 
   /// The tier's own limit — what Apprentice / Virtuoso / Master mean.
   ///
-  /// Apprentice stays roomy: it is where someone works the interval out on
-  /// their fingers, and rushing that teaches nothing. The two tiers above it
-  /// are where the app is supposed to bite, and after a few thousand answers
-  /// they had stopped biting: players were finishing the app.
+  /// Apprentice is 5s: roomy enough to work the interval out on the fingers,
+  /// which is what that tier is for, and no longer roomy enough to look away
+  /// and come back. The two tiers above it are where the app is supposed to
+  /// bite, and after a few thousand answers they had stopped biting: players
+  /// were finishing the app.
   ///
   /// Virtuoso is 2.24s — 30% off the 3.2s it allowed (itself down from 4s).
   /// Master is 1.02s — 15% off the 1.2s it allowed (itself down from 1.5s).
