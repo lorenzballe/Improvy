@@ -112,6 +112,39 @@ void main() {
     }
   });
 
+  test('the extension takes its version from the app', () {
+    // An app extension must carry the same CFBundleShortVersionString and
+    // CFBundleVersion as the app around it. Both come from FLUTTER_BUILD_NAME
+    // and FLUTTER_BUILD_NUMBER, which Flutter writes into
+    // ios/Flutter/Generated.xcconfig at build time — and which are only
+    // DEFINED in a target that includes that file.
+    //
+    // The widget target did not, so the two settings expanded to nothing and
+    // the extension shipped with an empty version. Nothing fails at build
+    // time: the archive succeeds, the upload succeeds, and App Store Connect
+    // marks the build "Invalid Binary" some minutes later, with the reason in
+    // an email rather than anywhere in the build log.
+    final widgetConfigs = RegExp(
+            r'isa = XCBuildConfiguration;\n(.*?)\n\t\t\};',
+            dotAll: true)
+        .allMatches(pbxproj)
+        .map((m) => m.group(1)!)
+        .where((b) => b.contains('PRODUCT_BUNDLE_IDENTIFIER = com.improvy.app.ImprovyWidget;'))
+        .toList();
+    expect(widgetConfigs, hasLength(3), reason: 'Debug, Release and Profile');
+    for (final config in widgetConfigs) {
+      expect(config, contains(r'CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)"'));
+      expect(config, contains(r'MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)"'));
+      expect(config, contains('baseConfigurationReference'),
+          reason: 'without an xcconfig those two variables are undefined here');
+      expect(config, matches(RegExp(r'baseConfigurationReference = \w+ /\* (Debug|Release)\.xcconfig')));
+    }
+    // And the xcconfigs they point at must be the ones that carry the values.
+    for (final f in ['ios/Flutter/Debug.xcconfig', 'ios/Flutter/Release.xcconfig']) {
+      expect(File(f).readAsStringSync(), contains('#include "Generated.xcconfig"'), reason: f);
+    }
+  });
+
   test('both bundle ids are signed for on Codemagic', () {
     // Adding the extension without fetching its profile fails the build at the
     // signing step, an hour into the pipeline.
