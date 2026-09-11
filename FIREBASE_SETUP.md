@@ -15,10 +15,19 @@ Tempo stimato: 40 minuti, tutto dal browser. Serve un solo giro.
    **Crea progetto** → nome `Improvy` → Analytics: **disattiva** (PostHog
    fa già quel lavoro) → Crea.
 2. Nella pagina del progetto, **Aggiungi app** → icona **Android** →
-   package `com.improvy.improvy` → Registra. Salta il download di
-   `google-services.json`: non serve, i valori vanno in Dart (punto 5).
+   package `com.improvy.app` → Registra.
 3. **Aggiungi app** → icona **iOS** → bundle `com.improvy.app` → Registra.
-   Anche qui salta il download del plist.
+
+   Sì, **lo stesso identificativo su entrambe**: è `applicationId` in
+   `android/app/build.gradle.kts` e `PRODUCT_BUNDLE_IDENTIFIER` in Xcode.
+   `com.improvy.improvy` che vedi nelle cartelle Kotlin è solo il namespace
+   interno del codice Android e non va mai usato qui: Firebase confronta il
+   package con `applicationId`, e se non coincide l'accesso con Google non
+   parte.
+
+   Scarica i due file di configurazione (`google-services.json` e
+   `GoogleService-Info.plist`): non vanno messi nel repo, ma contengono i
+   valori del punto 5.
 
 ## 2. Authentication
 
@@ -96,7 +105,7 @@ client web copiato al punto 2.
 
 In alternativa, sul PC con Flutter: `dart pub global activate flutterfire_cli`
 e `flutterfire configure --project=<project-id>
---platforms=android,ios --android-package-name=com.improvy.improvy
+--platforms=android,ios --android-package-name=com.improvy.app
 --ios-bundle-id=com.improvy.app`. Riscrive `firebase_options.dart` da solo;
 `googleWebClientId` va comunque messo a mano.
 
