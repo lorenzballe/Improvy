@@ -145,6 +145,27 @@ class SettingsScreen extends StatelessWidget {
                     ),
                   ]),
                 ),
+              // The technical line, in English on purpose: it is for the
+              // bug report, not for reading.
+              FutureBuilder<String?>(
+                future: WidgetService.instance.platformDiagnostics(),
+                builder: (_, snap) => snap.data == null
+                    ? const SizedBox.shrink()
+                    : Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: SelectableText(
+                          snap.data!,
+                          key: const Key('widget-diagnostics'),
+                          style: TextStyle(
+                            fontSize: 10,
+                            height: 1.5,
+                            fontFamily: 'monospace',
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white.withAlpha(120),
+                          ),
+                        ),
+                      ),
+              ),
               if (shared != null) ...[
                 const SizedBox(height: 6),
                 Container(

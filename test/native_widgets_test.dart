@@ -114,6 +114,19 @@ void main() {
         reason: 'a release build prints nowhere');
   });
 
+  test('the app can see whether its own extension shipped', () {
+    // "Improvy is not in the widget gallery" has three possible causes and
+    // none of them is visible from Dart: the extension may not be inside the
+    // installed app, it may carry a version iOS refuses to register, or the
+    // App Group may not open. The probe answers all three from the platform.
+    final appDelegate = File('ios/Runner/AppDelegate.swift').readAsStringSync();
+    expect(appDelegate, contains('improvy/widget_probe'));
+    expect(appDelegate, contains('builtInPlugInsURL'),
+        reason: 'looking inside Runner.app/PlugIns is the only way to know');
+    expect(appDelegate, contains('containerURL(\n        forSecurityApplicationGroupIdentifier:'));
+    expect(dart, contains("MethodChannel('improvy/widget_probe')"));
+  });
+
   test('the App Group is the same string everywhere', () {
     const group = 'group.com.improvy.app.widget';
     expect(dart, contains("iOSAppGroupId = '$group'"));

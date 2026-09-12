@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show MethodChannel;
 import 'package:home_widget/home_widget.dart';
 
 import '../constants/music_constants.dart';
@@ -115,6 +116,33 @@ class WidgetService {
   }
 
   static const String _probeKey = 'shared_storage_probe';
+
+  /// What iOS says about the widgets, in one line, for the Settings sheet.
+  ///
+  /// Everything that can go wrong here is invisible from Dart, so this asks
+  /// the platform directly: is the extension inside the installed app, what
+  /// version does it carry, and can the App Group container be opened. See
+  /// registerWidgetProbe in ios/Runner/AppDelegate.swift. Empty on Android,
+  /// where none of the three can fail this way.
+  Future<String?> platformDiagnostics() async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.iOS) return null;
+    try {
+      final raw = await const MethodChannel('improvy/widget_probe')
+          .invokeMapMethod<String, dynamic>('status');
+      if (raw == null) return null;
+      final extensions = (raw['extensions'] as List?)?.cast<String>() ?? const [];
+      final appex = extensions.any((e) => e.startsWith('ImprovyWidget'));
+      return [
+        'app ${raw['appVersion'] ?? '?'}',
+        appex
+            ? 'extension ${raw['extensionVersion'] ?? '?'}'
+            : 'extension MISSING${extensions.isEmpty ? '' : ' (found ${extensions.join(', ')})'}',
+        'app group ${raw['appGroup'] == true ? 'ok' : 'UNREACHABLE'}',
+      ].join(' · ');
+    } catch (e) {
+      return 'probe failed: $e';
+    }
+  }
 
   /// Starts listening for widget taps — both the one that launched the app from
   /// cold and any that arrive while it is already running.

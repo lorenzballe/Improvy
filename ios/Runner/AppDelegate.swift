@@ -17,6 +17,63 @@ import UIKit
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
     registerAudioSession(engineBridge.pluginRegistry)
+    registerWidgetProbe(engineBridge.pluginRegistry)
+  }
+
+  /// Three facts about the widgets that nothing else can answer.
+  ///
+  /// When the widgets are missing from the gallery, or present and empty,
+  /// every possible cause is invisible from Dart: the extension may not be in
+  /// the installed app at all, it may be there with a version iOS refuses, or
+  /// the App Group may not be reachable — in which case every write the app
+  /// makes is dropped silently and still reported as a success. The app can
+  /// look at all three directly, and one screen in Settings then says which.
+  private func registerWidgetProbe(_ registry: FlutterPluginRegistry) {
+    guard let registrar = registry.registrar(forPlugin: "ImprovyWidgetProbe") else { return }
+    let channel = FlutterMethodChannel(
+      name: "improvy/widget_probe", binaryMessenger: registrar.messenger())
+
+    channel.setMethodCallHandler { call, result in
+      guard call.method == "status" else { return result(FlutterMethodNotImplemented) }
+
+      // What is actually inside Runner.app/PlugIns. An extension that was
+      // never embedded, or that the export stripped, simply is not here —
+      // and that is exactly what "Improvy is not in the widget gallery"
+      // looks like from the outside.
+      var extensions: [String] = []
+      var version = ""
+      if let plugins = Bundle.main.builtInPlugInsURL,
+        let items = try? FileManager.default.contentsOfDirectory(atPath: plugins.path)
+      {
+        for item in items where item.hasSuffix(".appex") {
+          extensions.append(item)
+          let plist = plugins.appendingPathComponent(item)
+            .appendingPathComponent("Info.plist")
+          if let d = NSDictionary(contentsOf: plist) {
+            let short = d["CFBundleShortVersionString"] as? String ?? ""
+            let build = d["CFBundleVersion"] as? String ?? ""
+            // Empty here is the whole story: iOS will not register an
+            // extension whose version is missing, and Apple answers the
+            // upload with "Invalid Binary" for the same reason.
+            version = "\(short.isEmpty ? "—" : short) (\(build.isEmpty ? "—" : build))"
+          }
+        }
+      }
+
+      // Nil means the signed app does not carry the App Group entitlement,
+      // whatever the provisioning profile says it does.
+      let container = FileManager.default.containerURL(
+        forSecurityApplicationGroupIdentifier: "group.com.improvy.app.widget")
+
+      result([
+        "extensions": extensions,
+        "extensionVersion": version,
+        "appGroup": container != nil,
+        "appVersion":
+          "\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") ?? "?") "
+          + "(\(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") ?? "?"))",
+      ])
+    }
   }
 
   /// Owns the audio session and the keep-alive tone for Pocket Mode.
