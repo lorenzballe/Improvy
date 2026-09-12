@@ -1578,4 +1578,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsRemindersAllow => 'PERMITIR';
+
+  @override
+  String get settingsWidgetBroken =>
+      'Tu móvil no está compartiendo datos con los widgets, por eso salen vacíos. Escríbeme y lo arreglo.';
+
+  @override
+  String get settingsWidgetOk => 'Los datos están llegando a los widgets.';
 }

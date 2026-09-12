@@ -465,5 +465,7 @@
   "settingsRemindersBlocked": "O telemóvel não os está a permitir",
   "settingsRemindersBlockedBody": "Aqui estão ativos, mas até o telemóvel os permitir não chega nenhum.",
   "settingsRemindersOpen": "ABRIR DEFINIÇÕES",
-  "settingsRemindersAllow": "PERMITIR"
+  "settingsRemindersAllow": "PERMITIR",
+  "settingsWidgetBroken": "O telemóvel não está a partilhar dados com os widgets, por isso ficam vazios. Diz-me e eu resolvo.",
+  "settingsWidgetOk": "Os dados estão a chegar aos widgets."
 }

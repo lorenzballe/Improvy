@@ -465,5 +465,7 @@
   "settingsRemindersBlocked": "Tu móvil no las está permitiendo",
   "settingsRemindersBlockedBody": "Aquí están activas, pero hasta que tu móvil las permita no llegará ninguna.",
   "settingsRemindersOpen": "ABRIR AJUSTES",
-  "settingsRemindersAllow": "PERMITIR"
+  "settingsRemindersAllow": "PERMITIR",
+  "settingsWidgetBroken": "Tu móvil no está compartiendo datos con los widgets, por eso salen vacíos. Escríbeme y lo arreglo.",
+  "settingsWidgetOk": "Los datos están llegando a los widgets."
 }

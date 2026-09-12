@@ -99,6 +99,21 @@ void main() {
     }
   });
 
+  test('a lost payload cannot pass for a good one', () {
+    // The whole feature's silent failure: on iOS a signed app that cannot
+    // reach the App Group gets a nil UserDefaults suite, and the plugin then
+    // drops every write and still answers true. Only reading a value back
+    // tells them apart, and only something saying so out loud connects empty
+    // widgets to their cause.
+    expect(dart, contains('Future<bool> probeSharedStorage()'));
+    expect(dart, contains('getWidgetData<String>(_probeKey'));
+    expect(dart, contains('widgetStorageUnreachable'));
+    // And the catch that used to swallow a failed sync whole.
+    expect(dart, contains('Ev.widgetSyncFailed'));
+    expect(dart, isNot(contains("if (kDebugMode) debugPrint('[WidgetService] sync failed: \$e');\n    }")),
+        reason: 'a release build prints nowhere');
+  });
+
   test('the App Group is the same string everywhere', () {
     const group = 'group.com.improvy.app.widget';
     expect(dart, contains("iOSAppGroupId = '$group'"));

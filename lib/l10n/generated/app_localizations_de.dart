@@ -1579,4 +1579,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsRemindersAllow => 'ZULASSEN';
+
+  @override
+  String get settingsWidgetBroken =>
+      'Dein Handy gibt die Daten nicht an die Widgets weiter, deshalb bleiben sie leer. Schreib mir, ich bringe das in Ordnung.';
+
+  @override
+  String get settingsWidgetOk => 'Die Daten erreichen die Widgets.';
 }

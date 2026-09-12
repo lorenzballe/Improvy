@@ -1586,4 +1586,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get settingsRemindersAllow => 'AUTORISER';
+
+  @override
+  String get settingsWidgetBroken =>
+      'Votre téléphone ne partage pas les données avec les widgets, ils restent donc vides. Dites-le-moi et je corrige.';
+
+  @override
+  String get settingsWidgetOk => 'Les données arrivent bien aux widgets.';
 }

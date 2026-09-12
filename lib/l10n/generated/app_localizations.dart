@@ -2901,6 +2901,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'ALLOW'**
   String get settingsRemindersAllow;
+
+  /// No description provided for @settingsWidgetBroken.
+  ///
+  /// In en, this message translates to:
+  /// **'Your phone is not sharing data with the widgets, so they stay empty. Send me this and I\'ll fix it.'**
+  String get settingsWidgetBroken;
+
+  /// No description provided for @settingsWidgetOk.
+  ///
+  /// In en, this message translates to:
+  /// **'Data is reaching the widgets.'**
+  String get settingsWidgetOk;
 }
 
 class _AppLocalizationsDelegate

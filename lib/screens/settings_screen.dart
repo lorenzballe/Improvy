@@ -11,6 +11,7 @@ import '../constants/release_notes.dart';
 import '../services/purchase_service.dart';
 import '../services/review_service.dart';
 import '../services/system_settings.dart';
+import '../services/widget_service.dart';
 import 'legal_screen.dart';
 import 'free_mode_screen.dart';
 import '../widgets/pressable_scale.dart';
@@ -79,6 +80,10 @@ class SettingsScreen extends StatelessWidget {
   /// which is exactly what people look for after reading that widgets exist.
   static void _showWidgetHelp(BuildContext context) {
     final ios = defaultTargetPlatform == TargetPlatform.iOS;
+    // Whether the app's payload is reaching the widgets at all. Empty widgets
+    // have exactly one cause worth naming, and until now the only way to find
+    // it was to guess — see WidgetService.probeSharedStorage.
+    final shared = WidgetService.instance.sharedStorageWorks;
     final steps = ios
         ? [
             context.l10n.settingsWidgetIos1,
@@ -140,6 +145,45 @@ class SettingsScreen extends StatelessWidget {
                     ),
                   ]),
                 ),
+              if (shared != null) ...[
+                const SizedBox(height: 6),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: shared ? const Color(0x1A34D399) : const Color(0x1FFB7185),
+                    border: Border.all(
+                        color: shared ? const Color(0x4D34D399) : const Color(0x52FB7185)),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        shared ? Icons.check_circle_rounded : Icons.error_rounded,
+                        size: 16,
+                        color: shared ? const Color(0xFF34D399) : const Color(0xFFFB7185),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          shared
+                              ? context.l10n.settingsWidgetOk
+                              : context.l10n.settingsWidgetBroken,
+                          key: const Key('widget-storage-state'),
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            height: 1.4,
+                            fontWeight: FontWeight.w600,
+                            color: shared
+                                ? const Color(0xFF34D399)
+                                : Colors.white.withAlpha(200),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: 4),
               Center(
                 child: TextButton(

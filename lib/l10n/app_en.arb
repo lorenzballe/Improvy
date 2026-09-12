@@ -807,5 +807,7 @@
   "settingsRemindersBlocked": "Your phone isn't allowing them",
   "settingsRemindersBlockedBody": "They're on here, but until your phone allows them not one will arrive.",
   "settingsRemindersOpen": "OPEN SETTINGS",
-  "settingsRemindersAllow": "ALLOW"
+  "settingsRemindersAllow": "ALLOW",
+  "settingsWidgetBroken": "Your phone is not sharing data with the widgets, so they stay empty. Send me this and I'll fix it.",
+  "settingsWidgetOk": "Data is reaching the widgets."
 }

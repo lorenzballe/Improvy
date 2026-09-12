@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:home_widget/home_widget.dart';
 
 import '../constants/music_constants.dart';
+import 'analytics_service.dart';
 import '../models/daily_challenge.dart';
 import '../providers/app_provider.dart';
 import '../utils/music_engine.dart';
@@ -82,6 +83,38 @@ class WidgetService {
       if (kDebugMode) debugPrint('[WidgetService] init failed: $e');
     }
   }
+
+  /// Whether the last sync's payload actually reached the shared container.
+  /// Null until one has run. Read by Settings, which is the only place a
+  /// person can be told why their widgets are empty.
+  bool? sharedStorageWorks;
+
+  /// Writes a value and reads it back.
+  ///
+  /// This is the one failure the whole widget feature can have without a
+  /// single line of evidence anywhere. On iOS the payload goes to
+  /// `UserDefaults(suiteName: appGroup)`, and when the signed app cannot
+  /// reach that container the suite is nil — at which point the plugin drops
+  /// every write on the floor and still answers "true". Dart sees a clean
+  /// sync, the widgets render their placeholders forever, and nothing
+  /// connects the two. Reading a value back is the only honest question:
+  /// either it comes back or the container is not shared.
+  Future<bool> probeSharedStorage() async {
+    if (kIsWeb) return false;
+    await init();
+    try {
+      final token = 'ok-${DateTime.now().microsecondsSinceEpoch}';
+      await HomeWidget.saveWidgetData<String>(_probeKey, token);
+      final back =
+          await HomeWidget.getWidgetData<String>(_probeKey, defaultValue: '');
+      return back == token;
+    } catch (e) {
+      if (kDebugMode) debugPrint('[WidgetService] probe failed: $e');
+      return false;
+    }
+  }
+
+  static const String _probeKey = 'shared_storage_probe';
 
   /// Starts listening for widget taps — both the one that launched the app from
   /// cold and any that arrive while it is already running.
@@ -187,9 +220,23 @@ class WidgetService {
           qualifiedAndroidName: 'com.improvy.improvy.$android',
         );
       }
-    } catch (e) {
-      // A widget that fails to refresh must never disturb the app.
+      // Did any of that actually land? See [probeSharedStorage]: on iOS a
+      // missing App Group loses every write without an error.
+      final shared = await probeSharedStorage();
+      if (shared != sharedStorageWorks) {
+        sharedStorageWorks = shared;
+        if (!shared) {
+          AnalyticsService.instance
+              .capture(Ev.widgetStorageUnreachable, {'group': iOSAppGroupId});
+        }
+      }
+    } catch (e, s) {
+      // A widget that fails to refresh must never disturb the app — but it
+      // must not vanish either. This used to be a debugPrint, which in a
+      // release build is nothing at all.
       if (kDebugMode) debugPrint('[WidgetService] sync failed: $e');
+      sharedStorageWorks = false;
+      AnalyticsService.instance.error(Ev.widgetSyncFailed, e, {'stack': s.toString()});
     }
   }
 

@@ -465,5 +465,7 @@
   "settingsRemindersBlocked": "Dein Handy lässt sie nicht zu",
   "settingsRemindersBlockedBody": "Hier sind sie an, aber solange dein Handy sie nicht zulässt, kommt keine an.",
   "settingsRemindersOpen": "EINSTELLUNGEN ÖFFNEN",
-  "settingsRemindersAllow": "ZULASSEN"
+  "settingsRemindersAllow": "ZULASSEN",
+  "settingsWidgetBroken": "Dein Handy gibt die Daten nicht an die Widgets weiter, deshalb bleiben sie leer. Schreib mir, ich bringe das in Ordnung.",
+  "settingsWidgetOk": "Die Daten erreichen die Widgets."
 }

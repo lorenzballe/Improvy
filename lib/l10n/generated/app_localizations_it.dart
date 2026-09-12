@@ -1581,4 +1581,11 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get settingsRemindersAllow => 'CONSENTI';
+
+  @override
+  String get settingsWidgetBroken =>
+      'Il telefono non sta passando i dati ai widget, per questo restano vuoti. Mandamelo e lo sistemo.';
+
+  @override
+  String get settingsWidgetOk => 'I dati stanno arrivando ai widget.';
 }

@@ -41,6 +41,11 @@ abstract final class Ev {
   // ── Discovery ──
   static const keyStatsOpened = 'key_stats_opened';
   static const widgetTapped = 'widget_tapped';
+
+  /// The widgets are on the home screen and the app's payload never reaches
+  /// them. Silent by nature — see WidgetService.probeSharedStorage.
+  static const widgetStorageUnreachable = 'widget_storage_unreachable';
+  static const widgetSyncFailed = 'widget_sync_failed';
   static const whatsNewOpened = 'whats_new_opened';
 
   // ── Money ──

@@ -1576,4 +1576,11 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get settingsRemindersAllow => 'PERMITIR';
+
+  @override
+  String get settingsWidgetBroken =>
+      'O telemóvel não está a partilhar dados com os widgets, por isso ficam vazios. Diz-me e eu resolvo.';
+
+  @override
+  String get settingsWidgetOk => 'Os dados estão a chegar aos widgets.';
 }

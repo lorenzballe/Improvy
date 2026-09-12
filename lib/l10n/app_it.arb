@@ -465,5 +465,7 @@
   "settingsRemindersBlocked": "Il telefono non le sta consentendo",
   "settingsRemindersBlockedBody": "Qui sono attive, ma finché il telefono non le consente non ne arriva nessuna.",
   "settingsRemindersOpen": "APRI IMPOSTAZIONI",
-  "settingsRemindersAllow": "CONSENTI"
+  "settingsRemindersAllow": "CONSENTI",
+  "settingsWidgetBroken": "Il telefono non sta passando i dati ai widget, per questo restano vuoti. Mandamelo e lo sistemo.",
+  "settingsWidgetOk": "I dati stanno arrivando ai widget."
 }

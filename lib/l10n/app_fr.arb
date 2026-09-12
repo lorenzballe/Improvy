@@ -465,5 +465,7 @@
   "settingsRemindersBlocked": "Votre téléphone ne les autorise pas",
   "settingsRemindersBlockedBody": "Ils sont activés ici, mais tant que votre téléphone ne les autorise pas, aucun n'arrivera.",
   "settingsRemindersOpen": "OUVRIR LES RÉGLAGES",
-  "settingsRemindersAllow": "AUTORISER"
+  "settingsRemindersAllow": "AUTORISER",
+  "settingsWidgetBroken": "Votre téléphone ne partage pas les données avec les widgets, ils restent donc vides. Dites-le-moi et je corrige.",
+  "settingsWidgetOk": "Les données arrivent bien aux widgets."
 }

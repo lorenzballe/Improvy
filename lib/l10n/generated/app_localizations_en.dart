@@ -1575,4 +1575,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsRemindersAllow => 'ALLOW';
+
+  @override
+  String get settingsWidgetBroken =>
+      'Your phone is not sharing data with the widgets, so they stay empty. Send me this and I\'ll fix it.';
+
+  @override
+  String get settingsWidgetOk => 'Data is reaching the widgets.';
 }
