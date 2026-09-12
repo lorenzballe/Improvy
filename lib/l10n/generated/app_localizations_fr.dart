@@ -1573,4 +1573,17 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get promoError => 'Un problème est survenu. Réessayez.';
+
+  @override
+  String get settingsRemindersBlocked => 'Votre téléphone ne les autorise pas';
+
+  @override
+  String get settingsRemindersBlockedBody =>
+      'Ils sont activés ici, mais tant que votre téléphone ne les autorise pas, aucun n\'arrivera.';
+
+  @override
+  String get settingsRemindersOpen => 'OUVRIR LES RÉGLAGES';
+
+  @override
+  String get settingsRemindersAllow => 'AUTORISER';
 }

@@ -1565,4 +1565,17 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get promoError => 'Algo salió mal. Inténtalo de nuevo.';
+
+  @override
+  String get settingsRemindersBlocked => 'Tu móvil no las está permitiendo';
+
+  @override
+  String get settingsRemindersBlockedBody =>
+      'Aquí están activas, pero hasta que tu móvil las permita no llegará ninguna.';
+
+  @override
+  String get settingsRemindersOpen => 'ABRIR AJUSTES';
+
+  @override
+  String get settingsRemindersAllow => 'PERMITIR';
 }

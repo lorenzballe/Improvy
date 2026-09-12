@@ -214,14 +214,75 @@ class AppProvider extends ChangeNotifier {
     ));
   }
 
-  void setNotifDailyOn(bool v) {
+  /// Reminders are on here and the OS will not deliver them.
+  ///
+  /// This is the state the app used to be in silently, for nearly everyone:
+  /// [notifDailyOn] starts true, so the card is amber from the first launch,
+  /// while the OS permission was only ever requested from the priming sheet —
+  /// which needs a rare run of good sessions to appear at all, and appears
+  /// once in a lifetime. Everything in between was scheduled and dropped.
+  bool notifBlocked = false;
+
+  /// Whether the OS will still show its dialog. Both platforms ask once: after
+  /// that a request returns false without showing anything, and the system
+  /// settings are the only repair. It decides which button the card offers.
+  bool notifCanAsk = false;
+
+  Future<void> setNotifDailyOn(bool v) async {
     notifDailyOn = v;
     _storage.saveNotifDailyOn(v);
     AnalyticsService.instance
         .capture(Ev.settingChanged, {'setting': 'notif_daily', 'value': v});
     syncAnalyticsProfile();
+    notifyListeners();
+
+    if (v) {
+      await allowNotifications(from: 'settings_toggle');
+    } else {
+      notifBlocked = false;
+      notifCanAsk = false;
+      resyncNotifications();
+      notifyListeners();
+    }
+  }
+
+  /// Asks the OS, from a button the user pressed. Safe to call when the answer
+  /// is already yes — it checks first and shows nothing.
+  Future<void> allowNotifications({String from = 'card'}) async {
+    _storage.saveNotifPermAsked(true);
+    showNotifPrompt = false;
+    final granted = await NotificationService.ensureAllowed();
+    notifBlocked = !granted;
+    notifCanAsk = false;
+    AnalyticsService.instance
+        .capture(Ev.notifPermissionResult, {'os_granted': granted, 'from': from});
     resyncNotifications();
     notifyListeners();
+  }
+
+  /// Re-reads what the OS allows. Cheap, and worth doing on every launch and
+  /// every resume: the answer is changed outside the app, in the system
+  /// settings, and nothing tells us when it happens.
+  Future<void> refreshNotifPermission() async {
+    // Only the switch the user can actually see. Comeback nudges are on by
+    // default and have no control of their own, so warning about them would
+    // be warning about something nobody asked for.
+    if (!notifDailyOn) {
+      if (notifBlocked || notifCanAsk) {
+        notifBlocked = false;
+        notifCanAsk = false;
+        notifyListeners();
+      }
+      return;
+    }
+    final allowed = await NotificationService.isAllowed();
+    final blocked = !allowed;
+    final canAsk = blocked && !_storage.loadNotifPermAsked();
+    if (blocked != notifBlocked || canAsk != notifCanAsk) {
+      notifBlocked = blocked;
+      notifCanAsk = canAsk;
+      notifyListeners();
+    }
   }
 
   void setNotifComebackOn(bool v) {
@@ -372,19 +433,12 @@ class AppProvider extends ChangeNotifier {
   }
 
   void acceptNotifPrompt() {
-    showNotifPrompt = false;
-    _storage.saveNotifPermAsked(true);
     // Two separate answers: yes to us, then yes or no to the OS. Only the
     // second one decides whether a reminder can ever be delivered, and the
     // gap between them is the cost of asking at the wrong moment.
     AnalyticsService.instance
         .capture(Ev.notifPermissionResult, {'accepted_prompt': true});
-    NotificationService.requestPermission().then((granted) {
-      AnalyticsService.instance.capture(
-          Ev.notifPermissionResult, {'os_granted': granted});
-      resyncNotifications();
-    });
-    notifyListeners();
+    allowNotifications(from: 'prompt');
   }
 
   void dismissNotifPrompt() {

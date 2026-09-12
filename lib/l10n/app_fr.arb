@@ -461,5 +461,9 @@
   "promoExpired": "Ce code a expiré.",
   "promoAlready": "Ce compte a déjà utilisé un code.",
   "promoOffline": "Pas de connexion. Réessayez.",
-  "promoError": "Un problème est survenu. Réessayez."
+  "promoError": "Un problème est survenu. Réessayez.",
+  "settingsRemindersBlocked": "Votre téléphone ne les autorise pas",
+  "settingsRemindersBlockedBody": "Ils sont activés ici, mais tant que votre téléphone ne les autorise pas, aucun n'arrivera.",
+  "settingsRemindersOpen": "OUVRIR LES RÉGLAGES",
+  "settingsRemindersAllow": "AUTORISER"
 }

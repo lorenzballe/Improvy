@@ -104,6 +104,10 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     // (a day turned over, a challenge was played on another device…).
     if (state == AppLifecycleState.resumed && _observedProvider != null) {
       WidgetService.instance.sync(_observedProvider!);
+      // Notification permission is changed in the system settings, which
+      // means leaving and coming back — this is the only moment the app can
+      // learn that it was turned on, or off.
+      _observedProvider!.refreshNotifPermission();
     }
   }
 

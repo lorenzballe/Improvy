@@ -803,5 +803,9 @@
   "promoExpired": "That code has expired.",
   "promoAlready": "This account already used a code.",
   "promoOffline": "No connection. Try again.",
-  "promoError": "Something went wrong. Try again."
+  "promoError": "Something went wrong. Try again.",
+  "settingsRemindersBlocked": "Your phone isn't allowing them",
+  "settingsRemindersBlockedBody": "They're on here, but until your phone allows them not one will arrive.",
+  "settingsRemindersOpen": "OPEN SETTINGS",
+  "settingsRemindersAllow": "ALLOW"
 }

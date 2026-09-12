@@ -461,5 +461,9 @@
   "promoExpired": "Questo codice è scaduto.",
   "promoAlready": "Questo account ha già usato un codice.",
   "promoOffline": "Nessuna connessione. Riprova.",
-  "promoError": "Qualcosa è andato storto. Riprova."
+  "promoError": "Qualcosa è andato storto. Riprova.",
+  "settingsRemindersBlocked": "Il telefono non le sta consentendo",
+  "settingsRemindersBlockedBody": "Qui sono attive, ma finché il telefono non le consente non ne arriva nessuna.",
+  "settingsRemindersOpen": "APRI IMPOSTAZIONI",
+  "settingsRemindersAllow": "CONSENTI"
 }

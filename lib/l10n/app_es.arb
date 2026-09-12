@@ -461,5 +461,9 @@
   "promoExpired": "Ese código ha caducado.",
   "promoAlready": "Esta cuenta ya usó un código.",
   "promoOffline": "Sin conexión. Inténtalo de nuevo.",
-  "promoError": "Algo salió mal. Inténtalo de nuevo."
+  "promoError": "Algo salió mal. Inténtalo de nuevo.",
+  "settingsRemindersBlocked": "Tu móvil no las está permitiendo",
+  "settingsRemindersBlockedBody": "Aquí están activas, pero hasta que tu móvil las permita no llegará ninguna.",
+  "settingsRemindersOpen": "ABRIR AJUSTES",
+  "settingsRemindersAllow": "PERMITIR"
 }

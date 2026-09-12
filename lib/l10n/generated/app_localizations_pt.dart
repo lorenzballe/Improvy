@@ -1563,4 +1563,17 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get promoError => 'Algo correu mal. Tente de novo.';
+
+  @override
+  String get settingsRemindersBlocked => 'O telemóvel não os está a permitir';
+
+  @override
+  String get settingsRemindersBlockedBody =>
+      'Aqui estão ativos, mas até o telemóvel os permitir não chega nenhum.';
+
+  @override
+  String get settingsRemindersOpen => 'ABRIR DEFINIÇÕES';
+
+  @override
+  String get settingsRemindersAllow => 'PERMITIR';
 }

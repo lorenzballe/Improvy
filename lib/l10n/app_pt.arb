@@ -461,5 +461,9 @@
   "promoExpired": "Esse código expirou.",
   "promoAlready": "Esta conta já usou um código.",
   "promoOffline": "Sem ligação. Tente de novo.",
-  "promoError": "Algo correu mal. Tente de novo."
+  "promoError": "Algo correu mal. Tente de novo.",
+  "settingsRemindersBlocked": "O telemóvel não os está a permitir",
+  "settingsRemindersBlockedBody": "Aqui estão ativos, mas até o telemóvel os permitir não chega nenhum.",
+  "settingsRemindersOpen": "ABRIR DEFINIÇÕES",
+  "settingsRemindersAllow": "PERMITIR"
 }

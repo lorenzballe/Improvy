@@ -6,6 +6,8 @@ import 'reminder_plan.dart';
 class NotificationService {
   static Future<void> init() async {}
   static Future<bool> requestPermission() async => false;
+  static Future<bool> isAllowed() async => false;
+  static Future<bool> ensureAllowed() async => false;
   static Future<void> resync(ReminderPlan plan) async {}
   static Future<void> showTestNow(ReminderMessage msg) async {}
 }

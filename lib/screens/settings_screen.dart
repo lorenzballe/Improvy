@@ -10,6 +10,7 @@ import '../constants/app_info.dart';
 import '../constants/release_notes.dart';
 import '../services/purchase_service.dart';
 import '../services/review_service.dart';
+import '../services/system_settings.dart';
 import 'legal_screen.dart';
 import 'free_mode_screen.dart';
 import '../widgets/pressable_scale.dart';
@@ -1452,6 +1453,86 @@ class _NotificationsCard extends StatelessWidget {
                 height: 18 / 11,
               ),
             ),
+            // On here, off at the OS. Without this the card lights up and
+            // nothing is ever delivered, which is the worst of both.
+            if (on && provider.notifBlocked) ...[
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: const Color(0x1FFB7185),
+                  border: Border.all(color: const Color(0x52FB7185)),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.notifications_off_rounded,
+                            color: Color(0xFFFB7185), size: 16),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            context.l10n.settingsRemindersBlocked,
+                            key: const Key('notif-blocked'),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFFFB7185),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      context.l10n.settingsRemindersBlockedBody,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white.withAlpha(140),
+                        height: 1.45,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    GestureDetector(
+                      // Before the OS has been asked its dialog still works,
+                      // so the button asks. Afterwards it never shows again
+                      // and the system settings are the only repair.
+                      key: Key(provider.notifCanAsk
+                          ? 'notif-allow'
+                          : 'notif-open-settings'),
+                      onTap: provider.notifCanAsk
+                          ? provider.allowNotifications
+                          : SystemSettings.openAppSettings,
+                      child: Container(
+                        height: 38,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: const Color(0x33FB7185),
+                          border: Border.all(color: const Color(0x66FB7185)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Center(
+                          child: Text(
+                            provider.notifCanAsk
+                                ? context.l10n.settingsRemindersAllow
+                                : context.l10n.settingsRemindersOpen,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.2,
+                              color: Color(0xFFFB7185),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),

@@ -1562,4 +1562,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get promoError => 'Something went wrong. Try again.';
+
+  @override
+  String get settingsRemindersBlocked => 'Your phone isn\'t allowing them';
+
+  @override
+  String get settingsRemindersBlockedBody =>
+      'They\'re on here, but until your phone allows them not one will arrive.';
+
+  @override
+  String get settingsRemindersOpen => 'OPEN SETTINGS';
+
+  @override
+  String get settingsRemindersAllow => 'ALLOW';
 }

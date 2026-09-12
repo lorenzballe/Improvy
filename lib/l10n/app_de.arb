@@ -461,5 +461,9 @@
   "promoExpired": "Dieser Code ist abgelaufen.",
   "promoAlready": "Dieses Konto hat schon einen Code benutzt.",
   "promoOffline": "Keine Verbindung. Versuch es noch einmal.",
-  "promoError": "Etwas ist schiefgelaufen. Versuch es noch einmal."
+  "promoError": "Etwas ist schiefgelaufen. Versuch es noch einmal.",
+  "settingsRemindersBlocked": "Dein Handy lässt sie nicht zu",
+  "settingsRemindersBlockedBody": "Hier sind sie an, aber solange dein Handy sie nicht zulässt, kommt keine an.",
+  "settingsRemindersOpen": "EINSTELLUNGEN ÖFFNEN",
+  "settingsRemindersAllow": "ZULASSEN"
 }

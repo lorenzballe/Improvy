@@ -40,21 +40,55 @@ class NotificationService {
           requestSoundPermission: false,
         ),
       );
-      _ready = await _plugin.initialize(settings) ?? false;
+      await _plugin.initialize(settings);
+      // Ready means "the plugin came up", not what initialize() returned: on
+      // some platforms it answers null, and gating every schedule on that
+      // turned reminders off for good with nothing to see.
+      _ready = true;
     } catch (_) {
       _ready = false; // reminders are off; the app still starts
     }
   }
 
+  static AndroidFlutterLocalNotificationsPlugin? get _android => _plugin
+      .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+
+  static IOSFlutterLocalNotificationsPlugin? get _ios => _plugin
+      .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
+
+  /// What the OS says right now, without asking the user anything.
+  ///
+  /// The app's own switch is not this. Someone can turn reminders on in
+  /// Settings, watch the card light up, and never be told that iOS is
+  /// dropping every one of them — which is exactly what was happening.
+  static Future<bool> isAllowed() async {
+    if (!_ready) return false;
+    try {
+      final android = _android;
+      if (android != null) return await android.areNotificationsEnabled() ?? false;
+      return (await _ios?.checkPermissions())?.isEnabled ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Permission, asking for it if it has never been asked for.
+  ///
+  /// Returns whether a reminder can actually be delivered afterwards. False
+  /// with no dialog shown is the permanent case: both platforms ask once, and
+  /// after a refusal only the system settings can undo it.
+  static Future<bool> ensureAllowed() async {
+    if (await isAllowed()) return true;
+    return requestPermission();
+  }
+
   static Future<bool> requestPermission() async {
     try {
-      final android = _plugin
-          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+      final android = _android;
       if (android != null) {
         return await android.requestNotificationsPermission() ?? false;
       }
-      final ios = _plugin
-          .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
+      final ios = _ios;
       if (ios != null) {
         return await ios.requestPermissions(alert: true, badge: true, sound: true) ?? false;
       }

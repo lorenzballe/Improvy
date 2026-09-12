@@ -1568,4 +1568,17 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get promoError => 'Qualcosa è andato storto. Riprova.';
+
+  @override
+  String get settingsRemindersBlocked => 'Il telefono non le sta consentendo';
+
+  @override
+  String get settingsRemindersBlockedBody =>
+      'Qui sono attive, ma finché il telefono non le consente non ne arriva nessuna.';
+
+  @override
+  String get settingsRemindersOpen => 'APRI IMPOSTAZIONI';
+
+  @override
+  String get settingsRemindersAllow => 'CONSENTI';
 }

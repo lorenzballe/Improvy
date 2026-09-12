@@ -1566,4 +1566,17 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get promoError => 'Etwas ist schiefgelaufen. Versuch es noch einmal.';
+
+  @override
+  String get settingsRemindersBlocked => 'Dein Handy lässt sie nicht zu';
+
+  @override
+  String get settingsRemindersBlockedBody =>
+      'Hier sind sie an, aber solange dein Handy sie nicht zulässt, kommt keine an.';
+
+  @override
+  String get settingsRemindersOpen => 'EINSTELLUNGEN ÖFFNEN';
+
+  @override
+  String get settingsRemindersAllow => 'ZULASSEN';
 }

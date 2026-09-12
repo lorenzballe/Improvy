@@ -85,6 +85,16 @@ const List<Release> kReleases = [
             'like a purchase.',
       ),
       ReleaseLine(
+        icon: Icons.notifications_active_rounded,
+        color: Color(0xFFF59E0B),
+        title: 'Reminders that actually arrive',
+        detail:
+            'The switch was on out of the box but your phone had never been '
+            'asked, so nothing was ever delivered and nothing said why. It '
+            'asks now, and if your phone is blocking them the card says so '
+            'and takes you straight to the setting.',
+      ),
+      ReleaseLine(
         icon: Icons.timer_rounded,
         color: Color(0xFFFB7185),
         title: 'Every tier bites again',

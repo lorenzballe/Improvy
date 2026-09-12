@@ -2877,6 +2877,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Something went wrong. Try again.'**
   String get promoError;
+
+  /// No description provided for @settingsRemindersBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Your phone isn\'t allowing them'**
+  String get settingsRemindersBlocked;
+
+  /// No description provided for @settingsRemindersBlockedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'They\'re on here, but until your phone allows them not one will arrive.'**
+  String get settingsRemindersBlockedBody;
+
+  /// No description provided for @settingsRemindersOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'OPEN SETTINGS'**
+  String get settingsRemindersOpen;
+
+  /// No description provided for @settingsRemindersAllow.
+  ///
+  /// In en, this message translates to:
+  /// **'ALLOW'**
+  String get settingsRemindersAllow;
 }
 
 class _AppLocalizationsDelegate

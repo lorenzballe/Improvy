@@ -1,3 +1,4 @@
+import 'dart:async' show unawaited;
 import 'dart:math' show max;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -75,6 +76,9 @@ void main() async {
   // Home-screen widgets: pick up the tap that launched us (if any), then push
   // the current state out. Both are best-effort — a widget must never be able
   // to hold up the app starting.
+  // What the OS allows may have changed since the app was last open.
+  unawaited(provider.refreshNotifPermission());
+
   await attempt('widgets', WidgetService.instance.listenForTaps);
   WidgetService.instance.sync(provider);
 
