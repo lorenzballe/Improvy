@@ -138,6 +138,9 @@ class WidgetService {
             ? 'extension ${raw['extensionVersion'] ?? '?'}'
             : 'extension MISSING${extensions.isEmpty ? '' : ' (found ${extensions.join(', ')})'}',
         'app group ${raw['appGroup'] == true ? 'ok' : 'UNREACHABLE'}',
+        // The extension is a second binary with a second profile; the app's
+        // own entitlement says nothing about it.
+        if (raw['extensionProfile'] is String) 'appex ${raw['extensionProfile']}',
       ].join(' · ');
     } catch (e) {
       return 'probe failed: $e';

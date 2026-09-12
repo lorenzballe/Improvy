@@ -124,7 +124,13 @@ void main() {
     expect(appDelegate, contains('builtInPlugInsURL'),
         reason: 'looking inside Runner.app/PlugIns is the only way to know');
     expect(appDelegate, contains('containerURL(\n        forSecurityApplicationGroupIdentifier:'));
+    // The extension is a second binary with a second profile. The app proving
+    // it can open the App Group says nothing about whether the extension can,
+    // and an extension refused at launch looks exactly like one that was
+    // never built.
+    expect(appDelegate, contains('embedded.mobileprovision'));
     expect(dart, contains("MethodChannel('improvy/widget_probe')"));
+    expect(dart, contains("raw['extensionProfile']"));
   });
 
   test('the App Group is the same string everywhere', () {

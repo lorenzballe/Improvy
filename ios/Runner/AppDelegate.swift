@@ -69,11 +69,44 @@ import UIKit
         "extensions": extensions,
         "extensionVersion": version,
         "appGroup": container != nil,
+        "extensionProfile": AppDelegate.extensionProfile(),
         "appVersion":
           "\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") ?? "?") "
           + "(\(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") ?? "?"))",
       ])
     }
+  }
+
+  /// What the widget extension is actually signed for.
+  ///
+  /// The app proving it can open the App Group says nothing about the
+  /// extension: they are two binaries with two profiles. An extension signed
+  /// against a profile that does not grant the group — or does not match its
+  /// App ID — is installed and then refused at launch, which from the outside
+  /// is indistinguishable from an extension that was never there: Improvy
+  /// simply is not in the widget gallery.
+  ///
+  /// The profile is a CMS envelope with a plain XML plist inside it, so the
+  /// plist can be lifted out by looking for its own delimiters rather than
+  /// decoding the signature.
+  private static func extensionProfile() -> String {
+    guard let plugins = Bundle.main.builtInPlugInsURL,
+      let items = try? FileManager.default.contentsOfDirectory(atPath: plugins.path),
+      let appex = items.first(where: { $0.hasSuffix(".appex") })
+    else { return "no appex" }
+
+    let url = plugins.appendingPathComponent(appex)
+      .appendingPathComponent("embedded.mobileprovision")
+    guard let data = try? Data(contentsOf: url) else { return "no profile" }
+    guard let text = String(data: data, encoding: .isoLatin1),
+      let start = text.range(of: "<?xml"),
+      let end = text.range(of: "</plist>")
+    else { return "unreadable profile" }
+
+    let xml = String(text[start.lowerBound..<end.upperBound])
+    let group = xml.contains("group.com.improvy.app.widget")
+    let appId = xml.contains("com.improvy.app.ImprovyWidget")
+    return "group \(group ? "yes" : "NO") · id \(appId ? "yes" : "NO")"
   }
 
   /// Owns the audio session and the keep-alive tone for Pocket Mode.
