@@ -6,6 +6,7 @@ import '../l10n/l10n.dart';
 import '../providers/app_provider.dart';
 import '../services/account_service.dart';
 import 'account_sheet.dart';
+import 'brand_marks.dart';
 
 /// The Account card in Settings. Signed out it is one line and a button;
 /// signed in it names the account and offers the two things Apple and
@@ -56,11 +57,17 @@ class AccountCard extends StatelessWidget {
 
   Widget _signedIn(BuildContext context, AccountUser user) {
     final l = context.l10n;
-    final icon = user.isApple
-        ? Icons.apple_rounded
-        : user.isGoogle
-            ? Icons.g_mobiledata_rounded
-            : Icons.mail_rounded;
+    // The same marks as the buttons that made the account, on the same white
+    // they were pressed on: Google's is their artwork, and it is only ever
+    // shown on white. The letter G from the icon font was neither.
+    final brand = user.isApple || user.isGoogle;
+    final Widget mark = user.isGoogle
+        ? const GoogleMark(size: 20)
+        : Icon(
+            user.isApple ? Icons.apple : Icons.mail_rounded,
+            color: user.isApple ? Colors.black : Colors.white,
+            size: user.isApple ? 21 : 20,
+          );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -68,8 +75,12 @@ class AccountCard extends StatelessWidget {
           children: [
             Container(
               width: 38, height: 38,
-              decoration: BoxDecoration(color: Colors.white.withAlpha(15), borderRadius: BorderRadius.circular(12)),
-              child: Icon(icon, color: Colors.white, size: 22),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: brand ? Colors.white : Colors.white.withAlpha(15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: mark,
             ),
             const SizedBox(width: 12),
             Expanded(
