@@ -85,6 +85,14 @@ const List<Release> kReleases = [
             'like a purchase.',
       ),
       ReleaseLine(
+        icon: Icons.badge_rounded,
+        color: Color(0xFF22D3EE),
+        title: 'One account, one person',
+        detail:
+            'Signing in now ties this phone to your account, so your history '
+            'is one history instead of one per device.',
+      ),
+      ReleaseLine(
         icon: Icons.notifications_active_rounded,
         color: Color(0xFFF59E0B),
         title: 'Reminders that actually arrive',

@@ -70,6 +70,11 @@ class AccountService {
   /// true after a redemption is found (or made), false on sign-out.
   void Function(bool byCode, String? code)? onCodeProChanged;
 
+  /// Fired once the account has been handed to analytics, so the profile can
+  /// be pushed again under the real identity rather than waiting for whatever
+  /// happens to change next.
+  void Function()? onIdentified;
+
   bool _ready = false;
   bool get isReady => _ready;
 
@@ -231,12 +236,22 @@ class AccountService {
       user.value = null;
       onCodeProChanged?.call(false, null);
       await PurchaseService.instance.reset();
-      AnalyticsService.instance.setPerson({'account': null, 'auth_provider': null});
+      // Anonymous again, and deliberately a NEW anonymous: the next person to
+      // pick this phone up must not inherit the last one's identity.
+      await AnalyticsService.instance.resetIdentity();
       return;
     }
     final provider = u.providerData.isNotEmpty ? u.providerData.first.providerId : 'password';
     user.value = AccountUser(uid: u.uid, email: u.email, provider: provider);
-    AnalyticsService.instance.setPerson({'account': true, 'auth_provider': provider});
+    // The account id, not the address: it never changes, so a person stays one
+    // person across both phones and across an email change. Everything this
+    // device did while anonymous is merged in by this call.
+    await AnalyticsService.instance.identify(u.uid, properties: {
+      'account': true,
+      'auth_provider': provider,
+      'email': u.email,
+    });
+    onIdentified?.call();
     // The purchase side: the store receipt now belongs to this person.
     await PurchaseService.instance.identify(u.uid);
     // The code side: has this person already spent one?

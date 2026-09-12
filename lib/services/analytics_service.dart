@@ -201,6 +201,48 @@ class AnalyticsService {
     } catch (_) {}
   }
 
+  /// Ties everything this device has done to the person who just signed in.
+  ///
+  /// Until this is called PostHog knows the device by a random anonymous id,
+  /// which is what "Persons" shows: a string of letters and digits, one per
+  /// device, with the same human appearing as two strangers on two phones.
+  /// After it, the anonymous history is merged into the account and every
+  /// later event carries it.
+  ///
+  /// [id] is the account's own id — stable, and never the email: an address
+  /// can be changed, and every event ever recorded under the old one would
+  /// then belong to nobody. The email travels as a property instead, which is
+  /// what makes the person findable by it.
+  Future<void> identify(String id, {Map<String, Object?>? properties}) async {
+    if (!_enabled) return;
+    try {
+      await Posthog().identify(
+        userId: id,
+        userProperties: _clean(properties),
+      );
+    } catch (_) {}
+  }
+
+  /// Back to an anonymous device on sign-out.
+  ///
+  /// Without it the next person to use this phone inherits the last one's
+  /// identity, and their events are filed under a stranger's account.
+  Future<void> resetIdentity() async {
+    if (!_enabled) return;
+    try {
+      await Posthog().reset();
+    } catch (_) {}
+  }
+
+  static Map<String, Object>? _clean(Map<String, Object?>? m) {
+    if (m == null) return null;
+    final out = <String, Object>{};
+    m.forEach((k, v) {
+      if (v != null) out[k] = v;
+    });
+    return out.isEmpty ? null : out;
+  }
+
   /// Who this person is now, and who they were the first time. `setOnce`
   /// values are never overwritten, which is what makes "first seen" usable as
   /// a cohort boundary.
@@ -210,18 +252,9 @@ class AnalyticsService {
   }) async {
     if (!_enabled) return;
     try {
-      Map<String, Object>? clean(Map<String, Object?>? m) {
-        if (m == null) return null;
-        final out = <String, Object>{};
-        m.forEach((k, v) {
-          if (v != null) out[k] = v;
-        });
-        return out.isEmpty ? null : out;
-      }
-
       await Posthog().setPersonProperties(
-        userPropertiesToSet: clean(properties),
-        userPropertiesToSetOnce: clean(once),
+        userPropertiesToSet: _clean(properties),
+        userPropertiesToSetOnce: _clean(once),
       );
     } catch (_) {}
   }

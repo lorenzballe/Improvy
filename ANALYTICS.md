@@ -15,6 +15,17 @@ profile. No retention curve, no cohorts, and any person property set would have
 gone straight in the bin. Now `always`: an anonymous device is still a person
 worth counting.
 
+**Nobody had a name.** Until the app had accounts there was nothing to identify
+with, so every row in Persons was the random anonymous id PostHog hands a fresh
+install — one per device, the same human counted twice across two phones, and
+nothing before a sign-in belonging to anybody. `AccountService` now calls
+`AnalyticsService.identify` with the **account id**, never the email: an address
+can be changed, and every event recorded under the old one would then belong to
+nobody. The address rides along as a person property, which is what makes
+someone findable by it. Signing out calls `resetIdentity`, so the next person to
+pick the phone up does not inherit the last one's identity.
+`test/analytics_identity_test.dart` holds both ends.
+
 **Lifecycle events were off.** `Application Installed`, `Updated`, `Opened` and
 `Backgrounded` now arrive for free, and they are both more than the single
 manual `app_open` said and more reliable about when it happened. That manual
