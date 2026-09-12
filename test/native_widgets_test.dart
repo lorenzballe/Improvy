@@ -62,6 +62,22 @@ void main() {
       for (final kind in kinds) {
         expect(bundle, contains('$kind()'), reason: kind);
       }
+      // And no group inside it may hold more than ten. @WidgetBundleBuilder
+      // has buildBlock overloads up to ten and nothing beyond but
+      // buildPartialBlock, which is iOS 16.1 — newer than this extension is
+      // built for. A bundle resting on that installs perfectly and then
+      // offers nothing at all, which looks exactly like a widget extension
+      // that was never written.
+      final groups = RegExp(r'@WidgetBundleBuilder\s+var \w+: some Widget \{(.*?)\n    \}',
+              dotAll: true)
+          .allMatches(bundle)
+          .map((m) => RegExp(r'\w+\(\)').allMatches(m.group(1)!).length)
+          .toList();
+      expect(groups, isNotEmpty, reason: 'the twelve are split into groups');
+      for (final size in groups) {
+        expect(size, lessThanOrEqualTo(10), reason: 'one builder block, ten widgets');
+      }
+      expect(groups.reduce((a, b) => a + b), 12);
     });
   });
 

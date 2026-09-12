@@ -141,6 +141,7 @@ class WidgetService {
         // The extension is a second binary with a second profile; the app's
         // own entitlement says nothing about it.
         if (raw['extensionProfile'] is String) 'appex ${raw['extensionProfile']}',
+        if (raw['extensionBinary'] is String) 'binary ${raw['extensionBinary']}',
       ].join(' · ');
     } catch (e) {
       return 'probe failed: $e';

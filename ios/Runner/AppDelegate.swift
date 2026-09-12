@@ -42,13 +42,14 @@ import UIKit
       // looks like from the outside.
       var extensions: [String] = []
       var version = ""
+      var binary = "none"
       if let plugins = Bundle.main.builtInPlugInsURL,
         let items = try? FileManager.default.contentsOfDirectory(atPath: plugins.path)
       {
         for item in items where item.hasSuffix(".appex") {
           extensions.append(item)
-          let plist = plugins.appendingPathComponent(item)
-            .appendingPathComponent("Info.plist")
+          let bundle = plugins.appendingPathComponent(item)
+          let plist = bundle.appendingPathComponent("Info.plist")
           if let d = NSDictionary(contentsOf: plist) {
             let short = d["CFBundleShortVersionString"] as? String ?? ""
             let build = d["CFBundleVersion"] as? String ?? ""
@@ -56,6 +57,14 @@ import UIKit
             // extension whose version is missing, and Apple answers the
             // upload with "Invalid Binary" for the same reason.
             version = "\(short.isEmpty ? "—" : short) (\(build.isEmpty ? "—" : build))"
+
+            // And the code itself. A folder that was copied while its link
+            // step produced nothing looks complete from every angle above,
+            // and has no widgets in it to offer.
+            let name = d["CFBundleExecutable"] as? String ?? ""
+            let exec = bundle.appendingPathComponent(name)
+            let size = (try? FileManager.default.attributesOfItem(atPath: exec.path)[.size])
+            binary = size == nil ? "MISSING" : "\((size as? Int ?? 0) / 1024)KB"
           }
         }
       }
@@ -70,6 +79,7 @@ import UIKit
         "extensionVersion": version,
         "appGroup": container != nil,
         "extensionProfile": AppDelegate.extensionProfile(),
+        "extensionBinary": binary,
         "appVersion":
           "\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") ?? "?") "
           + "(\(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") ?? "?"))",

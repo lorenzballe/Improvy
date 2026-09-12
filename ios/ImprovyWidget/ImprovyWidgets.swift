@@ -715,13 +715,34 @@ struct FamilyReader<Content: View>: View {
 
 @main
 struct ImprovyWidgetBundle: WidgetBundle {
+    /// Twelve widgets, in two groups of six.
+    ///
+    /// `@WidgetBundleBuilder` only has `buildBlock` overloads up to TEN. Past
+    /// that it falls to `buildPartialBlock`, which is marked iOS 16.1 while
+    /// this extension is built for 16.0 — a bundle resting on an API newer
+    /// than the thing it is compiled for, which is the one way a widget
+    /// extension installs perfectly and then offers nothing at all.
+    ///
+    /// Nesting builders is the documented way past the limit and needs
+    /// nothing newer than iOS 14. Adding a thirteenth means a third group,
+    /// not a longer list.
     var body: some Widget {
+        core
+        more
+    }
+
+    @WidgetBundleBuilder
+    var core: some Widget {
         ImprovyQuizWidget()
         ImprovyQuizWideWidget()
         ImprovyDailyWidget()
         ImprovyLevelWidget()
         ImprovyMapWidget()
         ImprovyMapTallWidget()
+    }
+
+    @WidgetBundleBuilder
+    var more: some Widget {
         ImprovyStreakWidget()
         ImprovyStreakTallWidget()
         ImprovyWeakestWidget()
