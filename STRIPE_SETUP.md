@@ -14,7 +14,7 @@ si fa una volta sola. Tempo stimato: un'ora, quasi tutto dal browser.
 - [ ] **Firebase sul piano Blaze** (punto 2)
 - [ ] **Chiave del service account** per il deploy (punto 3)
 - [ ] **Quattro segreti su GitHub** (punto 4)
-- [ ] **Dominio del sito autorizzato** in Firebase Auth (punto 5)
+- [ ] **App Web registrata** e **dominio autorizzato** in Firebase (punto 5 — questo è quello che fa funzionare l'accesso sul sito, e si può fare subito, senza Stripe)
 - [ ] Lanciare il workflow, incollare l'indirizzo del webhook in Stripe (punto 6)
 - [ ] *(facoltativo)* Stripe Tax per l'IVA, Apple Pay sul sito (punto 7)
 
@@ -92,16 +92,46 @@ Il workflow li copia dentro Secret Manager a ogni esecuzione: per ruotare una
 chiave cambi il segreto su GitHub e rilanci il workflow. Non passano mai dal
 codice.
 
-## 5. Il sito può fare accedere
+## 5. Gli account sul sito
+
+Due cose, cinque minuti, e sono indipendenti da Stripe: fatte queste, la
+pagina `#pro` smette di dire "buying here opens shortly" e l'accesso
+funziona.
+
+### a) Registrare l'app Web
+
+Un browser non può usare le chiavi di Android o di iOS: sono legate a quelle
+piattaforme e Google le rifiuta se arrivano da una pagina. Il progetto ha
+bisogno della sua registrazione **Web**.
+
+Firebase → ⚙️ **Impostazioni progetto** → **Le tue app** → **Aggiungi app** →
+icona **`</>`** (Web). Nome: `Improvy Site`. **Non** spuntare Hosting, il
+sito sta su GitHub Pages. Registra.
+
+Ti mostra un blocco `firebaseConfig`. Servono due valori:
+
+| Dal blocco | Dove va |
+|---|---|
+| `apiKey` | `src/lib/firebase-config.ts` → `apiKey` |
+| `appId` | `src/lib/firebase-config.ts` → `appId` |
+
+Nel repo **Improvyapp**, apri `src/lib/firebase-config.ts`, sostituisci i due
+`REPLACE_ME_…` e committa. Il sito si ripubblica da solo. Gli altri campi
+sono già giusti. Nessuno di questi valori è segreto.
+
+### b) Autorizzare il dominio
 
 Firebase → **Authentication** → **Impostazioni** → **Domini autorizzati** →
-**Aggiungi dominio**: `lorenzballe.github.io`. Senza, Google e Apple sul sito
-rispondono "dominio non autorizzato".
+**Aggiungi dominio**: `lorenzballe.github.io`. Senza, ogni accesso dal sito
+risponde "dominio non autorizzato".
 
-Google sul sito funziona con quello che hai già attivato per l'app. Apple sul
-sito richiede lo stesso Services ID che serve ad Apple su Android (vedi
-`FIREBASE_SETUP.md`, punto 2): finché non c'è, il pulsante Apple sul sito
-risponde con un errore chiaro e restano Google ed email, che bastano.
+### Cosa funziona subito
+
+**Email e password**: sì, appena fatti (a) e (b). **Google**: sì, usa quello
+che hai già attivato per l'app. **Apple**: richiede lo stesso Services ID che
+serve ad Apple su Android (`FIREBASE_SETUP.md`, punto 2). Finché non c'è, il
+pulsante Apple risponde con un messaggio chiaro e restano Google ed email,
+che bastano per comprare.
 
 ## 6. Il primo deploy
 
