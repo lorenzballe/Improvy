@@ -736,13 +736,18 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(height: 16),
 
               // PROMOTIONAL CODES — spent on the account, see PromoCodeCard.
-              _sectionLabel(context.l10n.settingsPromo),
-              const SizedBox(height: 12),
-              _card(
-                shadow: const [BoxShadow(color: Color(0x4D000000), blurRadius: 32, offset: Offset(0, 8))],
-                child: const PromoCodeCard(),
-              ),
-              const SizedBox(height: 16),
+              // Shown to someone who is not Pro yet, and to someone whose Pro
+              // IS a code (so they can see which). A Pro from any other door
+              // has nothing to do here.
+              if (!provider.isPro || provider.promoCode != null) ...[
+                _sectionLabel(context.l10n.settingsPromo),
+                const SizedBox(height: 12),
+                _card(
+                  shadow: const [BoxShadow(color: Color(0x4D000000), blurRadius: 32, offset: Offset(0, 8))],
+                  child: const PromoCodeCard(),
+                ),
+                const SizedBox(height: 16),
+              ],
 
               // HOME SCREEN — widgets can only be placed from the launcher, so
               // this row explains rather than acts.

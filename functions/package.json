@@ -1,0 +1,17 @@
+{
+  "name": "improvy-functions",
+  "private": true,
+  "description": "Improvy's server side: the Stripe checkout for Pro on the website, and the webhook that turns a payment into an entitlement the app honours.",
+  "type": "module",
+  "engines": { "node": "20" },
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test \"test/**/*.test.mjs\"",
+    "check": "node --check index.js && node --check lib/entitlements.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^14.4.0",
+    "firebase-functions": "^7.3.2",
+    "stripe": "^22.6.2"
+  }
+}

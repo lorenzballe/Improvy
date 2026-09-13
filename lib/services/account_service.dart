@@ -12,6 +12,7 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../config/firebase_config.dart';
 import '../firebase_options.dart';
 import 'analytics_service.dart';
+import 'entitlement_service.dart';
 import 'promo_code_service.dart';
 import 'purchase_service.dart';
 
@@ -69,6 +70,10 @@ class AccountService {
   /// Fired with the account's "Pro by code" standing whenever it is learned:
   /// true after a redemption is found (or made), false on sign-out.
   void Function(bool byCode, String? code)? onCodeProChanged;
+
+  /// Fired with whether this account holds a Pro licence granted outside the
+  /// app (see EntitlementService): true when one is found, false on sign-out.
+  void Function(bool granted)? onWebProChanged;
 
   /// Fired once the account has been handed to analytics, so the profile can
   /// be pushed again under the real identity rather than waiting for whatever
@@ -235,6 +240,7 @@ class AccountService {
     if (u == null) {
       user.value = null;
       onCodeProChanged?.call(false, null);
+      onWebProChanged?.call(false);
       await PurchaseService.instance.reset();
       // Anonymous again, and deliberately a NEW anonymous: the next person to
       // pick this phone up must not inherit the last one's identity.
@@ -257,6 +263,13 @@ class AccountService {
     // The code side: has this person already spent one?
     final code = await PromoCodeService.instance.redeemedCode(u.uid);
     if (code != null) onCodeProChanged?.call(true, code);
+    // And a licence granted outside the app, on this account.
+    final web = await EntitlementService.instance.lookup(
+      uid: u.uid,
+      email: u.email,
+      emailVerified: u.emailVerified,
+    );
+    onWebProChanged?.call(web != null);
   }
 
   AccountOutcome _ok(String provider, {bool created = false}) {

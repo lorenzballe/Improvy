@@ -1,0 +1,92 @@
+name: Firebase
+
+# Deploys the server side of the website purchase — the Cloud Functions in
+# functions/ and the Firestore rules — whenever either changes on main.
+#
+# Everything the deploy needs is a repository secret, so nothing here is ever
+# run by hand and no machine has to have the Firebase CLI on it:
+#
+#   FIREBASE_SERVICE_ACCOUNT  the JSON key of a service account that may deploy
+#                             (Firebase console → Project settings → Service
+#                             accounts → Generate new private key)
+#   STRIPE_SECRET_KEY         sk_live_… (or sk_test_… while trying it out)
+#   STRIPE_WEBHOOK_SECRET     whsec_… from the webhook endpoint in Stripe
+#   STRIPE_PRICE_ID           price_… of "Improvy Pro" in Stripe
+#
+# The three Stripe values are copied into Secret Manager on every run, so
+# rotating one is: change the repository secret, re-run this workflow.
+# STRIPE_SETUP.md walks through where each comes from.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "functions/**"
+      - "firestore.rules"
+      - "firebase.json"
+      - ".firebaserc"
+      - ".github/workflows/firebase.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: firebase-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install the functions
+        run: npm ci --no-audit --no-fund
+        working-directory: functions
+
+      - name: Test the functions
+        run: npm test
+        working-directory: functions
+
+      - name: Sign in to Firebase
+        # The CLI picks the key up from GOOGLE_APPLICATION_CREDENTIALS.
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > "$RUNNER_TEMP/firebase-sa.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/firebase-sa.json" >> "$GITHUB_ENV"
+
+      - name: Put the Stripe secrets where the functions read them
+        # Written from stdin, never from the command line, so they do not
+        # appear in the process list or the log.
+        run: |
+          set -e
+          for name in STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET STRIPE_PRICE_ID; do
+            value="${!name}"
+            if [ -z "$value" ]; then
+              echo "::error::repository secret $name is not set — see STRIPE_SETUP.md"
+              exit 1
+            fi
+            printf '%s' "$value" | npx --yes firebase-tools@14 functions:secrets:set "$name" \
+              --project improvy-f470f --data-file - --force
+          done
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+          STRIPE_PRICE_ID: ${{ secrets.STRIPE_PRICE_ID }}
+
+      - name: Deploy functions and rules
+        run: |
+          npx --yes firebase-tools@14 deploy \
+            --only functions,firestore:rules \
+            --project improvy-f470f \
+            --non-interactive --force
+
+      - name: Where the webhook lives
+        # Stripe needs this URL once. It is printed here so nobody has to go
+        # and find it.
+        run: |
+          echo "Stripe webhook endpoint:"
+          echo "  https://europe-west1-improvy-f470f.cloudfunctions.net/stripeWebhook"

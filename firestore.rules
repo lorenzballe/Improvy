@@ -23,6 +23,10 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function lower(s) {
+      return s.lower();
+    }
+
     function codeDoc(id) {
       return get(/databases/$(db)/documents/codes/$(id));
     }
@@ -80,6 +84,26 @@ service cloud.firestore {
       // Deleting your own redemption gives up Pro-by-code (account deletion
       // does this). The code's use stays spent.
       allow delete: if signedIn() && request.auth.uid == uid;
+    }
+
+    // A Pro licence bought on the website. Written only by the Stripe
+    // webhook (Admin SDK, which these rules do not govern); the app and the
+    // site only ever read it.
+    //
+    // By account id, or — for a VERIFIED address only — by email, so the same
+    // human can sign in with Google on the site and Apple in the app. An
+    // unverified address is anyone's to claim, so it is not consulted.
+    match /entitlements/{uid} {
+      allow get: if signedIn() && request.auth.uid == uid;
+      allow list: if signedIn()
+        && request.auth.token.email_verified == true
+        && resource.data.email == lower(request.auth.token.email);
+      allow write: if false;
+    }
+
+    // Stripe's events, kept so a retry is applied once. Nobody's business.
+    match /stripe_events/{eventId} {
+      allow read, write: if false;
     }
 
     match /{document=**} {

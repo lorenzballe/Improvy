@@ -10,6 +10,8 @@ dentro `lib/firebase_options.dart` e `lib/config/firebase_config.dart`, e
 
 ## Cosa resta da fare
 
+Per vendere Pro anche sul sito c'è una lista a parte: `STRIPE_SETUP.md`.
+
 - [ ] **SHA-1 di Play in Firebase** — senza, l'accesso con Google non parte
       su Android (punto 2).
 - [ ] **Regole Firestore pubblicate** — senza, i codici non funzionano e i

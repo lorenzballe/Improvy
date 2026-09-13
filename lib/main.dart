@@ -67,6 +67,7 @@ void main() async {
   // RevenueCat the moment Firebase reports them. Inert until
   // firebase_options.dart carries a real project.
   AccountService.instance.onCodeProChanged = provider.setCodePro;
+  AccountService.instance.onWebProChanged = provider.setWebPro;
   AccountService.instance.onIdentified = provider.syncAnalyticsProfile;
   await attempt('account', AccountService.instance.init);
   // No manual app_open: captureApplicationLifecycleEvents gives

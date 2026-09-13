@@ -59,6 +59,33 @@ void main() {
       expect(p.isPro, isTrue, reason: 'the code was spent on the account');
     });
 
+    test('a licence on the account is a third door, with the same rules', () async {
+      final p = await fresh();
+      p.setWebPro(true);
+      expect(p.isPro, isTrue);
+      // Signing out takes it with it — it is the account's — and touches
+      // neither of the other two.
+      p.setIsPro(true);
+      p.setWebPro(false);
+      expect(p.isPro, isTrue, reason: 'the purchase is still theirs');
+      p.setIsPro(false);
+      p.setCodePro(true, 'X-1');
+      p.setWebPro(false);
+      expect(p.isPro, isTrue, reason: 'the code is still theirs');
+    });
+
+    test('the licence survives a restart, like the code', () async {
+      SharedPreferences.setMockInitialValues({});
+      final storage = StorageService();
+      await storage.init();
+      final a = AppProvider(storage);
+      await a.init();
+      a.setWebPro(true);
+      final b = AppProvider(storage);
+      await b.init();
+      expect(b.isPro, isTrue);
+    });
+
     test('the code survives a restart', () async {
       // Firestore answers after launch; the app must not open locked for the
       // seconds until it does.
@@ -247,6 +274,16 @@ void main() {
       expect(find.text('lorenzo@example.com'), findsOneWidget);
       expect(find.byKey(const Key('account-sign-out')), findsOneWidget);
       expect(find.byKey(const Key('account-delete')), findsOneWidget);
+    });
+
+    testWidgets('a Pro from another door sees no code card at all', (t) async {
+      // Nothing to unlock, nothing to show which code did it.
+      final p = await pumpSettings(t);
+      expect(find.byKey(const Key('promo-field')), findsOneWidget);
+      p.setWebPro(true);
+      await t.pump();
+      expect(find.byKey(const Key('promo-field')), findsNothing);
+      expect(find.byKey(const Key('promo-redeemed')), findsNothing);
     });
 
     testWidgets('a redeemed code is shown, and the field is gone', (t) async {

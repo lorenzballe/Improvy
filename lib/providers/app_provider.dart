@@ -23,13 +23,15 @@ class AppProvider extends ChangeNotifier {
   // State
   List<KeyProgress> progressData = [];
   AppStats stats = AppStats();
-  /// Pro, from either door. The store says so through [setIsPro]; a promo
-  /// code spent on the signed-in account says so through [setCodePro]. Each
-  /// remembers its own answer so that a refund cannot cancel a code and a
+  /// Pro, from any of three doors. The store says so through [setIsPro]; a
+  /// promo code spent on the signed-in account through [setCodePro]; a
+  /// licence granted to the account outside the app through [setWebPro].
+  /// Each remembers its own answer, so a refund cannot cancel a code and a
   /// sign-out cannot cancel a purchase.
-  bool get isPro => _storePro || _codePro;
+  bool get isPro => _storePro || _codePro || _webPro;
   bool _storePro = false;
   bool _codePro = false;
+  bool _webPro = false;
 
   /// The code this account redeemed, for the Settings card. Null if none.
   String? promoCode;
@@ -115,6 +117,7 @@ class AppProvider extends ChangeNotifier {
     _storePro = _storage.loadIsPro();
     promoCode = _storage.loadPromoCode();
     _codePro = promoCode != null;
+    _webPro = _storage.loadWebPro();
     adaptiveDifficulty = _storage.loadAdaptiveDifficulty();
     tutorialCompleted = _storage.loadTutorialCompleted();
     // First run picks the notation by language — Do Re Mi for the languages
@@ -1420,6 +1423,22 @@ class AppProvider extends ChangeNotifier {
     _storage.saveIsPro(value);
     // Push the profile immediately: every event after this must be able to
     // say it came from a paying user.
+    if (was != isPro) Future.microtask(syncAnalyticsProfile);
+    if (!isPro) {
+      adaptiveDifficulty = false;
+      _storage.saveAdaptiveDifficulty(false);
+    }
+    notifyListeners();
+  }
+
+  /// Pro by a licence on the signed-in account that was granted outside the
+  /// app. Cached, so the app opens unlocked before Firestore answers; cleared
+  /// on sign-out, because it is the account's, not the phone's.
+  void setWebPro(bool granted) {
+    if (granted == _webPro) return;
+    final was = isPro;
+    _webPro = granted;
+    _storage.saveWebPro(granted);
     if (was != isPro) Future.microtask(syncAnalyticsProfile);
     if (!isPro) {
       adaptiveDifficulty = false;

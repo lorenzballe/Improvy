@@ -43,6 +43,9 @@ beforeEach(() => seed({ LIVE: live }));
 const alice = () => env.authenticatedContext('alice').firestore();
 const bob = () => env.authenticatedContext('bob').firestore();
 const nobody = () => env.unauthenticatedContext().firestore();
+// The same human on another phone: a different uid, the same address.
+const aliceElsewhere = (verified) =>
+  env.authenticatedContext('alice2', { email: 'alice@example.com', email_verified: verified }).firestore();
 
 /** What the app does: +1 and a redemption, in one batch. */
 function redeem(db, uid, code) {
@@ -130,4 +133,47 @@ test('a person can read and give up their own redemption, nobody else\'s', async
   await assertFails(deleteDoc(doc(bob(), 'redemptions', 'alice')));
   await assertFails(getDocs(collection(alice(), 'redemptions')));
   await assertSucceeds(deleteDoc(doc(alice(), 'redemptions', 'alice')));
+});
+
+// ── entitlements: written by the webhook, read by the app ───────────────────
+
+const seedEntitlement = async () => {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await setDoc(doc(ctx.firestore(), 'entitlements', 'alice'), {
+      pro: true, source: 'stripe', email: 'alice@example.com', paymentIntent: 'pi_1',
+    });
+  });
+};
+
+test('a person can read their own licence and nobody else\'s', async () => {
+  await seedEntitlement();
+  await assertSucceeds(getDoc(doc(alice(), 'entitlements', 'alice')));
+  await assertFails(getDoc(doc(bob(), 'entitlements', 'alice')));
+  await assertFails(getDoc(doc(nobody(), 'entitlements', 'alice')));
+});
+
+test('a licence can be found by a VERIFIED email, never by an unverified one', async () => {
+  await seedEntitlement();
+  const { query, where } = await import('firebase/firestore');
+  const byEmail = (db) => getDocs(query(collection(db, 'entitlements'), where('email', '==', 'alice@example.com')));
+  await assertSucceeds(byEmail(aliceElsewhere(true)));
+  // Anyone can make a password account with someone else's address; that
+  // must not become someone else's Pro.
+  await assertFails(byEmail(aliceElsewhere(false)));
+  // And a verified address only finds ITS OWN licences.
+  const bobDb = env.authenticatedContext('bob', { email: 'bob@example.com', email_verified: true }).firestore();
+  await assertFails(byEmail(bobDb));
+  await assertFails(getDocs(collection(alice(), 'entitlements')));
+});
+
+test('nobody can write a licence from the app', async () => {
+  await assertFails(setDoc(doc(alice(), 'entitlements', 'alice'), { pro: true, source: 'stripe' }));
+  await seedEntitlement();
+  await assertFails(updateDoc(doc(alice(), 'entitlements', 'alice'), { pro: true }));
+  await assertFails(deleteDoc(doc(alice(), 'entitlements', 'alice')));
+});
+
+test('the Stripe ledger is nobody\'s business', async () => {
+  await assertFails(getDoc(doc(alice(), 'stripe_events', 'evt_1')));
+  await assertFails(setDoc(doc(alice(), 'stripe_events', 'evt_1'), { type: 'x' }));
 });

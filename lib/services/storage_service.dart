@@ -16,6 +16,9 @@ class StorageService {
   // Pro granted by a promo code — the account's, cached here so the app
   // opens unlocked before Firestore answers. See AppProvider.setCodePro.
   static const _promoCodeKey = 'pro_promo_code';
+  // A Pro licence on the account that was granted outside the app. Cached
+  // for the same reason as the code. See AppProvider.setWebPro.
+  static const _webProKey = 'pro_web';
   static const _notationKey = 'musical_journey_notation';
   static const _simpleNotesKey = 'musical_journey_simple_notes';
   static const _keyboardFromTonicKey = 'musical_journey_keyboard_from_tonic';
@@ -150,6 +153,8 @@ class StorageService {
   bool loadIsPro() => _prefs.getBool(_isProKey) ?? false;
   Future<void> saveIsPro(bool v) => _prefs.setBool(_isProKey, v);
   String? loadPromoCode() => _prefs.getString(_promoCodeKey);
+  bool loadWebPro() => _prefs.getBool(_webProKey) ?? false;
+  Future<void> saveWebPro(bool v) => _prefs.setBool(_webProKey, v);
   Future<void> savePromoCode(String? code) =>
       code == null ? _prefs.remove(_promoCodeKey) : _prefs.setString(_promoCodeKey, code);
 
