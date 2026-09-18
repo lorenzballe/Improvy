@@ -99,8 +99,8 @@ Required:
   [ ] Keywords (100 chars max)
       "ear training, music theory, intervals, relative pitch, perfect pitch"
   
-  [ ] Support URL: https://lorenzballe.github.io/Improvyapp/
-  [ ] Privacy URL: https://lorenzballe.github.io/Improvyapp/#privacy
+  [ ] Support URL: https://improvy.app/
+  [ ] Privacy URL: https://improvy.app/#privacy
   [ ] Category: Music (MusicalApps)
 ```
 

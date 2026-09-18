@@ -104,8 +104,8 @@ IMPROVY — Every key. Every degree. Instant.
 ---
 
 Support: thebalecompany@gmail.com
-Privacy: lorenzballe.github.io/Improvyapp/#privacy
-Terms: lorenzballe.github.io/Improvyapp/#terms
+Privacy: improvy.app/#privacy
+Terms: improvy.app/#terms
 ```
 
 **Character Count**: ~2,400 / 4,000 (both stores)  
@@ -141,9 +141,9 @@ key signatures, music student, guitar theory, piano theory
 | Link | Value | Status |
 |------|-------|--------|
 | Support Email | thebalecompany@gmail.com | ✓ Live |
-| Website | https://lorenzballe.github.io/Improvyapp/ | ✓ Live |
-| Privacy Policy | https://lorenzballe.github.io/Improvyapp/#privacy | ✓ Live |
-| Terms of Service | https://lorenzballe.github.io/Improvyapp/#terms | ✓ Live |
+| Website | https://improvy.app/ | ✓ Live |
+| Privacy Policy | https://improvy.app/#privacy | ✓ Live |
+| Terms of Service | https://improvy.app/#terms | ✓ Live |
 
 > These are the URLs to paste into App Store Connect and Play Console. They are
 > served by the marketing site and show the same text the app ships in Settings.

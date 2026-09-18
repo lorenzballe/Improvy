@@ -35,7 +35,7 @@ initializeApp();
 // the repository's secrets. Params come from functions/.env, committed.
 const STRIPE_SECRET_KEY = defineSecret("STRIPE_SECRET_KEY");
 const STRIPE_WEBHOOK_SECRET = defineSecret("STRIPE_WEBHOOK_SECRET");
-const SITE_URL = defineString("SITE_URL", { default: "https://lorenzballe.github.io/Improvyapp/" });
+const SITE_URL = defineString("SITE_URL", { default: "https://improvy.app/" });
 const STRIPE_AUTOMATIC_TAX = defineString("STRIPE_AUTOMATIC_TAX", { default: "false" });
 // Optional. Empty means the checkout describes the product itself — name,
 // line, price and the app's icon — which is one less thing to create in a

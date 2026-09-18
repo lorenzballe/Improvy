@@ -9,7 +9,7 @@ const String kSupportMailto =
     'mailto:$kSupportEmail?subject=Improvy%20%E2%80%94%20support';
 
 /// The live marketing site.
-const String kWebsiteUrl = 'https://lorenzballe.github.io/Improvyapp/';
+const String kWebsiteUrl = 'https://improvy.app/';
 
 /// Public copies of the two legal texts. The store listings need addresses a
 /// reviewer can open, and these must keep saying the same thing as the bodies

@@ -113,8 +113,8 @@ Next Step: Archive in Xcode → Upload to TestFlight
 - [x] Keywords: Music training, intervals, etc
 - [x] Category: Music
 - [x] Rating: 4+ (PEGI)
-- [x] Privacy Policy URL: https://lorenzballe.github.io/Improvyapp/#privacy
-- [x] Terms URL: https://lorenzballe.github.io/Improvyapp/#terms
+- [x] Privacy Policy URL: https://improvy.app/#privacy
+- [x] Terms URL: https://improvy.app/#terms
 - [x] Support Email: thebalecompany@gmail.com
 
 #### Screenshots Ready
@@ -151,8 +151,8 @@ Next Step: Archive in Xcode → Upload to TestFlight
 - [x] Keywords: Music training, intervals, etc
 - [x] Category: Music & Audio
 - [x] Content Rating: Everyone (PEGI 3)
-- [x] Privacy Policy URL: https://lorenzballe.github.io/Improvyapp/#privacy
-- [x] Terms URL: https://lorenzballe.github.io/Improvyapp/#terms
+- [x] Privacy Policy URL: https://improvy.app/#privacy
+- [x] Terms URL: https://improvy.app/#terms
 - [x] Support Email: thebalecompany@gmail.com
 
 #### Screenshots Ready

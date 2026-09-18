@@ -117,8 +117,8 @@ nella pagina comunque.
 ### b) Autorizzare il dominio
 
 Firebase → **Authentication** → **Impostazioni** → **Domini autorizzati** →
-**Aggiungi dominio**: `lorenzballe.github.io`. Senza, ogni accesso dal sito
-risponde "dominio non autorizzato".
+**Aggiungi dominio**: `improvy.app`. Senza, ogni accesso dal sito risponde
+"dominio non autorizzato".
 
 ### Cosa funziona subito
 

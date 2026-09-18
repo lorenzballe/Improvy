@@ -80,10 +80,10 @@ chiede solo nome ed email (ambiti non sensibili).
      dell'organizzazione — cioè a nessuno.
    - **Nome dell'app**: `Improvy`
    - **Email di assistenza utenti**: la tua
-   - **Domini autorizzati**: `improvy-f470f.firebaseapp.com` e
-     `lorenzballe.github.io`
-   - **Link all'informativa sulla privacy** e **ai termini**: le pagine del
-     sito
+   - **Dominio della home page**: `https://improvy.app`
+   - **Domini autorizzati**: `improvy.app` e `improvy-f470f.firebaseapp.com`
+   - **Link all'informativa sulla privacy**: `https://improvy.app/#privacy`
+     — **ai termini**: `https://improvy.app/#terms`
    - Salva, poi **Pubblica app** → stato **In produzione**.
 
 **Non è la pagina "Credenziali → ID client OAuth".** Quella serve a creare
@@ -101,10 +101,12 @@ Lasciare l'app in **Test** invece è un problema vero e silenzioso: possono
 accedere solo gli indirizzi nella lista degli utenti di prova, e le sessioni
 scadono dopo sette giorni.
 
-**Il logo, dopo.** Caricare un logo su un'app esterna fa scattare la verifica
-del brand da parte di Google, che chiede di dimostrare la proprietà del
-dominio della home page. Il nome basta per avere "Continua su Improvy"; il
-logo si aggiunge quando c'è un dominio nostro, senza fretta.
+**Il logo.** Caricarlo fa scattare la verifica del brand, che chiede di
+dimostrare la proprietà del dominio della home page. Ora che `improvy.app` è
+nostro si fa: [Search Console](https://search.google.com/search-console) →
+aggiungi proprietà di tipo **Dominio** → `improvy.app` → ti dà un record TXT
+da mettere nel DNS → verifica. **Con lo stesso account Google del progetto**,
+altrimenti Google Cloud non la vede.
 
 Resta `improvy-f470f.firebaseapp.com` nella barra degli indirizzi per la
 frazione di secondo del reindirizzamento. Togliere anche quello vuol dire
