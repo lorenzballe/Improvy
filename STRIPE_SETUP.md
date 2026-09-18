@@ -17,7 +17,8 @@ si fa una volta sola. Tempo stimato: un'ora, quasi tutto dal browser.
 - [x] ~~App Web registrata~~ — fatta, le chiavi sono nel sito
 - [ ] **Dominio autorizzato** in Firebase (punto 5b — è l'ultima cosa che separa il sito da un accesso funzionante, e non dipende da Stripe)
 - [ ] Lanciare il workflow, incollare l'indirizzo del webhook in Stripe (punto 6)
-- [ ] *(facoltativo)* Stripe Tax per l'IVA, Apple Pay sul sito (punto 7)
+- [ ] *(consigliato)* Webhook RevenueCat, per avere un registro solo (punto 8)
+- [ ] *(facoltativo)* Stripe Tax per l'IVA, Adaptive Pricing (punto 9)
 
 ## Come funziona, in due righe
 
@@ -133,6 +134,7 @@ GitHub → repo **Improvy** → **Settings** → **Secrets and variables** →
 | `FIREBASE_SERVICE_ACCOUNT` | tutto il contenuto del `.json` del punto 3 |
 | `STRIPE_SECRET_KEY` | `sk_live_…` (o `sk_test_…`) |
 | `STRIPE_WEBHOOK_SECRET` | `whsec_…` |
+| `REVENUECAT_WEBHOOK_AUTH` | *(facoltativo, punto 8)* una parola lunga a caso |
 
 Il workflow li copia dentro Secret Manager a ogni esecuzione: per ruotare una
 chiave cambi il segreto su GitHub e rilanci il workflow. Non passano mai dal
@@ -180,7 +182,39 @@ accedi con lo stesso account: Pro. Su Stripe, **Sviluppatori → Webhook →
 l'endpoint** mostra ogni evento e la risposta della funzione, che è dove
 guardare se qualcosa non torna.
 
-## 7. Facoltativi
+## 8. Un registro solo: gli acquisti dell'app su Firestore
+
+Senza questo il sistema funziona, ma la verità su chi è Pro sta in due posti.
+Un acquisto fatto **nell'app** vive solo dentro RevenueCat; Firestore non ne
+sa niente. Conseguenza pratica: il sito, che legge Firestore, offrirebbe Pro
+a chi l'ha già comprato dall'app. E chi entra con un secondo metodo (stessa
+email, ma Apple invece di Google) non se lo ritrova, perché la ricerca per
+email funziona solo su quello che sta scritto in Firestore.
+
+Con il webhook di RevenueCat le due porte scrivono la stessa pagina.
+
+1. Inventa una **parola lunga a caso** — trenta caratteri fra lettere e
+   numeri, quello che genera un gestore di password va benissimo. Non deve
+   significare niente e non la devi ricordare: serve solo a provare che una
+   chiamata arriva davvero da RevenueCat.
+2. Mettila su GitHub come segreto **`REVENUECAT_WEBHOOK_AUTH`** (punto 4).
+3. RevenueCat → **Integrations** → **Webhooks** → **Add webhook**:
+   - URL: `https://europe-west1-improvy-f470f.cloudfunctions.net/revenueCatWebhook`
+   - **Authorization header**: la stessa parola, identica
+   - Environment: **both** (produzione e sandbox), così le tue prove da
+     TestFlight si vedono anche loro
+4. Rilancia il workflow.
+
+Finché il segreto non c'è, quell'indirizzo **rifiuta tutto**: il workflow gli
+scrive un valore casuale che nessuno conosce, così la porta resta chiusa
+invece che aperta.
+
+**Un limite che resta.** Chi compra nell'app e non fa **mai** login non ha un
+account a cui attaccare la licenza: nell'app ce l'ha lo stesso (gliela dà
+RevenueCat), su Firestore non compare. Appena fa login, RevenueCat manda un
+evento di trasferimento e il server la registra.
+
+## 9. Facoltativi
 
 **IVA.** Quando vendi tramite Apple, l'IVA la gestisce Apple. Con Stripe è
 tua. **Stripe Tax** la calcola, la aggiunge al checkout secondo il paese di

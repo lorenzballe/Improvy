@@ -259,7 +259,7 @@ class AccountService {
     });
     onIdentified?.call();
     // The purchase side: the store receipt now belongs to this person.
-    await PurchaseService.instance.identify(u.uid);
+    await PurchaseService.instance.identify(u.uid, email: u.email);
     // The code side: has this person already spent one?
     final code = await PromoCodeService.instance.redeemedCode(u.uid);
     if (code != null) onCodeProChanged?.call(true, code);

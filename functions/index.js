@@ -1,5 +1,5 @@
 /**
- * Improvy's server side. Four functions, one purpose: a Pro licence bought
+ * Improvy's server side. Five functions, one purpose: a Pro licence bought
  * on the website becomes a document the app honours.
  *
  *   createCheckoutSession  the site calls this, signed in; it answers with a
@@ -9,6 +9,9 @@
  *   confirmCheckout        the buyer comes back carrying a session id; this
  *                          asks Stripe whether it was paid and writes the
  *                          licence if the webhook has not already
+ *   revenueCatWebhook      RevenueCat calls this when somebody buys in the
+ *                          app; it writes the same document, so a licence is
+ *                          one fact wherever it was bought
  *   proStatus              the site's success page asks this whether the
  *                          licence has landed yet
  *
@@ -30,9 +33,11 @@ import { initializeApp } from "firebase-admin/app";
 // outright so it is no longer npm's decision.
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import Stripe from "stripe";
+import { timingSafeEqual } from "node:crypto";
 
 import { applyStripeEvent, confirmDecision, proFromLookups } from "./lib/entitlements.js";
 import { proLineItem } from "./lib/catalog.js";
+import { decideFromRcEvent } from "./lib/revenuecat.js";
 
 setGlobalOptions({ region: "europe-west1", maxInstances: 10 });
 initializeApp();
@@ -41,6 +46,10 @@ initializeApp();
 // the repository's secrets. Params come from functions/.env, committed.
 const STRIPE_SECRET_KEY = defineSecret("STRIPE_SECRET_KEY");
 const STRIPE_WEBHOOK_SECRET = defineSecret("STRIPE_WEBHOOK_SECRET");
+// The value RevenueCat is told to send in its Authorization header. It has no
+// signature scheme, so this shared word is the whole of the proof that an
+// event came from them.
+const REVENUECAT_WEBHOOK_AUTH = defineSecret("REVENUECAT_WEBHOOK_AUTH");
 const SITE_URL = defineString("SITE_URL", { default: "https://improvy.app/" });
 const STRIPE_AUTOMATIC_TAX = defineString("STRIPE_AUTOMATIC_TAX", { default: "false" });
 // Optional. Empty means the checkout describes the product itself — name,
@@ -216,6 +225,96 @@ export const proStatus = onCall({ cors: true }, async (request) => {
     email: r.doc?.email ?? null,
   };
 });
+
+// ── RevenueCat says somebody bought in the app ──────────────────────────────
+
+/**
+ * The other door into entitlements/{uid}.
+ *
+ * A purchase made in the app used to live in RevenueCat and nowhere else, so
+ * the website — which reads Firestore — could offer Pro to somebody who had
+ * already paid for it. Now both doors write the same page, and "is this
+ * account Pro" has one answer.
+ *
+ * RevenueCat signs nothing. What it does is send back a header you gave it,
+ * so that header is the whole proof, and it is compared in constant time
+ * against the secret: a comparison that returns early leaks the answer one
+ * character at a time to anyone patient enough to measure.
+ */
+export const revenueCatWebhook = onRequest(
+  { secrets: [REVENUECAT_WEBHOOK_AUTH] },
+  async (req, res) => {
+    if (req.method !== "POST") {
+      res.status(405).send("POST only");
+      return;
+    }
+    const want = REVENUECAT_WEBHOOK_AUTH.value();
+    const got = String(req.headers.authorization ?? "");
+    if (!want || !safeEqual(got, want)) {
+      logger.warn("revenuecat webhook rejected");
+      res.status(401).send("no");
+      return;
+    }
+
+    const event = req.body?.event;
+    if (!event?.id) {
+      res.status(400).send("no event");
+      return;
+    }
+
+    const firestore = db();
+    const events = firestore.collection("revenuecat_events");
+    const entitlements = firestore.collection("entitlements");
+
+    try {
+      // RevenueCat retries until it is answered 2xx, and a retried refund
+      // must not revoke twice any more than a retried purchase grants twice.
+      if ((await events.doc(event.id).get()).exists) {
+        res.status(200).json({ received: true, outcome: "duplicate" });
+        return;
+      }
+
+      const d = decideFromRcEvent(event);
+      if (d.outcome === "grant") {
+        await entitlements.doc(d.uid).set(d.doc, { merge: false });
+        for (const old of d.revokeFrom) {
+          await entitlements
+            .doc(old)
+            .set({ pro: false, revokedAt: d.doc.grantedAt, revokedReason: "transferred" }, { merge: true });
+        }
+      } else if (d.outcome === "revoke") {
+        await entitlements
+          .doc(d.uid)
+          .set({ pro: false, revokedAt: d.at, revokedReason: d.reason }, { merge: true });
+      }
+
+      await events.doc(event.id).set({
+        type: event.type ?? null,
+        outcome: d.outcome,
+        uid: d.uid ?? null,
+        receivedAt: FieldValue.serverTimestamp(),
+      });
+      logger.info("revenuecat webhook", { id: event.id, type: event.type, outcome: d.outcome });
+      res.status(200).json({ received: true, outcome: d.outcome });
+    } catch (e) {
+      // 5xx makes RevenueCat retry, which is what a Firestore hiccup wants.
+      logger.error("revenuecat webhook failed", { id: event.id, error: String(e?.stack ?? e) });
+      res.status(500).send("try again");
+    }
+  }
+);
+
+/** Compares without letting the clock say how much of it matched. */
+function safeEqual(a, b) {
+  const x = Buffer.from(String(a));
+  const y = Buffer.from(String(b));
+  if (x.length !== y.length) {
+    // Still compare something, so a wrong length is not the fast case.
+    timingSafeEqual(x, x);
+    return false;
+  }
+  return timingSafeEqual(x, y);
+}
 
 // ── Stripe says the money moved ─────────────────────────────────────────────
 

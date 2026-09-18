@@ -11,6 +11,9 @@ name: Firebase
 #                             accounts → Generate new private key)
 #   STRIPE_SECRET_KEY         sk_live_… (or sk_test_… while trying it out)
 #   STRIPE_WEBHOOK_SECRET     whsec_… from the webhook endpoint in Stripe
+#   REVENUECAT_WEBHOOK_AUTH   optional: any long random word, the same one
+#                             pasted into RevenueCat's webhook Authorization
+#                             header. Unset, that webhook refuses everything.
 #
 # Both are copied into Secret Manager on every run, so rotating one is:
 # change the repository secret, re-run this workflow. STRIPE_SETUP.md walks
@@ -120,9 +123,22 @@ jobs:
             printf '%s' "$value" | npx --yes firebase-tools@14 functions:secrets:set "$name" \
               --project improvy-f470f --data-file - --force
           done
+
+          # RevenueCat's webhook is optional: the app and the site work without
+          # it, they just do not share one record of who is Pro. A deploy must
+          # not fail for want of it — but the secret has to exist, or the
+          # function cannot start. Unset, it gets a fresh random value nobody
+          # holds, which leaves the endpoint closed rather than open.
+          if [ -z "$REVENUECAT_WEBHOOK_AUTH" ]; then
+            echo "::notice::REVENUECAT_WEBHOOK_AUTH is not set — the RevenueCat webhook will refuse every call. See STRIPE_SETUP.md."
+            REVENUECAT_WEBHOOK_AUTH="unset-$(openssl rand -hex 32)"
+          fi
+          printf '%s' "$REVENUECAT_WEBHOOK_AUTH" | npx --yes firebase-tools@14 functions:secrets:set REVENUECAT_WEBHOOK_AUTH \
+            --project improvy-f470f --data-file - --force
         env:
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
           STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+          REVENUECAT_WEBHOOK_AUTH: ${{ secrets.REVENUECAT_WEBHOOK_AUTH }}
 
       - name: Deploy functions and rules
         run: |
@@ -137,3 +153,5 @@ jobs:
         run: |
           echo "Stripe webhook endpoint:"
           echo "  https://europe-west1-improvy-f470f.cloudfunctions.net/stripeWebhook"
+          echo "RevenueCat webhook endpoint:"
+          echo "  https://europe-west1-improvy-f470f.cloudfunctions.net/revenueCatWebhook"

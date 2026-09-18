@@ -213,10 +213,17 @@ class PurchaseService {
   /// Hands the RevenueCat customer to a signed-in account, so a purchase made
   /// on this phone is found again on the next one — and across the platform
   /// border, which a store restore can never cross.
-  Future<void> identify(String uid) async {
+  Future<void> identify(String uid, {String? email}) async {
     if (!_configured) return;
     try {
       await Purchases.logIn(uid);
+      // The address travels with the customer, for two reasons. It is what
+      // makes a person findable in the RevenueCat dashboard when they write
+      // in asking where their purchase went. And it rides along on every
+      // event RevenueCat sends the server, which is what lets a licence
+      // bought in the app be found later by somebody who signed in another
+      // way with the same verified address.
+      if (email != null && email.isNotEmpty) await Purchases.setEmail(email);
     } catch (e) {
       if (kDebugMode) debugPrint('[PurchaseService] logIn failed: $e');
     }
