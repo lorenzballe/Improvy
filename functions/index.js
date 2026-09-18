@@ -22,6 +22,12 @@ import { defineSecret, defineString } from "firebase-functions/params";
 import { setGlobalOptions } from "firebase-functions/v2";
 import { logger } from "firebase-functions";
 import { initializeApp } from "firebase-admin/app";
+// firebase-admin/firestore loads @google-cloud/firestore, which
+// firebase-admin declares as an OPTIONAL dependency — and an optional
+// dependency npm decides to skip is skipped in silence. It installed here
+// and not on the deploy runner, where the analysis then failed with "Cannot
+// find module" while nothing looked wrong locally. package.json names it
+// outright so it is no longer npm's decision.
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import Stripe from "stripe";
 
