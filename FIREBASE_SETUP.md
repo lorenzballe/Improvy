@@ -75,16 +75,29 @@ chiede solo nome ed email (ambiti non sensibili).
 2. **Google Cloud Console** → stesso progetto (`improvy-f470f`) →
    **API e servizi** → **Schermata consenso OAuth** (nelle console nuove:
    **Branding**):
+   - **Tipo di utente**: **Esterno**. "Interno" esiste solo per le
+     organizzazioni Google Workspace e limiterebbe l'accesso ai membri
+     dell'organizzazione — cioè a nessuno.
    - **Nome dell'app**: `Improvy`
-   - **Logo dell'app**: l'icona dell'app (`assets/icon/icon.png`)
    - **Email di assistenza utenti**: la tua
-   - **Dominio della home page**: `https://lorenzballe.github.io/Improvyapp/`
+   - **Domini autorizzati**: `improvy-f470f.firebaseapp.com` e
+     `lorenzballe.github.io`
    - **Link all'informativa sulla privacy** e **ai termini**: le pagine del
      sito
-   - Salva.
+   - Salva, poi **Pubblica app** → stato **In produzione**.
 
-Da lì in poi la schermata legge **"Continua su Improvy"** con l'icona
-dell'app a fianco, su web, iOS e Android.
+Il "potrebbe essere necessario verificarla" che la console mostra vale per
+gli ambiti sensibili (Gmail, Drive, contatti). Improvy chiede solo nome ed
+email, che sensibili non sono: si pubblica e basta, nessuna revisione.
+
+Lasciare l'app in **Test** invece è un problema vero e silenzioso: possono
+accedere solo gli indirizzi nella lista degli utenti di prova, e le sessioni
+scadono dopo sette giorni.
+
+**Il logo, dopo.** Caricare un logo su un'app esterna fa scattare la verifica
+del brand da parte di Google, che chiede di dimostrare la proprietà del
+dominio della home page. Il nome basta per avere "Continua su Improvy"; il
+logo si aggiunge quando c'è un dominio nostro, senza fretta.
 
 Resta `improvy-f470f.firebaseapp.com` nella barra degli indirizzi per la
 frazione di secondo del reindirizzamento. Togliere anche quello vuol dire
