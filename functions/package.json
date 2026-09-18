@@ -4,7 +4,7 @@
   "description": "Improvy's server side: the Stripe checkout for Pro on the website, and the webhook that turns a payment into an entitlement the app honours.",
   "type": "module",
   "engines": {
-    "node": "20"
+    "node": "22"
   },
   "main": "index.js",
   "scripts": {

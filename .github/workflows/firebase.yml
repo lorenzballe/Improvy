@@ -53,7 +53,7 @@ jobs:
         with:
           # The runtime the functions are deployed on, so the tests run on
           # what will actually execute them.
-          node-version: 20
+          node-version: 22
 
       - name: Install the functions
         run: npm ci --no-audit --no-fund
