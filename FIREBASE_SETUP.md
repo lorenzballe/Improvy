@@ -86,6 +86,13 @@ chiede solo nome ed email (ambiti non sensibili).
      sito
    - Salva, poi **Pubblica app** → stato **In produzione**.
 
+**Non è la pagina "Credenziali → ID client OAuth".** Quella serve a creare
+un client nuovo, e il campo "Nome" lì dentro lo dice da solo: *non verrà
+visualizzato dagli utenti finali*. Il client di Improvy esiste già, l'ha
+creato Firebase ("Web client (auto created by Google Service)"), e non va né
+rinominato né sostituito. Il nome che la gente legge sta solo nella
+schermata di consenso.
+
 Il "potrebbe essere necessario verificarla" che la console mostra vale per
 gli ambiti sensibili (Gmail, Drive, contatti). Improvy chiede solo nome ed
 email, che sensibili non sono: si pubblica e basta, nessuna revisione.
