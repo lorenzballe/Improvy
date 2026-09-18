@@ -3,13 +3,17 @@
   "private": true,
   "description": "Improvy's server side: the Stripe checkout for Pro on the website, and the webhook that turns a payment into an entitlement the app honours.",
   "type": "module",
-  "engines": { "node": "20" },
+  "engines": {
+    "node": "20"
+  },
   "main": "index.js",
   "scripts": {
     "test": "node --test test/*.test.mjs",
     "check": "node --check index.js && node --check lib/entitlements.js && node --check lib/catalog.js"
   },
   "dependencies": {
+    "//": "@google-cloud/firestore is what firebase-admin/firestore loads. firebase-admin declares it OPTIONAL, and an optional dependency npm decides to skip is skipped in silence — the deploy then fails analysing the code with Cannot find module, on a machine where nothing is wrong. Named here so it is not optional.",
+    "@google-cloud/firestore": "^9.2.0",
     "firebase-admin": "^14.4.0",
     "firebase-functions": "^7.3.2",
     "stripe": "^22.6.2"
