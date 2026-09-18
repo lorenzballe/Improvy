@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:improvy/l10n/l10n.dart';
+import 'package:improvy/models/stats.dart';
+import 'package:improvy/models/training_mode.dart';
 import 'package:improvy/providers/app_provider.dart';
 import 'package:improvy/screens/settings_screen.dart';
 import 'package:improvy/services/storage_service.dart';
@@ -96,6 +98,97 @@ void main() {
       await p.setNotifDailyOn(false);
       expect(p.notifBlocked, isFalse);
       expect(p.notifCanAsk, isFalse);
+    });
+  });
+
+  group('being asked at all', () {
+    // The gate used to be three days AND five sessions AND ninety per cent
+    // accuracy, together. Almost nobody crossed it, so almost nobody was
+    // asked — and on iOS an app that never requests authorisation does not
+    // appear under Notifications in the system settings at all, which is
+    // exactly how this was found.
+    AnswerRecord answer(bool correct) => AnswerRecord(
+          degree: '3',
+          note: 'E',
+          selectedNote: correct ? 'E' : 'F',
+          tonality: 'C',
+          mode: 'diatonic',
+          isReverse: false,
+          difficulty: 1,
+          responseTime: 900,
+          isCorrect: correct,
+          timestamp: DateTime.now().millisecondsSinceEpoch,
+        );
+
+    Future<AppProvider> played(int sessions, {bool well = true}) async {
+      final p = await fresh();
+      p.selectKey('C');
+      for (var s = 0; s < sessions; s++) {
+        p.startMode(TrainingMode.diatonic, overrideKey: 'C');
+        for (var i = 0; i < 4; i++) {
+          final correct = well || i == 0;
+          p.recordAnswer(isCorrect: correct, responseTime: 900, answerDetails: answer(correct));
+        }
+        p.finishSession();
+        p.exitTrainer();
+      }
+      return p;
+    }
+
+    test('one finished game is enough', () async {
+      final p = await played(1);
+      expect(p.showNotifPrompt, isTrue);
+    });
+
+    test('a bad game is asked too — the reminder is not a reward', () async {
+      final p = await played(1, well: false);
+      expect(p.showNotifPrompt, isTrue);
+    });
+
+    test('nothing is asked before a game has been finished', () async {
+      final p = await fresh();
+      expect(p.showNotifPrompt, isFalse);
+    });
+
+    test('someone who turned reminders off is left alone', () async {
+      final p = await fresh();
+      await p.setNotifDailyOn(false);
+      p.selectKey('C');
+      p.startMode(TrainingMode.diatonic, overrideKey: 'C');
+      p.recordAnswer(isCorrect: true, responseTime: 900, answerDetails: answer(true));
+      p.finishSession();
+      expect(p.showNotifPrompt, isFalse);
+    });
+
+    test('it is asked once in a lifetime, not after every game', () async {
+      final p = await played(1);
+      p.dismissNotifPrompt();
+      expect(p.showNotifPrompt, isFalse);
+      // A second game must not bring it back.
+      p.startMode(TrainingMode.diatonic, overrideKey: 'C');
+      p.recordAnswer(isCorrect: true, responseTime: 900, answerDetails: answer(true));
+      p.finishSession();
+      expect(p.showNotifPrompt, isFalse);
+    });
+
+    test('saying no to the sheet leaves the real dialog available', () async {
+      // The sheet and the system dialog are two different asks. Turning the
+      // sheet down must not spend the one the OS will ever show — otherwise
+      // the Settings card offers "open settings" for an app iOS does not
+      // list, which is a page with nothing on it.
+      final p = await played(1);
+      p.dismissNotifPrompt();
+      await p.refreshNotifPermission();
+      expect(p.notifBlocked, isTrue);
+      expect(p.notifCanAsk, isTrue, reason: 'the OS has still never been asked');
+    });
+
+    test('saying yes asks the OS, and records the answer', () async {
+      final p = await played(1);
+      p.acceptNotifPrompt();
+      await Future<void>.delayed(Duration.zero);
+      expect(p.showNotifPrompt, isFalse);
+      expect(p.notifCanAsk, isFalse, reason: 'the OS has now been asked');
     });
   });
 

@@ -226,9 +226,15 @@ class AppProvider extends ChangeNotifier {
   /// once in a lifetime. Everything in between was scheduled and dropped.
   bool notifBlocked = false;
 
-  /// Whether the OS will still show its dialog. Both platforms ask once: after
-  /// that a request returns false without showing anything, and the system
-  /// settings are the only repair. It decides which button the card offers.
+  /// Whether the OS will still show its dialog.
+  ///
+  /// Both platforms ask once: after that a request returns false without
+  /// showing anything, and the system settings are the only repair. This
+  /// tracks whether the SYSTEM has been asked — not whether our own priming
+  /// sheet has been shown. Turning the sheet down must leave the real dialog
+  /// available, because on iOS an app that has never requested authorisation
+  /// does not appear under Notifications at all, and "open settings" would
+  /// then send someone to a page with nothing on it.
   bool notifCanAsk = false;
 
   Future<void> setNotifDailyOn(bool v) async {
@@ -253,6 +259,7 @@ class AppProvider extends ChangeNotifier {
   /// is already yes — it checks first and shows nothing.
   Future<void> allowNotifications({String from = 'card'}) async {
     _storage.saveNotifPermAsked(true);
+    _storage.saveNotifOsAsked(true);
     showNotifPrompt = false;
     final granted = await NotificationService.ensureAllowed();
     notifBlocked = !granted;
@@ -280,7 +287,7 @@ class AppProvider extends ChangeNotifier {
     }
     final allowed = await NotificationService.isAllowed();
     final blocked = !allowed;
-    final canAsk = blocked && !_storage.loadNotifPermAsked();
+    final canAsk = blocked && !_storage.loadNotifOsAsked();
     if (blocked != notifBlocked || canAsk != notifCanAsk) {
       notifBlocked = blocked;
       notifCanAsk = canAsk;
@@ -396,39 +403,32 @@ class AppProvider extends ChangeNotifier {
     return L10n.current.remConfusion(parts[1], parts[2], parts[0]);
   }
 
-  /// Days on which something was actually played — not days since install.
-  /// Someone who opened the app three times in one evening has one day of
-  /// habit, not three.
-  int get _daysPlayed =>
-      stats.dailyHistory.values.where((d) => d.sessions > 0).length;
-
-  /// Days of use before the app is allowed to ask for notifications.
-  static const _notifMinDaysPlayed = 3;
-
-  /// Sessions before asking, on top of the days. Guards the case of three days
-  /// with a single game each — technically a habit, but not enough of the app
-  /// seen to have an opinion about being reminded of it.
-  static const _notifMinSessions = 5;
-
-  /// What counts as a result worth celebrating. Deliberately high: the ask
-  /// rides on the good feeling of the score behind it, and 70% is a score you
-  /// are annoyed by, not proud of.
-  static const _notifMinAccuracy = 0.9;
+  /// Sessions before asking. One: the app has just shown what it does, and
+  /// the daily reminder is a promise it is already making — the switch ships
+  /// ON, so a phone that was never asked has a switch that says reminders
+  /// are on while the system throws every one of them away.
+  ///
+  /// It used to be three days AND five sessions AND ninety per cent accuracy,
+  /// all at once. Almost nobody crossed that line, so almost nobody was ever
+  /// asked — which on iOS means the app does not even appear in Settings
+  /// under Notifications, because an app that has never requested
+  /// authorisation has nothing to list.
+  static const _notifMinSessions = 1;
 
   /// Decides whether this finished session is the moment to ask.
   ///
   /// Asking is a one-shot: on iOS a "Don't Allow" is permanent, and even the
-  /// in-app priming sheet only gets one honest chance. So it waits for a user
-  /// who has come back across several days AND has just done genuinely well —
-  /// the two conditions together. Primed on day one after a mediocre round,
-  /// the answer is a reflex "no" and the channel is gone for good.
+  /// in-app priming sheet only gets one honest chance. So it waits for the
+  /// end of a game — the app has just been useful, and the sheet can say what
+  /// the reminder is for — rather than firing at a cold start.
   ///
-  /// The OS dialog still only fires if they say yes to the sheet
-  /// ([acceptNotifPrompt]), so a decline here costs nothing at the OS level.
-  void _maybeAskForNotifications(double accuracy) {
+  /// The OS dialog still only appears if they say yes to the sheet
+  /// ([acceptNotifPrompt]), so a decline here costs nothing at the OS level
+  /// and the Settings card can still offer it later.
+  void _maybeAskForNotifications() {
     if (_storage.loadNotifPermAsked()) return;
-    if (accuracy < _notifMinAccuracy) return;
-    if (_daysPlayed < _notifMinDaysPlayed) return;
+    // Nothing to ask for if they have turned reminders off themselves.
+    if (!notifDailyOn) return;
     if (stats.sessionHistory.length < _notifMinSessions) return;
     showNotifPrompt = true;
     AnalyticsService.instance.capture(Ev.notifPermissionAsked);
@@ -1408,8 +1408,7 @@ class AppProvider extends ChangeNotifier {
     // in-progress snapshot is now stale, so drop it.
     _storage.saveStats(stats);
     _storage.removePending();
-    final accuracy = newSession.total > 0 ? newSession.correct / newSession.total : 0.0;
-    _maybeAskForNotifications(accuracy);
+    _maybeAskForNotifications();
     // Feeds the "has seen enough of the app to have an opinion" gate; the
     // rating prompt itself only fires at a peak (see ReviewService).
     ReviewService.instance.recordSession();
