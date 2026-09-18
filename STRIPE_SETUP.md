@@ -94,9 +94,9 @@ codice.
 
 ## 5. Gli account sul sito
 
-Due cose, cinque minuti, e sono indipendenti da Stripe: fatte queste, la
-pagina `#pro` smette di dire "buying here opens shortly" e l'accesso
-funziona.
+Due cose, cinque minuti, e sono indipendenti da Stripe. La pagina `#pro` è
+già tutta viva — account, consenso, pulsante di pagamento — ma finché queste
+due non ci sono, l'accesso risponde "Sign-in is not set up on this site yet".
 
 ### a) Registrare l'app Web
 
@@ -117,7 +117,8 @@ Ti mostra un blocco `firebaseConfig`. Servono due valori:
 
 Nel repo **Improvyapp**, apri `src/lib/firebase-config.ts`, sostituisci i due
 `REPLACE_ME_…` e committa. Il sito si ripubblica da solo. Gli altri campi
-sono già giusti. Nessuno di questi valori è segreto.
+sono già giusti. Nessuno di questi valori è segreto: identificano il progetto
+e non autorizzano niente, e finiscono nella pagina comunque.
 
 ### b) Autorizzare il dominio
 
