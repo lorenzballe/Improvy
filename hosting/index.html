@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Improvy</title>
+    <meta name="robots" content="noindex" />
+    <meta http-equiv="refresh" content="0; url=https://improvy.app/" />
+    <link rel="canonical" href="https://improvy.app/" />
+    <style>
+      html { background: #06030c; color-scheme: dark; }
+      body {
+        margin: 0; min-height: 100vh; display: grid; place-items: center;
+        font: 400 15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+        color: #a1a1aa; text-align: center; padding: 24px;
+      }
+      a { color: #e5a93c; }
+    </style>
+  </head>
+  <body>
+    <!--
+      This host exists to serve one thing: /__/auth/handler, the page that
+      completes a sign-in with Google or Apple. Firebase serves that path
+      itself, on every domain of the project, and nothing here touches it.
+
+      What is here is for the person who types the address by hand and would
+      otherwise meet a 404 on a domain with Improvy's name on it.
+    -->
+    <p>Improvy signs you in here.<br /><a href="https://improvy.app/">Go to improvy.app</a></p>
+  </body>
+</html>

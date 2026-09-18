@@ -108,14 +108,38 @@ aggiungi proprietà di tipo **Dominio** → `improvy.app` → ti dà un record T
 da mettere nel DNS → verifica. **Con lo stesso account Google del progetto**,
 altrimenti Google Cloud non la vede.
 
-Resta `improvy-f470f.firebaseapp.com` nella barra degli indirizzi per la
-frazione di secondo del reindirizzamento. Togliere anche quello vuol dire
-usare un dominio proprio per l'autenticazione (`authDomain`), e per farlo
-serve un dominio nostro — oggi il sito sta su `github.io`, che non possiamo
-usare perché la pagina `/__/auth/handler` deve essere servita da Firebase.
-Il giorno che compri `improvy.app` (o simile) è una riga:
-`authDomain` in `src/lib/firebase-config.ts`, più il dominio aggiunto in
-Firebase Hosting.
+### Togliere `improvy-f470f.firebaseapp.com` dalla barra
+
+Durante il login quel dominio compare nell'indirizzo, perché è lì che sta la
+pagina che completa lo scambio con Google o Apple. Non si cambia con
+un'impostazione: quella pagina, `/__/auth/handler`, la serve Firebase, quindi
+il dominio dev'essere un dominio di Firebase Hosting.
+
+Ora che `improvy.app` è nostro, si sposta su `auth.improvy.app`.
+
+1. Firebase → **Hosting** → **Aggiungi dominio personalizzato** →
+   `auth.improvy.app`. Firebase chiede un record `TXT` per verificare e poi
+   due `A`; si incollano su Cloudflare, **nuvola grigia**.
+2. Aspetta che la console dica "Connesso" e che il certificato sia emesso.
+3. Firebase → Authentication → Impostazioni → Domini autorizzati → aggiungi
+   `auth.improvy.app`.
+4. Google Cloud → Credenziali → il client OAuth "Web client (auto created by
+   Google Service)" → **URI di reindirizzamento autorizzati** → aggiungi
+   `https://auth.improvy.app/__/auth/handler`.
+5. Solo allora si cambia `authDomain` in `src/lib/firebase-config.ts` del
+   repo del sito.
+
+**L'ordine conta.** Cambiare `authDomain` prima che quel dominio risponda
+spegne ogni accesso al sito all'istante.
+
+Il repo contiene già una pagina minima in `hosting/`, pubblicata insieme alle
+funzioni: esiste perché chi digita `auth.improvy.app` a mano trovi un
+reindirizzamento invece di un 404 su un dominio con scritto Improvy. La
+pagina del login non passa di lì — quella la serve Firebase da sola.
+
+Lasciare `improvy-f470f.firebaseapp.com` fra i domini autorizzati ancora per
+qualche giorno è saggio: se il nuovo dominio avesse un intoppo, c'è una
+strada di riserva invece di tutti fuori.
 
 ### Impronta SHA-1 (solo Android, obbligatoria per Google)
 

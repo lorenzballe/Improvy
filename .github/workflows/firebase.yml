@@ -1,7 +1,8 @@
 name: Firebase
 
 # Deploys the server side of the website purchase — the Cloud Functions in
-# functions/ and the Firestore rules — whenever either changes on main.
+# functions/, the Firestore rules, and the small Hosting site that exists so
+# sign-in can live on a domain of ours — whenever any of them changes on main.
 #
 # Everything the deploy needs is a repository secret, so nothing here is ever
 # run by hand and no machine has to have the Firebase CLI on it:
@@ -29,6 +30,7 @@ on:
     paths:
       - "functions/**"
       - "firestore.rules"
+      - "hosting/**"
       - "firebase.json"
       - ".firebaserc"
       - ".github/workflows/firebase.yml"
@@ -143,7 +145,7 @@ jobs:
       - name: Deploy functions and rules
         run: |
           npx --yes firebase-tools@14 deploy \
-            --only functions,firestore:rules \
+            --only functions,firestore:rules,hosting \
             --project improvy-f470f \
             --non-interactive --force
 

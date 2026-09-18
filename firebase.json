@@ -7,11 +7,29 @@
       "source": "functions",
       "codebase": "default",
       "runtime": "nodejs20",
-      "ignore": ["node_modules", ".git", "test", "*.log"]
+      "ignore": [
+        "node_modules",
+        ".git",
+        "test",
+        "*.log"
+      ]
     }
   ],
+  "hosting": {
+    "public": "hosting",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "cleanUrls": true
+  },
   "emulators": {
-    "firestore": { "port": 8080 },
-    "ui": { "enabled": false }
+    "firestore": {
+      "port": 8080
+    },
+    "ui": {
+      "enabled": false
+    }
   }
 }
