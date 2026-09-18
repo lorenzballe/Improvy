@@ -29,6 +29,18 @@ class AppProvider extends ChangeNotifier {
   /// Each remembers its own answer, so a refund cannot cancel a code and a
   /// sign-out cannot cancel a purchase.
   bool get isPro => _storePro || _codePro || _webPro;
+
+  /// Which door granted it: the store, a promo code, or a purchase made on
+  /// the website. Null when they are not Pro. Checked in that order because
+  /// that is the order they cost: a store receipt is the one that pays a
+  /// commission, and it wins when somebody somehow has two.
+  String? get proSource => _storePro
+      ? 'store'
+      : _codePro
+          ? 'code'
+          : _webPro
+              ? 'web'
+              : null;
   bool _storePro = false;
   bool _codePro = false;
   bool _webPro = false;
@@ -644,6 +656,10 @@ class AppProvider extends ChangeNotifier {
     AnalyticsService.instance.setSuperProperties(isPro: isPro, level: level.level);
     AnalyticsService.instance.setPerson({
       'is_pro': isPro,
+      // Which of the three doors let them in. Without it "is_pro" counts
+      // Pro users and says nothing about where they came from — and the
+      // whole point of selling on the site is knowing whether anybody does.
+      'pro_source': proSource,
       'level': level.level,
       'animal': level.name,
       'total_progress': double.parse(totalProgress.toStringAsFixed(1)),
