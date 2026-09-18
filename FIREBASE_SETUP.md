@@ -60,6 +60,41 @@ Per vendere Pro anche sul sito c'è una lista a parte: `STRIPE_SETUP.md`.
   - in Firebase, nella scheda Apple: Services ID, Team ID, Key ID e il
     contenuto del `.p8`.
 
+### Far dire a Google "Improvy" e non `improvy-f470f.firebaseapp.com`
+
+Quando qualcuno tocca "Continua con Google", la schermata di Google dice
+*"Continua su …"* seguito dal nome dell'app che chiede l'accesso. Se non
+gliene dai uno, Google ripiega sul dominio tecnico. Due posti, cinque
+minuti, e non serve nessuna verifica da parte di Google perché Improvy
+chiede solo nome ed email (ambiti non sensibili).
+
+1. **Firebase** → ⚙️ **Impostazioni progetto** → **Generali** → **Nome
+   pubblico del progetto** → scrivi `Improvy` → Salva. Questo nome compare
+   anche nelle email di verifica e di recupero password.
+
+2. **Google Cloud Console** → stesso progetto (`improvy-f470f`) →
+   **API e servizi** → **Schermata consenso OAuth** (nelle console nuove:
+   **Branding**):
+   - **Nome dell'app**: `Improvy`
+   - **Logo dell'app**: l'icona dell'app (`assets/icon/icon.png`)
+   - **Email di assistenza utenti**: la tua
+   - **Dominio della home page**: `https://lorenzballe.github.io/Improvyapp/`
+   - **Link all'informativa sulla privacy** e **ai termini**: le pagine del
+     sito
+   - Salva.
+
+Da lì in poi la schermata legge **"Continua su Improvy"** con l'icona
+dell'app a fianco, su web, iOS e Android.
+
+Resta `improvy-f470f.firebaseapp.com` nella barra degli indirizzi per la
+frazione di secondo del reindirizzamento. Togliere anche quello vuol dire
+usare un dominio proprio per l'autenticazione (`authDomain`), e per farlo
+serve un dominio nostro — oggi il sito sta su `github.io`, che non possiamo
+usare perché la pagina `/__/auth/handler` deve essere servita da Firebase.
+Il giorno che compri `improvy.app` (o simile) è una riga:
+`authDomain` in `src/lib/firebase-config.ts`, più il dominio aggiunto in
+Firebase Hosting.
+
 ### Impronta SHA-1 (solo Android, obbligatoria per Google)
 
 Google su Android accetta solo app firmate con un certificato registrato.
