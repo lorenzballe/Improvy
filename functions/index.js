@@ -1,11 +1,14 @@
 /**
- * Improvy's server side. Three functions, one purpose: a Pro licence bought
+ * Improvy's server side. Four functions, one purpose: a Pro licence bought
  * on the website becomes a document the app honours.
  *
  *   createCheckoutSession  the site calls this, signed in; it answers with a
  *                          Stripe Checkout URL carrying the buyer's account id
  *   stripeWebhook          Stripe calls this after the money moved; it writes
  *                          entitlements/{uid}, or takes it back on a refund
+ *   confirmCheckout        the buyer comes back carrying a session id; this
+ *                          asks Stripe whether it was paid and writes the
+ *                          licence if the webhook has not already
  *   proStatus              the site's success page asks this whether the
  *                          licence has landed yet
  *
@@ -22,7 +25,7 @@ import { initializeApp } from "firebase-admin/app";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import Stripe from "stripe";
 
-import { applyStripeEvent, proFromLookups } from "./lib/entitlements.js";
+import { applyStripeEvent, confirmDecision, proFromLookups } from "./lib/entitlements.js";
 
 setGlobalOptions({ region: "europe-west1", maxInstances: 10 });
 initializeApp();
@@ -104,12 +107,77 @@ export const createCheckoutSession = onCall(
       success_url: `${site}#pro/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${site}#pro/cancel`,
       allow_promotion_codes: true,
-      ...(tax ? { automatic_tax: { enabled: true } } : {}),
+      // "Pay", not "Subscribe" or "Donate": it is one payment, forever.
+      submit_type: "pay",
+      // The last thing read before the money moves, and the same promise the
+      // page made: what is bought, and that it arrives on the account.
+      custom_text: {
+        submit: {
+          message:
+            "Improvy Pro is a one-off payment. The licence lands on the account you signed in with, on any phone.",
+        },
+      },
+      // Stripe Tax collects the address it needs by itself; asking for it
+      // when tax is off would be friction for a record nobody keeps.
+      ...(tax ? { automatic_tax: { enabled: true }, billing_address_collection: "required" } : {}),
       payment_intent_data: { description: "Improvy Pro — lifetime licence" },
     });
 
     logger.info("checkout opened", { uid: auth.uid, session: session.id, livemode: session.livemode });
     return { url: session.url, sessionId: session.id };
+  }
+);
+
+// ── The buyer comes back from Stripe ────────────────────────────────────────
+
+/**
+ * The second path to a licence, and the one that saves the first day.
+ *
+ * Stripe's webhook is the proper way in, but it is also the piece most
+ * likely to be missing or misrouted the first time somebody sets this up —
+ * and the person who finds out is the one who has just paid. So the success
+ * page hands its session id here, and the server asks Stripe directly.
+ *
+ * Nothing about the answer comes from the browser. The session is fetched
+ * with the secret key, it must say `paid`, and it must have been opened for
+ * the account making the call — an id belonging to someone else's checkout
+ * is refused, not honoured.
+ */
+export const confirmCheckout = onCall(
+  { secrets: [STRIPE_SECRET_KEY], cors: true },
+  async (request) => {
+    const auth = request.auth;
+    if (!auth) throw new HttpsError("unauthenticated", "Sign in first.");
+
+    const id = String(request.data?.sessionId ?? "");
+    if (!/^cs_[A-Za-z0-9_]{10,200}$/.test(id)) {
+      throw new HttpsError("invalid-argument", "That is not a checkout session.");
+    }
+
+    let session;
+    try {
+      session = await stripe().checkout.sessions.retrieve(id);
+    } catch (e) {
+      logger.warn("confirm: session not retrievable", { uid: auth.uid, id, error: String(e?.message ?? e) });
+      throw new HttpsError("not-found", "Stripe does not know that checkout.");
+    }
+
+    const existing = await entitlementByUid(auth.uid);
+    const decision = confirmDecision({ session, uid: auth.uid, existing });
+
+    if (decision.outcome === "wrong-account") {
+      logger.warn("confirm: session belongs to another account", { uid: auth.uid, id });
+      throw new HttpsError("permission-denied", "That checkout belongs to another account.");
+    }
+    if (decision.outcome === "granted") {
+      await db().collection("entitlements").doc(auth.uid).set(decision.doc, { merge: false });
+    }
+    logger.info("confirm", { uid: auth.uid, id, outcome: decision.outcome, livemode: session.livemode });
+
+    return {
+      pro: decision.outcome === "granted" || decision.outcome === "already",
+      outcome: decision.outcome,
+    };
   }
 );
 

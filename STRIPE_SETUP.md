@@ -24,10 +24,17 @@ si fa una volta sola. Tempo stimato: un'ora, quasi tutto dal browser.
 sito  ──accedi──▶  Firebase Auth (stesso progetto dell'app)
 sito  ──"apri il checkout"──▶  createCheckoutSession  ──▶  Stripe Checkout
 Stripe  ──"pagato"──▶  stripeWebhook  ──scrive──▶  entitlements/{uid}
+sito (di ritorno) ──confirmCheckout──▶ chiede a Stripe ──scrive──▶ idem
 app   ──accedi──▶  legge entitlements/{uid}  ──▶  Pro
 ```
 
-Le tre funzioni stanno in `functions/`. Le regole in `firestore.rules`
+Le strade per scrivere la licenza sono due apposta. Il webhook è quella
+normale; `confirmCheckout` è la rete di sicurezza per il giorno in cui il
+webhook non è ancora configurato — chi ha appena pagato non deve essere la
+persona che lo scopre. Anche quella strada chiede a Stripe con la chiave
+segreta, non si fida del browser, e rifiuta la sessione di un altro account.
+
+Le funzioni stanno in `functions/`. Le regole in `firestore.rules`
 permettono a chiunque di **leggere** la propria licenza e a **nessuno** di
 scriverla: la scrive solo il webhook, e solo dopo aver verificato la firma di
 Stripe. Il sito non tocca soldi e non concede niente.
@@ -160,10 +167,14 @@ chi compra e ti prepara i report per la dichiarazione OSS. Si attiva in
 transazioni. Finché è spento, il prezzo è 19,99 € tutto compreso e l'IVA la
 dichiari tu.
 
-**Apple Pay sul sito.** Stripe → **Impostazioni → Metodi di pagamento →
-Apple Pay** → aggiungi il dominio `lorenzballe.github.io`. Stripe ti dà un
-file da mettere in `public/.well-known/` del sito. Senza, su iPhone resta la
-carta, che va benissimo.
+**Apple Pay e Google Pay.** Non c'è niente da fare: il checkout è ospitato da
+Stripe, quindi il portafoglio compare da solo su iPhone e su Android. La
+registrazione del dominio serve solo se un giorno incorporiamo il modulo
+dentro la pagina.
+
+**Adaptive Pricing.** Stripe → Impostazioni → Metodi di pagamento → Adaptive
+Pricing: fa vedere il prezzo nella valuta di chi compra. Si accende dalla
+dashboard, non serve toccare il codice.
 
 ## Rimborsi e revoche
 

@@ -1,6 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { applyStripeEvent, entitlementFromSession, proFromLookups } from "../lib/entitlements.js";
+import {
+  applyStripeEvent,
+  confirmDecision,
+  entitlementFromSession,
+  proFromLookups,
+} from "../lib/entitlements.js";
 
 /** A store that is four Maps, so every decision can be read back. */
 function fakeStore() {
@@ -163,4 +168,80 @@ test("who is Pro: by account first, by verified email second, never by an unveri
   assert.equal(proFromLookups({ byUid: dead, byEmail: null, emailVerified: true }).pro, false,
     "a revoked licence is not a licence");
   assert.equal(proFromLookups({ byUid: null, byEmail: null, emailVerified: true }).pro, false);
+});
+
+// ── Coming back from Stripe ────────────────────────────────────────────────
+//
+// The success page's own path to a licence, for the day the webhook is not
+// wired up yet. It must grant exactly what Stripe says was paid, to exactly
+// the account that opened the checkout, and never twice.
+
+test("confirm: grants when Stripe says paid and nothing is written yet", () => {
+  const d = confirmDecision({ session: paidSession(), uid: "uid_alice", existing: null });
+  assert.equal(d.outcome, "granted");
+  assert.equal(d.doc.pro, true);
+  assert.equal(d.doc.email, "alice@example.com");
+  assert.equal(d.doc.sessionId, "cs_1");
+});
+
+test("confirm: does nothing when the webhook already wrote it", () => {
+  const d = confirmDecision({
+    session: paidSession(),
+    uid: "uid_alice",
+    existing: { pro: true, sessionId: "cs_1" },
+  });
+  assert.equal(d.outcome, "already");
+  assert.equal(d.doc, undefined);
+});
+
+test("confirm: refuses somebody else's checkout", () => {
+  const d = confirmDecision({ session: paidSession(), uid: "uid_bob", existing: null });
+  assert.equal(d.outcome, "wrong-account");
+});
+
+test("confirm: waits for a delayed payment instead of granting", () => {
+  const d = confirmDecision({
+    session: paidSession({ payment_status: "unpaid" }),
+    uid: "uid_alice",
+    existing: null,
+  });
+  assert.equal(d.outcome, "not-paid");
+});
+
+test("confirm: will not undo a refund because an old success URL was reloaded", () => {
+  const d = confirmDecision({
+    session: paidSession(),
+    uid: "uid_alice",
+    existing: {
+      pro: false,
+      sessionId: "cs_1",
+      revokedAt: new Date("2026-02-01"),
+      revokedReason: "refunded",
+    },
+  });
+  assert.equal(d.outcome, "revoked");
+});
+
+test("confirm: still grants a second, genuine purchase after an earlier refund", () => {
+  const d = confirmDecision({
+    session: paidSession({ id: "cs_2" }),
+    uid: "uid_alice",
+    existing: {
+      pro: false,
+      sessionId: "cs_1",
+      revokedAt: new Date("2026-02-01"),
+      revokedReason: "refunded",
+    },
+  });
+  assert.equal(d.outcome, "granted");
+  assert.equal(d.doc.sessionId, "cs_2");
+});
+
+test("confirm: refuses a session with no account on it", () => {
+  const d = confirmDecision({
+    session: paidSession({ client_reference_id: null, metadata: {} }),
+    uid: "uid_alice",
+    existing: null,
+  });
+  assert.equal(d.outcome, "no-account");
 });
