@@ -106,10 +106,22 @@ Poi attiva l'API:
 [console.cloud.google.com/apis/library/secretmanager.googleapis.com](https://console.cloud.google.com/apis/library/secretmanager.googleapis.com?project=improvy-f470f)
 → **Attiva**.
 
-Il primo deploy su un progetto che non ha mai pubblicato niente può fermarsi
-una volta in più su un'altra API da accendere — Cloud Functions, Cloud
-Build, Artifact Registry, Eventarc. Il messaggio dice quale; si attiva dalla
-stessa libreria e si rilancia. Dalla seconda volta in poi non succede più.
+Sul primo deploy di un progetto che non ha mai pubblicato niente, Firebase
+accende da sé Cloud Functions, Cloud Build, Artifact Registry ed Eventarc.
+Una però non se la accende, e va attivata a mano:
+
+[**Cloud Billing API**](https://console.cloud.google.com/apis/library/cloudbilling.googleapis.com?project=improvy-f470f)
+→ **Attiva**.
+
+Serve perché prima di pubblicare Firebase controlla che il progetto sia
+davvero su un piano a pagamento — e l'API che *legge* quell'informazione è
+spenta di default. Blaze attivo con Cloud Billing API spenta è un progetto
+che paga ma non sa dirlo. Dopo averla attivata aspetta mezzo minuto: Google
+avverte che ci mette un attimo a propagarsi.
+
+Se un deploy si ferma su un'altra API ancora, il messaggio dice quale: si
+attiva dalla stessa libreria e si rilancia. Dalla seconda volta in poi non
+succede più.
 
 ## 4. I segreti su GitHub
 
