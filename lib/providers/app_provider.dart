@@ -403,33 +403,47 @@ class AppProvider extends ChangeNotifier {
     return L10n.current.remConfusion(parts[1], parts[2], parts[0]);
   }
 
-  /// Sessions before asking. One: the app has just shown what it does, and
-  /// the daily reminder is a promise it is already making — the switch ships
-  /// ON, so a phone that was never asked has a switch that says reminders
-  /// are on while the system throws every one of them away.
+  /// What counts as a result worth celebrating. The ask rides on the good
+  /// feeling of the score behind it, and 70% is a score you are annoyed by,
+  /// not proud of.
+  static const _notifMinAccuracy = 0.9;
+
+  /// And long enough to have meant something: four right answers out of four
+  /// is not the run this is waiting for.
+  static const _notifMinAnswers = 8;
+
+  /// The second one. The first is luck, or an easy key; the second is the
+  /// moment someone can tell they are getting better, which is the only
+  /// moment a daily reminder sounds like help rather than nagging.
   ///
-  /// It used to be three days AND five sessions AND ninety per cent accuracy,
-  /// all at once. Almost nobody crossed that line, so almost nobody was ever
-  /// asked — which on iOS means the app does not even appear in Settings
-  /// under Notifications, because an app that has never requested
-  /// authorisation has nothing to list.
-  static const _notifMinSessions = 1;
+  /// It used to be three separate days AND five sessions AND ninety per cent,
+  /// all at once. Almost nobody crossed that, so almost nobody was ever
+  /// asked — and on iOS an app that has never requested authorisation does
+  /// not appear under Notifications in the system settings at all, which is
+  /// how this was found. Two good rounds is reached in an evening.
+  static const _notifGreatSessionsNeeded = 2;
 
   /// Decides whether this finished session is the moment to ask.
   ///
   /// Asking is a one-shot: on iOS a "Don't Allow" is permanent, and even the
   /// in-app priming sheet only gets one honest chance. So it waits for the
-  /// end of a game — the app has just been useful, and the sheet can say what
-  /// the reminder is for — rather than firing at a cold start.
+  /// end of a good game rather than firing at a cold start.
   ///
   /// The OS dialog still only appears if they say yes to the sheet
   /// ([acceptNotifPrompt]), so a decline here costs nothing at the OS level
   /// and the Settings card can still offer it later.
-  void _maybeAskForNotifications() {
+  void _maybeAskForNotifications(SessionRecord session) {
     if (_storage.loadNotifPermAsked()) return;
     // Nothing to ask for if they have turned reminders off themselves.
     if (!notifDailyOn) return;
-    if (stats.sessionHistory.length < _notifMinSessions) return;
+
+    if (session.total < _notifMinAnswers) return;
+    if (session.correct / session.total < _notifMinAccuracy) return;
+
+    final great = _storage.loadNotifGreatSessions() + 1;
+    _storage.saveNotifGreatSessions(great);
+    if (great < _notifGreatSessionsNeeded) return;
+
     showNotifPrompt = true;
     AnalyticsService.instance.capture(Ev.notifPermissionAsked);
     notifyListeners();
@@ -1408,7 +1422,7 @@ class AppProvider extends ChangeNotifier {
     // in-progress snapshot is now stale, so drop it.
     _storage.saveStats(stats);
     _storage.removePending();
-    _maybeAskForNotifications();
+    _maybeAskForNotifications(newSession);
     // Feeds the "has seen enough of the app to have an opinion" gate; the
     // rating prompt itself only fires at a peak (see ReviewService).
     ReviewService.instance.recordSession();

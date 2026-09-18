@@ -120,13 +120,15 @@ void main() {
           timestamp: DateTime.now().millisecondsSinceEpoch,
         );
 
+    /// [sessions] rounds of twelve answers, each either a great score (11/12)
+    /// or a middling one (7/12).
     Future<AppProvider> played(int sessions, {bool well = true}) async {
       final p = await fresh();
       p.selectKey('C');
       for (var s = 0; s < sessions; s++) {
         p.startMode(TrainingMode.diatonic, overrideKey: 'C');
-        for (var i = 0; i < 4; i++) {
-          final correct = well || i == 0;
+        for (var i = 0; i < 12; i++) {
+          final correct = well ? i != 0 : i % 3 != 0;
           p.recordAnswer(isCorrect: correct, responseTime: 900, answerDetails: answer(correct));
         }
         p.finishSession();
@@ -135,14 +137,32 @@ void main() {
       return p;
     }
 
-    test('one finished game is enough', () async {
-      final p = await played(1);
-      expect(p.showNotifPrompt, isTrue);
+    test('the second good round is the moment', () async {
+      final first = await played(1);
+      expect(first.showNotifPrompt, isFalse, reason: 'one good score is luck, or an easy key');
+      final second = await played(2);
+      expect(second.showNotifPrompt, isTrue);
     });
 
-    test('a bad game is asked too — the reminder is not a reward', () async {
-      final p = await played(1, well: false);
-      expect(p.showNotifPrompt, isTrue);
+    test('middling rounds never get there, however many', () async {
+      // The ask rides on the good feeling of the score behind it.
+      final p = await played(6, well: false);
+      expect(p.showNotifPrompt, isFalse);
+    });
+
+    test('a short perfect round does not count as one of the two', () async {
+      // Four right out of four is not the run this waits for.
+      final p = await fresh();
+      p.selectKey('C');
+      for (var s = 0; s < 4; s++) {
+        p.startMode(TrainingMode.diatonic, overrideKey: 'C');
+        for (var i = 0; i < 4; i++) {
+          p.recordAnswer(isCorrect: true, responseTime: 900, answerDetails: answer(true));
+        }
+        p.finishSession();
+        p.exitTrainer();
+      }
+      expect(p.showNotifPrompt, isFalse);
     });
 
     test('nothing is asked before a game has been finished', () async {
@@ -154,19 +174,25 @@ void main() {
       final p = await fresh();
       await p.setNotifDailyOn(false);
       p.selectKey('C');
-      p.startMode(TrainingMode.diatonic, overrideKey: 'C');
-      p.recordAnswer(isCorrect: true, responseTime: 900, answerDetails: answer(true));
-      p.finishSession();
+      for (var s = 0; s < 3; s++) {
+        p.startMode(TrainingMode.diatonic, overrideKey: 'C');
+        for (var i = 0; i < 12; i++) {
+          p.recordAnswer(isCorrect: i != 0, responseTime: 900, answerDetails: answer(i != 0));
+        }
+        p.finishSession();
+        p.exitTrainer();
+      }
       expect(p.showNotifPrompt, isFalse);
     });
 
-    test('it is asked once in a lifetime, not after every game', () async {
-      final p = await played(1);
+    test('it is asked once in a lifetime, not after every good game', () async {
+      final p = await played(2);
       p.dismissNotifPrompt();
       expect(p.showNotifPrompt, isFalse);
-      // A second game must not bring it back.
       p.startMode(TrainingMode.diatonic, overrideKey: 'C');
-      p.recordAnswer(isCorrect: true, responseTime: 900, answerDetails: answer(true));
+      for (var i = 0; i < 12; i++) {
+        p.recordAnswer(isCorrect: i != 0, responseTime: 900, answerDetails: answer(i != 0));
+      }
       p.finishSession();
       expect(p.showNotifPrompt, isFalse);
     });
@@ -176,7 +202,7 @@ void main() {
       // sheet down must not spend the one the OS will ever show — otherwise
       // the Settings card offers "open settings" for an app iOS does not
       // list, which is a page with nothing on it.
-      final p = await played(1);
+      final p = await played(2);
       p.dismissNotifPrompt();
       await p.refreshNotifPermission();
       expect(p.notifBlocked, isTrue);
@@ -184,7 +210,7 @@ void main() {
     });
 
     test('saying yes asks the OS, and records the answer', () async {
-      final p = await played(1);
+      final p = await played(2);
       p.acceptNotifPrompt();
       await Future<void>.delayed(Duration.zero);
       expect(p.showNotifPrompt, isFalse);

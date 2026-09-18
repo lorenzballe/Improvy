@@ -24,6 +24,9 @@ class StorageService {
   // must leave the real dialog available, since it is the only thing that
   // can ever make the app appear under Notifications in the system settings.
   static const _notifOsAskedKey = 'notif_os_asked';
+  // How many genuinely good sessions have been played. The priming sheet
+  // waits for the second one — see AppProvider._maybeAskForNotifications.
+  static const _notifGreatSessionsKey = 'notif_great_sessions';
   static const _notationKey = 'musical_journey_notation';
   static const _simpleNotesKey = 'musical_journey_simple_notes';
   static const _keyboardFromTonicKey = 'musical_journey_keyboard_from_tonic';
@@ -158,6 +161,8 @@ class StorageService {
   bool loadIsPro() => _prefs.getBool(_isProKey) ?? false;
   Future<void> saveIsPro(bool v) => _prefs.setBool(_isProKey, v);
   String? loadPromoCode() => _prefs.getString(_promoCodeKey);
+  int loadNotifGreatSessions() => _prefs.getInt(_notifGreatSessionsKey) ?? 0;
+  Future<void> saveNotifGreatSessions(int v) => _prefs.setInt(_notifGreatSessionsKey, v);
   bool loadNotifOsAsked() => _prefs.getBool(_notifOsAskedKey) ?? false;
   Future<void> saveNotifOsAsked(bool v) => _prefs.setBool(_notifOsAskedKey, v);
   bool loadWebPro() => _prefs.getBool(_webProKey) ?? false;

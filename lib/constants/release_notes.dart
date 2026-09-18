@@ -100,8 +100,9 @@ const List<Release> kReleases = [
             'The switch was on out of the box but your phone had never been '
             'asked, so nothing was ever delivered — Improvy did not even '
             'appear under Notifications in your phone\u2019s settings. It now '
-            'asks after your first game, and the card in Settings says so and '
-            'offers the fix whenever your phone is blocking them.',
+            'asks after your second really good round, and the card in '
+            'Settings says so and offers the fix whenever your phone is '
+            'blocking them.',
       ),
       ReleaseLine(
         icon: Icons.timer_rounded,
