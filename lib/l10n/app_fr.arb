@@ -390,6 +390,18 @@
   "dailyRule": "{questions} questions · {seconds} secondes",
   "dailySubjectKeyOf": "Tonalité de ",
   "dailySubjectOn": "Sur ",
+  "dailyEasy": "Facile",
+  "dailySteady": "Moyen",
+  "dailyHard": "Costaud",
+  "dailyDifficulty": "DIFFICULTÉ",
+  "dailyNextUp": "Demain · {what}",
+  "@dailyNextUp": {
+    "placeholders": {
+      "what": {
+        "type": "String"
+      }
+    }
+  },
   "wQuestion": "QUESTION",
   "wQuestionLong": "LA QUESTION DU JOUR",
   "wReveal": "Touchez pour voir",

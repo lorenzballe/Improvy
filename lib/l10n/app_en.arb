@@ -729,6 +729,18 @@
   },
   "dailySubjectKeyOf": "Key of ",
   "dailySubjectOn": "On ",
+  "dailyEasy": "Easy",
+  "dailySteady": "Steady",
+  "dailyHard": "Hard",
+  "dailyDifficulty": "DIFFICULTY",
+  "dailyNextUp": "Tomorrow · {what}",
+  "@dailyNextUp": {
+    "placeholders": {
+      "what": {
+        "type": "String"
+      }
+    }
+  },
   "wQuestion": "QUESTION",
   "wQuestionLong": "TODAY'S QUESTION",
   "wReveal": "Tap to reveal",

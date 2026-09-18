@@ -1333,6 +1333,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dailySubjectOn => 'On ';
 
   @override
+  String get dailyEasy => 'Easy';
+
+  @override
+  String get dailySteady => 'Steady';
+
+  @override
+  String get dailyHard => 'Hard';
+
+  @override
+  String get dailyDifficulty => 'DIFFICULTY';
+
+  @override
+  String dailyNextUp(String what) {
+    return 'Tomorrow · $what';
+  }
+
+  @override
   String get wQuestion => 'QUESTION';
 
   @override

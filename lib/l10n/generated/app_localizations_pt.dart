@@ -1333,6 +1333,23 @@ class AppLocalizationsPt extends AppLocalizations {
   String get dailySubjectOn => 'Em ';
 
   @override
+  String get dailyEasy => 'Fácil';
+
+  @override
+  String get dailySteady => 'Média';
+
+  @override
+  String get dailyHard => 'Difícil';
+
+  @override
+  String get dailyDifficulty => 'DIFICULDADE';
+
+  @override
+  String dailyNextUp(String what) {
+    return 'Amanhã · $what';
+  }
+
+  @override
   String get wQuestion => 'PERGUNTA';
 
   @override

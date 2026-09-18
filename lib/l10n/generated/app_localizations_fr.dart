@@ -1343,6 +1343,23 @@ class AppLocalizationsFr extends AppLocalizations {
   String get dailySubjectOn => 'Sur ';
 
   @override
+  String get dailyEasy => 'Facile';
+
+  @override
+  String get dailySteady => 'Moyen';
+
+  @override
+  String get dailyHard => 'Costaud';
+
+  @override
+  String get dailyDifficulty => 'DIFFICULTÉ';
+
+  @override
+  String dailyNextUp(String what) {
+    return 'Demain · $what';
+  }
+
+  @override
   String get wQuestion => 'QUESTION';
 
   @override

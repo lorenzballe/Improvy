@@ -2446,6 +2446,36 @@ abstract class AppLocalizations {
   /// **'On '**
   String get dailySubjectOn;
 
+  /// No description provided for @dailyEasy.
+  ///
+  /// In en, this message translates to:
+  /// **'Easy'**
+  String get dailyEasy;
+
+  /// No description provided for @dailySteady.
+  ///
+  /// In en, this message translates to:
+  /// **'Steady'**
+  String get dailySteady;
+
+  /// No description provided for @dailyHard.
+  ///
+  /// In en, this message translates to:
+  /// **'Hard'**
+  String get dailyHard;
+
+  /// No description provided for @dailyDifficulty.
+  ///
+  /// In en, this message translates to:
+  /// **'DIFFICULTY'**
+  String get dailyDifficulty;
+
+  /// No description provided for @dailyNextUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow · {what}'**
+  String dailyNextUp(String what);
+
   /// No description provided for @wQuestion.
   ///
   /// In en, this message translates to:

@@ -119,6 +119,65 @@ class DailyChallenge {
       ? L10n.current.dailySubjectOn
       : L10n.current.dailySubjectKeyOf;
 
+  /// How many accidentals a key signature carries, 0 (C) to 6 (F♯/G♭).
+  ///
+  /// Covers both spellings of the tritone because …Of What? days are built on
+  /// a note rather than in a key, and that pool spells it G♭.
+  static const Map<String, int> keySignatureSize = {
+    'C': 0, 'G': 1, 'F': 1, 'D': 2, 'B♭': 2, 'A': 3, 'E♭': 3,
+    'E': 4, 'A♭': 4, 'B': 5, 'D♭': 5, 'F♯': 6, 'G♭': 6,
+  };
+
+  /// How hard the day reads before anybody has played it.
+  ///
+  /// Three things make one daily harder than another, and none of them is an
+  /// opinion: which direction is being asked, how far the key sits from C, and
+  /// how much of the run is an altered degree rather than a plain one. The
+  /// score adds them up; [rating] cuts it into three bands.
+  ///
+  /// It is a property of the date, like everything else here, so tomorrow's
+  /// can be shown today — which is the whole point of showing it.
+  int get difficultyScore {
+    final altered =
+        degrees.where((d) => d.contains('♯') || d.contains('♭')).length;
+    // Naming a note for a degree is the direction the app drills most; the
+    // reverse is rarer, and naming the root a note implies is the one that
+    // needs two steps.
+    final direction = switch (mode) {
+      TrainingMode.noteToNumber => 1,
+      TrainingMode.ofWhat => 2,
+      _ => 0,
+    };
+    final signature = switch (keySignatureSize[key] ?? 0) {
+      0 => 0,
+      1 || 2 => 1,
+      3 || 4 => 2,
+      _ => 3,
+    };
+    final colour = altered * 3 >= questionCount * 2
+        ? 2
+        : altered * 3 >= questionCount
+            ? 1
+            : 0;
+    return direction + signature + colour;
+  }
+
+  /// [difficultyScore] in three words. The bands are set so that a year of
+  /// dailies lands in all three often enough for the label to carry
+  /// information — a rating that reads "hard" every day says nothing.
+  DailyDifficulty get rating => switch (difficultyScore) {
+        <= 2 => DailyDifficulty.light,
+        <= 4 => DailyDifficulty.steady,
+        _ => DailyDifficulty.tough,
+      };
+
+  /// Tomorrow's, in full. Deterministic from the date, so it needs no network
+  /// and cannot be wrong: it is the very challenge that will be served.
+  static DailyChallenge tomorrow([DateTime? now]) {
+    final d = now ?? DateTime.now();
+    return DailyChallenge.forDate(DateTime(d.year, d.month, d.day + 1));
+  }
+
   /// Mastery tier the daily's answers are filed under (medium). The daily has
   /// no per-question clock, so this no longer sets a countdown — it only keeps
   /// the recorded difficulty honest, since key mastery is tracked per tier.
@@ -202,6 +261,20 @@ class _Lcg {
     _s = (_s * 48271) % 0x7fffffff;
     return _s % max;
   }
+}
+
+/// How hard a day's challenge reads. Three bands, because two is a coin toss
+/// and five is a number nobody can feel.
+enum DailyDifficulty { light, steady, tough }
+
+extension DailyDifficultyLabel on DailyDifficulty {
+  /// The band in one word. Reads the device language directly, like [rule]:
+  /// the home screen widgets state it too and have no BuildContext.
+  String get label => switch (this) {
+        DailyDifficulty.light => L10n.current.dailyEasy,
+        DailyDifficulty.steady => L10n.current.dailySteady,
+        DailyDifficulty.tough => L10n.current.dailyHard,
+      };
 }
 
 /// The (single) attempt at one day's challenge. [answers] always holds one

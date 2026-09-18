@@ -35,6 +35,9 @@ class _DailyChallengeCardState extends State<DailyChallengeCard> {
   static const _goldSoft = Color(0xFFFCD34D);
   static const _green = Color(0xFF22C55E);
   static const _red = Color(0xFFEF4444);
+  /// The hardest band. Rose rather than the results screen's flat red: this is
+  /// a weather forecast, not a wrong answer.
+  static const _hard = Color(0xFFFB7185);
 
   Timer? _tick;
   bool _pressed = false;
@@ -52,6 +55,34 @@ class _DailyChallengeCardState extends State<DailyChallengeCard> {
   void dispose() {
     _tick?.cancel();
     super.dispose();
+  }
+
+  /// The day's difficulty in one word, in the colour of its band. Same chip on
+  /// both faces of the card: today's above the invitation, tomorrow's under
+  /// the score — which is the one somebody reads while deciding whether to
+  /// come back.
+  Widget _ratingChip(DailyDifficulty rating, {double fontSize = 9.5}) {
+    final c = switch (rating) {
+      DailyDifficulty.light => _green,
+      DailyDifficulty.steady => _goldSoft,
+      DailyDifficulty.tough => _hard,
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(6),
+        color: c.withValues(alpha: 0.14),
+        border: Border.all(color: c.withValues(alpha: 0.42)),
+      ),
+      child: Text(rating.label.toUpperCase(),
+          maxLines: 1,
+          softWrap: false,
+          style: TextStyle(
+              fontSize: fontSize,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.8,
+              color: c)),
+    );
   }
 
   String _untilMidnight() {
@@ -227,6 +258,8 @@ class _DailyChallengeCardState extends State<DailyChallengeCard> {
                       fontWeight: FontWeight.w800,
                       letterSpacing: 1.6,
                       color: _goldSoft)),
+              const SizedBox(width: 8),
+              _ratingChip(challenge.rating),
               if (streak > 0) ...[
                 const SizedBox(width: 8),
                 Text('🔥 $streak',
@@ -283,6 +316,7 @@ class _DailyChallengeCardState extends State<DailyChallengeCard> {
 
   Widget _playedBody(AppProvider provider, DailyResult result) {
     final streak = provider.dailyStreak;
+    final tomorrow = DailyChallenge.tomorrow();
     return Row(children: [
       Container(
         width: 46,
@@ -347,6 +381,26 @@ class _DailyChallengeCardState extends State<DailyChallengeCard> {
                   fontSize: 11.5,
                   fontWeight: FontWeight.w600,
                   color: Colors.white.withValues(alpha: 0.5))),
+          const SizedBox(height: 6),
+          // What tomorrow holds. It is not a guess: the challenge is derived
+          // from the date, so this is the run that will be served — and a
+          // reason to come back, read at the moment somebody has just
+          // finished and has nothing left to do here.
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              Text(context.l10n.dailyNextUp(tomorrow.modeLabel),
+                  maxLines: 1,
+                  softWrap: false,
+                  style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white.withValues(alpha: 0.38))),
+              const SizedBox(width: 6),
+              _ratingChip(tomorrow.rating, fontSize: 8.5),
+            ]),
+          ),
         ]),
       ),
       const SizedBox(width: 8),

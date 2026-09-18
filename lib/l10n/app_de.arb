@@ -390,6 +390,18 @@
   "dailyRule": "{questions} Fragen · {seconds} Sekunden",
   "dailySubjectKeyOf": "Tonart ",
   "dailySubjectOn": "Auf ",
+  "dailyEasy": "Leicht",
+  "dailySteady": "Mittel",
+  "dailyHard": "Hart",
+  "dailyDifficulty": "SCHWIERIGKEIT",
+  "dailyNextUp": "Morgen · {what}",
+  "@dailyNextUp": {
+    "placeholders": {
+      "what": {
+        "type": "String"
+      }
+    }
+  },
   "wQuestion": "FRAGE",
   "wQuestionLong": "DIE FRAGE DES TAGES",
   "wReveal": "Zum Auflösen tippen",
