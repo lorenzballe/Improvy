@@ -26,6 +26,7 @@ import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import Stripe from "stripe";
 
 import { applyStripeEvent, confirmDecision, proFromLookups } from "./lib/entitlements.js";
+import { proLineItem } from "./lib/catalog.js";
 
 setGlobalOptions({ region: "europe-west1", maxInstances: 10 });
 initializeApp();
@@ -34,9 +35,15 @@ initializeApp();
 // the repository's secrets. Params come from functions/.env, committed.
 const STRIPE_SECRET_KEY = defineSecret("STRIPE_SECRET_KEY");
 const STRIPE_WEBHOOK_SECRET = defineSecret("STRIPE_WEBHOOK_SECRET");
-const STRIPE_PRICE_ID = defineSecret("STRIPE_PRICE_ID");
 const SITE_URL = defineString("SITE_URL", { default: "https://lorenzballe.github.io/Improvyapp/" });
 const STRIPE_AUTOMATIC_TAX = defineString("STRIPE_AUTOMATIC_TAX", { default: "false" });
+// Optional. Empty means the checkout describes the product itself — name,
+// line, price and the app's icon — which is one less thing to create in a
+// dashboard. Set it to a price_… to let the Stripe catalogue rule instead.
+const STRIPE_PRICE_ID = defineString("STRIPE_PRICE_ID", { default: "" });
+// Shown on the right of the Stripe page. Stripe fetches it from its own
+// servers, so it has to be public; the site serves it next to the page.
+const PRO_IMAGE_URL = defineString("PRO_IMAGE_URL", { default: "" });
 
 const db = () => getFirestore();
 const stripe = () => new Stripe(STRIPE_SECRET_KEY.value(), { apiVersion: "2025-08-27.basil" });
@@ -71,7 +78,7 @@ async function proFor(auth) {
 // ── The site asks for a place to pay ────────────────────────────────────────
 
 export const createCheckoutSession = onCall(
-  { secrets: [STRIPE_SECRET_KEY, STRIPE_PRICE_ID], cors: true },
+  { secrets: [STRIPE_SECRET_KEY], cors: true },
   async (request) => {
     const auth = request.auth;
     if (!auth) throw new HttpsError("unauthenticated", "Sign in first: the licence is tied to an account.");
@@ -93,7 +100,13 @@ export const createCheckoutSession = onCall(
 
     const session = await stripe().checkout.sessions.create({
       mode: "payment",
-      line_items: [{ price: STRIPE_PRICE_ID.value(), quantity: 1 }],
+      line_items: [
+        proLineItem({
+          priceId: STRIPE_PRICE_ID.value() || null,
+          image: PRO_IMAGE_URL.value() || `${site}improvy-pro.png`,
+          tax,
+        }),
+      ],
       // The account, carried through Stripe and back: this is what the
       // webhook keys the licence on. Never the email alone.
       client_reference_id: auth.uid,

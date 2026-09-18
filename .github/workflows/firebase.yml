@@ -11,11 +11,15 @@ name: Firebase
 #                             accounts → Generate new private key)
 #   STRIPE_SECRET_KEY         sk_live_… (or sk_test_… while trying it out)
 #   STRIPE_WEBHOOK_SECRET     whsec_… from the webhook endpoint in Stripe
-#   STRIPE_PRICE_ID           price_… of "Improvy Pro" in Stripe
 #
-# The three Stripe values are copied into Secret Manager on every run, so
-# rotating one is: change the repository secret, re-run this workflow.
-# STRIPE_SETUP.md walks through where each comes from.
+# Both are copied into Secret Manager on every run, so rotating one is:
+# change the repository secret, re-run this workflow. STRIPE_SETUP.md walks
+# through where each comes from.
+#
+# There is deliberately no price id here: the checkout describes the product
+# itself, price and icon included, so there is nothing to create in a
+# dashboard and nothing to keep in step. functions/.env can point at a Stripe
+# catalogue price instead.
 on:
   push:
     branches: [main]
@@ -63,7 +67,7 @@ jobs:
         # appear in the process list or the log.
         run: |
           set -e
-          for name in STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET STRIPE_PRICE_ID; do
+          for name in STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET; do
             value="${!name}"
             if [ -z "$value" ]; then
               echo "::error::repository secret $name is not set — see STRIPE_SETUP.md"
@@ -75,7 +79,6 @@ jobs:
         env:
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
           STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
-          STRIPE_PRICE_ID: ${{ secrets.STRIPE_PRICE_ID }}
 
       - name: Deploy functions and rules
         run: |

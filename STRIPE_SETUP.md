@@ -10,10 +10,10 @@ si fa una volta sola. Tempo stimato: un'ora, quasi tutto dal browser.
 
 ## Cosa resta da fare
 
-- [ ] **Stripe**: account, prodotto, webhook (punto 1)
+- [ ] **Stripe**: account e webhook (punto 1) — il prodotto NON serve
 - [ ] **Firebase sul piano Blaze** (punto 2)
 - [ ] **Chiave del service account** per il deploy (punto 3)
-- [ ] **Quattro segreti su GitHub** (punto 4)
+- [ ] **Tre segreti su GitHub** (punto 4)
 - [ ] **App Web registrata** e **dominio autorizzato** in Firebase (punto 5 — questo è quello che fa funzionare l'accesso sul sito, e si può fare subito, senza Stripe)
 - [ ] Lanciare il workflow, incollare l'indirizzo del webhook in Stripe (punto 6)
 - [ ] *(facoltativo)* Stripe Tax per l'IVA, Apple Pay sul sito (punto 7)
@@ -43,9 +43,12 @@ Stripe. Il sito non tocca soldi e non concede niente.
 
 1. [dashboard.stripe.com](https://dashboard.stripe.com) → crea l'account
    (come privato o come attività: Stripe chiede i dati per pagarti).
-2. **Catalogo prodotti** → **Aggiungi prodotto**: nome `Improvy Pro`,
-   descrizione "Licenza a vita", prezzo **19,99 €**, **una tantum**. Salva.
-   Apri il prezzo e copia il suo ID, che inizia con `price_`.
+2. **Niente prodotto da creare.** Il checkout si descrive da solo: nome
+   `Improvy Pro`, descrizione, **19,99 € una tantum** e l'icona dell'app,
+   tutto dal codice (`functions/lib/catalog.js`). Il prezzo si cambia lì e
+   basta. Se un giorno preferisci gestirlo dal catalogo Stripe, crea il
+   prodotto e metti il suo `price_…` in `functions/.env` alla voce
+   `STRIPE_PRICE_ID`: da quel momento comanda la dashboard.
 3. **Sviluppatori** → **Chiavi API** → copia la **chiave segreta**, che
    inizia con `sk_live_` (o `sk_test_` finché sei in modalità test — vedi
    sotto).
@@ -86,14 +89,13 @@ editor di testo: il contenuto intero è il valore del segreto
 ## 4. I segreti su GitHub
 
 GitHub → repo **Improvy** → **Settings** → **Secrets and variables** →
-**Actions** → **New repository secret**, quattro volte:
+**Actions** → **New repository secret**, tre volte:
 
 | Nome | Valore |
 |---|---|
 | `FIREBASE_SERVICE_ACCOUNT` | tutto il contenuto del `.json` del punto 3 |
 | `STRIPE_SECRET_KEY` | `sk_live_…` (o `sk_test_…`) |
 | `STRIPE_WEBHOOK_SECRET` | `whsec_…` |
-| `STRIPE_PRICE_ID` | `price_…` |
 
 Il workflow li copia dentro Secret Manager a ogni esecuzione: per ruotare una
 chiave cambi il segreto su GitHub e rilanci il workflow. Non passano mai dal
@@ -171,6 +173,11 @@ dichiari tu.
 Stripe, quindi il portafoglio compare da solo su iPhone e su Android. La
 registrazione del dominio serve solo se un giorno incorporiamo il modulo
 dentro la pagina.
+
+**Branding.** Stripe → **Impostazioni → Branding**: logo, icona e colore
+accento (`#e5a93c`, l'oro del sito). È quello che colora la pagina di
+pagamento. L'immagine del prodotto invece arriva già dal codice: è l'icona
+dell'app, servita dal sito su `/improvy-pro.png`.
 
 **Adaptive Pricing.** Stripe → Impostazioni → Metodi di pagamento → Adaptive
 Pricing: fa vedere il prezzo nella valuta di chi compra. Si accende dalla
