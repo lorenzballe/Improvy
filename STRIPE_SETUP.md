@@ -14,7 +14,8 @@ si fa una volta sola. Tempo stimato: un'ora, quasi tutto dal browser.
 - [ ] **Firebase sul piano Blaze** (punto 2)
 - [ ] **Chiave del service account** per il deploy (punto 3)
 - [ ] **Tre segreti su GitHub** (punto 4)
-- [ ] **App Web registrata** e **dominio autorizzato** in Firebase (punto 5 — questo è quello che fa funzionare l'accesso sul sito, e si può fare subito, senza Stripe)
+- [x] ~~App Web registrata~~ — fatta, le chiavi sono nel sito
+- [ ] **Dominio autorizzato** in Firebase (punto 5b — è l'ultima cosa che separa il sito da un accesso funzionante, e non dipende da Stripe)
 - [ ] Lanciare il workflow, incollare l'indirizzo del webhook in Stripe (punto 6)
 - [ ] *(facoltativo)* Stripe Tax per l'IVA, Apple Pay sul sito (punto 7)
 
@@ -103,31 +104,15 @@ codice.
 
 ## 5. Gli account sul sito
 
-Due cose, cinque minuti, e sono indipendenti da Stripe. La pagina `#pro` è
-già tutta viva — account, consenso, pulsante di pagamento — ma finché queste
-due non ci sono, l'accesso risponde "Sign-in is not set up on this site yet".
+La pagina `#pro` è già tutta viva — account, consenso, pulsante di
+pagamento — e la registrazione Web c'è. Resta il dominio autorizzato.
 
-### a) Registrare l'app Web
+### a) Registrare l'app Web — ✅ fatto
 
-Un browser non può usare le chiavi di Android o di iOS: sono legate a quelle
-piattaforme e Google le rifiuta se arrivano da una pagina. Il progetto ha
-bisogno della sua registrazione **Web**.
-
-Firebase → ⚙️ **Impostazioni progetto** → **Le tue app** → **Aggiungi app** →
-icona **`</>`** (Web). Nome: `Improvy Site`. **Non** spuntare Hosting, il
-sito sta su GitHub Pages. Registra.
-
-Ti mostra un blocco `firebaseConfig`. Servono due valori:
-
-| Dal blocco | Dove va |
-|---|---|
-| `apiKey` | `src/lib/firebase-config.ts` → `apiKey` |
-| `appId` | `src/lib/firebase-config.ts` → `appId` |
-
-Nel repo **Improvyapp**, apri `src/lib/firebase-config.ts`, sostituisci i due
-`REPLACE_ME_…` e committa. Il sito si ripubblica da solo. Gli altri campi
-sono già giusti. Nessuno di questi valori è segreto: identificano il progetto
-e non autorizzano niente, e finiscono nella pagina comunque.
+`apiKey` e `appId` della registrazione Web sono in
+`src/lib/firebase-config.ts` nel repo **Improvyapp**. Nessuno dei due è un
+segreto: identificano il progetto e non autorizzano niente, e finiscono
+nella pagina comunque.
 
 ### b) Autorizzare il dominio
 
