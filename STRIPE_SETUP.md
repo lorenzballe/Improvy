@@ -87,6 +87,30 @@ Firebase → ⚙️ **Impostazioni progetto** → **Account di servizio** →
 editor di testo: il contenuto intero è il valore del segreto
 `FIREBASE_SERVICE_ACCOUNT` al punto 4. Poi cancella il file dal computer.
 
+**E dagli i permessi.** Firebase crea quell'account con il minimo
+indispensabile: legge il database e poco altro. Pubblicare funzioni e
+scrivere segreti sono altre due cose, e senza i ruoli giusti il deploy si
+ferma con `403, Permission denied to get service [secretmanager…]`, che non
+dice niente a nessuno.
+
+[console.cloud.google.com/iam-admin/iam](https://console.cloud.google.com/iam-admin/iam?project=improvy-f470f)
+→ trova la riga `firebase-adminsdk-…@improvy-f470f.iam.gserviceaccount.com`
+→ matita ✏️ → **Aggiungi un altro ruolo**, due volte:
+
+| Ruolo | Perché |
+|---|---|
+| **Editor** | pubblicare le funzioni, e attivare le API che servono |
+| **Amministratore Secret Manager** | scrivere e rileggere le chiavi Stripe — Editor, curiosamente, non lo comprende |
+
+Poi attiva l'API:
+[console.cloud.google.com/apis/library/secretmanager.googleapis.com](https://console.cloud.google.com/apis/library/secretmanager.googleapis.com?project=improvy-f470f)
+→ **Attiva**.
+
+Il primo deploy su un progetto che non ha mai pubblicato niente può fermarsi
+una volta in più su un'altra API da accendere — Cloud Functions, Cloud
+Build, Artifact Registry, Eventarc. Il messaggio dice quale; si attiva dalla
+stessa libreria e si rilancia. Dalla seconda volta in poi non succede più.
+
 ## 4. I segreti su GitHub
 
 GitHub → repo **Improvy** → **Settings** → **Secrets and variables** →
