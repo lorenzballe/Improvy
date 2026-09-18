@@ -6,8 +6,8 @@
   "engines": { "node": "20" },
   "main": "index.js",
   "scripts": {
-    "test": "node --test \"test/**/*.test.mjs\"",
-    "check": "node --check index.js && node --check lib/entitlements.js"
+    "test": "node --test test/*.test.mjs",
+    "check": "node --check index.js && node --check lib/entitlements.js && node --check lib/catalog.js"
   },
   "dependencies": {
     "firebase-admin": "^14.4.0",

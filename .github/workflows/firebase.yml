@@ -46,6 +46,8 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
+          # The runtime the functions are deployed on, so the tests run on
+          # what will actually execute them.
           node-version: 20
 
       - name: Install the functions
