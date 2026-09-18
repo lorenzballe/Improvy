@@ -59,9 +59,51 @@ jobs:
         working-directory: functions
 
       - name: Sign in to Firebase
-        # The CLI picks the key up from GOOGLE_APPLICATION_CREDENTIALS.
+        # The CLI picks the key up from GOOGLE_APPLICATION_CREDENTIALS. It is
+        # read from the environment rather than pasted into the script: a
+        # value interpolated into a shell line has to survive the shell's
+        # quoting, and a key that does not is a key that silently becomes
+        # something else.
+        #
+        # It is also checked here rather than left to the CLI, whose answer to
+        # every bad key is "have you run firebase login?" — a question with no
+        # useful answer when the key came from a repository secret.
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
-          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > "$RUNNER_TEMP/firebase-sa.json"
+          set -e
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "::error::repository secret FIREBASE_SERVICE_ACCOUNT is not set — Firebase console → Project settings → Service accounts → Generate new private key, then paste the whole .json. See STRIPE_SETUP.md."
+            exit 1
+          fi
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/firebase-sa.json"
+          node -e '
+            const fs = require("fs");
+            const path = process.env.RUNNER_TEMP + "/firebase-sa.json";
+            let key;
+            try {
+              key = JSON.parse(fs.readFileSync(path, "utf8"));
+            } catch {
+              console.log("::error::FIREBASE_SERVICE_ACCOUNT is not valid JSON. Paste the whole file, from the first { to the last }, with nothing before or after.");
+              process.exit(1);
+            }
+            for (const field of ["type", "project_id", "private_key", "client_email"]) {
+              if (!key[field]) {
+                console.log(`::error::FIREBASE_SERVICE_ACCOUNT is JSON but has no ${field} — that is not a service account key.`);
+                process.exit(1);
+              }
+            }
+            if (key.type !== "service_account") {
+              console.log(`::error::FIREBASE_SERVICE_ACCOUNT is a ${key.type}, not a service_account key.`);
+              process.exit(1);
+            }
+            if (key.project_id !== "improvy-f470f") {
+              console.log(`::error::FIREBASE_SERVICE_ACCOUNT belongs to project ${key.project_id}, not improvy-f470f.`);
+              process.exit(1);
+            }
+            // Identifies the key without revealing anything that unlocks it.
+            console.log(`Signing in as ${key.client_email}`);
+          '
           echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/firebase-sa.json" >> "$GITHUB_ENV"
 
       - name: Put the Stripe secrets where the functions read them
