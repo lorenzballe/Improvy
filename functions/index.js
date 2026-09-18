@@ -104,7 +104,10 @@ export const createCheckoutSession = onCall(
         consent: "terms+immediate-delivery",
         consentAt: new Date().toISOString(),
       },
-      success_url: `${site}#pro/success?session_id={CHECKOUT_SESSION_ID}`,
+      // The id goes in the query, not inside the fragment: a fragment is not
+      // part of what a server ever sees, and this one has to survive whatever
+      // Stripe does to the URL. The page reads either spelling.
+      success_url: `${site}?session_id={CHECKOUT_SESSION_ID}#pro/success`,
       cancel_url: `${site}#pro/cancel`,
       allow_promotion_codes: true,
       // "Pay", not "Subscribe" or "Donate": it is one payment, forever.
