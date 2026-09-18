@@ -32,7 +32,7 @@ import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import Stripe from "stripe";
 
 import { applyStripeEvent, confirmDecision, proFromLookups } from "./lib/entitlements.js";
-import { isOwner, proLineItem } from "./lib/catalog.js";
+import { proLineItem } from "./lib/catalog.js";
 
 setGlobalOptions({ region: "europe-west1", maxInstances: 10 });
 initializeApp();
@@ -47,10 +47,6 @@ const STRIPE_AUTOMATIC_TAX = defineString("STRIPE_AUTOMATIC_TAX", { default: "fa
 // line, price and the app's icon — which is one less thing to create in a
 // dashboard. Set it to a price_… to let the Stripe catalogue rule instead.
 const STRIPE_PRICE_ID = defineString("STRIPE_PRICE_ID", { default: "" });
-// Addresses allowed to grant themselves Pro without paying, comma separated,
-// for walking the flow end to end without a card. Empty switches the whole
-// thing off, which is what it should be once the site has real visitors.
-const DEBUG_PRO_EMAILS = defineString("DEBUG_PRO_EMAILS", { default: "" });
 // Shown on the right of the Stripe page. Stripe fetches it from its own
 // servers, so it has to be public; the site serves it next to the page.
 const PRO_IMAGE_URL = defineString("PRO_IMAGE_URL", { default: "" });
@@ -153,67 +149,6 @@ export const createCheckoutSession = onCall(
     return { url: session.url, sessionId: session.id };
   }
 );
-
-// ── Walking the flow without a card ─────────────────────────────────────────
-
-/**
- * Grants, or takes back, Pro on the caller's own account — and only if the
- * caller is one of the addresses named in DEBUG_PRO_EMAILS.
- *
- * It exists so the whole chain can be watched once: the site's success
- * screen, the licence on the account, the app unlocking on a phone. Stripe's
- * test mode does that too, and better; this is for when swapping four keys
- * back and forth costs more than it is worth.
- *
- * The guard is on the server because a guard in the page is not a guard. The
- * button that calls this is hidden, but hidden is not the protection —
- * anybody may press it, and for anybody else it does nothing. And what it
- * writes is marked `source: "debug"`, so a licence granted this way can
- * never be mistaken later for one somebody paid for.
- *
- * Switch it off by emptying DEBUG_PRO_EMAILS in functions/.env.
- */
-export const debugGrantPro = onCall({ cors: true }, async (request) => {
-  const auth = request.auth;
-  if (!auth) throw new HttpsError("unauthenticated", "Sign in first.");
-
-  const allowed = DEBUG_PRO_EMAILS.value();
-  if (!allowed) throw new HttpsError("permission-denied", "Not available.");
-  // The address has to be one Firebase itself verified. An unverified one is
-  // a claim, and a claim is exactly what an allow list must not accept.
-  if (!auth.token.email_verified || !isOwner(auth.token.email, allowed)) {
-    logger.warn("debug grant refused", { uid: auth.uid });
-    throw new HttpsError("permission-denied", "Not available.");
-  }
-
-  const grant = request.data?.grant !== false;
-  const ref = db().collection("entitlements").doc(auth.uid);
-  if (grant) {
-    await ref.set(
-      {
-        pro: true,
-        source: "debug",
-        email: String(auth.token.email).toLowerCase(),
-        sessionId: null,
-        paymentIntent: null,
-        amountTotal: 0,
-        currency: null,
-        livemode: false,
-        grantedAt: new Date(),
-        revokedAt: null,
-        revokedReason: null,
-      },
-      { merge: false }
-    );
-  } else {
-    await ref.set(
-      { pro: false, revokedAt: new Date(), revokedReason: "debug" },
-      { merge: true }
-    );
-  }
-  logger.info("debug grant", { uid: auth.uid, grant });
-  return { pro: grant };
-});
 
 // ── The buyer comes back from Stripe ────────────────────────────────────────
 

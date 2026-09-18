@@ -49,22 +49,3 @@ export function proLineItem({ priceId, image, tax = false } = {}) {
   };
 }
 
-/**
- * Whether an address is one of the project's own, for the owner-only debug
- * grant.
- *
- * The list is configuration, not code, and the comparison is on the whole
- * lower-cased address — never a suffix, never a "contains". A rule like
- * "ends with the owner's domain" is one typo away from letting a stranger in,
- * and this one hands out the thing being sold.
- */
-export function isOwner(email, allowList) {
-  if (!email) return false;
-  const want = String(email).trim().toLowerCase();
-  if (!want) return false;
-  return String(allowList || "")
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean)
-    .includes(want);
-}
