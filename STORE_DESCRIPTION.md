@@ -92,7 +92,7 @@ Pro unlocks all 12 keys, Chromatic, Note to Number, ...Of What? with extensions,
 
 Pro is a one-time payment. Not a subscription. Buy it once and it stays bought.
 
-No ads. No account. No sign-up. Nothing to cancel.
+No ads. No account needed: sign in only if you want Pro to follow you to another phone. Nothing to cancel.
 ```
 
 ## What's New (first version using this text)

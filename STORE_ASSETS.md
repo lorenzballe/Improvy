@@ -2,10 +2,17 @@
 
 > ✅ **This copy matches the shipped app.** Every claim below is checked against
 > the code: 6 modes (`lib/models/training_mode.dart`), 8 animal levels
-> Snail → Cheetah (`lib/constants/levels.dart`), spoken TTS prompts
-> (`lib/services/tts_service.dart`), no accounts / anonymous analytics
-> (`lib/services/analytics_service.dart`), lifetime one-time Pro at €19,99
+> Snail → Cheetah (`lib/constants/levels.dart`), recorded voice prompts
+> (`lib/services/voice_service.dart`), an OPTIONAL account so Pro follows the
+> person across phones (`lib/services/account_service.dart` — analytics stay
+> anonymous until someone signs in), a 15-question Daily Challenge on one
+> shared clock (`lib/models/daily_challenge.dart`), lifetime one-time Pro
+> whose price is set in the stores and shown live via RevenueCat
 > (`lib/widgets/paywall_modal.dart`). If the app changes, change this file.
+>
+> The ASCII-safe App Store copy that is actually pasted into App Store Connect
+> lives in `STORE_DESCRIPTION.md`; this file keeps the longer, emoji-rich
+> version and the screenshot plan.
 
 ## App Store Metadata
 
@@ -21,7 +28,7 @@
 
 ### Promotional Text (iOS only, 170 chars, editable without review)
 ```
-New: the Daily Challenge — one key, 10 questions, 40 seconds, one attempt, the same for everyone in the world. Keep your streak and share your grid.
+New: an optional account, so Pro follows you to any phone — iPhone or Android. Plus promotional codes, and reminders that actually arrive.
 ```
 
 ### Short Description (Google Play, 80 chars)
@@ -72,7 +79,7 @@ SIX TRAINING MODES
 
 BUILT TO KEEP YOU TRAINING
 
-✓ DAILY CHALLENGE — one key, 10 questions, 40 seconds, one attempt: the same challenge for the whole world, every day. Keep the streak, share the grid.
+✓ DAILY CHALLENGE — 15 questions on one shared clock (36 seconds; 48 on …Of What? days), one attempt: the same challenge for the whole world, every day. Keep the streak, share the grid.
 ✓ HOME SCREEN WIDGETS — a scale degree waiting for an answer, a new one every hour, plus your daily challenge and streak at a glance
 ✓ 8 ANIMAL LEVELS — climb from 🐌 Snail to 🐆 Cheetah as your mastery grows
 ✓ ADAPTIVE DIFFICULTY — the challenge tightens as you get faster
@@ -91,7 +98,7 @@ Free to download and start training. One single purchase unlocks everything fore
 
 PRIVACY FIRST
 
-No account. No sign-up. No personal data collected — only anonymous usage statistics to improve the app.
+No account needed — sign in only if you want Pro to follow you across devices or to redeem a code. Without an account we hold nothing that identifies you: only anonymous usage statistics to improve the app.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -159,11 +166,13 @@ key signatures, music student, guitar theory, piano theory
 | Item | Value |
 |------|-------|
 | Download | Free |
-| Improvy Pro (`improvy_pro_lifetime`) | **€19,99** one-time, non-consumable |
+| Improvy Pro (`improvy_pro_lifetime`) | one-time, non-consumable — price set in App Store Connect **and** Play Console |
 
-> Set the price in App Store Connect (tier for €19,99) **and** Play Console.
 > The app reads the live localized price via RevenueCat; the hard-coded
-> `€19,99` in `paywall_modal.dart` is only the fallback while the store loads.
+> `_fallbackPrice` in `paywall_modal.dart` (currently `€20,99`) is only shown
+> until the store answers. The website checkout charges 19,99 € (`PRO_AMOUNT`
+> in `functions/lib/catalog.js`). Keep the three in step: the store tiers, the
+> fallback and the site should never disagree in a screenshot.
 
 ---
 
@@ -234,7 +243,7 @@ Text Overlay:
 ```
 Focus: the daily results screen (score, grid, streak calendar)
 Text Overlay:
-  "One key. 10 questions. 40 seconds."
+  "One key. 15 questions. One clock."
   "Keep the streak. Share the grid."
   (Show: result screen with a strong score and a lit calendar)
 ```
@@ -253,7 +262,7 @@ Text Overlay:
 Focus: the paywall
 Text Overlay:
   "No subscription"
-  "€19,99 once, yours for life"
+  "One payment, yours for life"
   (Show: the Pro membership card)
 ```
 
@@ -335,7 +344,8 @@ App Data
 │
 └─ Third-Party Sharing
    └─ RevenueCat (for IAP verification)
-   └─ PostHog (for anonymous analytics)
+   └─ PostHog (analytics — anonymous until sign-in, then linked to the account)
+   └─ Firebase (accounts, promo codes, licences — only if signed in)
 ```
 
 ---
@@ -378,7 +388,7 @@ App Data
 
 ### Pre-Upload Checklist
 
-- [ ] Pro price set to €19,99 in App Store Connect AND Play Console
+- [ ] Pro price set in App Store Connect AND Play Console, matching the paywall fallback and the website
 - [ ] `kAppStoreId` in `lib/constants/app_info.dart` filled with the Apple ID
       from App Store Connect → App Information (the "Rate Improvy" row in
       Settings stays hidden on iOS until it is)
@@ -432,7 +442,7 @@ App Data
 ## Next Steps
 
 1. Create screenshots (manual or automated)
-2. Set the €19,99 price on both stores
+2. Set the Pro price on both stores (see Pricing above)
 3. Upload to App Store Connect (iOS)
 4. Upload to Play Console (Android)
 5. Fill out compliance forms (privacy manifest, data safety)

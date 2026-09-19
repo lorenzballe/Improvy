@@ -1,5 +1,45 @@
 # Apple review — what to do, and what to paste
 
+> ## ⚠️ Read this first — partly superseded by 1.17.0
+>
+> The notes below were written for the August 2026 rejection, when the app
+> had **no account**. Since **1.17.0** the app has an *optional* account
+> (Sign in with Apple, Google or email — `lib/services/account_service.dart`)
+> and, once someone signs in, calls `identify()` on PostHog and `logIn()` on
+> RevenueCat with the account id, with the email as a profile property.
+> So two sentences in the ready-to-paste replies are **no longer true** and
+> must not be sent as written: "no sign-in" and "no `identify()` call".
+>
+> What IS still true: the app does not track (no IDFA, no ad SDK, no data
+> broker, nothing linked to third-party data for advertising), so there is
+> still no ATT prompt and `NSPrivacyTracking` stays `false` in
+> `ios/Runner/PrivacyInfo.xcprivacy`.
+>
+> **The App Store Connect privacy label for 1.17.0+ must declare exactly
+> this** (each type "Not used for tracking"; "Linked to the user" as shown —
+> Apple counts a type as linked if it is linked for *any* user, and after
+> sign-in all of these are tied to the account):
+>
+> | Data type | Purpose(s) | Linked | Source |
+> |---|---|---|---|
+> | Email Address | App Functionality, Analytics | yes | Firebase Auth, PostHog profile, RevenueCat `setEmail` |
+> | User ID | App Functionality, Analytics | yes | Firebase uid → Firestore, PostHog `identify`, RevenueCat `logIn` |
+> | Product Interaction | Analytics | yes | PostHog events |
+> | Purchase History | App Functionality | yes | RevenueCat |
+> | Device ID | Analytics, App Functionality | yes | PostHog `distinct_id`, RevenueCat app-user id |
+> | Coarse Location | Analytics | yes | PostHog IP-based GeoIP (no location permission) |
+> | Other User Content | App Functionality | yes | the feedback box in Settings (message, category, optional reply address) |
+>
+> Still **not** collected: name, phone, contacts, photos, precise location,
+> payment details (Apple/Google/Stripe keep those), crash data (no crash
+> SDK). "Developer's Advertising or Marketing" and "Product Personalization"
+> must not appear on any item, and "Used to Track You" must stay empty.
+> The same answers go into Play Console → Data safety (see
+> `FIREBASE_SETUP.md`, section 7). Both stores also require that an account
+> created in the app can be deleted in the app — it can, from the Account
+> card in Settings.
+
+
 Submission ID `ac0c387e-9ed4-459c-863d-c3f7df5054b8`, rejection of 07 Aug 2026.
 Two issues. **One of them cannot be fixed in code** — it is an App Store
 Connect answer only the Account Holder or an Admin can change.

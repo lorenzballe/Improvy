@@ -1,11 +1,11 @@
 {
-    "name": "improvy",
-    "short_name": "improvy",
+    "name": "Improvy",
+    "short_name": "Improvy",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#0F0A1A",
+    "theme_color": "#0F0A1A",
+    "description": "Improvy — know every scale degree in every key. Web preview build.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
