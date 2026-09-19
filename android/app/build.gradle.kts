@@ -24,12 +24,21 @@ android {
         isCoreLibraryDesugaringEnabled = true
     }
 
+    // The upload keystore lives outside the repository (android/key.properties
+    // points at it; both are gitignored). A checkout without it — a fresh
+    // machine, a CI job that only compiles — used to die at Gradle
+    // configuration on `null cannot be cast to non-null type kotlin.String`,
+    // for every build type including `flutter run`. Now only the release
+    // signing config depends on it.
+    val hasReleaseKeystore = keyPropertiesFile.exists()
     signingConfigs {
-        create("release") {
-            keyAlias = keyProperties["keyAlias"] as String
-            keyPassword = keyProperties["keyPassword"] as String
-            storeFile = file(keyProperties["storeFile"] as String)
-            storePassword = keyProperties["storePassword"] as String
+        if (hasReleaseKeystore) {
+            create("release") {
+                keyAlias = keyProperties["keyAlias"] as String
+                keyPassword = keyProperties["keyPassword"] as String
+                storeFile = file(keyProperties["storeFile"] as String)
+                storePassword = keyProperties["storePassword"] as String
+            }
         }
     }
 
@@ -44,7 +53,19 @@ android {
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("release")
+            if (hasReleaseKeystore) {
+                signingConfig = signingConfigs.getByName("release")
+            } else {
+                // Signed with the debug key so the build still completes and
+                // installs. Such a bundle can never go to Play — it would be
+                // refused for the wrong signature — so say so, loudly.
+                signingConfig = signingConfigs.getByName("debug")
+                logger.warn(
+                    "WARNING: android/key.properties not found — the release build is " +
+                        "signed with the DEBUG key and cannot be uploaded to Play. " +
+                        "Create key.properties pointing at the upload keystore first."
+                )
+            }
             // R8 renamed androidx.work's generated Room database, which Room then
             // could not find by name — the app died at launch on every device,
             // in release only, before any Dart ran:
