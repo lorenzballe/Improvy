@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- values-v31 sets the Android 12+ splash background, and values-night
+         restyles LaunchTheme for dark mode. Android resolves the night
+         qualifier BEFORE the platform-version one, so on a dark Android 12+
+         phone values-night won and the splash fix was silently dropped —
+         the exact white flash it exists to remove. This directory carries
+         both qualifiers, so it wins there and says both things. -->
+    <style name="LaunchTheme" parent="@android:style/Theme.Black.NoTitleBar">
+        <item name="android:windowBackground">@drawable/launch_background</item>
+        <item name="android:windowSplashScreenBackground">@color/improvy_splash</item>
+    </style>
+</resources>
