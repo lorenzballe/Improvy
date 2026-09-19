@@ -5,7 +5,16 @@
 	<!-- Improvy does not track. Nothing collected here is linked to third-party
 	     data for advertising, and none of it is sold or handed to a data
 	     broker, so there is no AppTrackingTransparency prompt and no IDFA.
-	     The App Store Connect privacy answers must match this file. -->
+	     The App Store Connect privacy answers must match this file.
+
+	     Since 1.17.0 the app has an OPTIONAL account (Sign in with Apple,
+	     Google, or email — lib/services/account_service.dart). Signing in is
+	     never required, but once someone does, the account id is handed to
+	     PostHog (identify) and RevenueCat (logIn), and the email address rides
+	     along as a profile property. From that moment the analytics and the
+	     purchase state are linked to that person, so every type below that a
+	     signed-in user produces is declared "linked": Apple's rule is that a
+	     type counts as linked if it is linked for ANY user. -->
 	<key>NSPrivacyTracking</key>
 	<false/>
 
@@ -14,15 +23,49 @@
 
 	<key>NSPrivacyCollectedDataTypes</key>
 	<array>
-		<!-- Anonymous product analytics (PostHog, EU cloud): which screens are
-		     opened, which modes are started, how a session ended. No account,
-		     no sign-in, no email address. (Coarse location from the request IP
-		     is declared separately below.) -->
+		<!-- Email address: the account (Firebase Authentication), the analytics
+		     profile (PostHog person property) and the RevenueCat customer, so a
+		     licence bought on the website can be matched to the app account by
+		     a VERIFIED address. Only collected when the person signs in; Sign in
+		     with Apple may hand over a private relay address instead. -->
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeEmailAddress</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+				<string>NSPrivacyCollectedDataTypePurposeAnalytics</string>
+			</array>
+		</dict>
+		<!-- User ID: the Firebase account id. It keys the Pro licence
+		     (entitlements/{uid}, redemptions/{uid} in Firestore), the
+		     RevenueCat customer and the PostHog person. Only after sign-in. -->
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeUserID</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+				<string>NSPrivacyCollectedDataTypePurposeAnalytics</string>
+			</array>
+		</dict>
+		<!-- Product analytics (PostHog, EU cloud): which screens are opened,
+		     which modes are started, how a session ended. Anonymous until the
+		     person signs in; linked to the account afterwards. (Coarse location
+		     from the request IP is declared separately below.) -->
 		<dict>
 			<key>NSPrivacyCollectedDataType</key>
 			<string>NSPrivacyCollectedDataTypeProductInteraction</string>
 			<key>NSPrivacyCollectedDataTypeLinked</key>
-			<false/>
+			<true/>
 			<key>NSPrivacyCollectedDataTypeTracking</key>
 			<false/>
 			<key>NSPrivacyCollectedDataTypePurposes</key>
@@ -31,12 +74,14 @@
 			</array>
 		</dict>
 		<!-- Purchase state (RevenueCat): whether the one-off Pro unlock has
-		     been bought, so the app knows what to unlock and can restore it. -->
+		     been bought, so the app knows what to unlock and can restore it.
+		     Tied to the account once signed in, so the purchase follows the
+		     person across phones. -->
 		<dict>
 			<key>NSPrivacyCollectedDataType</key>
 			<string>NSPrivacyCollectedDataTypePurchaseHistory</string>
 			<key>NSPrivacyCollectedDataTypeLinked</key>
-			<false/>
+			<true/>
 			<key>NSPrivacyCollectedDataTypeTracking</key>
 			<false/>
 			<key>NSPrivacyCollectedDataTypePurposes</key>
@@ -44,15 +89,16 @@
 				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
 			</array>
 		</dict>
-		<!-- Anonymous per-install identifier: PostHog's distinct_id and
-		     RevenueCat's app-user id. Random, device-scoped, tied to no
-		     account. Declared so the manifest matches what the SDKs actually
-		     put on the wire — and matches the App Store Connect label. -->
+		<!-- Per-install identifier: PostHog's distinct_id and RevenueCat's
+		     app-user id. Random and device-scoped for an anonymous user;
+		     merged into the account on sign-in. Declared so the manifest
+		     matches what the SDKs actually put on the wire — and matches the
+		     App Store Connect label. -->
 		<dict>
 			<key>NSPrivacyCollectedDataType</key>
 			<string>NSPrivacyCollectedDataTypeDeviceID</string>
 			<key>NSPrivacyCollectedDataTypeLinked</key>
-			<false/>
+			<true/>
 			<key>NSPrivacyCollectedDataTypeTracking</key>
 			<false/>
 			<key>NSPrivacyCollectedDataTypePurposes</key>
@@ -63,14 +109,14 @@
 		</dict>
 		<!-- Coarse location, analytics only. The app requests NO location
 		     permission; this is derived server-side by PostHog from the request
-		     IP (city/region) so we can see roughly where users are. Not linked
-		     to any identity and never used for tracking — purpose is Analytics
-		     only. See lib/services/analytics_service.dart (GeoIP left on). -->
+		     IP (city/region) so we can see roughly where users are. Never used
+		     for tracking or advertising — purpose is Analytics only. See
+		     lib/services/analytics_service.dart (GeoIP left on). -->
 		<dict>
 			<key>NSPrivacyCollectedDataType</key>
 			<string>NSPrivacyCollectedDataTypeCoarseLocation</string>
 			<key>NSPrivacyCollectedDataTypeLinked</key>
-			<false/>
+			<true/>
 			<key>NSPrivacyCollectedDataTypeTracking</key>
 			<false/>
 			<key>NSPrivacyCollectedDataTypePurposes</key>
@@ -78,12 +124,29 @@
 				<string>NSPrivacyCollectedDataTypePurposeAnalytics</string>
 			</array>
 		</dict>
+		<!-- What people type into the feedback box in Settings: the message,
+		     its category and — only if they fill it in — an address to reply
+		     to. Carried by PostHog as an event, read by the developer. -->
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeOtherUserContent</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
 	</array>
 
 	<key>NSPrivacyAccessedAPITypes</key>
 	<array>
 		<!-- shared_preferences stores progress, stats and settings in
-		     UserDefaults, read and written only by this app. -->
+		     UserDefaults, and home_widget hands the widgets their payload
+		     through the App Group's UserDefaults suite — both read and written
+		     only by this app and its own extension. -->
 		<dict>
 			<key>NSPrivacyAccessedAPIType</key>
 			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
