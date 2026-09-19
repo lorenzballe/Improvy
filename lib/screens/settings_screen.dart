@@ -1070,8 +1070,8 @@ class SettingsScreen extends StatelessWidget {
       PageRouteBuilder<void>(
         transitionDuration: const Duration(milliseconds: 320),
         reverseTransitionDuration: const Duration(milliseconds: 260),
-        pageBuilder: (_, __, ___) => const FreeModeScreen(),
-        transitionsBuilder: (_, anim, __, child) => FadeTransition(
+        pageBuilder: (_, _, _) => const FreeModeScreen(),
+        transitionsBuilder: (_, anim, _, child) => FadeTransition(
           opacity: anim,
           child: SlideTransition(
             position: Tween<Offset>(begin: const Offset(0, 0.04), end: Offset.zero)

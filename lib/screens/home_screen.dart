@@ -297,8 +297,11 @@ class _HomeMain extends StatelessWidget {
                   }
                   provider.selectKey(key);
                   final tm = mode == 'diatonic' ? TrainingMode.diatonic : TrainingMode.chromatic;
-                  if (tm == TrainingMode.diatonic) provider.setDiatonicDifficulty(diff);
-                  else provider.setChromaticDifficulty(diff);
+                  if (tm == TrainingMode.diatonic) {
+                    provider.setDiatonicDifficulty(diff);
+                  } else {
+                    provider.setChromaticDifficulty(diff);
+                  }
                   provider.startMode(tm);
                 },
               ),
@@ -945,7 +948,7 @@ class _KeyCardState extends State<_KeyCard> {
                         tween: Tween(begin: 0, end: progress.toDouble()),
                         duration: const Duration(milliseconds: 900),
                         curve: Curves.easeOutCubic,
-                        builder: (_, v, __) => FittedBox(
+                        builder: (_, v, _) => FittedBox(
                           fit: BoxFit.scaleDown,
                           alignment: Alignment.centerLeft,
                           child: Text('${v.round()}%', maxLines: 1, softWrap: false, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: color)),

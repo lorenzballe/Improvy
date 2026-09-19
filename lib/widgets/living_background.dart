@@ -43,7 +43,7 @@ class _LivingBackgroundState extends State<LivingBackground>
       child: RepaintBoundary(
         child: AnimatedBuilder(
           animation: _c,
-          builder: (_, __) => CustomPaint(
+          builder: (_, _) => CustomPaint(
             size: Size.infinite,
             painter: _LivingBackgroundPainter(_c.value),
           ),

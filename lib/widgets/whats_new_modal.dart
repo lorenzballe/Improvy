@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../l10n/l10n.dart';
 import 'package:url_launcher/url_launcher.dart';

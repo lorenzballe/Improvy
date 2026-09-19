@@ -386,7 +386,7 @@ class _PocketModeScreenState extends State<PocketModeScreen>
 
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (_, __) => _exit(),
+      onPopInvokedWithResult: (_, _) => _exit(),
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: Stack(children: [
@@ -548,7 +548,7 @@ class _PocketModeScreenState extends State<PocketModeScreen>
           RepaintBoundary(
             child: AnimatedBuilder(
               animation: _countdown,
-              builder: (_, __) {
+              builder: (_, _) {
                 final progress = _phase == 2 ? _countdown.value.clamp(0.0, 1.0) : 1.0;
                 return CustomPaint(size: Size(ring, ring), painter: _NumberRingPainter(progress: progress, color: degColor));
               },

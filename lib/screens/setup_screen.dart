@@ -90,7 +90,7 @@ class _NoteToNumberSetupState extends State<NoteToNumberSetup> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (_, __) => widget.onCancel(),
+      onPopInvokedWithResult: (_, _) => widget.onCancel(),
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: Stack(
@@ -335,7 +335,7 @@ class _CustomModeSetupState extends State<CustomModeSetup> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (_, __) => widget.onCancel(),
+      onPopInvokedWithResult: (_, _) => widget.onCancel(),
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: Stack(
@@ -578,7 +578,7 @@ class _OfWhatSetupState extends State<OfWhatSetup> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (_, __) => widget.onCancel(),
+      onPopInvokedWithResult: (_, _) => widget.onCancel(),
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: Stack(
@@ -769,7 +769,7 @@ class _PocketModeSetupState extends State<PocketModeSetup> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (_, __) => widget.onCancel(),
+      onPopInvokedWithResult: (_, _) => widget.onCancel(),
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: Stack(

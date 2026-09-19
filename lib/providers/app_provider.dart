@@ -8,7 +8,6 @@ import '../services/storage_service.dart';
 import '../services/analytics_service.dart';
 import '../services/notification_service.dart';
 import '../services/review_service.dart';
-import 'dart:ui' show PlatformDispatcher;
 
 import '../constants/levels.dart';
 import '../l10n/l10n.dart';

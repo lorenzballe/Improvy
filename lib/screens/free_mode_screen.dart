@@ -292,7 +292,7 @@ class _FreeModeScreenState extends State<FreeModeScreen>
                 tween: Tween<double>(begin: 0, end: progress),
                 duration: const Duration(milliseconds: 280),
                 curve: Curves.easeOut,
-                builder: (_, p, __) => SizedBox(
+                builder: (_, p, _) => SizedBox(
                   height: 6,
                   child: Stack(children: [
                     ClipRRect(
@@ -412,7 +412,7 @@ class _Hint extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 18, top: 8),
       child: AnimatedBuilder(
         animation: pulse,
-        builder: (_, __) {
+        builder: (_, _) {
           final p = Curves.easeInOut.transform(pulse.value);
           return Opacity(
             opacity: 0.55 + 0.45 * p,
@@ -573,7 +573,7 @@ class _AuroraState extends State<_Aurora> with SingleTickerProviderStateMixin {
       child: RepaintBoundary(
         child: AnimatedBuilder(
           animation: _c,
-          builder: (_, __) => CustomPaint(size: Size.infinite, painter: _AuroraPainter(_c.value)),
+          builder: (_, _) => CustomPaint(size: Size.infinite, painter: _AuroraPainter(_c.value)),
         ),
       ),
     );

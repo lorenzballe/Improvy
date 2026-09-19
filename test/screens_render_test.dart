@@ -263,7 +263,7 @@ void main() {
             sessionHistory: const [],
             notation: 'CDE',
             onExit: () {},
-            onAnswer: (_, __, ___) {},
+            onAnswer: (_, _, _) {},
             onFinish: (_) {},
           ),
           p,
@@ -282,7 +282,7 @@ void main() {
             sessionHistory: const [],
             notation: 'DoReMi',
             onExit: () {},
-            onAnswer: (_, __, ___) {},
+            onAnswer: (_, _, _) {},
             onFinish: (_) {},
           ),
           p,
@@ -306,7 +306,7 @@ void main() {
             isDaily: true,
             totalTimeMs: 40000,
             onExit: () {},
-            onAnswer: (_, __, ___) {},
+            onAnswer: (_, _, _) {},
             onFinish: (_) {},
           ),
           p,
@@ -325,7 +325,7 @@ void main() {
             sessionHistory: const [],
             notation: 'CDE',
             onExit: () {},
-            onAnswer: (_, __, ___) {},
+            onAnswer: (_, _, _) {},
             onFinish: (_) {},
           ),
           p,
@@ -337,7 +337,7 @@ void main() {
     group('$label · setup screens', () {
       testWidgets('custom mode', (t) async {
         await t.show(
-          CustomModeSetup(initialKey: 'F♯', onCancel: () {}, onStart: (_, __, ___, ____, _____) {}),
+          CustomModeSetup(initialKey: 'F♯', onCancel: () {}, onStart: (_, _, _, _, _) {}),
           await providerWith(),
           size,
         );

@@ -551,7 +551,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
         // scaffolds and must fill the stack instead.
         layoutBuilder: (current, previous) => Stack(
           fit: StackFit.expand,
-          children: [...previous, if (current != null) current],
+          children: [...previous, ?current],
         ),
         transitionBuilder: (child, animation) => FadeTransition(
           opacity: animation,

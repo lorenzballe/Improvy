@@ -111,7 +111,7 @@ void main() {
         sessionHistory: const [],
         notation: 'CDE',
         onExit: () {},
-        onAnswer: (_, __, ___) {},
+        onAnswer: (_, _, _) {},
         onFinish: (_) {},
       ),
       p,

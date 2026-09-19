@@ -18,7 +18,7 @@ void main() => runApp(MaterialApp(
         sessionHistory: const [],
         notation: 'english',
         onExit: () {},
-        onAnswer: (_, __, ___) {},
+        onAnswer: (_, _, _) {},
         onFinish: (_) {},
       ),
     ));

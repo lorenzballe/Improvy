@@ -498,7 +498,7 @@ class _BuyButtonState extends State<_BuyButton> with SingleTickerProviderStateMi
               child: IgnorePointer(
                 child: AnimatedBuilder(
                   animation: _shim,
-                  builder: (_, __) {
+                  builder: (_, _) {
                     final p = Curves.easeInOut.transform((_shim.value / 0.35).clamp(0.0, 1.0));
                     if (p >= 1) return const SizedBox.shrink();
                     return ShaderMask(

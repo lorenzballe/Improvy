@@ -617,7 +617,7 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
 
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (_, __) => _requestExit(),
+      onPopInvokedWithResult: (_, _) => _requestExit(),
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: Stack(
@@ -667,7 +667,7 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
             // Feedback halo
             AnimatedBuilder(
               animation: _haloAnim,
-              builder: (_, __) {
+              builder: (_, _) {
                 final opacity = _haloAnim.value;
                 if (opacity <= 0) return const SizedBox.shrink();
                 return Positioned.fill(
