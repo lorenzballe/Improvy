@@ -53,3 +53,7 @@ tool/firestore_rules/*.log
 functions/node_modules/
 functions/*.log
 functions/.env.local
+
+# flutter_test writes golden-comparison diffs here when a golden test fails.
+# They are output, not sources — never commit them.
+test/failures/
