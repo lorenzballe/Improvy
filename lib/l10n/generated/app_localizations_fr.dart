@@ -1610,4 +1610,94 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get settingsWidgetOk => 'Les données arrivent bien aux widgets.';
+
+  @override
+  String get navTraining => 'Entraînement';
+
+  @override
+  String get navStats => 'Statistiques';
+
+  @override
+  String get navSettings => 'Réglages';
+
+  @override
+  String get onboardingStatKeys => 'tonalités à\nmaîtriser';
+
+  @override
+  String get onboardingStatModes => 'modes\nd’entraînement';
+
+  @override
+  String get onboardingStatMinutes => 'par jour\nsuffisent';
+
+  @override
+  String homePointsNeeded(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'Encore $n points',
+      one: 'Encore 1 point',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String setupAnswerDelayBody(String delay) {
+    return '$delay avant que la voix ne révèle la note.';
+  }
+
+  @override
+  String get freeModeRun => 'SÉRIE';
+
+  @override
+  String get wOf => 'de';
+
+  @override
+  String get wKeyOf => 'Tonalité de';
+
+  @override
+  String get wWeakEmptyHint => 'Touchez pour commencer';
+
+  @override
+  String get theoryCard1 =>
+      'La note qui transforme un accord majeur en dominante : la tension qui rend la résolution inévitable.';
+
+  @override
+  String get theoryCard2 =>
+      'Le degré qui décide entre majeur et mineur. Déplacez-le d’un demi-ton et toute la couleur de la tonalité change.';
+
+  @override
+  String get theoryCard3 =>
+      'La note la plus stable après la tonique. C’est elle qui pose l’accord, et sans elle il sonne creux.';
+
+  @override
+  String get theoryCard4 =>
+      'Le mineur en une seule note. Sur un accord de dominante, elle cesse d’être triste et devient blues.';
+
+  @override
+  String get theoryCard5 =>
+      'Le triton depuis la tonique : le point le plus éloigné de la maison, et la raison pour laquelle le lydien semble flotter.';
+
+  @override
+  String get theoryCard6 =>
+      'Assez proche de la tonique pour s’y appuyer, assez loin pour vouloir bouger. Ajoutez-la à un accord et vous obtenez une 9.';
+
+  @override
+  String get theoryCard7 =>
+      'La note qui rend un accord majeur nostalgique plutôt que triomphant, et celle qui définit le dorien en mineur.';
+
+  @override
+  String get theoryCard8 =>
+      'Un demi-ton au-dessus de la maison. La note la plus instable de la tonalité, et c’est justement pour cela qu’elle est si utile sur une dominante.';
+
+  @override
+  String get theoryCard9 =>
+      'La sensible. Elle existe pour se résoudre vers le haut, et une tonalité sans elle ne se referme jamais tout à fait.';
+
+  @override
+  String get theoryCard10 =>
+      'Un demi-ton au-dessus de la tierce, donc elle veut descendre. Suspendez-la plutôt, et vous obtenez le retard le plus familier de la musique.';
+
+  @override
+  String get theoryCard11 =>
+      'La note qui assombrit une tonalité mineure vers quelque chose de plus ancien. Montez-la d’un demi-ton et le mode devient dorien : c’est ce que le mineur mélodique relève en montant.';
 }

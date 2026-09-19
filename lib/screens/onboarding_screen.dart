@@ -159,11 +159,11 @@ const List<(double, Color, Color, String)> _bars = [
   (50, Color(0xFFFF4D94), Color(0xFF3D0A22), '7'),
 ];
 
-const List<(String, Color, String)> _stats = [
-  ('12', Color(0xFFFFDB4D), 'keys to\nmaster'),
-  ('6', Color(0xFF4DFF4D), 'training\nmodes'),
-  ('2m', Color(0xFF22D3EE), 'a day is\nenough'),
-];
+List<(String, Color, String)> _stats(AppLocalizations l) => [
+      ('12', const Color(0xFFFFDB4D), l.onboardingStatKeys),
+      ('6', const Color(0xFF4DFF4D), l.onboardingStatModes),
+      ('2m', const Color(0xFF22D3EE), l.onboardingStatMinutes),
+    ];
 
 // ── The poster ────────────────────────────────────────────────────────────────
 
@@ -202,7 +202,7 @@ class _Poster extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              stagger(0.34, 0.86, child: _statRow()),
+              stagger(0.34, 0.86, child: _statRow(context.l10n)),
               SizedBox(height: 20 * s),
               stagger(0.46, 1.0, dy: 16 * s, child: _StartButton(s: s, onTap: onStart)),
               SizedBox(height: 16 * s),
@@ -348,11 +348,11 @@ class _Poster extends StatelessWidget {
 
   // IntrinsicHeight so the three cards share a height. A bare stretching Row
   // cannot report an intrinsic height, and the poster is measured by one.
-  Widget _statRow() => IntrinsicHeight(
+  Widget _statRow(AppLocalizations l) => IntrinsicHeight(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            for (final (i, stat) in _stats.indexed) ...[
+            for (final (i, stat) in _stats(l).indexed) ...[
               if (i > 0) SizedBox(width: 10 * s),
               Expanded(
                 child: Container(

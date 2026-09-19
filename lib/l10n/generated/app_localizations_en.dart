@@ -1599,4 +1599,94 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsWidgetOk => 'Data is reaching the widgets.';
+
+  @override
+  String get navTraining => 'Training';
+
+  @override
+  String get navStats => 'Stats';
+
+  @override
+  String get navSettings => 'Settings';
+
+  @override
+  String get onboardingStatKeys => 'keys to\nmaster';
+
+  @override
+  String get onboardingStatModes => 'training\nmodes';
+
+  @override
+  String get onboardingStatMinutes => 'a day is\nenough';
+
+  @override
+  String homePointsNeeded(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n more points needed',
+      one: '1 more point needed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String setupAnswerDelayBody(String delay) {
+    return '$delay before the voice reveals the note.';
+  }
+
+  @override
+  String get freeModeRun => 'RUN';
+
+  @override
+  String get wOf => 'of';
+
+  @override
+  String get wKeyOf => 'Key of';
+
+  @override
+  String get wWeakEmptyHint => 'Tap to start training';
+
+  @override
+  String get theoryCard1 =>
+      'The note that turns a major chord into a dominant — the pull that makes a resolution feel inevitable.';
+
+  @override
+  String get theoryCard2 =>
+      'The degree that decides major or minor. Move it one semitone and the whole colour of the key changes.';
+
+  @override
+  String get theoryCard3 =>
+      'The most stable note after the tonic. It is why a chord sounds settled, and why removing it sounds hollow.';
+
+  @override
+  String get theoryCard4 =>
+      'Minor in one note. Over a dominant chord it stops being sad and starts being blue.';
+
+  @override
+  String get theoryCard5 =>
+      'The tritone from the tonic — the furthest you can get from home, and the reason lydian sounds like it is floating.';
+
+  @override
+  String get theoryCard6 =>
+      'Close enough to the tonic to lean on it, far enough to want to move. Add it to a chord and you get a 9.';
+
+  @override
+  String get theoryCard7 =>
+      'The note that makes a major chord sound wistful rather than triumphant — and the one that defines dorian in minor.';
+
+  @override
+  String get theoryCard8 =>
+      'One semitone above home. The most unstable note in the key, which is exactly why it is so useful over a dominant.';
+
+  @override
+  String get theoryCard9 =>
+      'The leading tone. It exists to resolve upward, and a key without it never quite closes.';
+
+  @override
+  String get theoryCard10 =>
+      'A semitone above the third, so it wants to fall. Suspend it instead and you get the most familiar delay in music.';
+
+  @override
+  String get theoryCard11 =>
+      'The note that darkens a minor key into something older. Raise it a semitone and the mode turns dorian — it is what melodic minor lifts on the way up.';
 }

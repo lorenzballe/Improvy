@@ -849,7 +849,7 @@ class _PocketModeSetupState extends State<PocketModeSetup> {
                                 _SectionTitle(
                                   icon: Icons.timer_outlined,
                                   title: context.l10n.setupAnswerDelay,
-                                  subtitle: '${fmtDelaySeconds(_delayMs / 1000)} before the voice reveals the note.',
+                                  subtitle: context.l10n.setupAnswerDelayBody(fmtDelaySeconds(_delayMs / 1000)),
                                 ),
                                 const SizedBox(height: 8),
                                 _DelaySlider(

@@ -1605,4 +1605,94 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get settingsWidgetOk => 'I dati stanno arrivando ai widget.';
+
+  @override
+  String get navTraining => 'Allenamento';
+
+  @override
+  String get navStats => 'Statistiche';
+
+  @override
+  String get navSettings => 'Impostazioni';
+
+  @override
+  String get onboardingStatKeys => 'tonalità da\npadroneggiare';
+
+  @override
+  String get onboardingStatModes => 'modalità di\nallenamento';
+
+  @override
+  String get onboardingStatMinutes => 'al giorno\nbastano';
+
+  @override
+  String homePointsNeeded(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'Mancano $n punti',
+      one: 'Manca 1 punto',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String setupAnswerDelayBody(String delay) {
+    return '$delay prima che la voce riveli la nota.';
+  }
+
+  @override
+  String get freeModeRun => 'GIRO';
+
+  @override
+  String get wOf => 'di';
+
+  @override
+  String get wKeyOf => 'Tonalità di';
+
+  @override
+  String get wWeakEmptyHint => 'Tocca per iniziare ad allenarti';
+
+  @override
+  String get theoryCard1 =>
+      'La nota che trasforma un accordo maggiore in una dominante: la tensione che rende una risoluzione inevitabile.';
+
+  @override
+  String get theoryCard2 =>
+      'Il grado che decide tra maggiore e minore. Spostalo di un semitono e cambia tutto il colore della tonalità.';
+
+  @override
+  String get theoryCard3 =>
+      'La nota più stabile dopo la tonica. È il motivo per cui un accordo suona saldo, e per cui senza suona vuoto.';
+
+  @override
+  String get theoryCard4 =>
+      'Il minore in una sola nota. Su un accordo di dominante smette di essere triste e diventa blues.';
+
+  @override
+  String get theoryCard5 =>
+      'Il tritono dalla tonica: il punto più lontano da casa, e il motivo per cui il lidio sembra galleggiare.';
+
+  @override
+  String get theoryCard6 =>
+      'Abbastanza vicina alla tonica da appoggiarcisi, abbastanza lontana da voler muoversi. Aggiungila a un accordo e hai una 9.';
+
+  @override
+  String get theoryCard7 =>
+      'La nota che rende un accordo maggiore malinconico invece che trionfante, e quella che definisce il dorico nel minore.';
+
+  @override
+  String get theoryCard8 =>
+      'Un semitono sopra casa. La nota più instabile della tonalità, ed è proprio per questo che è così utile su una dominante.';
+
+  @override
+  String get theoryCard9 =>
+      'La sensibile. Esiste per risolvere verso l\'alto, e una tonalità senza di lei non si chiude mai del tutto.';
+
+  @override
+  String get theoryCard10 =>
+      'Un semitono sopra la terza, quindi vuole scendere. Sospendila invece, e hai il ritardo più familiare della musica.';
+
+  @override
+  String get theoryCard11 =>
+      'La nota che scurisce una tonalità minore in qualcosa di più antico. Alzala di un semitono e il modo diventa dorico: è ciò che il minore melodico solleva salendo.';
 }

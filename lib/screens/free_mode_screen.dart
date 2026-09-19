@@ -329,7 +329,7 @@ class _FreeModeScreenState extends State<FreeModeScreen>
               Container(width: 1, height: 28, color: Colors.white10),
               Expanded(child: _stat(context.l10n.freeModeLeft, '${_kTotal - donePart}')),
               Container(width: 1, height: 28, color: Colors.white10),
-              Expanded(child: _stat('RUN', '$_kTotal')),
+              Expanded(child: _stat(context.l10n.freeModeRun, '$_kTotal')),
             ]),
           ]),
         ),

@@ -1602,4 +1602,94 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsWidgetOk => 'Los datos están llegando a los widgets.';
+
+  @override
+  String get navTraining => 'Entrenamiento';
+
+  @override
+  String get navStats => 'Estadísticas';
+
+  @override
+  String get navSettings => 'Ajustes';
+
+  @override
+  String get onboardingStatKeys => 'tonalidades\npor dominar';
+
+  @override
+  String get onboardingStatModes => 'modos de\nentrenamiento';
+
+  @override
+  String get onboardingStatMinutes => 'al día\nbastan';
+
+  @override
+  String homePointsNeeded(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'Faltan $n puntos',
+      one: 'Falta 1 punto',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String setupAnswerDelayBody(String delay) {
+    return '$delay antes de que la voz revele la nota.';
+  }
+
+  @override
+  String get freeModeRun => 'SERIE';
+
+  @override
+  String get wOf => 'de';
+
+  @override
+  String get wKeyOf => 'Tonalidad de';
+
+  @override
+  String get wWeakEmptyHint => 'Toca para empezar a entrenar';
+
+  @override
+  String get theoryCard1 =>
+      'La nota que convierte un acorde mayor en dominante: la tensión que hace que la resolución parezca inevitable.';
+
+  @override
+  String get theoryCard2 =>
+      'El grado que decide entre mayor y menor. Muévelo un semitono y cambia todo el color de la tonalidad.';
+
+  @override
+  String get theoryCard3 =>
+      'La nota más estable después de la tónica. Por ella un acorde suena asentado, y sin ella suena hueco.';
+
+  @override
+  String get theoryCard4 =>
+      'El menor en una sola nota. Sobre un acorde dominante deja de ser triste y se vuelve blues.';
+
+  @override
+  String get theoryCard5 =>
+      'El tritono desde la tónica: lo más lejos que se puede estar de casa, y la razón por la que el lidio parece flotar.';
+
+  @override
+  String get theoryCard6 =>
+      'Lo bastante cerca de la tónica para apoyarse en ella, lo bastante lejos para querer moverse. Añádela a un acorde y tienes una 9.';
+
+  @override
+  String get theoryCard7 =>
+      'La nota que hace que un acorde mayor suene nostálgico en vez de triunfal, y la que define el dórico en menor.';
+
+  @override
+  String get theoryCard8 =>
+      'Un semitono por encima de casa. La nota más inestable de la tonalidad, y justo por eso tan útil sobre una dominante.';
+
+  @override
+  String get theoryCard9 =>
+      'La sensible. Existe para resolver hacia arriba, y una tonalidad sin ella nunca termina de cerrarse.';
+
+  @override
+  String get theoryCard10 =>
+      'Un semitono por encima de la tercera, así que quiere bajar. Suspéndela en cambio y tienes el retardo más familiar de la música.';
+
+  @override
+  String get theoryCard11 =>
+      'La nota que oscurece una tonalidad menor hacia algo más antiguo. Súbela un semitono y el modo se vuelve dórico: es lo que el menor melódico eleva al subir.';
 }

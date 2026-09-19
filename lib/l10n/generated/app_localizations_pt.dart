@@ -1600,4 +1600,94 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get settingsWidgetOk => 'Os dados estão a chegar aos widgets.';
+
+  @override
+  String get navTraining => 'Treino';
+
+  @override
+  String get navStats => 'Estatísticas';
+
+  @override
+  String get navSettings => 'Definições';
+
+  @override
+  String get onboardingStatKeys => 'tonalidades\na dominar';
+
+  @override
+  String get onboardingStatModes => 'modos de\ntreino';
+
+  @override
+  String get onboardingStatMinutes => 'por dia\nchegam';
+
+  @override
+  String homePointsNeeded(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'Faltam $n pontos',
+      one: 'Falta 1 ponto',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String setupAnswerDelayBody(String delay) {
+    return '$delay antes de a voz revelar a nota.';
+  }
+
+  @override
+  String get freeModeRun => 'SÉRIE';
+
+  @override
+  String get wOf => 'de';
+
+  @override
+  String get wKeyOf => 'Tonalidade de';
+
+  @override
+  String get wWeakEmptyHint => 'Toca para começar a treinar';
+
+  @override
+  String get theoryCard1 =>
+      'A nota que transforma um acorde maior numa dominante: a tensão que torna a resolução inevitável.';
+
+  @override
+  String get theoryCard2 =>
+      'O grau que decide entre maior e menor. Move-o um meio-tom e toda a cor da tonalidade muda.';
+
+  @override
+  String get theoryCard3 =>
+      'A nota mais estável depois da tónica. É por ela que um acorde soa assente, e sem ela soa oco.';
+
+  @override
+  String get theoryCard4 =>
+      'O menor numa só nota. Sobre um acorde dominante deixa de ser triste e passa a ser blues.';
+
+  @override
+  String get theoryCard5 =>
+      'O trítono a partir da tónica: o mais longe de casa que se pode ir, e a razão por que o lídio parece flutuar.';
+
+  @override
+  String get theoryCard6 =>
+      'Perto o suficiente da tónica para se apoiar nela, longe o suficiente para querer mover-se. Junta-a a um acorde e tens uma 9.';
+
+  @override
+  String get theoryCard7 =>
+      'A nota que torna um acorde maior saudoso em vez de triunfante, e a que define o dórico em menor.';
+
+  @override
+  String get theoryCard8 =>
+      'Um meio-tom acima de casa. A nota mais instável da tonalidade, e é precisamente por isso que é tão útil sobre uma dominante.';
+
+  @override
+  String get theoryCard9 =>
+      'A sensível. Existe para resolver para cima, e uma tonalidade sem ela nunca fecha por completo.';
+
+  @override
+  String get theoryCard10 =>
+      'Um meio-tom acima da terceira, por isso quer descer. Suspende-a em vez disso e tens o retardo mais familiar da música.';
+
+  @override
+  String get theoryCard11 =>
+      'A nota que escurece uma tonalidade menor para algo mais antigo. Sobe-a um meio-tom e o modo torna-se dórico: é o que o menor melódico eleva ao subir.';
 }

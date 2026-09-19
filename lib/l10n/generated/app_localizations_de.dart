@@ -1603,4 +1603,94 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsWidgetOk => 'Die Daten erreichen die Widgets.';
+
+  @override
+  String get navTraining => 'Training';
+
+  @override
+  String get navStats => 'Statistik';
+
+  @override
+  String get navSettings => 'Einstellungen';
+
+  @override
+  String get onboardingStatKeys => 'Tonarten zu\nmeistern';
+
+  @override
+  String get onboardingStatModes => 'Trainings-\nmodi';
+
+  @override
+  String get onboardingStatMinutes => 'am Tag\nreichen';
+
+  @override
+  String homePointsNeeded(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'Noch $n Punkte nötig',
+      one: 'Noch 1 Punkt nötig',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String setupAnswerDelayBody(String delay) {
+    return '$delay, bevor die Stimme die Note verrät.';
+  }
+
+  @override
+  String get freeModeRun => 'RUNDE';
+
+  @override
+  String get wOf => 'von';
+
+  @override
+  String get wKeyOf => 'Tonart';
+
+  @override
+  String get wWeakEmptyHint => 'Tippen, um zu trainieren';
+
+  @override
+  String get theoryCard1 =>
+      'Die Note, die einen Durakkord zur Dominante macht – der Sog, der eine Auflösung unausweichlich wirken lässt.';
+
+  @override
+  String get theoryCard2 =>
+      'Die Stufe, die über Dur oder Moll entscheidet. Ein Halbton tiefer, und die ganze Farbe der Tonart kippt.';
+
+  @override
+  String get theoryCard3 =>
+      'Die stabilste Note nach dem Grundton. Sie lässt einen Akkord ruhen – und ohne sie klingt er hohl.';
+
+  @override
+  String get theoryCard4 =>
+      'Moll in einer einzigen Note. Über einem Dominantakkord klingt sie nicht mehr traurig, sondern bluesig.';
+
+  @override
+  String get theoryCard5 =>
+      'Der Tritonus zum Grundton – so weit weg von zu Hause wie möglich, und der Grund, warum Lydisch zu schweben scheint.';
+
+  @override
+  String get theoryCard6 =>
+      'Nah genug am Grundton, um sich anzulehnen, weit genug, um weiterzuwollen. In einen Akkord gelegt wird sie zur 9.';
+
+  @override
+  String get theoryCard7 =>
+      'Die Note, die einen Durakkord wehmütig statt triumphal klingen lässt – und die in Moll das Dorische ausmacht.';
+
+  @override
+  String get theoryCard8 =>
+      'Ein Halbton über dem Grundton. Die instabilste Note der Tonart – und genau deshalb über einer Dominante so brauchbar.';
+
+  @override
+  String get theoryCard9 =>
+      'Der Leitton. Er ist da, um nach oben aufzulösen – eine Tonart ohne ihn schließt sich nie ganz.';
+
+  @override
+  String get theoryCard10 =>
+      'Ein Halbton über der Terz, also will sie fallen. Hält man sie stattdessen, entsteht der vertrauteste Vorhalt der Musik.';
+
+  @override
+  String get theoryCard11 =>
+      'Die Note, die eine Molltonart in etwas Älteres verdunkelt. Einen Halbton höher wird daraus Dorisch – genau die Stufe, die Melodisch-Moll aufwärts anhebt.';
 }

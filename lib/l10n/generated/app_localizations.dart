@@ -2943,6 +2943,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Data is reaching the widgets.'**
   String get settingsWidgetOk;
+
+  /// No description provided for @navTraining.
+  ///
+  /// In en, this message translates to:
+  /// **'Training'**
+  String get navTraining;
+
+  /// No description provided for @navStats.
+  ///
+  /// In en, this message translates to:
+  /// **'Stats'**
+  String get navStats;
+
+  /// No description provided for @navSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get navSettings;
+
+  /// No description provided for @onboardingStatKeys.
+  ///
+  /// In en, this message translates to:
+  /// **'keys to\nmaster'**
+  String get onboardingStatKeys;
+
+  /// No description provided for @onboardingStatModes.
+  ///
+  /// In en, this message translates to:
+  /// **'training\nmodes'**
+  String get onboardingStatModes;
+
+  /// No description provided for @onboardingStatMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'a day is\nenough'**
+  String get onboardingStatMinutes;
+
+  /// No description provided for @homePointsNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 more point needed} other{{n} more points needed}}'**
+  String homePointsNeeded(int n);
+
+  /// No description provided for @setupAnswerDelayBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{delay} before the voice reveals the note.'**
+  String setupAnswerDelayBody(String delay);
+
+  /// No description provided for @freeModeRun.
+  ///
+  /// In en, this message translates to:
+  /// **'RUN'**
+  String get freeModeRun;
+
+  /// No description provided for @wOf.
+  ///
+  /// In en, this message translates to:
+  /// **'of'**
+  String get wOf;
+
+  /// No description provided for @wKeyOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Key of'**
+  String get wKeyOf;
+
+  /// No description provided for @wWeakEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to start training'**
+  String get wWeakEmptyHint;
+
+  /// No description provided for @theoryCard1.
+  ///
+  /// In en, this message translates to:
+  /// **'The note that turns a major chord into a dominant — the pull that makes a resolution feel inevitable.'**
+  String get theoryCard1;
+
+  /// No description provided for @theoryCard2.
+  ///
+  /// In en, this message translates to:
+  /// **'The degree that decides major or minor. Move it one semitone and the whole colour of the key changes.'**
+  String get theoryCard2;
+
+  /// No description provided for @theoryCard3.
+  ///
+  /// In en, this message translates to:
+  /// **'The most stable note after the tonic. It is why a chord sounds settled, and why removing it sounds hollow.'**
+  String get theoryCard3;
+
+  /// No description provided for @theoryCard4.
+  ///
+  /// In en, this message translates to:
+  /// **'Minor in one note. Over a dominant chord it stops being sad and starts being blue.'**
+  String get theoryCard4;
+
+  /// No description provided for @theoryCard5.
+  ///
+  /// In en, this message translates to:
+  /// **'The tritone from the tonic — the furthest you can get from home, and the reason lydian sounds like it is floating.'**
+  String get theoryCard5;
+
+  /// No description provided for @theoryCard6.
+  ///
+  /// In en, this message translates to:
+  /// **'Close enough to the tonic to lean on it, far enough to want to move. Add it to a chord and you get a 9.'**
+  String get theoryCard6;
+
+  /// No description provided for @theoryCard7.
+  ///
+  /// In en, this message translates to:
+  /// **'The note that makes a major chord sound wistful rather than triumphant — and the one that defines dorian in minor.'**
+  String get theoryCard7;
+
+  /// No description provided for @theoryCard8.
+  ///
+  /// In en, this message translates to:
+  /// **'One semitone above home. The most unstable note in the key, which is exactly why it is so useful over a dominant.'**
+  String get theoryCard8;
+
+  /// No description provided for @theoryCard9.
+  ///
+  /// In en, this message translates to:
+  /// **'The leading tone. It exists to resolve upward, and a key without it never quite closes.'**
+  String get theoryCard9;
+
+  /// No description provided for @theoryCard10.
+  ///
+  /// In en, this message translates to:
+  /// **'A semitone above the third, so it wants to fall. Suspend it instead and you get the most familiar delay in music.'**
+  String get theoryCard10;
+
+  /// No description provided for @theoryCard11.
+  ///
+  /// In en, this message translates to:
+  /// **'The note that darkens a minor key into something older. Raise it a semitone and the mode turns dorian — it is what melodic minor lifts on the way up.'**
+  String get theoryCard11;
 }
 
 class _AppLocalizationsDelegate
