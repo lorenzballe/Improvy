@@ -604,12 +604,12 @@ class _ResponseTimeCardState extends State<_ResponseTimeCard> {
     if (showDragValue) {
       final whenStr = _formatGamesAgo(_selectedIndex!);
       if (valueToShow == 0) {
-        labelToShow = 'No data • $whenStr';
+        labelToShow = context.l10n.statsNoData(whenStr);
       } else {
-        labelToShow = 'Response Time • $whenStr';
+        labelToShow = context.l10n.statsResponseTimeWhen(whenStr);
       }
     } else {
-      labelToShow = 'Response Time';
+      labelToShow = context.l10n.statsResponseTime;
     }
 
     return ClipRRect(
@@ -1145,15 +1145,21 @@ class _KeyboardHeatmapCard extends StatefulWidget {
 class _KeyboardHeatmapCardState extends State<_KeyboardHeatmapCard> {
   String _range = '30';
 
+  /// The twelve names the keyboard below is drawn with, by pitch class.
+  static const _keyByPitchClass = [
+    'C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B',
+  ];
+
+  /// Folds any spelling onto the key it lives on.
+  ///
+  /// The trainer records a note the way its key spells it — E♯ in F♯ major,
+  /// C♭ in G♭, E𝄫 for the ♭2 of D♭ — and a table that only knew the five
+  /// black-key spellings kept those answers out of the drawing while still
+  /// letting them stretch the colour scale. Empty for anything that is not a
+  /// note at all.
   static String _canon(String note) {
-    const m = {
-      'C#': 'C#', 'Db': 'C#', 'C♯': 'C#', 'D♭': 'C#',
-      'D#': 'Eb', 'Eb': 'Eb', 'D♯': 'Eb', 'E♭': 'Eb',
-      'F#': 'F#', 'Gb': 'F#', 'F♯': 'F#', 'G♭': 'F#',
-      'G#': 'Ab', 'Ab': 'Ab', 'G♯': 'Ab', 'A♭': 'Ab',
-      'A#': 'Bb', 'Bb': 'Bb', 'A♯': 'Bb', 'B♭': 'Bb',
-    };
-    return m[note] ?? note;
+    final pc = kNoteToSemitone[note.split('/').first.trim()];
+    return pc == null ? '' : _keyByPitchClass[pc];
   }
 
   /// Average response time per note, over the recent games.
