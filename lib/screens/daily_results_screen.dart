@@ -10,6 +10,7 @@ import 'package:share_plus/share_plus.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_info.dart';
 import '../models/daily_challenge.dart';
+import '../models/training_mode.dart';
 import '../providers/app_provider.dart';
 import '../services/analytics_service.dart';
 import '../services/haptics_service.dart';
@@ -18,7 +19,7 @@ import '../constants/app_scroll.dart';
 
 /// Result screen for the Daily Challenge — the once-a-day moment, so it gets
 /// its own stage instead of the standard session summary: verdict + score,
-/// the 10-question grid, the challenge streak with its month calendar, and
+/// the answer grid, the challenge streak with its month calendar, and
 /// the share button (Wordle-style text grid — pasteable anywhere).
 ///
 /// No "retry": one attempt per day is the whole point.
@@ -74,11 +75,16 @@ class _DailyResultsScreenState extends State<DailyResultsScreen> {
     if (r.perfect) return l.dailyFlawless;
     // Under a 60-second budget, an unfinished run means the clock won.
     if (!r.completed) return l.dailyOutOfTime;
-    if (r.correct >= 8) return l.dailySharp;
-    if (r.correct >= 6) return l.dailySolid;
-    if (r.correct >= 4) return l.dailyWarmingUp;
+    // Shares of the run, not counts: these were written for ten questions,
+    // and when the daily grew to fifteen they went on calling 6/15 solid.
+    final share = _shareOf(r);
+    if (share >= 0.8) return l.dailySharp;
+    if (share >= 0.6) return l.dailySolid;
+    if (share >= 0.4) return l.dailyWarmingUp;
     return l.dailyTomorrow;
   }
+
+  static double _shareOf(DailyResult r) => r.total == 0 ? 0 : r.correct / r.total;
 
   Future<void> _share(DailyResult r, int streak) async {
     HapticsService.impactMedium();
@@ -89,7 +95,14 @@ class _DailyResultsScreenState extends State<DailyResultsScreen> {
     final text = buildDailyShareText(r, streak,
         installUrl: installUrlFor(defaultTargetPlatform, isWeb: kIsWeb));
     try {
-      await Share.share(text);
+      // The iPad's popover needs an anchor or the plugin throws; see the
+      // same call in DailyChallengeCard.
+      final box = context.findRenderObject() as RenderBox?;
+      await Share.share(
+        text,
+        sharePositionOrigin:
+            box == null ? null : box.localToGlobal(Offset.zero) & box.size,
+      );
     } catch (_) {
       // No share sheet on this platform (e.g. web without navigator.share):
       // fall back to the clipboard rather than leaving a dead button.
@@ -229,9 +242,9 @@ class _DailyResultsScreenState extends State<DailyResultsScreen> {
   Widget _hero(DailyResult r, String notation) {
     final accent = r.perfect
         ? _gold
-        : r.correct >= 6
+        : _shareOf(r) >= 0.6
             ? _green
-            : r.correct >= 4
+            : _shareOf(r) >= 0.4
                 ? const Color(0xFFF97316)
                 : _red;
     return Container(
@@ -282,14 +295,21 @@ class _DailyResultsScreenState extends State<DailyResultsScreen> {
         const SizedBox(height: 14),
         Row(mainAxisAlignment: MainAxisAlignment.center, children: [
           _chip(
+            // An …Of What? day is built ON a note, not played in a key —
+            // calling that note a major key would be a plain lie.
             child: Row(mainAxisSize: MainAxisSize.min, children: [
+              if (r.mode == TrainingMode.ofWhat)
+                Text(context.l10n.dailySubjectOn,
+                    style: const TextStyle(
+                        fontSize: 13, fontWeight: FontWeight.w800, color: _goldSoft)),
               NoteText(
                   note: formatNoteForDisplay(r.key, notation),
                   style: const TextStyle(
                       fontSize: 13, fontWeight: FontWeight.w800, color: _goldSoft)),
-              Text(' ${context.l10n.dailyMajorSuffix}',
-                  style: const TextStyle(
-                      fontSize: 13, fontWeight: FontWeight.w800, color: _goldSoft)),
+              if (r.mode != TrainingMode.ofWhat)
+                Text(' ${context.l10n.dailyMajorSuffix}',
+                    style: const TextStyle(
+                        fontSize: 13, fontWeight: FontWeight.w800, color: _goldSoft)),
             ]),
             border: _gold.withValues(alpha: 0.3),
             fill: _gold.withValues(alpha: 0.08),
@@ -457,7 +477,17 @@ class _MonthCalendar extends StatelessWidget {
     final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
     final leading = (first.weekday - DateTime.monday) % 7; // blanks before day 1
 
-    const labels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    // The week's initials in the reader's language, Monday first like the
+    // columns — from intl's own day names, not a row of English letters.
+    final locale = Localizations.localeOf(context).toString();
+    final aMonday = DateTime(2024, 1, 1);
+    final labels = [
+      for (var i = 0; i < 7; i++)
+        DateFormat.E(locale)
+            .format(aMonday.add(Duration(days: i)))
+            .substring(0, 1)
+            .toUpperCase(),
+    ];
     final cells = <Widget>[
       for (final l in labels)
         Center(

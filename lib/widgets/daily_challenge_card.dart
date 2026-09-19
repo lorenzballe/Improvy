@@ -104,7 +104,15 @@ class _DailyChallengeCardState extends State<DailyChallengeCard> {
     final text = buildDailyShareText(result, streak,
         installUrl: installUrlFor(defaultTargetPlatform, isWeb: kIsWeb));
     try {
-      await Share.share(text);
+      // iPad presents the sheet as a popover and refuses to without an
+      // anchor — the plugin throws, and the catch below quietly turned every
+      // share on an iPad into "copied". The card's own box is the anchor.
+      final box = context.findRenderObject() as RenderBox?;
+      await Share.share(
+        text,
+        sharePositionOrigin:
+            box == null ? null : box.localToGlobal(Offset.zero) & box.size,
+      );
     } catch (_) {
       // No share sheet on this platform — fall back to the clipboard rather
       // than leaving a dead button.
