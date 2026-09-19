@@ -1,374 +1,89 @@
-# 🚀 Improvy Flutter v1.0.19 - DEPLOYMENT READY
-
-**Status**: Ready for iOS App Store & Android Play Store submission  
-**Date**: July 8, 2026  
-**Version**: 1.0.19+25  
-**Build Type**: Release (optimized)
-
----
-
-## ✅ Pre-Launch Verification
-
-### App Functionality
-- [x] Home screen loads instantly
-- [x] Training modes work (diatonic, chromatic, custom)
-- [x] Statistics tracking accurate
-- [x] Animal levels progress correctly
-- [x] Streaks count properly
-- [x] Settings persist across sessions
-- [x] Onboarding complete and skippable
-- [x] Tutorial optional and clear
-
-### RevenueCat Integration
-- [x] Paywall displays correctly
-- [x] IAP purchase flow works
-- [x] Restore purchases functional
-- [x] Pro status persists
-- [x] Locked features gated behind Pro
-- [x] Sandbox testing verified
-
-### Analytics & Tracking
-- [x] PostHog events firing
-- [x] Session start/end tracked
-- [x] Level-up events recorded
-- [x] Purchase events logged
-- [x] Analytics offline queue working
-
-### Legal & Compliance
-- [x] Privacy Policy complete & correct
-- [x] Terms of Service complete & correct
-- [x] Privacy Policy link reachable
-- [x] Terms link reachable
-- [x] Support email active
-- [x] GDPR requirements met
-- [x] CCPA compliant
-- [x] EU consent flows (if needed) ready
-
-### Platform-Specific
-**iOS:**
-- [x] Runs on iOS 12.0+
-- [x] iPhone portrait-locked
-- [x] Edge-to-edge safe areas respected
-- [x] Status bar translucent
-- [x] Native audio playback working
-- [x] Haptic feedback responsive
-
-**Android:**
-- [x] Runs on Android 5.0+ (API 21+)
-- [x] Portrait orientation enforced
-- [x] System bar translucent
-- [x] Native audio playback working
-- [x] Haptic feedback responsive
-- [x] Permissions declared in manifest
-
-### Performance Checklist
-- [x] App launches in < 2 seconds
-- [x] Training question appears in < 500ms
-- [x] No memory leaks over 30-min session
-- [x] Frame rate stable (60fps on modern devices)
-- [x] No crashes in extended testing
-- [x] Battery drain < 5% per 30-min session
-
-### Network & Offline
-- [x] Handles offline mode gracefully
-- [x] RevenueCat offline retry working
-- [x] Analytics offline queue implemented
-- [x] Timeout handling robust
-- [x] No silent failures
-
----
-
-## 📦 Build Artifacts
-
-### Android Release Build
-```
-File: build/app/outputs/bundle/release/app-release.aab
-Size: ~15-20 MB (estimated)
-Signed: ✓ Yes (with keystore)
-Optimized: ✓ Yes (R8/Proguard)
-Configuration: Release (--release flag)
-```
-
-**Location**: Ready for upload to Play Console
-
-### iOS Release Build
-```
-File: build/ios/iphoneos/Runner.app
-Status: ✓ Built (unsigned, needs Xcode archive & signing)
-Next Step: Archive in Xcode → Upload to TestFlight
-```
-
-**Location**: Ready for archiving
-
----
-
-## 🎯 Store Submission Checklist
-
-### iOS App Store
-
-#### Metadata Complete
-- [x] App Name: "Improvy"
-- [x] Subtitle: "Ear Training for Musicians"
-- [x] Description: Full compelling copy
-- [x] Keywords: Music training, intervals, etc
-- [x] Category: Music
-- [x] Rating: 4+ (PEGI)
-- [x] Privacy Policy URL: https://improvy.app/#privacy
-- [x] Terms URL: https://improvy.app/#terms
-- [x] Support Email: thebalecompany@gmail.com
-
-#### Screenshots Ready
-- [ ] Screenshot 1: Home (1170×2532px)
-- [ ] Screenshot 2: Training (1170×2532px)
-- [ ] Screenshot 3: Stats (1170×2532px)
-- [ ] Screenshot 4: Modes (1170×2532px)
-- [ ] Screenshot 5: Customization (1170×2532px)
-- [ ] Screenshot 6: Paywall (1170×2532px) — Optional
-- [ ] Screenshot 7: Dark Mode (1170×2532px) — Optional
-- [ ] Screenshot 8: Animals (1170×2532px) — Optional
-
-#### Compliance
-- [x] Privacy Manifest (iOS 17+) included
-- [x] Age rating IARC form completed
-- [x] No third-party code unsigned
-- [x] Bitcode disabled (if applicable)
-- [x] App thinning optimized
-- [x] No hardcoded ads or links
-
-#### Build Ready
-- [ ] TestFlight internal build uploaded
-- [ ] Internal testers: 1-2 people
-- [ ] Testing completed: ✓ No crashes
-- [ ] RevenueCat sandbox verified
-- [ ] Build version incremented
-
-### Android Play Store
-
-#### Metadata Complete
-- [x] App Name: "Improvy"
-- [x] Short Description: Concise copy
-- [x] Full Description: Same as iOS
-- [x] Keywords: Music training, intervals, etc
-- [x] Category: Music & Audio
-- [x] Content Rating: Everyone (PEGI 3)
-- [x] Privacy Policy URL: https://improvy.app/#privacy
-- [x] Terms URL: https://improvy.app/#terms
-- [x] Support Email: thebalecompany@gmail.com
-
-#### Screenshots Ready
-- [ ] Screenshot 1: Home (1080×1920px)
-- [ ] Screenshot 2: Training (1080×1920px)
-- [ ] Screenshot 3: Stats (1080×1920px)
-- [ ] Screenshot 4: Modes (1080×1920px)
-- [ ] Screenshot 5: Customization (1080×1920px) — Optional
-- [ ] Screenshot 6: Paywall (1080×1920px) — Optional
-- [ ] Screenshot 7: Dark Mode (1080×1920px) — Optional
-- [ ] Screenshot 8: Animals (1080×1920px) — Optional
-
-#### Compliance
-- [x] Data Safety form completed
-- [x] Content rating IARC verified
-- [x] Play Policy compliance confirmed
-- [x] No policy violations
-
-#### Build Ready
-- [x] App Bundle (AAB) signed
-- [x] Upload to Play Console internal testing
-- [x] Internal testing: ✓ Pass
-- [x] RevenueCat license key verified
-- [x] Version code incremented
-
----
-
-## 🔐 Security Checklist
-
-### Code & Dependencies
-- [x] No sensitive data in code
-- [x] No API keys in git
-- [x] Environment variables configured
-- [x] RevenueCat key injected at build time
-- [x] PostHog key injected at build time
-- [x] All dependencies up-to-date (or pinned for stability)
-
-### Data Privacy
-- [x] No personal data collected without consent
-- [x] Analytics anonymous
-- [x] Purchase data encrypted in transit
-- [x] Local data not synced to cloud
-- [x] No tracking IDs shared
-- [x] Privacy Policy accurate
-
-### Network Security
-- [x] TLS/SSL for all connections
-- [x] Certificate pinning (if applicable)
-- [x] RevenueCat HTTPS verified
-- [x] PostHog HTTPS verified
-- [x] No unencrypted API calls
-
----
-
-## 📊 Release Notes (v1.0.19)
-
-```
-v1.0.19 (Build 25)
-==================
-
-✨ NEW
-  • Integration with AI development toolkit (9Router, Ruflo, Graphify)
-  • Enhanced analytics dashboard
-  • Improved error handling
-
-🐛 FIXES
-  • Fixed RevenueCat API key issue from v1.0.18
-  • Resolved iOS system UI styling edge cases
-  • Improved network error recovery
-
-⚡ PERFORMANCE
-  • Optimized music engine for faster question generation
-  • Reduced app startup time by 20%
-  • Improved memory usage on older devices
-
-📚 DOCS
-  • Complete deployment guide added
-  • Store assets prepared
-  • Release build automation scripts
-
-🌍 COMPLIANCE
-  • Updated privacy policy (June 2026)
-  • GDPR/CCPA verified
-  • All legal requirements met
-
-Compatible: iOS 12+, Android 5.0+
-```
-
----
-
-## ⏱️ Timeline to Launch
-
-### Phase 1: Submission (Today - Next 3 Days)
-- Create screenshots (2-3 hours)
-- Upload to TestFlight (iOS)
-- Upload to Play Console internal testing (Android)
-- Internal testing complete ✓
-
-### Phase 2: Review (Week 1-2)
-- Apple App Review (1-2 weeks)
-- Google Play Review (1-3 days)
-- Respond to any reviewer requests
-
-### Phase 3: Launch (Week 2-3)
-- Both stores approve
-- Release to production
-- Monitor crash reports
-- Gather initial user feedback
-
-### Phase 4: Post-Launch (Week 3+)
-- Monitor analytics
-- Iterate on user feedback
-- Plan v1.1 features
-
-**Total Timeline**: 2-3 weeks to both stores
-
----
-
-## 🎯 Success Metrics
-
-After launch, track:
-
-```
-First Week Targets:
-  • 50+ downloads
-  • < 5% crash rate
-  • >= 4.0 star rating
-  • 20%+ DAU
-  • Analytics events: 100+ per day
-
-First Month Targets:
-  • 500+ downloads
-  • 5%+ Pro conversion
-  • < 2% crash rate
-  • >= 4.5 star rating
-  • 30%+ DAU
-```
-
----
-
-## 📋 Final Deployment Checklist
-
-### Day Before Submission
-- [ ] Bump version to 1.0.19
-- [ ] Update CHANGELOG.md
-- [ ] Tag git: `git tag v1.0.19`
-- [ ] Commit all changes
-- [ ] Push to origin/main
-- [ ] Create screenshots (8 per platform)
-- [ ] Review all metadata one more time
-
-### Day Of Submission
-- [ ] Screenshots uploaded to both stores
-- [ ] Metadata verified in preview
-- [ ] Compliance forms completed
-- [ ] Build uploaded to TestFlight
-- [ ] Build uploaded to Play Console
-- [ ] Internal testing passed
-- [ ] Submit for review
-
-### Post-Submission
-- [ ] Monitor Apple review status
-- [ ] Monitor Google review status
-- [ ] Prepare launch day monitoring
-- [ ] Set up dashboard alerts
-- [ ] Prepare release notes
-
----
-
-## 🚀 GO/NO-GO Decision
-
-**GO CRITERIA** (ALL MUST BE TRUE):
-- [ ] No crashes in 30-min testing
-- [ ] RevenueCat works end-to-end
-- [ ] Analytics tracking correctly
-- [ ] Legal links reachable
-- [ ] All screenshots ready
-- [ ] Metadata proofread
-- [ ] Build signing verified
-- [ ] Internal testing passed
-
-**STATUS**: ✅ **GO FOR LAUNCH**
-
-All criteria met. Ready to submit to app stores.
-
----
-
-## 📞 Support & Monitoring
-
-### During Review
-- **Apple**: Check App Store Connect daily
-- **Google**: Check Play Console daily
-- **Email**: Monitor thebalecompany@gmail.com
-- **Slack/Discord**: Set up notifications
-
-### Post-Launch
-- **Analytics**: PostHog dashboard
-- **Crashes**: Sentry (if enabled)
-- **Reviews**: Check daily for first week
-- **User feedback**: Respond within 24h
-
----
-
-## 📚 Related Documentation
-
-- [COMPLETION_PLAN.md](COMPLETION_PLAN.md) — Full checklist
-- [STORE_ASSETS.md](STORE_ASSETS.md) — Screenshots & metadata
-- [COMPLETE_STACK_GUIDE.md](COMPLETE_STACK_GUIDE.md) — AI dev toolkit usage
-- [9ROUTER_GUIDE.md](9ROUTER_GUIDE.md) — Token savings
-- [RUFLO_GUIDE.md](RUFLO_GUIDE.md) — Agent orchestration
-- [GRAPHIFY_GUIDE.md](GRAPHIFY_GUIDE.md) — Knowledge mapping
-
----
-
-**Last Updated**: July 8, 2026  
-**Owner**: Lorenzo Ballestrazzi  
-**Next Action**: Create screenshots & submit
-
-🎉 **Ready to launch Improvy!**
+# Improvy — release readiness
+
+**Version**: 1.17.0 (build 105) · `com.improvy.app` · iOS 15+ (widgets 16+), Android 7+ (API 24)
+**Last full check**: 19 September 2026, on this branch. Everything below was
+actually run, not ticked.
+
+## What was verified
+
+| Check | Command | Result |
+|---|---|---|
+| Static analysis, warnings fatal (Codemagic's gate) | `flutter analyze --no-fatal-infos` | **No issues found** |
+| Flutter test suite (what CI and Codemagic run) | `flutter test` | **381 passed**, 0 failed, 7 skipped by design (golden + `ios` tags) |
+| iOS purpose-string scan of every locked package | `flutter test --tags ios --run-skipped` | passed |
+| Localizations in sync with the ARB files | `flutter gen-l10n` → no diff | 6 languages, 496 keys each, no gaps |
+| iOS project in step with Firebase | `dart run tool/sync_firebase_ios.dart --check` | in step |
+| Cloud Functions (Stripe checkout, webhooks) | `cd functions && npm ci && npm test` | 32 passed |
+| Firestore rules against the emulator | `cd tool/firestore_rules && npm test` | 16 passed |
+| Web release build (the GitHub Pages preview) | `flutter build web --release --base-href /Improvy/` | built |
+| Android release build | — | **not run here**: the sandbox cannot reach dl.google.com (Android SDK and Google's Maven repository). Build it on a machine with the SDK: `flutter build appbundle --release` with `android/key.properties` in place. |
+| iOS archive | — | Codemagic (`codemagic.yaml`), which runs analyze, the tests and the privacy check first. |
+
+Toolchain used: Flutter 3.47.5 stable / Dart 3.13.4, Node 22, Java 21 — the
+same channel Codemagic and the workflows pin.
+
+## What changed in this pass
+
+Full detail is in the commit messages on this branch. In short:
+
+* **Progression**: Note to Number ran thirty questions at every tier, so its
+  Master tier could never open. It now runs 30/40/50 by tier like the other
+  modes.
+* **Daily Challenge**: a force-quit mid-run was a free retry (the recovery
+  looked for a direction the daily never runs); results verdicts were still
+  scaled for ten questions; …Of What? days credited a stale tier and row.
+* **Home**: Resume paywalled free games outside C; an …Of What? session was
+  labelled "Of-what"; widget taps could strand the app on a tab with no nav.
+* **Widgets**: the weakest-key widget opened a non-existent key on Do-Re-Mi
+  phones; the level widget and the theory card were English on every phone;
+  iOS cached its labels for the life of the extension; Android's tall
+  widgets were indistinguishable in the picker; the Android 12+ splash
+  colour was lost in dark mode.
+* **Accounts and purchases**: deleting an account with a stale sign-in lost
+  the promo code without deleting the account; two concurrent restores.
+* **iPad**: the Share button always fell back to "copied".
+* **Compliance**: `ios/Runner/PrivacyInfo.xcprivacy` now declares the
+  account data collected since 1.17.0 (Email Address, User ID, linked);
+  the store copy no longer says "No account".
+* **Hygiene**: analyzer silent, 15 MB of committed golden-failure diffs
+  removed, README written, web shell named, dead workflow trigger removed,
+  Android builds without the keystore on hand.
+
+## Before you press Submit — things only you can do
+
+1. **App Store Connect → App Privacy**: update the label to the table at the
+   top of `APPLE_REVIEW_NOTES.md` (Email Address and User ID are collected
+   now, linked to the user, not used for tracking). The old "no sign-in"
+   reply text must not be reused.
+2. **Play Console → Data safety**: the same additions (`FIREBASE_SETUP.md`,
+   section 7). Both stores also require in-app account deletion — it exists,
+   in the Account card in Settings.
+3. **Pro price**: three places must agree — the store tiers, the paywall's
+   fallback `€20,99` (`lib/widgets/paywall_modal.dart`), and the website
+   checkout's 19,99 € (`functions/lib/catalog.js`). Today the last two differ.
+4. **Firebase** (`FIREBASE_SETUP.md`): Play's SHA-1 in the Firebase project
+   (Google sign-in on Android does not start without it), Firestore rules
+   published, "Sign in with Apple" ticked on the App ID and its stale
+   profile deleted.
+5. **Website purchase** (`STRIPE_SETUP.md`): Stripe account and webhook,
+   Blaze plan, the deploy key and the three GitHub secrets, the authorised
+   domain — none of it is code.
+6. **Build number**: pubspec is at `+105`. Codemagic numbers the iOS build
+   itself (latest TestFlight + 1); Android takes `+105` from pubspec, so
+   bump it again for every upload after this one. If you want a What's New
+   sheet for these fixes, bump to 1.17.1 and add the entry in
+   `lib/constants/release_notes.dart` — the version test keeps them in step.
+7. **On a real iPhone, once**: Pocket Mode keeps speaking with the screen
+   locked (the reviewer's video), the widgets fill after the first launch,
+   Sign in with Apple and Google round-trip, and Restore Purchases does not
+   pop an App Store password prompt on sign-out (RevenueCat calls
+   `restorePurchases` there; StoreKit 2 may ask for the Apple ID).
+8. **Screenshots** for both stores (`STORE_ASSETS.md`), and the ASCII-safe
+   App Store text in `STORE_DESCRIPTION.md`.
+
+## Not blocking, worth knowing
+
+* 148 developer screenshots (`_*.png`, 55 MB) sit in the repository root.
+  They are not shipped and nothing references them; deleting them is a
+  judgement call, not a fix.
+* `COMPLETION_PLAN.md` describes the v1.0 launch plan and is historical.
