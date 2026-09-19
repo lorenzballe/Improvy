@@ -117,7 +117,7 @@
         </receiver>
         <receiver
             android:name=".ImprovyMapTallWidgetProvider"
-            android:label="@string/widget_map_name"
+            android:label="@string/widget_map_tall_name"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -139,7 +139,7 @@
         </receiver>
         <receiver
             android:name=".ImprovyStreakTallWidgetProvider"
-            android:label="@string/widget_streak_widget_name"
+            android:label="@string/widget_streak_tall_name"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

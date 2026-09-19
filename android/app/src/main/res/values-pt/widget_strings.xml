@@ -42,4 +42,6 @@
     <string name="widget_theory_label">O GRAU DO DIA</string>
     <string name="widget_theory_hint">Toca para a ficha completa</string>
     <string name="widget_theory_text_placeholder">A nota que transforma um acorde maior num dominante.</string>
+    <string name="widget_map_tall_description">Doze tonalidades, acesas conforme as conheces, com o teu progresso total.</string>
+    <string name="widget_streak_tall_description">Dias seguidos num mosaico mais alto, e um aviso antes de os perderes.</string>
 </resources>

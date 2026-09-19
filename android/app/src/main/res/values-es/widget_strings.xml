@@ -42,4 +42,6 @@
     <string name="widget_theory_label">EL GRADO DEL DÍA</string>
     <string name="widget_theory_hint">Toca para la ficha completa</string>
     <string name="widget_theory_text_placeholder">La nota que convierte un acorde mayor en un dominante.</string>
+    <string name="widget_map_tall_description">Doce tonalidades, iluminadas según lo bien que las conoces, con tu progreso total.</string>
+    <string name="widget_streak_tall_description">Días seguidos en un mosaico más alto, y un aviso antes de perderlos.</string>
 </resources>

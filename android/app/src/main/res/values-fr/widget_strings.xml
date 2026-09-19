@@ -42,4 +42,6 @@
     <string name="widget_theory_label">LE DEGRÉ DU JOUR</string>
     <string name="widget_theory_hint">Touchez pour la fiche complète</string>
     <string name="widget_theory_text_placeholder">La note qui transforme un accord majeur en dominante.</string>
+    <string name="widget_map_tall_description">Douze tonalités, éclairées selon ce que vous en savez, avec votre progression totale.</string>
+    <string name="widget_streak_tall_description">Les jours d\'affilée sur une tuile plus haute, et une alerte avant de les perdre.</string>
 </resources>

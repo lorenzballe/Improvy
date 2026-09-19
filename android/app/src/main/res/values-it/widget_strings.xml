@@ -42,4 +42,6 @@
     <string name="widget_theory_label">IL GRADO DEL GIORNO</string>
     <string name="widget_theory_hint">Tocca per la scheda completa</string>
     <string name="widget_theory_text_placeholder">La nota che trasforma un accordo maggiore in un dominante.</string>
+    <string name="widget_map_tall_description">Dodici tonalità, illuminate da quanto le conosci, con il tuo progresso totale.</string>
+    <string name="widget_streak_tall_description">Giorni di fila su un riquadro più alto, e un avviso prima di perderli.</string>
 </resources>

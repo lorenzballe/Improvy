@@ -77,4 +77,8 @@
     <string name="widget_theory_hint">Tap for the full card</string>
     <string name="widget_theory_degree_placeholder">♭7</string>
     <string name="widget_theory_text_placeholder">The note that turns a major chord into a dominant.</string>
+    <string name="widget_map_tall_name">Improvy · Key mastery (tall)</string>
+    <string name="widget_map_tall_description">Twelve keys, lit by how well you know them, with your total progress.</string>
+    <string name="widget_streak_tall_name">Improvy · Streak (tall)</string>
+    <string name="widget_streak_tall_description">Days in a row on a taller tile, and a warning before you lose them.</string>
 </resources>

@@ -42,4 +42,6 @@
     <string name="widget_theory_label">DIE STUFE DES TAGES</string>
     <string name="widget_theory_hint">Für die ganze Karte tippen</string>
     <string name="widget_theory_text_placeholder">Der Ton, der aus einem Dur-Akkord einen Dominantseptakkord macht.</string>
+    <string name="widget_map_tall_description">Zwölf Tonarten, erhellt davon, wie gut du sie kennst, mit deinem Gesamtfortschritt.</string>
+    <string name="widget_streak_tall_description">Tage in Folge auf einer höheren Kachel, und eine Warnung, bevor sie weg sind.</string>
 </resources>
