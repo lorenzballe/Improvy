@@ -77,17 +77,26 @@ class StorageService {
     await _prefs.setString(_statsKey, jsonEncode(stats.toJson()));
   }
 
-  // Lightweight per-answer snapshot — lifetime counters + dailyHistory + the
-  // in-progress session, but NOT the heavy sessionHistory list. Written after
-  // every answer so an OS-kill mid-game loses nothing; cheap because it omits
-  // the (up to 300-game) history that made a full saveStats janky per tap.
-  Future<void> savePending(AppStats s) async {
+  // Lightweight per-answer snapshot — lifetime counters + the day being
+  // played + the in-progress session, but NOT the heavy sessionHistory list.
+  // Written after every answer so an OS-kill mid-game loses nothing.
+  //
+  // [dayKey] is today, and the snapshot carries that one day rather than the
+  // whole of dailyHistory. A session can only ever change today's entry, and
+  // dailyHistory grows by one entry for every day the app is ever played —
+  // so writing all of it made the cost of every single answer grow with how
+  // long someone had been a user. Three years in, that is a thousand entries
+  // re-encoded fifteen times a game, to record a change to one of them.
+  //
+  // The reader merges rather than replaces, so nothing older is lost.
+  Future<void> savePending(AppStats s, String dayKey) async {
+    final today = s.dailyHistory[dayKey];
     await _prefs.setString(_pendingKey, jsonEncode({
       'totalSessions': s.totalSessions,
       'totalAttempts': s.totalAttempts,
       'totalCorrect': s.totalCorrect,
       'totalResponseTime': s.totalResponseTime,
-      'dailyHistory': s.dailyHistory.map((k, v) => MapEntry(k, v.toJson())),
+      'dailyHistory': {if (today != null) dayKey: today.toJson()},
       'currentSessionCorrect': s.currentSessionCorrect,
       'currentSessionTotal': s.currentSessionTotal,
       'currentSessionAnswers': s.currentSessionAnswers.map((a) => a.toJson()).toList(),

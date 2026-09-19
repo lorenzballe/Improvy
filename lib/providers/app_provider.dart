@@ -507,10 +507,14 @@ class AppProvider extends ChangeNotifier {
       _storage.removePending();
       return;
     }
-    final daily = (p['dailyHistory'] as Map<String, dynamic>?)?.map(
+    // Merged, not replaced: the snapshot carries only the day that was being
+    // played, and every other day it does not mention is one that was already
+    // saved and cannot have changed since.
+    final snapshotDays = (p['dailyHistory'] as Map<String, dynamic>?)?.map(
           (k, v) => MapEntry(k, DayStats.fromJson(v as Map<String, dynamic>)),
         ) ??
-        stats.dailyHistory;
+        const <String, DayStats>{};
+    final daily = {...stats.dailyHistory, ...snapshotDays};
     stats = stats.copyWith(
       totalAttempts: (p['totalAttempts'] as num?)?.toInt() ?? stats.totalAttempts,
       totalCorrect: (p['totalCorrect'] as num?)?.toInt() ?? stats.totalCorrect,
@@ -1400,7 +1404,7 @@ class AppProvider extends ChangeNotifier {
     // OS-kill mid-game loses nothing (init folds the snapshot back in), while
     // the multi-MB history is still serialised only once, at session end — the
     // per-tap jank the full save caused is gone.
-    _storage.savePending(stats);
+    _storage.savePending(stats, today);
     notifyListeners();
   }
 

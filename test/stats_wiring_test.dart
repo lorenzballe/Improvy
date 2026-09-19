@@ -300,6 +300,7 @@ void main() {
   });
 
   _whichModesFeedWhichCard();
+  _theMidGameSnapshot();
 
   group('Pocket Mode', () {
     test('records practice for the day even though it has no answers',
@@ -348,6 +349,83 @@ void _whichModesFeedWhichCard() {
           .expand((s) => s.answers)
           .where((a) => a.tonality == 'C' && a.mode != 'of-what');
       expect(inKey, isEmpty);
+    });
+  });
+}
+
+
+/// The snapshot written after every answer, so an OS-kill mid-game loses
+/// nothing.
+///
+/// "After every answer" makes its size a question of how often, not how much:
+/// whatever it carries is paid for fifteen times a game, for as long as
+/// somebody keeps playing. It used to carry the whole of dailyHistory, which
+/// gains an entry for every day the app is ever opened — so the cost of one
+/// answer grew with how long you had been a user, to record a change to a
+/// single entry.
+void _theMidGameSnapshot() {
+  String todayKey() {
+    final n = DateTime.now();
+    return '${n.year}-${n.month.toString().padLeft(2, '0')}-${n.day.toString().padLeft(2, '0')}';
+  }
+
+  String keyFor(int daysAgo) {
+    final d = DateTime.now().subtract(Duration(days: daysAgo));
+    return '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+  }
+
+  group('the mid-game snapshot', () {
+    test('names the day being played, not every day ever played', () async {
+      final p = await freshProvider();
+      // Two years of history, which a long-time player would have.
+      p.stats = p.stats.copyWith(dailyHistory: {
+        for (var i = 1; i <= 700; i++)
+          keyFor(i): DayStats(attempts: 10, correct: 8, responseTime: 12000, sessions: 1),
+      });
+
+      p.selectKey('C');
+      p.startMode(TrainingMode.diatonic, overrideKey: 'C');
+      p.recordAnswer(
+        isCorrect: true,
+        responseTime: 900,
+        answerDetails: answer(mode: 'diatonic', tonality: 'C'),
+      );
+
+      final reader = StorageService();
+      await reader.init();
+      final days = (reader.loadPending()!['dailyHistory'] as Map).keys.toList();
+      expect(days, [todayKey()],
+          reason: 'one day changed, so one day is written');
+    });
+
+    test('recovering from it keeps the days it does not mention', () async {
+      final p = await freshProvider();
+      final old = keyFor(3);
+      p.stats = p.stats.copyWith(dailyHistory: {
+        old: DayStats(attempts: 20, correct: 15, responseTime: 30000, sessions: 2),
+      });
+      final disk = StorageService();
+      await disk.init();
+      disk.saveStats(p.stats);
+
+      p.selectKey('C');
+      p.startMode(TrainingMode.diatonic, overrideKey: 'C');
+      for (var i = 0; i < 6; i++) {
+        p.recordAnswer(
+          isCorrect: true,
+          responseTime: 900,
+          answerDetails: answer(mode: 'diatonic', tonality: 'C'),
+        );
+      }
+      // Killed here: finishSession never runs, only the snapshot is on disk.
+
+      final revived = AppProvider(disk);
+      await revived.init();
+
+      expect(revived.stats.dailyHistory[old]?.attempts, 20,
+          reason: 'three days ago must survive a crash during today');
+      expect(revived.stats.dailyHistory[todayKey()]?.attempts, 6);
+      expect(revived.stats.totalAttempts, 6);
     });
   });
 }
