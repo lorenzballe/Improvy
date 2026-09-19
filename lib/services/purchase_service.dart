@@ -169,9 +169,18 @@ class PurchaseService {
     return PurchaseOutcome.noEntitlement;
   }
 
+  Future<bool>? _restoreInFlight;
+
   /// Restores a previous purchase (uses the signed-in App Store / Play account —
   /// no email needed). Returns true when PRO is found.
-  Future<bool> restorePurchases() async {
+  ///
+  /// One at a time: a second tap on Restore while the first is still talking
+  /// to the store used to start a second sync and end in two snackbars. The
+  /// second caller now simply waits for the same answer.
+  Future<bool> restorePurchases() =>
+      _restoreInFlight ??= _restore().whenComplete(() => _restoreInFlight = null);
+
+  Future<bool> _restore() async {
     if (!_configured) return false;
     try {
       await Purchases.restorePurchases();

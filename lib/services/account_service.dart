@@ -212,26 +212,49 @@ class AccountService {
   /// Apple requires that an app which creates accounts can also delete them,
   /// in the app. Firebase refuses when the sign-in is old; the UI then asks
   /// for a fresh sign-in and tries again.
+  ///
+  /// The redemption used to be given up BEFORE the account, on the grounds
+  /// that the token is still valid there and gone afterwards. But Firebase
+  /// only says "sign in again first" once the delete call is made — and a
+  /// sign-in older than a few minutes is the usual case — so that order cost
+  /// the person their promo code while the account stayed exactly where it
+  /// was: Pro on this phone until the next sign-out, then gone for good, on
+  /// a code that cannot be spent twice. So the clock is asked first, and
+  /// nothing is touched until the account is actually gone.
   Future<AccountOutcome> deleteAccount() async {
     if (!_ready) return AccountOutcome.notConfigured;
     final u = FirebaseAuth.instance.currentUser;
     if (u == null) return AccountOutcome.error;
+    if (_signInIsStale(u)) return AccountOutcome.needsRecentLogin;
     try {
-      // Give up Pro-by-code first: the auth token is still valid here, and
-      // once the user is gone nothing could clean the redemption up.
-      await PromoCodeService.instance.forget(u.uid);
       await u.delete();
-      AnalyticsService.instance.capture(Ev.accountDeleted);
-      try {
-        await GoogleSignIn.instance.signOut();
-      } catch (_) {}
-      return AccountOutcome.success;
     } on FirebaseAuthException catch (e) {
       return _map(e);
     } catch (e) {
       AnalyticsService.instance.error(Ev.signInFailed, e, {'step': 'delete'});
       return AccountOutcome.error;
     }
+    // The account is gone. Its redemption row now sits under an id nobody can
+    // ever sign in as again, so it is inert whether or not this write lands —
+    // housekeeping, best-effort, and never a reason to report the deletion
+    // as failed.
+    await PromoCodeService.instance.forget(u.uid);
+    AnalyticsService.instance.capture(Ev.accountDeleted);
+    try {
+      await GoogleSignIn.instance.signOut();
+    } catch (_) {}
+    return AccountOutcome.success;
+  }
+
+  /// Firebase treats a deletion as sensitive and refuses it unless the
+  /// sign-in is fresh — about five minutes, on its own clock. Four here
+  /// leaves room for the two clocks to disagree; when the SDK does not say
+  /// when the sign-in was, the server is left to decide.
+  static const _recentSignIn = Duration(minutes: 4);
+
+  static bool _signInIsStale(User u) {
+    final at = u.metadata.lastSignInTime;
+    return at != null && DateTime.now().difference(at) >= _recentSignIn;
   }
 
   // ── internals ────────────────────────────────────────────────────────────
