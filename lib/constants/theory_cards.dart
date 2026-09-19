@@ -1,3 +1,5 @@
+import '../l10n/l10n.dart';
+
 /// One day's theory card, for the Theory of the Day widget.
 ///
 /// A card is a scale degree and one sentence about what it *does* — Improvy is
@@ -10,36 +12,46 @@ class TheoryCard {
   /// Hex colour for the degree, matched to the degree palette in app_colors.
   final String hex;
 
-  final String text;
+  /// Which sentence: `theoryCard<id>` in the ARB files. The words live there,
+  /// in every language the app speaks, rather than here in one — the widget
+  /// used to show an English paragraph under a localised header.
+  final int id;
 
-  const TheoryCard(this.degree, this.hex, this.text);
+  const TheoryCard(this.degree, this.hex, this.id);
+
+  String text(AppLocalizations l) => switch (id) {
+        1 => l.theoryCard1,
+        2 => l.theoryCard2,
+        3 => l.theoryCard3,
+        4 => l.theoryCard4,
+        5 => l.theoryCard5,
+        6 => l.theoryCard6,
+        7 => l.theoryCard7,
+        8 => l.theoryCard8,
+        9 => l.theoryCard9,
+        10 => l.theoryCard10,
+        _ => l.theoryCard11,
+      };
 }
 
 /// The rotation. Indexed by the day number, so every device shows the same card
 /// on the same date and it turns over at midnight without the app running.
 /// Length is deliberately not a multiple of 7 — a weekly cycle would make the
 /// same card land on every Monday.
+///
+/// The order is the rotation, and the ids name the sentences in the ARB files
+/// (`theoryCard1` is the ♭7's). Appending is safe; reordering moves every
+/// day's card.
 const List<TheoryCard> kTheoryCards = [
-  TheoryCard('♭7', '#ff4d94',
-      'The note that turns a major chord into a dominant — the pull that makes a resolution feel inevitable.'),
-  TheoryCard('3', '#4dff4d',
-      'The degree that decides major or minor. Move it one semitone and the whole colour of the key changes.'),
-  TheoryCard('5', '#4d4dff',
-      'The most stable note after the tonic. It is why a chord sounds settled, and why removing it sounds hollow.'),
-  TheoryCard('♭3', '#ffff4d',
-      'Minor in one note. Over a dominant chord it stops being sad and starts being blue.'),
-  TheoryCard('♯4', '#00dcdc',
-      'The tritone from the tonic — the furthest you can get from home, and the reason lydian sounds like it is floating.'),
-  TheoryCard('2', '#ffdb4d',
-      'Close enough to the tonic to lean on it, far enough to want to move. Add it to a chord and you get a 9.'),
-  TheoryCard('6', '#ff4dff',
-      'The note that makes a major chord sound wistful rather than triumphant — and the one that defines dorian in minor.'),
-  TheoryCard('♭2', '#ff944d',
-      'One semitone above home. The most unstable note in the key, which is exactly why it is so useful over a dominant.'),
-  TheoryCard('7', '#ff4d4d',
-      'The leading tone. It exists to resolve upward, and a key without it never quite closes.'),
-  TheoryCard('4', '#00dcdc',
-      'A semitone above the third, so it wants to fall. Suspend it instead and you get the most familiar delay in music.'),
-  TheoryCard('♭6', '#944dff',
-      'The note that darkens a minor key into something older — the difference between natural and harmonic.'),
+  TheoryCard('♭7', '#ff4d94', 1),
+  TheoryCard('3', '#4dff4d', 2),
+  TheoryCard('5', '#4d4dff', 3),
+  TheoryCard('♭3', '#ffff4d', 4),
+  TheoryCard('♯4', '#00dcdc', 5),
+  TheoryCard('2', '#ffdb4d', 6),
+  TheoryCard('6', '#ff4dff', 7),
+  TheoryCard('♭2', '#ff944d', 8),
+  TheoryCard('7', '#ff4d4d', 9),
+  TheoryCard('4', '#00dcdc', 10),
+  TheoryCard('♭6', '#944dff', 11),
 ];

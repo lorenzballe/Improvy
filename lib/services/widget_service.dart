@@ -215,9 +215,9 @@ class WidgetService {
 
         // ── Level & progress ──────────────────────────────────────────────
         HomeWidget.saveWidgetData<String>('animal_emoji', animal.emoji),
-        HomeWidget.saveWidgetData<String>('animal_name', animal.name),
+        HomeWidget.saveWidgetData<String>('animal_name', localizedAnimalName(L10n.current, animal.level)),
         HomeWidget.saveWidgetData<String>('animal_color', animal.hex),
-        HomeWidget.saveWidgetData<String>('animal_quote', animal.quote),
+        HomeWidget.saveWidgetData<String>('animal_quote', localizedAnimalQuote(L10n.current, animal.level)),
         HomeWidget.saveWidgetData<int>('animal_level', animal.level),
         HomeWidget.saveWidgetData<int>('animal_levels_total', kAnimalLevelCount),
         HomeWidget.saveWidgetData<int>('progress_pct', provider.totalProgress.round()),
@@ -272,6 +272,25 @@ class WidgetService {
     }
   }
 
+  /// The key a widget URL names, as the app spells it — or null.
+  ///
+  /// The weakest-key widget shows the key in the reader's notation, and its
+  /// URL carried that same string: "Sol", "Si♭". The app then trained "Sol",
+  /// a key that does not exist, so the scale fell back to C major and nothing
+  /// was credited — on every phone whose language defaults to Do-Re-Mi. Both
+  /// notations are tried, because the setting may have changed since the
+  /// widget was last refreshed.
+  static String? keyFromWidgetParam(String? raw) {
+    if (raw == null || raw.isEmpty) return null;
+    if (kKeys.contains(raw)) return raw;
+    for (final key in kKeys) {
+      for (final notation in const ['CDE', 'DoReMi']) {
+        if (formatNoteForDisplay(key, notation) == raw) return key;
+      }
+    }
+    return null;
+  }
+
   /// The chrome of every widget, in the device's language. Keyed by short
   /// names the native side asks for; a missing key leaves the native default,
   /// so adding a widget never has to wait for a translation.
@@ -296,6 +315,9 @@ class WidgetService {
       'mastered': l.wMastered,
       'weakHint': l.wWeakHint,
       'weakEmpty': l.wWeakEmpty,
+      'weakEmptyHint': l.wWeakEmptyHint,
+      'of': l.wOf,
+      'keyOf': l.wKeyOf,
       'start': l.wStart,
       'handsFree': l.wHandsFree,
       'pocketSub': l.wPocketSub,
@@ -375,7 +397,7 @@ class WidgetService {
   /// and it changes at midnight without the app running.
   static (String, String, String) _theory(DateTime now) {
     final card = kTheoryCards[_epochDay(now) % kTheoryCards.length];
-    return (card.degree, card.text, card.hex);
+    return (card.degree, card.text(L10n.current), card.hex);
   }
 
   /// Days since 1970-01-01 for a local calendar date.

@@ -138,6 +138,8 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
           _quizReveal = WidgetService.instance.questionForSlot(slot, provider.notation));
     } else if (action == 'daily') {
       AnalyticsService.instance.capture(Ev.widgetTapped, {'widget': 'daily'});
+      _leaveSetup();
+      _switchTab(0);
       if (provider.todayDailyResult == null) {
         provider.startDailyChallenge();
       } else {
@@ -147,10 +149,11 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     } else if (action == 'key') {
       // The weakest-key widget: open that key's training straight away, which
       // is the whole reason the widget is worth a slot on someone's home screen.
-      final key = uri.queryParameters['k'];
+      final key = WidgetService.keyFromWidgetParam(uri.queryParameters['k']);
       AnalyticsService.instance.capture(Ev.widgetTapped, {'widget': 'weakest'});
+      _leaveSetup();
       _switchTab(0);
-      if (key != null && key.isNotEmpty) provider.selectKey(key);
+      if (key != null) provider.selectKey(key);
     } else if (action == 'pocket') {
       AnalyticsService.instance.capture(Ev.widgetTapped, {'widget': action});
       _switchTab(0);
@@ -179,6 +182,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       // tap that says "Chromatic" with a paywall, a free player gets the mode
       // they asked for in the key they are allowed to play it in.
       AnalyticsService.instance.capture(Ev.widgetTapped, {'widget': action});
+      _leaveSetup();
       _switchTab(0);
       final key = provider.selectedKey ?? provider.progressData.first.key;
       provider.selectKey(provider.isPro || key == 'C' ? key : 'C');
@@ -217,11 +221,34 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     if (i == _currentTab) return;
     setState(() => _currentTab = i);
     _trackTab(i);
-    _pageController.animateToPage(
-      i,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOutCubic,
-    );
+    if (_pageController.hasClients) {
+      _pageController.animateToPage(
+        i,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutCubic,
+      );
+      return;
+    }
+    // The PageView is not on screen — a setup screen or the trainer is — so
+    // there is no scrollable to animate, and asking for one threw. The home
+    // scaffold is built afresh when it comes back and opens on the
+    // controller's initialPage, so that is what carries the tab: otherwise
+    // the nav highlighted one page while the PageView showed another, and
+    // tapping the highlighted one did nothing.
+    _pageController.dispose();
+    _pageController = PageController(initialPage: i);
+  }
+
+  /// Abandons a setup screen that was left open, so an action that lands
+  /// somewhere else — a widget tap, mostly — is not played out underneath it
+  /// and returned to afterwards.
+  void _leaveSetup() {
+    if (_pendingSetup == null) return;
+    setState(() {
+      _pendingSetup = null;
+      _ofWhatResumeNote = null;
+      _ofWhatResumeDegrees = null;
+    });
   }
 
   @override
@@ -888,6 +915,11 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
                 onTrainKey: () {
                   final key = _quizReveal!['k'] ?? 'C';
                   setState(() => _quizReveal = null);
+                  // Home, whatever tab the app was left on: a selected key
+                  // hides the nav and locks the swipe, and on Stats or
+                  // Settings that was a screen with no way out.
+                  _leaveSetup();
+                  _switchTab(0);
                   provider.selectKey(key);
                 },
               ),
@@ -1274,10 +1306,11 @@ class _FloatingNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const items = [
-      (Icons.fitness_center_rounded, 'Training'),
-      (Icons.bar_chart_rounded, 'Stats'),
-      (Icons.settings_rounded, 'Settings'),
+    final l = context.l10n;
+    final items = [
+      (Icons.fitness_center_rounded, l.navTraining),
+      (Icons.bar_chart_rounded, l.navStats),
+      (Icons.settings_rounded, l.navSettings),
     ];
 
     final screenWidth = MediaQuery.of(context).size.width;

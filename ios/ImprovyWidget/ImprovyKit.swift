@@ -35,13 +35,19 @@ enum Improvy {
     /// (`WidgetService._labels`). Falling back to the English literal means a
     /// widget is never blank because a string is missing — it is only ever
     /// less translated than it could be.
-    static let labels: [String: String] = {
+    ///
+    /// Computed on every read, never cached. The first render on a fresh
+    /// install comes before the app has written anything, and a `let` here
+    /// held that empty map for the life of the extension process — English
+    /// fallbacks long after the app had synced, and after a change of
+    /// language.
+    static var labels: [String: String] {
         guard
             let data = string("labels_json").data(using: .utf8),
             let map = (try? JSONSerialization.jsonObject(with: data)) as? [String: String]
         else { return [:] }
         return map
-    }()
+    }
 
     static func label(_ name: String, _ fallback: String) -> String {
         let v = labels[name] ?? ""

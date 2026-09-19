@@ -115,7 +115,7 @@ struct QuizView: View {
                     .shadow(color: Ink.gold.opacity(0.35), radius: 14)
                     .fitted()
                 if !entry.key.isEmpty {
-                    Text("of \(entry.key)")
+                    Text("\(Improvy.label("of", "of")) \(entry.key)")
                         .font(.ui(wide ? 15 : 13, .medium))
                         .foregroundStyle(.white.opacity(0.55))
                         .fitted(0.7)
@@ -206,8 +206,9 @@ struct DailyView: View {
                     KeyTile(key: key.isEmpty ? "?" : key, colour: colour, size: 52)
                     VStack(alignment: .leading, spacing: 3) {
                         Text(played
-                             ? Improvy.string("daily_score", "Done")
-                             : (key.isEmpty ? "Daily Challenge" : "Key of \(key)"))
+                             ? Improvy.string("daily_score", Improvy.label("done", "Done"))
+                             : (key.isEmpty ? "Daily Challenge"
+                                            : "\(Improvy.label("keyOf", "Key of")) \(key)"))
                             .font(.display(23))
                             .foregroundStyle(.white)
                             .fitted(0.6)
@@ -526,7 +527,7 @@ struct WeakestView: View {
                 }
             }
             Spacer(minLength: 6)
-            Text(key.isEmpty ? Improvy.label("weakEmpty", "Tap to start training")
+            Text(key.isEmpty ? Improvy.label("weakEmptyHint", "Tap to start training")
                  : Improvy.label("weakHint", "Your weakest key. Tap to train it."))
                 .font(.ui(10.5, .medium))
                 .foregroundStyle(.white.opacity(0.45))
