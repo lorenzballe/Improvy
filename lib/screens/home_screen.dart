@@ -280,10 +280,16 @@ class _HomeMain extends StatelessWidget {
                     onOpenSetup(TrainingMode.pocket);
                     return;
                   }
-                  // Same gating as everywhere else: special modes and non-C
-                  // keys are Pro. The last session may predate losing Pro, so
-                  // resuming must not become a paywall bypass.
-                  if (!provider.isPro && (isSpecial || key != 'C')) {
+                  // The cards' own gates, no stricter: Custom Mode is Pro to
+                  // open and Chromatic is Pro outside C, while Diatonic and
+                  // Note to Number are free in every key (Note to Number's
+                  // setup keeps its chromatic switch behind Pro itself). The
+                  // last session may predate losing Pro, so resuming must not
+                  // become a paywall bypass — but it used to paywall every
+                  // free game outside C too, which the card would have
+                  // started without a word.
+                  final locked = mode == 'custom' || (mode == 'chromatic' && key != 'C');
+                  if (!provider.isPro && locked) {
                     onShowPaywall('resume');
                     return;
                   }
@@ -1230,6 +1236,7 @@ class _WithSession extends StatelessWidget {
       'chromatic' => l.modeChromatic,
       'note-to-number' => l.modeNoteToNumber,
       'custom' => l.modeCustom,
+      'of-what' => l.modeOfWhat,
       'pocket' => l.modePocket,
       _ => mode.isEmpty ? '' : mode[0].toUpperCase() + mode.substring(1),
     };
@@ -1758,7 +1765,7 @@ class _LockedSheet extends StatelessWidget {
 
                   // Title
                   Text(
-                    '$levelName is Locked',
+                    context.l10n.setupTierLocked(levelName),
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w900,
@@ -1857,7 +1864,7 @@ class _LockedSheet extends StatelessWidget {
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          '$remaining more points needed',
+                          context.l10n.homePointsNeeded(remaining.toInt()),
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.white.withValues(alpha:0.35),

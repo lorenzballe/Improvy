@@ -468,7 +468,7 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
   // paused while the dialog is up and restarts fresh on "keep playing".
   void _requestExit() {
     if (_attempts == 0 || _runComplete) {
-      widget.onExit();
+      _leave();
       return;
     }
     _autoTimer?.cancel();
@@ -538,7 +538,7 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
         if (_endless && _attempts > 0) {
           _finishSession();
         } else {
-          widget.onExit();
+          _leave();
         }
         return;
       }
@@ -558,6 +558,21 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
         _startTimers();
       }
     });
+  }
+
+  /// Hands the run back without a summary, and takes every timer with it.
+  ///
+  /// The screen stays mounted for the 300ms the switcher spends fading it
+  /// out, and a feedback timer that fired inside that window used to finish
+  /// a session the provider had already flushed: a phantom 0/0 game in the
+  /// history, a session count one too high, and a stale summary waiting to
+  /// appear in front of the next run.
+  void _leave() {
+    _finished = true;
+    _autoTimer?.cancel();
+    _feedbackTimer?.cancel();
+    _totalTick?.cancel();
+    widget.onExit();
   }
 
   void _finishSession() {
