@@ -899,6 +899,9 @@ class AppProvider extends ChangeNotifier {
     // That is deliberate: the daily is free, and one run a day against the
     // real thing is the most honest advert those modes have.
     chromaticDifficulty = DailyChallenge.difficulty;
+    // And the same tier for the two directions that read customDifficulty,
+    // which otherwise kept whatever the last session left in it.
+    customDifficulty = DailyChallenge.difficulty;
     customQuestions = c.degrees.length;
     activeMode = c.mode;
 
@@ -914,12 +917,17 @@ class AppProvider extends ChangeNotifier {
         selectedKey = null;
         isReverse = false;
         customDegrees = c.degrees;
+        // Drawn from the full degree set, so it is the harmonizer's ALL row
+        // that this run credits — not whichever row the last session used.
+        ofWhatAll = true;
       case TrainingMode.noteToNumber:
         // Reverse: the question is a note, the buttons are the split degrees.
         selectedKey = c.key;
         fixedNote = null;
         isReverse = true;
         customDegrees = kChromaticDegreesSplit.toList();
+        // All twelve, so the chromatic row is the one that moves.
+        ntnChromatic = true;
       default:
         // Chromatic forward — the twelve-note board, as before.
         selectedKey = c.key;
@@ -970,7 +978,11 @@ class AppProvider extends ChangeNotifier {
     final c = DailyChallenge.forDate(d);
     final relevant = answersRaw
         .map((a) => AnswerRecord.fromJson(a as Map<String, dynamic>))
-        .where((a) => a.mode == TrainingMode.diatonic.storageKey && a.tonality == c.key)
+        // The day's own direction — chromatic, Note to Number or …Of What?
+        // (whose tonality is the note it is built on, which is c.key too).
+        // This used to ask for diatonic, a direction the daily has never run,
+        // so it matched nothing and a force-quit was a free retry.
+        .where((a) => a.mode == c.mode.storageKey && a.tonality == c.key)
         .toList();
     if (relevant.isEmpty) return;
     final flags = [for (final a in relevant) a.isCorrect];
@@ -1121,9 +1133,15 @@ class AppProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// [questions] null means "as many as the tier is worth" — the trainer then
+  /// falls back to 30/40/50 by difficulty, exactly as [startOfWhatMode] does.
+  /// It used to default to 30, which quietly capped every Note to Number run
+  /// at thirty questions whatever the tier: Master opens at 32 correct in
+  /// Virtuoso, so it could never be reached, and a 29/30 Virtuoso run was
+  /// reported as NOT YET against a gate it could not have passed.
   void startNoteToNumberMode({
     required List<String> degrees,
-    int questions = 30,
+    int? questions,
     int difficulty = 1,
     String? overrideKey,
     bool chromatic = false,
