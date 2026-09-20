@@ -11,14 +11,22 @@ import 'package:flutter_test/flutter_test.dart';
 /// months, silently.
 ///
 /// These checks are the connection.
+/// Reads a source file with its line endings normalised.
+///
+/// These checks match multi-line snippets of native source. On a Windows
+/// checkout git hands the same files back with CRLF, so every such match fails
+/// there and passes in CI — a difference that says nothing about the code. The
+/// endings are not what is being asserted, so they are taken out of the way.
+String _src(String path) =>
+    File(path).readAsStringSync().replaceAll('\r\n', '\n');
+
 void main() {
-  final dart = File('lib/services/widget_service.dart').readAsStringSync();
-  final swift = File('ios/ImprovyWidget/ImprovyWidgets.swift').readAsStringSync();
+  final dart = _src('lib/services/widget_service.dart');
+  final swift = _src('ios/ImprovyWidget/ImprovyWidgets.swift');
   final kotlin =
-      File('android/app/src/main/kotlin/com/improvy/improvy/ImprovyWidgets.kt')
-          .readAsStringSync();
-  final manifest = File('android/app/src/main/AndroidManifest.xml').readAsStringSync();
-  final pbxproj = File('ios/Runner.xcodeproj/project.pbxproj').readAsStringSync();
+      _src('android/app/src/main/kotlin/com/improvy/improvy/ImprovyWidgets.kt');
+  final manifest = _src('android/app/src/main/AndroidManifest.xml');
+  final pbxproj = _src('ios/Runner.xcodeproj/project.pbxproj');
 
   /// The (Android provider, iOS kind) pairs the app refreshes.
   final published = RegExp(r"\('(\w+)', '(\w+)'\)")
@@ -99,7 +107,7 @@ void main() {
         .map((m) => m.group(1)!)
         .toSet();
     expect(written, contains('week_json'));
-    final swiftKit = File('ios/ImprovyWidget/ImprovyKit.swift').readAsStringSync();
+    final swiftKit = _src('ios/ImprovyWidget/ImprovyKit.swift');
     // Keys one platform reads and the other has no use for. Each is a
     // difference in how the same thing is drawn, not a gap — and naming the
     // reason here is what keeps this list from becoming a place to hide one.
@@ -135,7 +143,7 @@ void main() {
     // none of them is visible from Dart: the extension may not be inside the
     // installed app, it may carry a version iOS refuses to register, or the
     // App Group may not open. The probe answers all three from the platform.
-    final appDelegate = File('ios/Runner/AppDelegate.swift').readAsStringSync();
+    final appDelegate = _src('ios/Runner/AppDelegate.swift');
     expect(appDelegate, contains('improvy/widget_probe'));
     expect(appDelegate, contains('builtInPlugInsURL'),
         reason: 'looking inside Runner.app/PlugIns is the only way to know');
@@ -152,13 +160,13 @@ void main() {
   test('the App Group is the same string everywhere', () {
     const group = 'group.com.improvy.app.widget';
     expect(dart, contains("iOSAppGroupId = '$group'"));
-    expect(File('ios/ImprovyWidget/ImprovyKit.swift').readAsStringSync(),
+    expect(_src('ios/ImprovyWidget/ImprovyKit.swift'),
         contains('appGroupId = "$group"'));
     for (final f in [
       'ios/Runner/Runner.entitlements',
       'ios/ImprovyWidget/ImprovyWidget.entitlements',
     ]) {
-      expect(File(f).readAsStringSync(), contains(group), reason: f);
+      expect(_src(f), contains(group), reason: f);
     }
   });
 
@@ -191,14 +199,14 @@ void main() {
     }
     // And the xcconfigs they point at must be the ones that carry the values.
     for (final f in ['ios/Flutter/Debug.xcconfig', 'ios/Flutter/Release.xcconfig']) {
-      expect(File(f).readAsStringSync(), contains('#include "Generated.xcconfig"'), reason: f);
+      expect(_src(f), contains('#include "Generated.xcconfig"'), reason: f);
     }
   });
 
   test('both bundle ids are signed for on Codemagic', () {
     // Adding the extension without fetching its profile fails the build at the
     // signing step, an hour into the pipeline.
-    final ci = File('codemagic.yaml').readAsStringSync();
+    final ci = _src('codemagic.yaml');
     expect(ci, contains('com.improvy.app.ImprovyWidget'));
     expect(ci, contains(r'for B in "$BUNDLE_ID" "$WIDGET_BUNDLE_ID"'));
   });
