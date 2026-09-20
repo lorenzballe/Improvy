@@ -58,9 +58,11 @@ Full detail is in the commit messages on this branch. In short:
 2. **Play Console → Data safety**: the same additions (`FIREBASE_SETUP.md`,
    section 7). Both stores also require in-app account deletion — it exists,
    in the Account card in Settings.
-3. **Pro price**: three places must agree — the store tiers, the paywall's
-   fallback `€20,99` (`lib/widgets/paywall_modal.dart`), and the website
-   checkout's 19,99 € (`functions/lib/catalog.js`). Today the last two differ.
+3. **Pro price**: the paywall's fallback `€20,99`
+   (`lib/widgets/paywall_modal.dart`) is shown only until RevenueCat answers,
+   so it must match the price set in App Store Connect and Play Console. The
+   website's 19,99 € (`functions/lib/catalog.js`) is deliberately lower (no
+   store commission) and must never be mentioned inside the app.
 4. **Firebase** (`FIREBASE_SETUP.md`): Play's SHA-1 in the Firebase project
    (Google sign-in on Android does not start without it), Firestore rules
    published, "Sign in with Apple" ticked on the App ID and its stale
