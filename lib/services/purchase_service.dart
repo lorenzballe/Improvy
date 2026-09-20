@@ -144,8 +144,16 @@ class PurchaseService {
       final detail = _underlying(e);
       lastPurchaseError = '${code.name}: ${e.message ?? 'unknown store error'}'
           '${detail == null ? '' : '\n\n$detail'}';
-      AnalyticsService.instance.capture(
-          Ev.purchaseFailed, {'code': code.name, 'source': paywallSource});
+      // The code alone names a category; the message names the cause. Sending
+      // both means a failure can be read from the dashboard instead of
+      // guessed at from how fast it happened. Store errors carry no personal
+      // data — they talk about products and configuration.
+      AnalyticsService.instance.capture(Ev.purchaseFailed, {
+        'code': code.name,
+        'message': e.message,
+        'detail': detail,
+        'source': paywallSource,
+      });
       return PurchaseOutcome.error;
     } catch (e) {
       if (kDebugMode) debugPrint('[PurchaseService] purchase failed: $e');
