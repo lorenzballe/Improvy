@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The resource shrinker keeps what it can see referenced: R.layout.x in
+     Kotlin, @layout/x in XML, the manifest. Every resource the twelve home
+     screen widgets and the launch screen use is reachable that way — but a
+     widget that loses a layout or a drawable draws nothing and reports
+     nothing, so they are pinned here as well. -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@layout/widget_*,@xml/improvy_widget_*,@drawable/widget_*,@drawable/ic_widget_*,@drawable/ic_animal_*,@font/*,@mipmap/ic_launcher*,@drawable/launch_background,@drawable/splash_logo,@color/improvy_splash" />

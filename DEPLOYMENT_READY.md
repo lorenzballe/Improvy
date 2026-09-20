@@ -45,6 +45,11 @@ Full detail is in the commit messages on this branch. In short:
 * **Compliance**: `ios/Runner/PrivacyInfo.xcprivacy` now declares the
   account data collected since 1.17.0 (Email Address, User ID, linked);
   the store copy no longer says "No account".
+* **Android R8**: code shrinking and resource shrinking are on again, with
+  the keep rule for the WorkManager/Room launch crash that had them turned
+  off, R8 in compatibility mode, and the widgets' resources pinned
+  (`android/app/proguard-rules.pro`, `gradle.properties`,
+  `res/raw/keep.xml`). **This can only be proven on a device**, see below.
 * **Hygiene**: analyzer silent, 15 MB of committed golden-failure diffs
   removed, README written, web shell named, dead workflow trigger removed,
   Android builds without the keystore on hand.
@@ -75,12 +80,21 @@ Full detail is in the commit messages on this branch. In short:
    bump it again for every upload after this one. If you want a What's New
    sheet for these fixes, bump to 1.17.1 and add the entry in
    `lib/constants/release_notes.dart` — the version test keeps them in step.
-7. **On a real iPhone, once**: Pocket Mode keeps speaking with the screen
+7. **Android release build on a real phone, before the first upload with
+   R8 on**: `flutter build apk --release`, install it, and check that the
+   app opens at all (the old crash was at launch), that a reminder can be
+   scheduled and the test notification shows, that the widgets fill, that
+   Google sign-in and Restore Purchases work. If Gradle stops with
+   "Missing class …" it prints the rule to add to `proguard-rules.pro`. To
+   retreat, set `isMinifyEnabled` and `isShrinkResources` to false in
+   `android/app/build.gradle.kts`. The AAB carries the R8 mapping file, so
+   Play's crash reports stay readable.
+8. **On a real iPhone, once**: Pocket Mode keeps speaking with the screen
    locked (the reviewer's video), the widgets fill after the first launch,
    Sign in with Apple and Google round-trip, and Restore Purchases does not
    pop an App Store password prompt on sign-out (RevenueCat calls
    `restorePurchases` there; StoreKit 2 may ask for the Apple ID).
-8. **Screenshots** for both stores (`STORE_ASSETS.md`), and the ASCII-safe
+9. **Screenshots** for both stores (`STORE_ASSETS.md`), and the ASCII-safe
    App Store text in `STORE_DESCRIPTION.md`.
 
 ## Not blocking, worth knowing

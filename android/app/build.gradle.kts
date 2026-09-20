@@ -66,21 +66,32 @@ android {
                         "Create key.properties pointing at the upload keystore first."
                 )
             }
-            // R8 renamed androidx.work's generated Room database, which Room then
-            // could not find by name — the app died at launch on every device,
-            // in release only, before any Dart ran:
+            // R8 is on: Play flags a release without it ("Enable app
+            // optimization", Android vitals). It was off because a release
+            // once died at launch, before any Dart ran, on
             //
             //   Unable to get provider androidx.startup.InitializationProvider
             //   Caused by: Failed to create an instance of
             //              androidx.work.impl.WorkDatabase
             //
-            // (WorkManager comes in with home_widget.) Shrinking buys a Flutter
-            // app very little — the Dart is already AOT-compiled, so R8 only
-            // touches the Java/Kotlin glue — and it puts every plugin that
-            // resolves a class by name one missing keep rule away from the same
-            // crash. Not worth the megabyte.
-            isMinifyEnabled = false
-            isShrinkResources = false
+            // WorkManager — in through home_widget's Glance — has a Room
+            // database that Room instantiates by reflection, and R8 had
+            // stripped its no-argument constructor. proguard-rules.pro keeps
+            // it now, and names the few other things R8 must not touch. Two
+            // belts besides: gradle.properties runs R8 in compatibility mode,
+            // and res/raw/keep.xml pins the widgets' resources.
+            //
+            // A release build is the ONLY place this can fail, so before an
+            // upload: `flutter build apk --release`, install it, open the app,
+            // then a reminder, the widgets, sign-in, restore. If R8 stops the
+            // build with "Missing class …", it prints the exact rule to add to
+            // proguard-rules.pro. To retreat, set both flags to false.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }
