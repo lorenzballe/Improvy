@@ -58,6 +58,11 @@ abstract final class Ev {
   static const purchaseCancelled = 'pro_purchase_cancelled';
   static const purchaseFailed = 'pro_purchase_error';
   static const purchaseNoOffering = 'pro_purchase_no_offering';
+  /// Paid, but came back without PRO. Rare and serious: the money left and the
+  /// app did not unlock, which is the one failure a user will not shrug off.
+  static const purchaseNoEntitlement = 'pro_purchase_no_entitlement';
+  /// The store was never reachable, so the sheet never opened.
+  static const purchaseUnavailable = 'pro_purchase_unavailable';
   static const restore = 'pro_restore';
 
   // ── Accounts & codes ──

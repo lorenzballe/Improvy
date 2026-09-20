@@ -122,6 +122,11 @@ class PurchaseService {
     lastPurchaseCode = null;
     if (!_configured) {
       lastPurchaseError = 'Billing is not available on this device.';
+      // Every other way out of this method is now counted; this one used to
+      // leave no trace at all, so a store that never came up looked exactly
+      // like a paywall nobody pressed.
+      AnalyticsService.instance
+          .capture(Ev.purchaseUnavailable, {'source': paywallSource});
       return PurchaseOutcome.notConfigured;
     }
     AnalyticsService.instance.capture(Ev.purchaseStarted, {'source': paywallSource});
@@ -199,6 +204,12 @@ class PurchaseService {
     lastPurchaseError =
         'Purchase completed but no entitlement was granted. (RevenueCat: attach '
         'the product to the "pro" entitlement.)';
+    // The worst outcome the app has, and until now the only one it never
+    // reported: the store took the payment and PRO did not turn on. Counting
+    // it is what tells a silent gap in the funnel apart from people who
+    // simply walked away mid-purchase.
+    AnalyticsService.instance
+        .capture(Ev.purchaseNoEntitlement, {'source': paywallSource});
     return PurchaseOutcome.noEntitlement;
   }
 
