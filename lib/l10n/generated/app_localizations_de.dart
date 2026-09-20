@@ -276,6 +276,13 @@ class AppLocalizationsDe extends AppLocalizations {
       'Beim Kontakt mit dem Store ist etwas schiefgelaufen. Bitte versuche es erneut.';
 
   @override
+  String get purchaseNotAllowedTitle => 'Käufe nicht möglich';
+
+  @override
+  String get purchaseNotAllowedBody =>
+      'Auf diesem Gerät oder mit diesem Konto sind keine Käufe möglich. Prüfe, ob Improvy aus dem offiziellen Store installiert wurde und ob dein Konto eine gültige Zahlungsmethode hat.';
+
+  @override
   String get notifPromptTitle => 'Damit es sitzt';
 
   @override

@@ -84,6 +84,8 @@
   "billingUnavailableBody": "Las compras dentro de la app no están disponibles en este dispositivo.",
   "purchaseFailedTitle": "Compra fallida",
   "purchaseFailedBody": "Algo salió mal al contactar con la tienda. Inténtalo de nuevo.",
+  "purchaseNotAllowedTitle": "Compras no permitidas",
+  "purchaseNotAllowedBody": "Este dispositivo o cuenta no puede completar compras. Comprueba que Improvy se haya instalado desde la tienda oficial y que tu cuenta tenga un método de pago válido.",
   "notifPromptTitle": "Que se quede",
   "notifPromptBody": "Un quiz rápido al día mantiene cada nota afilada y tu racha viva. Se apaga cuando quieras.",
   "notifPromptYes": "Sí, recuérdamelo",

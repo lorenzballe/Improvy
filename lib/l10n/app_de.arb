@@ -84,6 +84,8 @@
   "billingUnavailableBody": "In-App-Käufe sind auf diesem Gerät nicht verfügbar.",
   "purchaseFailedTitle": "Kauf fehlgeschlagen",
   "purchaseFailedBody": "Beim Kontakt mit dem Store ist etwas schiefgelaufen. Bitte versuche es erneut.",
+  "purchaseNotAllowedTitle": "Käufe nicht möglich",
+  "purchaseNotAllowedBody": "Auf diesem Gerät oder mit diesem Konto sind keine Käufe möglich. Prüfe, ob Improvy aus dem offiziellen Store installiert wurde und ob dein Konto eine gültige Zahlungsmethode hat.",
   "notifPromptTitle": "Damit es sitzt",
   "notifPromptBody": "Ein kurzes Quiz am Tag hält jede Note scharf und deine Serie am Leben. Jederzeit abschaltbar.",
   "notifPromptYes": "Ja, erinnere mich",

@@ -610,6 +610,18 @@ abstract class AppLocalizations {
   /// **'Something went wrong while contacting the store. Please try again.'**
   String get purchaseFailedBody;
 
+  /// No description provided for @purchaseNotAllowedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchases not allowed'**
+  String get purchaseNotAllowedTitle;
+
+  /// No description provided for @purchaseNotAllowedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This device or account can\'t complete purchases. Check that Improvy was installed from the official store and that your account has a valid payment method.'**
+  String get purchaseNotAllowedBody;
+
   /// No description provided for @notifPromptTitle.
   ///
   /// In en, this message translates to:

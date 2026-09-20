@@ -84,6 +84,8 @@
   "billingUnavailableBody": "Les achats intégrés ne sont pas disponibles sur cet appareil.",
   "purchaseFailedTitle": "Achat échoué",
   "purchaseFailedBody": "Un problème est survenu en contactant la boutique. Réessayez.",
+  "purchaseNotAllowedTitle": "Achats non autorisés",
+  "purchaseNotAllowedBody": "Cet appareil ou ce compte ne peut pas effectuer d'achats. Vérifiez qu'Improvy a bien été installé depuis la boutique officielle et que votre compte dispose d'un moyen de paiement valide.",
   "notifPromptTitle": "Pour que ça reste",
   "notifPromptBody": "Un quiz rapide par jour garde chaque note affûtée et votre série en vie. Désactivable quand vous voulez.",
   "notifPromptYes": "Oui, rappelez-le-moi",

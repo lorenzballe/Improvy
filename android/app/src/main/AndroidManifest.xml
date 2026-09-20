@@ -208,5 +208,12 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- Package visibility for the Play Store itself. Without it Android 11+
+             hides com.android.vending from us, and both the installer name and
+             the store's presence come back empty — which is exactly the pair of
+             facts that tells a sideloaded install (where Play Billing refuses
+             every purchase) apart from a real store problem. See
+             StoreDiagnostics. -->
+        <package android:name="com.android.vending"/>
     </queries>
 </manifest>

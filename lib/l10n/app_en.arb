@@ -105,6 +105,8 @@
   "billingUnavailableBody": "In-app purchases are not available on this device.",
   "purchaseFailedTitle": "Purchase failed",
   "purchaseFailedBody": "Something went wrong while contacting the store. Please try again.",
+  "purchaseNotAllowedTitle": "Purchases not allowed",
+  "purchaseNotAllowedBody": "This device or account can't complete purchases. Check that Improvy was installed from the official store and that your account has a valid payment method.",
   "notifPromptTitle": "Make it stick",
   "notifPromptBody": "One quick quiz a day keeps every note sharp and your streak alive. Off whenever you want.",
   "notifPromptYes": "Yes, remind me",

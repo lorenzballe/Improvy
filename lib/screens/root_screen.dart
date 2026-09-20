@@ -337,6 +337,11 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       PurchaseOutcome.noProducts => (l.storeNotReadyTitle, l.storeNotReadyBody),
       PurchaseOutcome.noEntitlement => (l.almostThereTitle, l.almostThereBody),
       PurchaseOutcome.notConfigured => (l.billingUnavailableTitle, l.billingUnavailableBody),
+      // "Something went wrong, try again" is actively misleading when the
+      // store has refused outright: no number of retries will change its
+      // mind, and the fix is on the install or the store account.
+      _ when PurchaseService.instance.purchaseWasBlocked =>
+        (l.purchaseNotAllowedTitle, l.purchaseNotAllowedBody),
       _ => (l.purchaseFailedTitle, l.purchaseFailedBody),
     };
     showDialog<void>(

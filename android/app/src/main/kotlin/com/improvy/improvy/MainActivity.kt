@@ -1,6 +1,8 @@
 package com.improvy.improvy
 
 import android.content.Intent
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
@@ -42,6 +44,57 @@ class MainActivity : FlutterActivity() {
                 }
                 result.success(openNotificationSettings())
             }
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "improvy/store_diagnostics")
+            .setMethodCallHandler { call, result ->
+                if (call.method != "describe") {
+                    result.notImplemented()
+                    return@setMethodCallHandler
+                }
+                result.success(describeStore())
+            }
+    }
+
+    /// Where this copy of the app came from, and whether the Play Store is here
+    /// at all.
+    ///
+    /// Play Billing answers `purchaseNotAllowedError` — no dialog, no detail —
+    /// to an app it will not sell through, and the commonest reason by far is
+    /// that the app was never installed from the Play Store. From inside the
+    /// failure the two cases are indistinguishable, so we read the install
+    /// source instead of guessing: "com.android.vending" is the Play Store,
+    /// anything else is a sideload or another store, and null means even the
+    /// installer is unknown. Attached to the purchase-failure event only.
+    private fun describeStore(): Map<String, Any?> {
+        val installer: String? = try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                packageManager.getInstallSourceInfo(packageName).installingPackageName
+            } else {
+                @Suppress("DEPRECATION")
+                packageManager.getInstallerPackageName(packageName)
+            }
+        } catch (_: Exception) {
+            // getInstallSourceInfo throws for a package it cannot see. An
+            // unreadable source is itself a signal, so report it as such
+            // rather than letting the whole diagnostic fail.
+            null
+        }
+        val playStore = try {
+            packageManager.getPackageInfo("com.android.vending", 0)
+        } catch (_: PackageManager.NameNotFoundException) {
+            null
+        } catch (_: Exception) {
+            null
+        }
+        return mapOf(
+            "installer" to installer,
+            "from_play" to (installer == "com.android.vending"),
+            "play_store_installed" to (playStore != null),
+            "play_store_version" to playStore?.versionName,
+            // A debuggable build cannot buy through Play either, and it is the
+            // one case where the failure is expected rather than a bug.
+            "debuggable" to
+                ((applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0),
+        )
     }
 
     private fun openNotificationSettings(): Boolean {

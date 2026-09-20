@@ -276,6 +276,13 @@ class AppLocalizationsPt extends AppLocalizations {
       'Algo correu mal ao contactar a loja. Tenta de novo.';
 
   @override
+  String get purchaseNotAllowedTitle => 'Compras não permitidas';
+
+  @override
+  String get purchaseNotAllowedBody =>
+      'Este dispositivo ou conta não pode concluir compras. Verifica se o Improvy foi instalado a partir da loja oficial e se a tua conta tem um método de pagamento válido.';
+
+  @override
   String get notifPromptTitle => 'Para ficar';
 
   @override

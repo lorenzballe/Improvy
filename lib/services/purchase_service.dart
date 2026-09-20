@@ -4,6 +4,7 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:purchases_ui_flutter/purchases_ui_flutter.dart';
 
 import 'analytics_service.dart';
+import 'store_diagnostics.dart';
 
 /// Single entry point for in-app purchases, backed by **RevenueCat**.
 ///
@@ -99,12 +100,26 @@ class PurchaseService {
   /// Human-readable detail of the last purchase failure (for error dialogs).
   String? lastPurchaseError;
 
+  /// Store code behind [lastPurchaseError], when the failure came from the
+  /// store at all. "Purchase failed, try again" is the wrong thing to tell
+  /// someone whose store will never let them buy however often they retry, so
+  /// the UI reads this to say something they can act on instead.
+  PurchasesErrorCode? lastPurchaseCode;
+
+  /// True when the store refused to open the payment sheet at all. Nothing
+  /// about the app or the network is wrong and retrying changes nothing: the
+  /// install or the store account has to change first. Keeps the RevenueCat
+  /// enum out of the widget layer.
+  bool get purchaseWasBlocked =>
+      lastPurchaseCode == PurchasesErrorCode.purchaseNotAllowedError;
+
   /// Launches the native purchase flow for the lifetime PRO package.
   /// Returns the outcome so the UI can tell the user WHY nothing happened
   /// (an offering misconfigured in RevenueCat, a store error, a cancel…)
   /// instead of failing silently.
   Future<PurchaseOutcome> purchasePro() async {
     lastPurchaseError = null;
+    lastPurchaseCode = null;
     if (!_configured) {
       lastPurchaseError = 'Billing is not available on this device.';
       return PurchaseOutcome.notConfigured;
@@ -142,8 +157,17 @@ class PurchaseService {
       // Play credentials, product not found), so surface it instead of the
       // category alone.
       final detail = _underlying(e);
+      lastPurchaseCode = code;
       lastPurchaseError = '${code.name}: ${e.message ?? 'unknown store error'}'
           '${detail == null ? '' : '\n\n$detail'}';
+      // Where the app came from, for the one code that never explains itself.
+      // purchaseNotAllowedError is the store refusing to open the sheet at
+      // all, and an install that did not come from Play is by far its most
+      // common cause — but nothing in the exception says so, which is why
+      // these failures were unreadable from the dashboard.
+      final store = code == PurchasesErrorCode.purchaseNotAllowedError
+          ? await StoreDiagnostics.describe()
+          : const <String, Object?>{};
       // The code alone names a category; the message names the cause. Sending
       // both means a failure can be read from the dashboard instead of
       // guessed at from how fast it happened. Store errors carry no personal
@@ -153,6 +177,7 @@ class PurchaseService {
         'message': e.message,
         'detail': detail,
         'source': paywallSource,
+        ...store,
       });
       return PurchaseOutcome.error;
     } catch (e) {
