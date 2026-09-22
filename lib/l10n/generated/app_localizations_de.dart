@@ -1436,7 +1436,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get accountSignedOutSub =>
-      'Melde dich an, und Pro folgt dir auf jedes Handy, Android oder iPhone.';
+      'Melde dich an, und Pro folgt dir auf jedes Handy.';
 
   @override
   String get accountSignIn => 'ANMELDEN';

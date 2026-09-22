@@ -1432,8 +1432,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSignedOutTitle => 'Not signed in';
 
   @override
-  String get accountSignedOutSub =>
-      'Sign in and Pro follows you to any phone, Android or iPhone.';
+  String get accountSignedOutSub => 'Sign in and Pro follows you to any phone.';
 
   @override
   String get accountSignIn => 'SIGN IN';

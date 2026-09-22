@@ -1444,7 +1444,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get accountSignedOutSub =>
-      'Connectez-vous et Pro vous suit sur n\'importe quel téléphone, Android ou iPhone.';
+      'Connectez-vous et Pro vous suit sur n\'importe quel téléphone.';
 
   @override
   String get accountSignIn => 'SE CONNECTER';

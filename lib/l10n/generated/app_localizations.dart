@@ -2641,7 +2641,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountSignedOutSub.
   ///
   /// In en, this message translates to:
-  /// **'Sign in and Pro follows you to any phone, Android or iPhone.'**
+  /// **'Sign in and Pro follows you to any phone.'**
   String get accountSignedOutSub;
 
   /// No description provided for @accountSignIn.

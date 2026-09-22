@@ -73,7 +73,7 @@ const List<Release> kReleases = [
         detail:
             'Sign in with Apple, Google or an email — from Settings, never '
             'from the door. Your Pro licence is tied to it and shows up on '
-            'any phone you sign in on, iPhone or Android.',
+            'any phone you sign in on.',
       ),
       ReleaseLine(
         icon: Icons.confirmation_number_rounded,
@@ -166,8 +166,8 @@ const List<Release> kReleases = [
         color: Color(0xFF6366F1),
         title: 'Widget taps arrive somewhere',
         detail:
-            'On Android every tap opened a second copy of the app on top of '
-            'the first, on the home screen, whatever had been pressed — one '
+            'On some phones every tap opened a second copy of the app on top '
+            'of the first, on the home screen, whatever had been pressed — one '
             'line in the manifest meant it could never find the app already '
             'running. Taps land in it now, on the screen they name.',
       ),
@@ -328,8 +328,8 @@ const List<Release> kReleases = [
         title: 'Export and restore',
         detail:
             'Settings → Backup writes one file with every key, score and '
-            'setting. Reinstall, change phone, switch between iPhone and '
-            'Android — restore it and everything is back.',
+            'setting. Reinstall or change phone — restore it and everything '
+            'is back.',
       ),
       ReleaseLine(
         icon: Icons.accessibility_new_rounded,

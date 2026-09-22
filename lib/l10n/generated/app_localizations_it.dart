@@ -1439,7 +1439,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get accountSignedOutSub =>
-      'Accedi e Pro ti segue su qualsiasi telefono, Android o iPhone.';
+      'Accedi e Pro ti segue su qualsiasi telefono.';
 
   @override
   String get accountSignIn => 'ACCEDI';

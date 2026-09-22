@@ -1433,7 +1433,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get accountSignedOutSub =>
-      'Inicie sessão e o Pro segue-o para qualquer telemóvel, Android ou iPhone.';
+      'Inicie sessão e o Pro segue-o para qualquer telemóvel.';
 
   @override
   String get accountSignIn => 'INICIAR SESSÃO';

@@ -1434,7 +1434,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get accountSignedOutSub =>
-      'Inicia sesión y Pro te sigue a cualquier móvil, Android o iPhone.';
+      'Inicia sesión y Pro te sigue a cualquier móvil.';
 
   @override
   String get accountSignIn => 'INICIAR SESIÓN';
