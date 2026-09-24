@@ -358,10 +358,10 @@ class PurchaseService {
 
   /// Remembers [code] for every later purchase and tells RevenueCat who sent
   /// this buyer, so its charts split revenue by creator (campaign) and the
-  /// customer page names them. Returns whether the discounted price actually
-  /// exists in the store yet — the app must not promise a discount it cannot
-  /// charge.
-  Future<bool> applyCreator(CreatorCode code) async {
+  /// customer page names them. Returns the discount as the store will charge
+  /// it, or null when the discounted product is not on sale yet — the app
+  /// must not promise a discount it cannot charge.
+  Future<CreatorOffer?> applyCreator(CreatorCode code) async {
     _creator = code;
     try {
       final p = await SharedPreferences.getInstance();
@@ -378,13 +378,14 @@ class PurchaseService {
         if (kDebugMode) debugPrint('[PurchaseService] attribution failed: $e');
       }
     }
-    final available = await creatorDiscountAvailable();
+    final offer = await creatorOffer();
     AnalyticsService.instance.capture(Ev.creatorCodeApplied, {
       'creator': code.ref,
       'code': code.code,
-      'discount_in_app': available,
+      'discount_in_app': offer != null,
+      if (offer != null) 'discount_pct': offer.pct,
     });
-    return available;
+    return offer;
   }
 
   /// The discount to show, or null when there is none to honour: no code, or
@@ -404,10 +405,29 @@ class PurchaseService {
     if (discounted == null || regular == null) return null;
     return CreatorOffer(
       code: code.code,
-      pct: code.pct,
+      // From the two prices the store will actually charge, not from the
+      // percentage written on the code: store price points are a fixed
+      // ladder, and the nearest rung to "10% off" is rarely exactly 10%. The
+      // number on screen has to be the one on the receipt.
+      pct: discountPercent(
+        regular: regular.storeProduct.price,
+        discounted: discounted.storeProduct.price,
+        fallback: code.pct,
+      ),
       regularPrice: regular.storeProduct.priceString,
       price: discounted.storeProduct.priceString,
     );
+  }
+
+  /// Whole-percent saving between two store prices, rounded down so the app
+  /// never claims a cent more than the buyer saves.
+  static int discountPercent({
+    required double regular,
+    required double discounted,
+    required int fallback,
+  }) {
+    if (regular <= 0 || discounted <= 0 || discounted >= regular) return fallback;
+    return ((1 - discounted / regular) * 100 + 1e-9).floor();
   }
 
   /// Whether the store is selling the discounted product right now.

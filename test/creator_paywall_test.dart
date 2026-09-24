@@ -55,9 +55,9 @@ void main() {
                 onPurchase: () async {},
                 creatorOffer: CreatorOffer(
                   code: 'MARCO10',
-                  pct: 10,
+                  pct: 14,
                   regularPrice: locale.languageCode == 'it' ? '20,99 €' : '€20.99',
-                  price: locale.languageCode == 'it' ? '18,99 €' : '€18.99',
+                  price: locale.languageCode == 'it' ? '17,99 €' : '€17.99',
                 ),
               ),
             ]),

@@ -51,4 +51,17 @@ void main() {
       PurchaseKind.paid,
     );
   });
+
+  group('the discount the app states is the one the store charges', () {
+    test('€20.99 → €17.99 says 14%, not the 10% written on the code', () {
+      expect(PurchaseService.discountPercent(regular: 20.99, discounted: 17.99, fallback: 10), 14);
+    });
+    test('an exact 10% says 10', () {
+      expect(PurchaseService.discountPercent(regular: 20.00, discounted: 18.00, fallback: 5), 10);
+    });
+    test('no saving, or prices unread, falls back to the code', () {
+      expect(PurchaseService.discountPercent(regular: 19.99, discounted: 19.99, fallback: 10), 10);
+      expect(PurchaseService.discountPercent(regular: 0, discounted: 17.99, fallback: 10), 10);
+    });
+  });
 }

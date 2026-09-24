@@ -53,14 +53,14 @@ class _PromoCodeCardState extends State<PromoCodeCard> {
     final creator = await CreatorCodeService.instance.lookup(_code.text);
     if (!mounted) return;
     if (creator != null) {
-      final inApp = await PurchaseService.instance.applyCreator(creator);
+      final offer = await PurchaseService.instance.applyCreator(creator);
       if (!mounted) return;
       HapticFeedback.mediumImpact();
       _code.clear();
       setState(() {
         _busy = false;
-        _message = inApp
-            ? l.promoCreatorApplied(creator.code, creator.pct)
+        _message = offer != null
+            ? l.promoCreatorApplied(creator.code, offer.pct)
             : l.promoCreatorPending(creator.code);
         _messageIsError = false;
       });
