@@ -69,6 +69,8 @@ abstract final class Ev {
   /// The store was never reachable, so the sheet never opened.
   static const purchaseUnavailable = 'pro_purchase_unavailable';
   static const restore = 'pro_restore';
+  /// A creator's discount code entered in the app (see CreatorCodeService).
+  static const creatorCodeApplied = 'creator_code_applied';
 
   // ── Accounts & codes ──
   static const signInStarted = 'sign_in_started';

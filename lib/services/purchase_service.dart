@@ -3,7 +3,10 @@ import 'package:flutter/services.dart' show PlatformException;
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:purchases_ui_flutter/purchases_ui_flutter.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'analytics_service.dart';
+import 'creator_code_service.dart';
 import 'store_diagnostics.dart';
 
 /// Single entry point for in-app purchases, backed by **RevenueCat**.
@@ -80,6 +83,7 @@ class PurchaseService {
   void Function(bool isPro)? onProChanged;
 
   Future<void> init() async {
+    await _loadCreator();
     try {
       await Purchases.setLogLevel(kDebugMode ? LogLevel.debug : LogLevel.error);
       await Purchases.configure(PurchasesConfiguration(_apiKey));
@@ -97,7 +101,7 @@ class PurchaseService {
   /// the store via RevenueCat. Null until an offering with a package exists.
   Future<String?> proPriceString() async {
     final offerings = await getOfferings();
-    final current = offerings?.current;
+    final current = offerings == null ? null : _offeringFor(offerings);
     if (current == null) return null;
     final pkg = current.lifetime ??
         (current.availablePackages.isNotEmpty ? current.availablePackages.first : null);
@@ -147,13 +151,16 @@ class PurchaseService {
           .capture(Ev.purchaseUnavailable, {'source': paywallSource});
       return PurchaseOutcome.notConfigured;
     }
-    AnalyticsService.instance.capture(Ev.purchaseStarted, {'source': paywallSource});
+    AnalyticsService.instance.capture(Ev.purchaseStarted, {
+      'source': paywallSource,
+      if (_creator != null) 'creator': _creator!.ref,
+    });
     final startedAt = DateTime.now();
     Package? package;
     PurchaseResult? result;
     try {
       final offerings = await Purchases.getOfferings();
-      final current = offerings.current;
+      final current = _offeringFor(offerings);
       if (current == null || current.availablePackages.isEmpty) {
         if (kDebugMode) debugPrint('[PurchaseService] no packages in current offering');
         lastPurchaseError =
@@ -321,6 +328,83 @@ class PurchaseService {
     await _refresh(force: true);
   }
 
+  // ── creator codes ──────────────────────────────────────────────────────────
+
+  /// RevenueCat offering holding the discounted lifetime product that a
+  /// creator's code unlocks. One for every creator: the code chooses the
+  /// price, the ref says who earned it.
+  static const creatorOfferingId = 'creator';
+
+  CreatorCode? _creator;
+
+  /// The creator code this install has entered, if any.
+  CreatorCode? get creator => _creator;
+
+  /// Remembers [code] for every later purchase and tells RevenueCat who sent
+  /// this buyer, so its charts split revenue by creator (campaign) and the
+  /// customer page names them. Returns whether the discounted price actually
+  /// exists in the store yet — the app must not promise a discount it cannot
+  /// charge.
+  Future<bool> applyCreator(CreatorCode code) async {
+    _creator = code;
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.setString(_creatorCodeKey, code.code);
+      await p.setString(_creatorRefKey, code.ref);
+      await p.setInt(_creatorPctKey, code.pct);
+    } catch (_) {/* kept in memory for this session */}
+    if (_configured) {
+      try {
+        await Purchases.setAttributes({'creator': code.ref, 'creator_code': code.code});
+        await Purchases.setMediaSource('creator');
+        await Purchases.setCampaign(code.ref);
+      } catch (e) {
+        if (kDebugMode) debugPrint('[PurchaseService] attribution failed: $e');
+      }
+    }
+    final available = await creatorDiscountAvailable();
+    AnalyticsService.instance.capture(Ev.creatorCodeApplied, {
+      'creator': code.ref,
+      'code': code.code,
+      'discount_in_app': available,
+    });
+    return available;
+  }
+
+  /// Whether the store is selling the discounted product right now.
+  Future<bool> creatorDiscountAvailable() async {
+    final offerings = await getOfferings();
+    final o = offerings?.all[creatorOfferingId];
+    return o != null && o.availablePackages.isNotEmpty;
+  }
+
+  static const _creatorCodeKey = 'creator.code';
+  static const _creatorRefKey = 'creator.ref';
+  static const _creatorPctKey = 'creator.pct';
+
+  Future<void> _loadCreator() async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      final code = p.getString(_creatorCodeKey);
+      final ref = p.getString(_creatorRefKey);
+      if (code != null && ref != null) {
+        _creator = CreatorCode(code: code, ref: ref, pct: p.getInt(_creatorPctKey) ?? 0);
+      }
+    } catch (_) {}
+  }
+
+  /// The discounted offering when a creator code is in effect and the store
+  /// has it; otherwise the normal one. Falling back is deliberate: a code
+  /// entered before the discounted product exists still records the creator,
+  /// and the buyer pays the ordinary price they were shown.
+  Offering? _offeringFor(Offerings offerings) {
+    if (_creator != null) {
+      final o = offerings.all[creatorOfferingId];
+      if (o != null && o.availablePackages.isNotEmpty) return o;
+    }
+    return offerings.current;
+  }
+
   // ── internals ──────────────────────────────────────────────────────────────
 
   /// Decides what a completed purchase was worth. Pure, so it can be tested
@@ -363,6 +447,8 @@ class PurchaseService {
     final product = package?.storeProduct;
     final props = <String, Object?>{
       'source': paywallSource,
+      if (_creator != null) 'creator': _creator!.ref,
+      if (_creator != null) 'creator_code': _creator!.code,
       'kind': kind.name,
       'product_id': transaction?.productIdentifier ?? entitlement?.productIdentifier,
       'transaction_id': transaction?.transactionIdentifier,

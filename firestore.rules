@@ -65,6 +65,16 @@ service cloud.firestore {
         && redemptionAfter(request.auth.uid).data.code == code;
     }
 
+    // Creator discount codes (MARCO10). They spend nothing and grant
+    // nothing — they only pick which store price the app shows and record who
+    // sent the buyer — so they can be looked up without an account. Written
+    // by the New creator workflow only.
+    //   creators/{CODE}   { active: bool, ref: string, pct: int }
+    match /creators/{code} {
+      allow get: if true;
+      allow list, create, update, delete: if false;
+    }
+
     match /redemptions/{uid} {
       allow get: if signedIn() && request.auth.uid == uid;
       allow list: if false;

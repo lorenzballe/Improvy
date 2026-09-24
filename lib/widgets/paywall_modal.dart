@@ -39,6 +39,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
   /// site so the two never contradict each other in a screenshot.
   static const _fallbackPrice = '€20,99';
   String? _livePrice;
+  String? _creatorCode;
 
   // label · trailing meta · icon · chip colour · icon ink
   //
@@ -71,6 +72,14 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
     PurchaseService.instance.proPriceString().then((p) {
       if (mounted && p != null) setState(() => _livePrice = p);
     });
+    // Say which code the price comes from, but only when the store is
+    // really charging the discounted one.
+    final creator = PurchaseService.instance.creator;
+    if (creator != null) {
+      PurchaseService.instance.creatorDiscountAvailable().then((ok) {
+        if (mounted && ok) setState(() => _creatorCode = creator.code);
+      });
+    }
   }
 
   @override
@@ -186,7 +195,9 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
                     // that is what freed the middle of the screen for the list.
                     _in(0.40, 0.90, child: _BuyButton(
                       label: context.l10n.paywallCta,
-                      price: context.l10n.paywallPrice(_livePrice ?? _fallbackPrice),
+                      price: _creatorCode == null
+                          ? context.l10n.paywallPrice(_livePrice ?? _fallbackPrice)
+                          : context.l10n.paywallPriceWithCode(_livePrice ?? _fallbackPrice, _creatorCode!),
                       busy: _purchasing,
                       height: (74 * k).clamp(62.0, 74.0),
                       onTap: _buy,

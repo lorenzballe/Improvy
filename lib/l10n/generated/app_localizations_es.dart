@@ -1567,6 +1567,21 @@ class AppLocalizationsEs extends AppLocalizations {
   String get promoSuccess => 'Código aceptado. Pro es tuyo.';
 
   @override
+  String promoCreatorApplied(String code, int pct) {
+    return 'Código $code aplicado: $pct% de descuento en Pro.';
+  }
+
+  @override
+  String promoCreatorPending(String code) {
+    return 'Código $code reconocido. Su descuento aún no está disponible en la app.';
+  }
+
+  @override
+  String paywallPriceWithCode(String price, String code) {
+    return '$price · código $code';
+  }
+
+  @override
   String get promoMalformed => 'Eso no es un código. Revisa si hay errores.';
 
   @override

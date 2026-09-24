@@ -2872,6 +2872,24 @@ abstract class AppLocalizations {
   /// **'Code accepted. Pro is yours.'**
   String get promoSuccess;
 
+  /// No description provided for @promoCreatorApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Code {code} applied: {pct}% off Pro.'**
+  String promoCreatorApplied(String code, int pct);
+
+  /// No description provided for @promoCreatorPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Code {code} recognised. Its discount is not available in the app yet.'**
+  String promoCreatorPending(String code);
+
+  /// No description provided for @paywallPriceWithCode.
+  ///
+  /// In en, this message translates to:
+  /// **'{price} · code {code}'**
+  String paywallPriceWithCode(String price, String code);
+
   /// No description provided for @promoMalformed.
   ///
   /// In en, this message translates to:

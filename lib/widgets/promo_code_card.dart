@@ -5,7 +5,9 @@ import 'package:provider/provider.dart';
 import '../l10n/l10n.dart';
 import '../providers/app_provider.dart';
 import '../services/account_service.dart';
+import '../services/creator_code_service.dart';
 import '../services/promo_code_service.dart';
+import '../services/purchase_service.dart';
 import 'account_sheet.dart';
 
 /// The Promotional Codes card in Settings: a field, a button, one sentence
@@ -45,6 +47,26 @@ class _PromoCodeCardState extends State<PromoCodeCard> {
     if (!_canRedeem) return;
     final l = context.l10n;
     final provider = context.read<AppProvider>();
+    // A creator's discount code first: it needs no account, because it
+    // spends nothing — it only picks the price and credits the creator.
+    setState(() => _busy = true);
+    final creator = await CreatorCodeService.instance.lookup(_code.text);
+    if (!mounted) return;
+    if (creator != null) {
+      final inApp = await PurchaseService.instance.applyCreator(creator);
+      if (!mounted) return;
+      HapticFeedback.mediumImpact();
+      _code.clear();
+      setState(() {
+        _busy = false;
+        _message = inApp
+            ? l.promoCreatorApplied(creator.code, creator.pct)
+            : l.promoCreatorPending(creator.code);
+        _messageIsError = false;
+      });
+      return;
+    }
+    setState(() => _busy = false);
     var user = AccountService.instance.user.value;
     if (user == null) {
       setState(() {

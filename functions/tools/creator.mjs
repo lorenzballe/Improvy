@@ -77,11 +77,18 @@ if (!promo) {
   });
 }
 
+// ── Firestore: the same discount code, recognised by the app ──
+initializeApp({ credential: applicationDefault() });
+const db = getFirestore();
+await db.collection("creators").doc(discountCode).set(
+  { active: true, ref: slug, pct, updatedAt: FieldValue.serverTimestamp() },
+  { merge: true },
+);
+
 // ── Firestore: the free-Pro code the app redeems ──
 let proNote = "skipped (0 requested)";
 if (free > 0) {
-  initializeApp({ credential: applicationDefault() });
-  const ref = getFirestore().collection("codes").doc(proCode);
+  const ref = db.collection("codes").doc(proCode);
   const snap = await ref.get();
   if (snap.exists) {
     const d = snap.data();
@@ -105,7 +112,7 @@ const summary = [
   `| | |`,
   `|---|---|`,
   `| Affiliate link | ${link} |`,
-  `| Discount for their audience (on the site) | **${discountCode}** — ${pct}% off · ${promoNew ? "created" : "already existed"} · Stripe ${mode} |`,
+  `| Discount for their audience | **${discountCode}** — ${pct}% off · on the site (Stripe ${mode}, ${promoNew ? "created" : "already existed"}) and in the app (Settings → Have a code?) |`,
   `| Free Pro in the app (Settings → Promo code) | **${proCode}** · ${proNote} |`,
   "",
   `Sales from the link show in Stripe → Payments with metadata ref = ${slug}; uses of ${discountCode} show under Products → Coupons → ${couponId}.`,
