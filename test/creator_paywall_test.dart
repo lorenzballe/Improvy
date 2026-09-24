@@ -29,8 +29,10 @@ void main() {
       await p.init();
       p.completeTutorial();
 
-      t.view.physicalSize = const Size(780, 1688);
-      t.view.devicePixelRatio = 2.0;
+      // 1290×2796: the 6.7" iPhone size App Store Connect accepts for the
+      // in-app purchase's review screenshot (430×932 points at 3×).
+      t.view.physicalSize = const Size(1290, 2796);
+      t.view.devicePixelRatio = 3.0;
       addTearDown(t.view.resetPhysicalSize);
       addTearDown(t.view.resetDevicePixelRatio);
 
