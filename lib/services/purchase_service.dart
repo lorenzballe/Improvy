@@ -21,6 +21,24 @@ import 'store_diagnostics.dart';
 /// silently doing nothing.
 enum PurchaseOutcome { success, cancelled, noProducts, noEntitlement, error, notConfigured }
 
+/// What a successful purchase actually was, as far as money goes.
+///
+/// To the app all three are the same — Pro unlocks — but only one of them is
+/// revenue. Counting the other two as sales is how the dashboard came to show
+/// successes that RevenueCat never saw a cent of: App Review and TestFlight
+/// buy with sandbox accounts, and an Apple ID that already owns the lifetime
+/// product gets it handed back for free when it "buys" it again.
+enum PurchaseKind {
+  /// A real charge on a real store account.
+  paid,
+
+  /// A sandbox account: App Review, TestFlight, a tester. No money moved.
+  sandbox,
+
+  /// The store returned a purchase this account made before. No charge.
+  redelivered,
+}
+
 /// What you still configure outside the app (RevenueCat dashboard + stores):
 ///   • An **Entitlement** (its identifier is [entitlementId]).
 ///   • A **Product** `improvy_pro_lifetime` (Non-Consumable / lifetime) created in
@@ -130,6 +148,9 @@ class PurchaseService {
       return PurchaseOutcome.notConfigured;
     }
     AnalyticsService.instance.capture(Ev.purchaseStarted, {'source': paywallSource});
+    final startedAt = DateTime.now();
+    Package? package;
+    PurchaseResult? result;
     try {
       final offerings = await Purchases.getOfferings();
       final current = offerings.current;
@@ -142,9 +163,9 @@ class PurchaseService {
         return PurchaseOutcome.noProducts;
       }
       // Prefer the lifetime package; fall back to whatever the offering exposes.
-      final package = current.lifetime ?? current.availablePackages.first;
+      package = current.lifetime ?? current.availablePackages.first;
       // Modern unified purchase API (replaces the deprecated purchasePackage).
-      await Purchases.purchase(PurchaseParams.package(package));
+      result = await Purchases.purchase(PurchaseParams.package(package));
     } on PlatformException catch (e) {
       final code = PurchasesErrorHelper.getErrorCode(e);
       if (code == PurchasesErrorCode.purchaseCancelledError) {
@@ -196,7 +217,7 @@ class PurchaseService {
     }
     await _refresh(force: true);
     if (_isPro) {
-      AnalyticsService.instance.capture(Ev.purchaseSucceeded, {'source': paywallSource});
+      _reportSuccess(result, package, startedAt);
       return PurchaseOutcome.success;
     }
     // Purchase went through but no entitlement came back: the product is not
@@ -301,6 +322,69 @@ class PurchaseService {
   }
 
   // ── internals ──────────────────────────────────────────────────────────────
+
+  /// Decides what a completed purchase was worth. Pure, so it can be tested
+  /// without a store.
+  ///
+  /// A transaction dated before the purchase began is one the store already
+  /// had: a lifetime product bought again on the same Apple ID or Google
+  /// account is returned free rather than charged twice. Two minutes of slack
+  /// absorb a phone clock that runs a little behind the store's.
+  static PurchaseKind classifyPurchase({
+    required bool sandbox,
+    required DateTime? transactionDate,
+    required DateTime startedAt,
+  }) {
+    if (sandbox) return PurchaseKind.sandbox;
+    if (transactionDate != null &&
+        transactionDate.isBefore(startedAt.subtract(const Duration(minutes: 2)))) {
+      return PurchaseKind.redelivered;
+    }
+    return PurchaseKind.paid;
+  }
+
+  /// One event per kind of success, so `pro_purchase_success` means money and
+  /// nothing else. A test purchase or a free re-delivery still gets counted,
+  /// under its own name, because a reviewer reaching the end of the funnel is
+  /// worth knowing too — it just is not a sale.
+  void _reportSuccess(PurchaseResult? result, Package? package, DateTime startedAt) {
+    final entitlements = result?.customerInfo.entitlements.active;
+    final entitlement = entitlements == null || entitlements.isEmpty
+        ? null
+        : entitlements[entitlementId] ?? entitlements.values.first;
+    final transaction = result?.storeTransaction;
+    final kind = classifyPurchase(
+      // Unknown counts as a test: better to miss a sale on the dashboard,
+      // where RevenueCat still has it, than to invent one.
+      sandbox: entitlement?.isSandbox ?? true,
+      transactionDate: DateTime.tryParse(transaction?.purchaseDate ?? ''),
+      startedAt: startedAt,
+    );
+    final product = package?.storeProduct;
+    final props = <String, Object?>{
+      'source': paywallSource,
+      'kind': kind.name,
+      'product_id': transaction?.productIdentifier ?? entitlement?.productIdentifier,
+      'transaction_id': transaction?.transactionIdentifier,
+      'store': entitlement?.store.name,
+      'price': product?.price,
+      'currency': product?.currencyCode,
+      // PostHog's revenue reporting reads these two. Only a real charge
+      // carries them, so a sandbox purchase can never show up as income.
+      if (kind == PurchaseKind.paid && product != null) ...{
+        'revenue': product.price,
+        'revenue_currency': product.currencyCode,
+      },
+    };
+    AnalyticsService.instance.capture(
+      switch (kind) {
+        PurchaseKind.paid => Ev.purchaseSucceeded,
+        PurchaseKind.sandbox => Ev.purchaseSandbox,
+        PurchaseKind.redelivered => Ev.purchaseRedelivered,
+      },
+      props,
+    );
+  }
 
   /// Digs the store's own explanation out of a RevenueCat [PlatformException].
   /// The native SDKs put it under `underlyingErrorMessage`; the key has been

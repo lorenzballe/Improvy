@@ -54,7 +54,12 @@ abstract final class Ev {
   static const paywallShown = 'paywall_shown';
   static const paywallDismissed = 'paywall_dismissed';
   static const purchaseStarted = 'pro_purchase_start';
+  /// A real charge, and only that — see PurchaseKind.
   static const purchaseSucceeded = 'pro_purchase_success';
+  /// Completed with a sandbox account: App Review, TestFlight, testers.
+  static const purchaseSandbox = 'pro_purchase_sandbox';
+  /// The store handed back a lifetime purchase this account already owned.
+  static const purchaseRedelivered = 'pro_purchase_redelivered';
   static const purchaseCancelled = 'pro_purchase_cancelled';
   static const purchaseFailed = 'pro_purchase_error';
   static const purchaseNoOffering = 'pro_purchase_no_offering';
