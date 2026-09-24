@@ -1,0 +1,66 @@
+name: New creator
+
+# One click per influencer: Actions → New creator → Run workflow → their name.
+# Creates their site discount code in Stripe and their free-Pro app code in
+# Firestore, and prints their affiliate link in the run's summary. Uses the
+# same repository secrets as the Firebase deploy; no key ever leaves them.
+
+on:
+  workflow_dispatch:
+    inputs:
+      creator:
+        description: "Creator name for the link and codes (e.g. marco → improvy.app/?ref=marco, MARCO10, MARCO-PRO)"
+        required: true
+      discount:
+        description: "Discount for their audience on the site, in %"
+        required: true
+        default: "10"
+      free_pro_codes:
+        description: "How many people can redeem their free-Pro app code (0 = none)"
+        required: true
+        default: "1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: creator
+  cancel-in-progress: false
+
+jobs:
+  create:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install
+        run: npm ci
+        working-directory: functions
+
+      - name: Google credentials
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          set -e
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "::error::repository secret FIREBASE_SERVICE_ACCOUNT is not set."
+            exit 1
+          fi
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/sa.json" >> "$GITHUB_ENV"
+          echo "GOOGLE_CLOUD_PROJECT=improvy-f470f" >> "$GITHUB_ENV"
+
+      - name: Create the codes
+        working-directory: functions
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          # Passed through the environment, not pasted into the command, so a
+          # name with a quote in it cannot turn into shell.
+          CREATOR: ${{ inputs.creator }}
+          DISCOUNT: ${{ inputs.discount }}
+          FREE: ${{ inputs.free_pro_codes }}
+        run: node tools/creator.mjs "$CREATOR" "$DISCOUNT" "$FREE"
