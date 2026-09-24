@@ -37,6 +37,7 @@ import { timingSafeEqual } from "node:crypto";
 
 import { applyStripeEvent, confirmDecision, proFromLookups } from "./lib/entitlements.js";
 import { proLineItem } from "./lib/catalog.js";
+import { cleanRef } from "./lib/referral.js";
 import { decideFromRcEvent } from "./lib/revenuecat.js";
 
 setGlobalOptions({ region: "europe-west1", maxInstances: 10 });
@@ -111,6 +112,8 @@ export const createCheckoutSession = onCall(
 
     const email = auth.token.email ? String(auth.token.email) : undefined;
     const site = SITE_URL.value().replace(/\/?$/, "/");
+    // The creator whose link brought them, if any — what pays an affiliate.
+    const ref = cleanRef(request.data?.ref);
     const tax = STRIPE_AUTOMATIC_TAX.value() === "true";
 
     const session = await stripe().checkout.sessions.create({
@@ -131,6 +134,7 @@ export const createCheckoutSession = onCall(
         email: email ?? "",
         consent: "terms+immediate-delivery",
         consentAt: new Date().toISOString(),
+        ...(ref ? { ref } : {}),
       },
       // The id goes in the query, not inside the fragment: a fragment is not
       // part of what a server ever sees, and this one has to survive whatever
@@ -151,10 +155,15 @@ export const createCheckoutSession = onCall(
       // Stripe Tax collects the address it needs by itself; asking for it
       // when tax is off would be friction for a record nobody keeps.
       ...(tax ? { automatic_tax: { enabled: true }, billing_address_collection: "required" } : {}),
-      payment_intent_data: { description: "Improvy Pro — lifetime licence" },
+      // On the payment too, so Stripe → Payments can be filtered by creator
+      // without opening each session.
+      payment_intent_data: {
+        description: "Improvy Pro — lifetime licence",
+        ...(ref ? { metadata: { ref } } : {}),
+      },
     });
 
-    logger.info("checkout opened", { uid: auth.uid, session: session.id, livemode: session.livemode });
+    logger.info("checkout opened", { uid: auth.uid, session: session.id, livemode: session.livemode, ref });
     return { url: session.url, sessionId: session.id };
   }
 );
