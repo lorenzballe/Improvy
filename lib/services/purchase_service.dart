@@ -24,6 +24,22 @@ import 'store_diagnostics.dart';
 /// silently doing nothing.
 enum PurchaseOutcome { success, cancelled, noProducts, noEntitlement, error, notConfigured }
 
+/// A creator's discount as the paywall shows it: the code, how much it takes
+/// off, and both prices exactly as the store will charge them.
+@immutable
+class CreatorOffer {
+  final String code;
+  final int pct;
+  final String regularPrice;
+  final String price;
+  const CreatorOffer({
+    required this.code,
+    required this.pct,
+    required this.regularPrice,
+    required this.price,
+  });
+}
+
 /// What a successful purchase actually was, as far as money goes.
 ///
 /// To the app all three are the same — Pro unlocks — but only one of them is
@@ -369,6 +385,29 @@ class PurchaseService {
       'discount_in_app': available,
     });
     return available;
+  }
+
+  /// The discount to show, or null when there is none to honour: no code, or
+  /// the store not selling the discounted product. Both prices come from the
+  /// store, so the crossed-out one is the real alternative, not a made-up
+  /// "was" price.
+  Future<CreatorOffer?> creatorOffer() async {
+    final code = _creator;
+    if (code == null) return null;
+    final offerings = await getOfferings();
+    if (offerings == null) return null;
+    Package? pick(Offering? o) => o == null
+        ? null
+        : o.lifetime ?? (o.availablePackages.isNotEmpty ? o.availablePackages.first : null);
+    final discounted = pick(offerings.all[creatorOfferingId]);
+    final regular = pick(offerings.current);
+    if (discounted == null || regular == null) return null;
+    return CreatorOffer(
+      code: code.code,
+      pct: code.pct,
+      regularPrice: regular.storeProduct.priceString,
+      price: discounted.storeProduct.priceString,
+    );
   }
 
   /// Whether the store is selling the discounted product right now.

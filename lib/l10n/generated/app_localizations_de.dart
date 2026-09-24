@@ -1578,8 +1578,13 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String paywallPriceWithCode(String price, String code) {
-    return '$price · Code $code';
+  String paywallCreatorCode(String code) {
+    return 'CODE $code';
+  }
+
+  @override
+  String paywallCreatorOff(int pct) {
+    return '$pct % Rabatt angewendet';
   }
 
   @override

@@ -17,7 +17,16 @@ class PaywallModal extends StatefulWidget {
   final VoidCallback onClose;
   final Future<void> Function() onPurchase;
 
-  const PaywallModal({super.key, required this.onClose, required this.onPurchase});
+  /// Normally looked up from the store when the paywall opens; passed in only
+  /// by the screenshot tests, which have no store to ask.
+  final CreatorOffer? creatorOffer;
+
+  const PaywallModal({
+    super.key,
+    required this.onClose,
+    required this.onPurchase,
+    this.creatorOffer,
+  });
 
   @override
   State<PaywallModal> createState() => _PaywallModalState();
@@ -39,7 +48,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
   /// site so the two never contradict each other in a screenshot.
   static const _fallbackPrice = '€20,99';
   String? _livePrice;
-  String? _creatorCode;
+  CreatorOffer? _offer;
 
   // label · trailing meta · icon · chip colour · icon ink
   //
@@ -72,12 +81,12 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
     PurchaseService.instance.proPriceString().then((p) {
       if (mounted && p != null) setState(() => _livePrice = p);
     });
-    // Say which code the price comes from, but only when the store is
-    // really charging the discounted one.
-    final creator = PurchaseService.instance.creator;
-    if (creator != null) {
-      PurchaseService.instance.creatorDiscountAvailable().then((ok) {
-        if (mounted && ok) setState(() => _creatorCode = creator.code);
+    // A creator's code, shown only when the store is really charging the
+    // discounted price — never a discount the purchase would not honour.
+    _offer = widget.creatorOffer;
+    if (_offer == null && PurchaseService.instance.creator != null) {
+      PurchaseService.instance.creatorOffer().then((o) {
+        if (mounted && o != null) setState(() => _offer = o);
       });
     }
   }
@@ -191,13 +200,15 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
                     // never shows a dead band and never has to be scrolled.
                     Expanded(child: _in(0.26, 0.78, child: _featureList())),
                     SizedBox(height: 16 * k),
+                    if (_offer != null) ...[
+                      _in(0.36, 0.86, child: _CreatorRibbon(offer: _offer!, k: k)),
+                      SizedBox(height: 12 * k),
+                    ],
                     // The price belongs on the button you press to pay it —
                     // that is what freed the middle of the screen for the list.
                     _in(0.40, 0.90, child: _BuyButton(
                       label: context.l10n.paywallCta,
-                      price: _creatorCode == null
-                          ? context.l10n.paywallPrice(_livePrice ?? _fallbackPrice)
-                          : context.l10n.paywallPriceWithCode(_livePrice ?? _fallbackPrice, _creatorCode!),
+                      price: context.l10n.paywallPrice(_offer?.price ?? _livePrice ?? _fallbackPrice),
                       busy: _purchasing,
                       height: (74 * k).clamp(62.0, 74.0),
                       onTap: _buy,
@@ -557,4 +568,73 @@ class _BuyButtonState extends State<_BuyButton> with SingleTickerProviderStateMi
       ),
     ),
   );
+}
+
+
+/// The line that tells someone who came with a creator's code that it
+/// worked: the code, what it takes off, and the price it replaces.
+///
+/// Sits right above the buy button because that is where the question "did
+/// my code count?" is asked — a confirmation in Settings is long gone by the
+/// time someone decides to pay.
+class _CreatorRibbon extends StatelessWidget {
+  final CreatorOffer offer;
+  final double k;
+  const _CreatorRibbon({required this.offer, required this.k});
+
+  static const _gold = Color(0xFFFBBF24);
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 14, vertical: (11 * k).clamp(8.0, 11.0)),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: const Color(0x1AFBBF24),
+        border: Border.all(color: const Color(0x55FBBF24)),
+      ),
+      child: Row(children: [
+        Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color: const Color(0x33FBBF24),
+            borderRadius: BorderRadius.circular(11),
+          ),
+          child: const Icon(Icons.confirmation_number_rounded, color: _gold, size: 18),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+            Text(l.paywallCreatorCode(offer.code),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.4, color: _gold, height: 1.1)),
+            const SizedBox(height: 3),
+            Text(l.paywallCreatorOff(offer.pct),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white, height: 1.15)),
+          ]),
+        ),
+        const SizedBox(width: 10),
+        Column(crossAxisAlignment: CrossAxisAlignment.end, mainAxisSize: MainAxisSize.min, children: [
+          Text(offer.regularPrice,
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w500,
+                color: Colors.white.withValues(alpha: 0.45),
+                decoration: TextDecoration.lineThrough,
+                decorationColor: Colors.white.withValues(alpha: 0.45),
+                height: 1.1,
+              )),
+          const SizedBox(height: 3),
+          Text(offer.price,
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Colors.white, height: 1.1)),
+        ]),
+      ]),
+    );
+  }
 }

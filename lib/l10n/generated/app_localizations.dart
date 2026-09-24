@@ -2884,11 +2884,17 @@ abstract class AppLocalizations {
   /// **'Code {code} recognised. Its discount is not available in the app yet.'**
   String promoCreatorPending(String code);
 
-  /// No description provided for @paywallPriceWithCode.
+  /// No description provided for @paywallCreatorCode.
   ///
   /// In en, this message translates to:
-  /// **'{price} · code {code}'**
-  String paywallPriceWithCode(String price, String code);
+  /// **'CODE {code}'**
+  String paywallCreatorCode(String code);
+
+  /// No description provided for @paywallCreatorOff.
+  ///
+  /// In en, this message translates to:
+  /// **'{pct}% off, applied'**
+  String paywallCreatorOff(int pct);
 
   /// No description provided for @promoMalformed.
   ///
