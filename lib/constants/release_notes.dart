@@ -62,6 +62,23 @@ class Release {
 /// the right behaviour for a pure bug-fix build.
 const List<Release> kReleases = [
   Release(
+    version: '1.18.0',
+    date: '25 SEP 2026',
+    headline: 'A code from a creator you follow now lowers the price.',
+    lines: [
+      ReleaseLine(
+        icon: Icons.confirmation_number_rounded,
+        color: Color(0xFFFBBF24),
+        title: 'Creator codes',
+        detail:
+            'Heard a code in a video? Type it in Settings → Have a code? and '
+            'Pro costs less. The Pro screen shows the code, the regular price '
+            'struck through and the one you actually pay.',
+        pro: true,
+      ),
+    ],
+  ),
+  Release(
     version: '1.17.0',
     date: '11 SEP 2026',
     headline: 'Pro follows you now, not your phone.',
