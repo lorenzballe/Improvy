@@ -46,7 +46,7 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
   /// figure is whatever [PurchaseService.proPriceString] returns for the
   /// reader's own region. Kept in step with the euro price published on the
   /// site so the two never contradict each other in a screenshot.
-  static const _fallbackPrice = '€20,99';
+  static const _fallbackPrice = '€19,99';
   String? _livePrice;
   CreatorOffer? _offer;
 

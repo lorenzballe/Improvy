@@ -1,7 +1,7 @@
 # Improvy Pro sul sito — configurazione Stripe
 
 Sul sito, alla pagina `#pro`, una persona accede con lo stesso account
-dell'app, paga 19,99 € con Stripe, e la licenza compare sul suo account:
+dell'app, paga 18,99 € con Stripe, e la licenza compare sul suo account:
 l'app la trova al primo accesso, su qualsiasi telefono. Nessuno store in
 mezzo, nessuna commissione del 15 o 30%.
 
@@ -46,7 +46,7 @@ Stripe. Il sito non tocca soldi e non concede niente.
 1. [dashboard.stripe.com](https://dashboard.stripe.com) → crea l'account
    (come privato o come attività: Stripe chiede i dati per pagarti).
 2. **Niente prodotto da creare.** Il checkout si descrive da solo: nome
-   `Improvy Pro`, descrizione, **19,99 € una tantum** e l'icona dell'app,
+   `Improvy Pro`, descrizione, **18,99 € una tantum** e l'icona dell'app,
    tutto dal codice (`functions/lib/catalog.js`). Il prezzo si cambia lì e
    basta. Se un giorno preferisci gestirlo dal catalogo Stripe, crea il
    prodotto e metti il suo `price_…` in `functions/.env` alla voce
@@ -221,7 +221,7 @@ tua. **Stripe Tax** la calcola, la aggiunge al checkout secondo il paese di
 chi compra e ti prepara i report per la dichiarazione OSS. Si attiva in
 **Impostazioni → Tax**; poi in `functions/.env` metti
 `STRIPE_AUTOMATIC_TAX=true` e committa. Costa una piccola percentuale sulle
-transazioni. Finché è spento, il prezzo è 19,99 € tutto compreso e l'IVA la
+transazioni. Finché è spento, il prezzo è 18,99 € tutto compreso e l'IVA la
 dichiari tu.
 
 **Apple Pay e Google Pay.** Non c'è niente da fare: il checkout è ospitato da

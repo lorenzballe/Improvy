@@ -169,9 +169,9 @@ key signatures, music student, guitar theory, piano theory
 | Improvy Pro (`improvy_pro_lifetime`) | one-time, non-consumable — price set in App Store Connect **and** Play Console |
 
 > The app reads the live localized price via RevenueCat; the hard-coded
-> `_fallbackPrice` in `paywall_modal.dart` (`€20,99`) is only shown until the
+> `_fallbackPrice` in `paywall_modal.dart` (`€19,99`) is only shown until the
 > store answers, so it must match the price set in App Store Connect and Play
-> Console. The website checkout charges 19,99 € (`PRO_AMOUNT` in
+> Console. The website checkout charges 18,99 € (`PRO_AMOUNT` in
 > `functions/lib/catalog.js`) **on purpose** — no store commission there. The
 > app must never mention that price or that channel (Apple 3.1.1, Play's
 > payments policy); the site may say anything it likes.

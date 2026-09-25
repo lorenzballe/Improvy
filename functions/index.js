@@ -36,8 +36,9 @@ import Stripe from "stripe";
 import { timingSafeEqual } from "node:crypto";
 
 import { applyStripeEvent, confirmDecision, proFromLookups } from "./lib/entitlements.js";
-import { proLineItem } from "./lib/catalog.js";
+import { proLineItem, PRO_AMOUNT, PRO_CURRENCY } from "./lib/catalog.js";
 import { cleanRef } from "./lib/referral.js";
+import { normalizeCode, discountedAmount, couponOf } from "./lib/promo.js";
 import { decideFromRcEvent } from "./lib/revenuecat.js";
 
 setGlobalOptions({ region: "europe-west1", maxInstances: 10 });
@@ -112,8 +113,12 @@ export const createCheckoutSession = onCall(
 
     const email = auth.token.email ? String(auth.token.email) : undefined;
     const site = SITE_URL.value().replace(/\/?$/, "/");
-    // The creator whose link brought them, if any — what pays an affiliate.
-    const ref = cleanRef(request.data?.ref);
+    // A discount code applied on the page, checked again here: the page is
+    // only a preview, this is what Stripe will charge.
+    const found = request.data?.code ? await findPromotion({ code: request.data.code }) : null;
+    // The creator whose link brought them — or, failing that, whose code
+    // they typed. It is what pays an affiliate.
+    const ref = cleanRef(request.data?.ref) || cleanRef(found?.promo?.metadata?.ref);
     const tax = STRIPE_AUTOMATIC_TAX.value() === "true";
 
     const session = await stripe().checkout.sessions.create({
@@ -135,13 +140,17 @@ export const createCheckoutSession = onCall(
         consent: "terms+immediate-delivery",
         consentAt: new Date().toISOString(),
         ...(ref ? { ref } : {}),
+        ...(found ? { code: found.code } : {}),
       },
       // The id goes in the query, not inside the fragment: a fragment is not
       // part of what a server ever sees, and this one has to survive whatever
       // Stripe does to the URL. The page reads either spelling.
       success_url: `${site}?session_id={CHECKOUT_SESSION_ID}#pro/success`,
       cancel_url: `${site}#pro/cancel`,
-      allow_promotion_codes: true,
+      // A code chosen on our page is applied here; without one, Stripe's own
+      // "Add promotion code" field stays available. Stripe allows one or the
+      // other, never both.
+      ...(found ? { discounts: [{ promotion_code: found.promo.id }] } : { allow_promotion_codes: true }),
       // "Pay", not "Subscribe" or "Donate": it is one payment, forever.
       submit_type: "pay",
       // The last thing read before the money moves, and the same promise the
@@ -222,6 +231,54 @@ export const confirmCheckout = onCall(
 );
 
 // ── The site asks whether the licence has landed ────────────────────────────
+
+/**
+ * A live promotion code and its coupon, or null. Looked up by the code
+ * someone typed, or by the creator whose link they followed — the New
+ * creator workflow records every creator's code in creators/{CODE}.
+ */
+async function findPromotion({ code, ref }) {
+  let wanted = normalizeCode(code);
+  if (!wanted && ref) {
+    const q = await db()
+      .collection("creators")
+      .where("ref", "==", ref)
+      .where("active", "==", true)
+      .limit(1)
+      .get();
+    if (!q.empty) wanted = q.docs[0].id;
+  }
+  if (!wanted) return null;
+  const list = await stripe().promotionCodes.list({ code: wanted, active: true, limit: 1 });
+  const promo = list.data[0];
+  if (!promo) return null;
+  let coupon = couponOf(promo);
+  if (typeof coupon === "string") coupon = await stripe().coupons.retrieve(coupon);
+  if (!coupon || coupon.valid === false) return null;
+  if (promo.expires_at && promo.expires_at * 1000 < Date.now()) return null;
+  return { promo, coupon, code: promo.code };
+}
+
+/**
+ * The price a code gives, before paying — so the page can show 18,99 €
+ * crossed out and the real total beside it, and a wrong code is caught on
+ * the page instead of on Stripe's. Needs no account: it reveals nothing but
+ * what the code itself is for.
+ */
+export const quotePromo = onCall({ secrets: [STRIPE_SECRET_KEY], cors: true }, async (request) => {
+  const ref = cleanRef(request.data?.ref);
+  const found = await findPromotion({ code: request.data?.code, ref });
+  if (!found) return { valid: false, amount: PRO_AMOUNT, currency: PRO_CURRENCY };
+  return {
+    valid: true,
+    code: found.code,
+    percentOff: found.coupon.percent_off ?? null,
+    amountOff: found.coupon.amount_off ?? null,
+    regularAmount: PRO_AMOUNT,
+    amount: discountedAmount(PRO_AMOUNT, found.coupon),
+    currency: PRO_CURRENCY,
+  };
+});
 
 export const proStatus = onCall({ cors: true }, async (request) => {
   const auth = request.auth;

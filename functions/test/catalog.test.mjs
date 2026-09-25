@@ -13,8 +13,8 @@ test("with no price id, the product describes itself — icon and all", () => {
   assert.match(item.price_data.product_data.name, /Improvy Pro/);
 });
 
-test("the price is 19,99 € and nothing else", () => {
-  assert.equal(PRO_AMOUNT, 1999);
+test("the price is 18,99 € and nothing else", () => {
+  assert.equal(PRO_AMOUNT, 1899);
   assert.equal(PRO_CURRENCY, "eur");
 });
 

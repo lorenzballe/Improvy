@@ -8,13 +8,16 @@
  * typed into a dashboard where nobody reviews it.
  */
 
-/** Nineteen ninety-nine, in the smallest unit Stripe counts in. */
-export const PRO_AMOUNT = 1999;
+/**
+ * Eighteen ninety-nine, in the smallest unit Stripe counts in: a euro under
+ * the 19,99 € both stores charge, because here nobody takes 15–30%.
+ */
+export const PRO_AMOUNT = 1899;
 export const PRO_CURRENCY = "eur";
 
 export const PRO_NAME = "Improvy Pro";
 export const PRO_DESCRIPTION =
-  "Lifetime unlock — all 12 keys, every mode, adaptive difficulty, deep analytics and the home-screen widgets. One payment, on your account, on any phone.";
+  "Lifetime unlock — Chromatic Mode in all 12 keys, every degree in every mode, Custom Mode, adaptive difficulty and deep analytics. One payment, on your account, on any phone.";
 
 /**
  * The single line of the checkout.
@@ -29,7 +32,7 @@ export const PRO_DESCRIPTION =
  * so anything behind a login shows as nothing at all.
  *
  * With Stripe Tax on, a price has to say whether tax is already in it.
- * "inclusive" is the honest answer for 19,99 € — that is the number the site
+ * "inclusive" is the honest answer for 18,99 € — that is the number the site
  * advertises and the number the buyer pays.
  */
 export function proLineItem({ priceId, image, tax = false } = {}) {
