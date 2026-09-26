@@ -204,3 +204,80 @@ workflows:
         notify:
           success: true
           failure: true
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Android — a signed App Bundle (.aab) for Play Console, built without a
+  # computer. A separate workflow: the iOS one above is untouched, and this one
+  # runs only when started by hand (Start new build → Android · AAB).
+  #
+  # It needs the UPLOAD keystore once, in Codemagic → Team settings → Code
+  # signing identities → Android keystores, with the reference name
+  # improvy_upload. Codemagic then hands the file and its passwords to the
+  # build as CM_KEYSTORE_PATH, CM_KEYSTORE_PASSWORD, CM_KEY_ALIAS and
+  # CM_KEY_PASSWORD, which the step below writes into android/key.properties —
+  # the file build.gradle.kts already reads on a normal computer.
+  #
+  # The version is pubspec.yaml's (name+number), so the bundle carries the
+  # same version the What's New sheet announces; bump the number there before
+  # each upload, as Play refuses a versionCode it has seen.
+  # ───────────────────────────────────────────────────────────────────────────
+  android-aab:
+    name: Android · AAB
+    instance_type: linux_x2
+    max_build_duration: 45
+    environment:
+      android_signing:
+        - improvy_upload
+      flutter: stable
+      java: 17
+    cache:
+      cache_paths:
+        - $HOME/.pub-cache
+        - $HOME/.gradle/caches
+    scripts:
+      - name: Get Flutter packages
+        script: flutter pub get
+
+      # Same bar as iOS: nothing ships red.
+      - name: Analyze
+        script: flutter analyze --no-fatal-infos
+      - name: Test
+        script: flutter test
+
+      # Without a keystore build.gradle.kts falls back to the debug key and
+      # still produces a bundle — one Play refuses on upload, hours later. Fail
+      # here instead, and say what is missing.
+      - name: Point Gradle at the upload keystore
+        script: |
+          set -e
+          if [ -z "${CM_KEYSTORE_PATH:-}" ] || [ ! -f "$CM_KEYSTORE_PATH" ]; then
+            echo "No upload keystore. Add it in Codemagic → Team settings → Code signing identities → Android keystores, reference name improvy_upload."
+            exit 1
+          fi
+          cat > "$CM_BUILD_DIR/android/key.properties" <<EOF
+          storePassword=$CM_KEYSTORE_PASSWORD
+          keyPassword=$CM_KEY_PASSWORD
+          keyAlias=$CM_KEY_ALIAS
+          storeFile=$CM_KEYSTORE_PATH
+          EOF
+          echo "Signing with alias $CM_KEY_ALIAS"
+
+      - name: Build signed App Bundle
+        script: flutter build appbundle --release
+
+      # The upload certificate's fingerprint, printed so it can be checked at a
+      # glance against Play Console → App integrity → Upload key certificate.
+      - name: Show the signing fingerprint
+        script: |
+          keytool -printcert -jarfile build/app/outputs/bundle/release/app-release.aab | grep -E "SHA1|SHA256" || true
+
+    artifacts:
+      - build/app/outputs/bundle/release/*.aab
+      - build/app/outputs/mapping/release/mapping.txt
+    publishing:
+      email:
+        recipients:
+          - lorenzo.ballestrazzi07@gmail.com
+        notify:
+          success: true
+          failure: true
