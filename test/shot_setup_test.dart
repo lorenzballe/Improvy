@@ -150,6 +150,8 @@ void explainerShots() {
   for (final (i, page) in ['explainer_1', 'explainer_2', 'explainer_3'].indexed) {
     testWidgets(page, (t) async {
       await loadRealFonts();
+      // The pages are built on soft shadows; tests draw them hard by default.
+      debugDisableShadows = false;
       t.view.physicalSize = const Size(780, 1690);
       t.view.devicePixelRatio = 2.0;
       addTearDown(t.view.resetPhysicalSize);
@@ -185,6 +187,9 @@ void explainerShots() {
         await t.pumpAndSettle();
       }
       await expectLater(find.byType(MaterialApp), matchesGoldenFile('goldens/shot_$page.png'));
+      // Restored inside the test: the binding checks debug flags before
+      // tear-downs run.
+      debugDisableShadows = true;
     });
   }
 }

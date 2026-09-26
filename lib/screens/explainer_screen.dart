@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../constants/app_colors.dart';
@@ -22,12 +23,28 @@ import '../widgets/note_text.dart';
 /// real question to answer. Three screens is the whole of the theory this app
 /// needs, and the last of them means nobody reaches the home screen without
 /// having played once.
+///
+/// Each page is the poster's anatomy: a colour field across the top that holds
+/// the title and the demonstration and ends, in a 44-point curve, where the
+/// explanation starts on the dark base. The field walks the spectrum — gold,
+/// violet, cyan — so turning the page is visibly progress.
 class ExplainerScreen extends StatefulWidget {
   final VoidCallback onDone;
   const ExplainerScreen({super.key, required this.onDone});
 
   @override
   State<ExplainerScreen> createState() => _ExplainerScreenState();
+}
+
+/// One page's colours: the field, the light pooled in its lower-left corner,
+/// and the ink that reads on it.
+class _Look {
+  final List<Color> field;
+  final List<double> stops;
+  final Color glow;
+  final Color ink;
+  final Color pill;
+  const _Look(this.field, this.stops, this.glow, this.ink, this.pill);
 }
 
 class _ExplainerScreenState extends State<ExplainerScreen> {
@@ -37,46 +54,16 @@ class _ExplainerScreenState extends State<ExplainerScreen> {
   /// Page 2's key. Page 1 is always C — one idea at a time.
   String _key = 'C';
 
-  static const _bg = Color(0xFF0F0A1A);
+  static const _base = Color(0xFF12081C);
 
-  /// One colour field per page, in the poster's own idiom: a four-stop
-  /// diagonal wash with a warm pool of light bleeding in from a corner.
-  ///
-  /// The poster hands over on a red-to-violet field and these three used to
-  /// drop straight onto flat near-black, so the handover read as the app
-  /// failing to load rather than as three more pages of the same piece. Each
-  /// walks the spectrum further round — red-violet, violet-blue, blue-green —
-  /// so turning the page is visibly progress.
-  static const _fields = [
-    LinearGradient(
-      begin: Alignment(-0.584, -1.105),
-      end: Alignment(0.584, 1.105),
-      colors: [Color(0xFFFF6B5A), Color(0xFFE23B7B), Color(0xFF9333EA), Color(0xFF5B21B6)],
-      stops: [0.0, 0.38, 0.74, 1.0],
-    ),
-    LinearGradient(
-      begin: Alignment(-0.584, -1.105),
-      end: Alignment(0.584, 1.105),
-      colors: [Color(0xFFA855F7), Color(0xFF6366F1), Color(0xFF3B82F6), Color(0xFF1E3A8A)],
-      stops: [0.0, 0.36, 0.72, 1.0],
-    ),
-    // Cool all the way down, with no green in it: the third page is the one
-    // with a green "that's it" on it, and a green field underneath took the
-    // punch out of the only moment on these three screens that is a reward.
-    LinearGradient(
-      begin: Alignment(-0.584, -1.105),
-      end: Alignment(0.584, 1.105),
-      colors: [Color(0xFF22D3EE), Color(0xFF0EA5E9), Color(0xFF4F46E5), Color(0xFF1E1B4B)],
-      stops: [0.0, 0.34, 0.7, 1.0],
-    ),
-  ];
-
-  /// The corner light, one per field: gold under the warm page, cyan under
-  /// the cool one, chartreuse under the green.
-  static const _glows = [
-    Color(0xFFFFDB4D),
-    Color(0xFF67E8F9),
-    Color(0xFF5EEAD4),
+  static const _looks = [
+    // Gold carries dark ink: white on yellow is the one pairing that fails.
+    _Look([Color(0xFFFDE68A), Color(0xFFF5B52A), Color(0xFFC4620F)], [0, 0.46, 1],
+        Color(0x61FFFFFF), Color(0xFF2A1B04), Color(0x292A1B04)),
+    _Look([Color(0xFFA855F7), Color(0xFF7C3AED), Color(0xFF4338CA)], [0, 0.48, 1],
+        Color(0x6622D3EE), Colors.white, Color(0x38FFFFFF)),
+    _Look([Color(0xFF22D3EE), Color(0xFF0EA5E9), Color(0xFF2563EB)], [0, 0.42, 1],
+        Color(0x66A3E635), Colors.white, Color(0x38FFFFFF)),
   ];
 
   /// The three keys page 2 offers. C, G and F: one sharp and one flat away
@@ -103,217 +90,295 @@ class _ExplainerScreenState extends State<ExplainerScreen> {
   Widget build(BuildContext context) {
     final pad = MediaQuery.paddingOf(context);
     final l = context.l10n;
-    return Scaffold(
-      backgroundColor: _bg,
-      body: Stack(children: [
-        // Crossfaded rather than switched: the page slides under the reader's
-        // thumb, and a hard cut between two fields mid-drag reads as a flash.
-        Positioned.fill(
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 420),
-            child: _ColourField(
-              key: ValueKey(_index),
-              gradient: _fields[_index],
-              glow: _glows[_index],
-            ),
-          ),
-        ),
-        Column(
-          children: [
-          SizedBox(height: pad.top + 14),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Row(
-              children: [
-                    Text(l.explainerEyebrow,
+    final look = _looks[_index];
+    // Room the fixed controls take at the bottom — the pages scroll clear of it.
+    final controlsH = pad.bottom + 24 + 60 + 20 + 6 + 20;
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      // Dark clock and battery on the gold page, light on the others.
+      value: _index == 0 ? SystemUiOverlayStyle.dark : SystemUiOverlayStyle.light,
+      child: Scaffold(
+        backgroundColor: _base,
+        body: Stack(children: [
+          PageView(
+            controller: _pages,
+            onPageChanged: (i) => setState(() => _index = i),
+            children: [
+              // 1 — the claim, drawn. A keyboard in C with the numbers on it.
+              _Page(
+                look: _looks[0],
+                top: pad.top,
+                bottom: controlsH,
+                step: l.explainerStep(1),
+                title: l.explainer1Title,
+                body: l.explainer1Body,
+                demo: const _Keyboard(musicalKey: 'C'),
+              ),
+              // 2 — the same keyboard, and the key in the reader's hands.
+              _Page(
+                look: _looks[1],
+                top: pad.top,
+                bottom: controlsH,
+                step: l.explainerStep(2),
+                title: l.explainer2Title,
+                body: l.explainer2Body,
+                demo: Column(
+                  children: [
+                    _Keyboard(musicalKey: _key),
+                    const SizedBox(height: 16),
+                    _KeyPicker(
+                      keys: _keyChoices,
+                      selected: _key,
+                      onSelect: (k) {
+                        HapticsService.impactLight();
+                        setState(() => _key = k);
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    Text(l.explainerTapKey,
                         style: TextStyle(
                             fontSize: 10,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 2.4,
-                            color: Colors.white.withValues(alpha: 0.4))),
-                    const Spacer(),
-                    GestureDetector(
-                      onTap: widget.onDone,
-                      behavior: HitTestBehavior.opaque,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                        child: Text(l.skip,
-                            style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white.withValues(alpha: 0.5))),
-                      ),
-                    ),
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 2.2,
+                            color: Colors.white.withValues(alpha: 0.5))),
                   ],
                 ),
               ),
-              Expanded(
-                child: PageView(
-                  controller: _pages,
-                  onPageChanged: (i) => setState(() => _index = i),
-                  children: [
-                    // 1 — the claim, drawn. A keyboard in C with the numbers on it.
-                    _Page(
-                      eyebrow: l.explainerStep(1),
-                      title: l.explainer1Title,
-                      body: l.explainer1Body,
-                      demo: const _Keyboard(musicalKey: 'C'),
+              // 3 — a real question, before the home screen ever appears.
+              _Page(
+                look: _looks[2],
+                top: pad.top,
+                bottom: controlsH,
+                step: l.explainerStep(3),
+                title: l.explainer3Title,
+                body: l.explainer3Body,
+                demo: const _TryIt(),
+              ),
+            ],
+          ),
+
+          // The header stays put while the pages slide under it; its ink
+          // follows the page, dark on gold and white after.
+          Positioned(
+            top: pad.top + 26,
+            left: 30,
+            right: 30,
+            child: Row(
+              children: [
+                AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 260),
+                  // Merged, not replaced: the animated style would otherwise
+                  // drop the app's font along with the old colour.
+                  style: Theme.of(context).textTheme.bodyMedium!.merge(TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 2.4,
+                      color: look.ink.withValues(alpha: _index == 0 ? 0.7 : 0.75))),
+                  child: Text(l.explainerEyebrow),
+                ),
+                const Spacer(),
+                GestureDetector(
+                  onTap: widget.onDone,
+                  behavior: HitTestBehavior.opaque,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 260),
+                    padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: look.pill,
+                      borderRadius: BorderRadius.circular(999),
                     ),
-                    // 2 — the same keyboard, and the key in the reader's hands.
-                    _Page(
-                      eyebrow: l.explainerStep(2),
-                      title: l.explainer2Title,
-                      body: l.explainer2Body,
-                      demo: Column(
-                        children: [
-                          _Keyboard(musicalKey: _key),
-                          const SizedBox(height: 18),
-                          _KeyPicker(
-                            keys: _keyChoices,
-                            selected: _key,
-                            onSelect: (k) {
-                              HapticsService.impactLight();
-                              setState(() => _key = k);
-                            },
+                    child: AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 260),
+                      style: Theme.of(context).textTheme.bodyMedium!.merge(TextStyle(
+                          fontSize: 11.5, fontWeight: FontWeight.w500, color: look.ink)),
+                      child: Text(l.skip),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Dots and the button sit on the dark base, over a short fade so a
+          // page scrolled under them on a small phone goes quietly.
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              padding: EdgeInsets.fromLTRB(30, 20, 30, pad.bottom + 24),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [_base.withValues(alpha: 0), _base, _base],
+                  stops: const [0, 0.22, 1],
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      for (var i = 0; i < 3; i++)
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 220),
+                          margin: const EdgeInsets.symmetric(horizontal: 3),
+                          width: i == _index ? 18 : 6,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: i == _index ? 0.9 : 0.3),
+                            borderRadius: BorderRadius.circular(3),
                           ),
-                          const SizedBox(height: 10),
-                          Text(l.explainerTapKey,
-                              style: TextStyle(
-                                  fontSize: 9.5,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 2,
-                                  color: Colors.white.withValues(alpha: 0.3))),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  GestureDetector(
+                    onTap: _next,
+                    child: Container(
+                      height: 60,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(_index == 2 ? l.letsGo : l.next,
+                              style: const TextStyle(
+                                  fontFamily: 'Outfit',
+                                  fontSize: 17.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: _base)),
+                          const SizedBox(width: 9),
+                          const Icon(Icons.arrow_forward_rounded, size: 21, color: _base),
                         ],
                       ),
                     ),
-                    // 3 — a real question, before the home screen ever appears.
-                    _Page(
-                      eyebrow: l.explainerStep(3),
-                      title: l.explainer3Title,
-                      body: l.explainer3Body,
-                      demo: const _TryIt(),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(24, 0, 24, pad.bottom + 24),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        for (var i = 0; i < 3; i++)
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 220),
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            width: i == _index ? 22 : 7,
-                            height: 7,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: i == _index ? 0.9 : 0.25),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    GestureDetector(
-                      onTap: _next,
-                      child: Container(
-                        height: 58,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(_index == 2 ? l.letsGo : l.next,
-                                style: const TextStyle(
-                                    fontFamily: 'Outfit',
-                                    fontSize: 17.5,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF12081C))),
-                            const SizedBox(width: 9),
-                            const Icon(Icons.arrow_forward_rounded,
-                                size: 21, color: Color(0xFF12081C)),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-        ),
-      ]),
+            ),
+          ),
+        ]),
+      ),
     );
   }
 }
 
 class _Page extends StatelessWidget {
-  final String eyebrow;
+  final _Look look;
+  final double top;
+  final double bottom;
+  final String step;
   final String title;
   final String body;
   final Widget demo;
   const _Page({
-    required this.eyebrow,
+    required this.look,
+    required this.top,
+    required this.bottom,
+    required this.step,
     required this.title,
     required this.body,
     required this.demo,
   });
 
   @override
-  Widget build(BuildContext context) => LayoutBuilder(
-        builder: (context, c) => SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
-          // Centred in the space it has, and scrollable when it runs out: a
-          // short page used to leave a third of the screen empty under the
-          // text, which read as something failing to load.
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: c.maxHeight - 36),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-            Text(eyebrow,
-                style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 2,
-                    color: Colors.white.withValues(alpha: 0.35))),
-            const SizedBox(height: 10),
-            Text(title,
-                style: const TextStyle(
-                    fontFamily: 'Outfit',
-                    fontSize: 36,
-                    fontWeight: FontWeight.w600,
-                    height: 1.04,
-                    letterSpacing: -1.4,
-                    color: Colors.white)),
-            const SizedBox(height: 26),
-            demo,
-            const SizedBox(height: 26),
-            Text(body,
-                style: TextStyle(
-                    fontSize: 14.5,
-                    fontWeight: FontWeight.w300,
-                    height: 1.55,
-                    color: Colors.white.withValues(alpha: 0.8))),
+  Widget build(BuildContext context) => SingleChildScrollView(
+        // Scrolls only when the phone is too short for the page — an SE with
+        // the quiz open — and otherwise sits still.
+        physics: const ClampingScrollPhysics(),
+        padding: EdgeInsets.only(bottom: bottom),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // The field: the step, the title and the demonstration, ending in
+            // a curve where the explanation begins.
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(44)),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    // 160°, as drawn: from the top-left, a little off vertical.
+                    begin: const Alignment(-0.34, -1),
+                    end: const Alignment(0.34, 1),
+                    colors: look.field,
+                    stops: look.stops,
+                  ),
+                ),
+                child: Stack(
+                  children: [
+                    // The pool of light in the lower-left corner.
+                    Positioned(
+                      left: -80,
+                      bottom: -120,
+                      child: Container(
+                        width: 340,
+                        height: 340,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: RadialGradient(
+                            colors: [look.glow, look.glow.withValues(alpha: 0)],
+                            stops: const [0, 0.7],
+                          ),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      // Clear of the status bar and of the fixed header.
+                      padding: EdgeInsets.fromLTRB(30, top + 26 + 28 + 26, 30, 26),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(step,
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 2.4,
+                                  color: look.ink.withValues(alpha: 0.6))),
+                          const SizedBox(height: 12),
+                          Text(title,
+                              style: TextStyle(
+                                  fontFamily: 'Outfit',
+                                  fontSize: 44,
+                                  fontWeight: FontWeight.w600,
+                                  height: 0.98,
+                                  letterSpacing: -1.8,
+                                  color: look.ink)),
+                          const SizedBox(height: 22),
+                          demo,
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(30, 22, 30, 0),
+              child: Text(body,
+                  style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w300,
+                      height: 1.55,
+                      color: Colors.white.withValues(alpha: 0.82))),
+            ),
           ],
         ),
-      ),
-    ),
-  );
+      );
 }
 
 /// One octave of a real keyboard, with each scale degree written on the key it
-/// falls on — in the reader's own note names.
+/// falls on — in the reader's own note names — and the five notes between them
+/// on the black keys.
 ///
 /// The whole app rests on the claim that a note and a number are the same
 /// thing. A bar chart says it; a keyboard with the numbers sitting on the keys
-/// *is* it, and it is the same keyboard the trainer will show later.
+/// *is* it, and it is the same keyboard the trainer shows later.
 class _Keyboard extends StatelessWidget {
   final String musicalKey;
 
@@ -323,91 +388,80 @@ class _Keyboard extends StatelessWidget {
 
   const _Keyboard({required this.musicalKey, this.litDegree});
 
-  /// Where the five black keys sit, as a fraction of the seven white ones.
-  static const _blackAfter = [0, 1, 3, 4, 5];
+  /// The black key after each of these white keys, and the degree it plays.
+  static const _black = [(0, '♭2'), (1, '♭3'), (3, '♯4'), (4, '♭6'), (5, '♭7')];
 
   @override
   Widget build(BuildContext context) {
     final notation = context.select<AppProvider, String>((p) => p.notation);
     final scale = calculateMajorScale(musicalKey);
 
-    return LayoutBuilder(builder: (context, c) {
-      // The keys sit in a rounded bed rather than running off the edges: the
-      // corners read as an instrument instead of a sawn-off rectangle.
-      const h = 132.0;
-      const pad = 6.0;
-      const whiteCount = 7;
-      final inner = c.maxWidth - pad * 2;
-      final kw = inner / whiteCount;
-      final kh = h - pad * 2;
-      final bw = kw * 0.62;
-
-      return SizedBox(
-        height: h,
-        child: Container(
-          padding: const EdgeInsets.all(pad),
-          decoration: BoxDecoration(
-            color: const Color(0xFF17131F),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.34),
-                blurRadius: 20,
-                offset: const Offset(0, 9),
-              ),
-            ],
-          ),
-          child: Stack(
-            children: [
-              Row(
-                children: [
-                  for (var i = 0; i < whiteCount; i++)
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.only(right: i == whiteCount - 1 ? 0 : 3),
+    return Container(
+      padding: const EdgeInsets.all(7),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1B1826),
+        borderRadius: BorderRadius.circular(26),
+        boxShadow: const [
+          BoxShadow(color: Color(0xCC000000), blurRadius: 50, spreadRadius: -18, offset: Offset(0, 24)),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: SizedBox(
+          height: 200,
+          child: LayoutBuilder(builder: (context, c) {
+            final kw = c.maxWidth / 7;
+            final bw = kw * 0.64;
+            return Stack(
+              children: [
+                Row(
+                  children: [
+                    for (var i = 0; i < 7; i++)
+                      Expanded(
                         child: _WhiteKey(
                           degree: '${i + 1}',
                           note: scale[i],
                           notation: notation,
+                          divider: i > 0,
                           lit: litDegree == '${i + 1}',
                         ),
                       ),
-                    ),
-                ],
-              ),
-              // Black keys carry no degree here: the seven of the scale are the
-              // idea, and five unlabelled keys are exactly the right amount of
-              // "there is more later".
-              for (final i in _blackAfter)
-                Positioned(
-                  left: kw * (i + 1) - bw / 2 - 1.5,
-                  top: 0,
-                  width: bw,
-                  height: kh * 0.6,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF241E31),
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(3),
-                        bottom: Radius.circular(8),
+                  ],
+                ),
+                for (final (after, degree) in _black)
+                  Positioned(
+                    left: kw * (after + 1) - bw / 2,
+                    top: 0,
+                    width: bw,
+                    height: 118,
+                    child: Container(
+                      alignment: Alignment.bottomCenter,
+                      padding: const EdgeInsets.only(bottom: 10),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF1E2433),
+                        borderRadius: BorderRadius.vertical(bottom: Radius.circular(7)),
+                        boxShadow: [BoxShadow(color: Color(0x59000000), blurRadius: 14, offset: Offset(0, 6))],
                       ),
-                      border: Border.all(color: Colors.black.withValues(alpha: 0.55)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.45),
-                          blurRadius: 6,
-                          offset: const Offset(0, 3),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: NoteText(
+                          note: formatNoteForDisplay(
+                              getNoteFromChromaticDegree(degree, scale, musicalKey), notation),
+                          style: TextStyle(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.degreeColors[degree] ?? Colors.white,
+                          ),
                         ),
-                      ],
+                      ),
                     ),
                   ),
-                ),
-            ],
-          ),
+              ],
+            );
+          }),
         ),
-      );
-    });
+      ),
+    );
   }
 }
 
@@ -415,11 +469,13 @@ class _WhiteKey extends StatelessWidget {
   final String degree;
   final String note;
   final String notation;
+  final bool divider;
   final bool lit;
   const _WhiteKey({
     required this.degree,
     required this.note,
     required this.notation,
+    required this.divider,
     this.lit = false,
   });
 
@@ -428,21 +484,32 @@ class _WhiteKey extends StatelessWidget {
     final colour = AppColors.degreeColors[degree] ?? Colors.white;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 260),
+      padding: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        // The answered key takes its degree's own colour — the same colour the
-        // number has worn since page one.
-        color: lit ? colour : const Color(0xFFF4F1F8),
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(8),
-          bottom: Radius.circular(10),
-        ),
-        boxShadow: lit
-            ? [BoxShadow(color: colour.withValues(alpha: 0.55), blurRadius: 22, spreadRadius: -2)]
+        // The answered key takes a wash of its degree's own colour — the same
+        // colour the number has worn since page one.
+        color: lit ? Color.lerp(Colors.white, colour, 0.28) : Colors.white,
+        border: divider
+            ? const Border(left: BorderSide(color: Color(0xFFD9D6E0)))
             : null,
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
+          Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(color: colour, shape: BoxShape.circle),
+            alignment: Alignment.center,
+            child: Text(degree,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  // The 5's blue is the one fill dark ink cannot sit on.
+                  color: degree == '5' ? Colors.white : const Color(0xFF1B1826),
+                )),
+          ),
+          const SizedBox(height: 10),
           // The letter changes with the key; the number never does. Animating
           // only the letter is what makes page 2 land.
           AnimatedSwitcher(
@@ -458,30 +525,14 @@ class _WhiteKey extends StatelessWidget {
             child: FittedBox(
               key: ValueKey(note),
               fit: BoxFit.scaleDown,
-              child: NoteText(
-                note: formatNoteForDisplay(note, notation),
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  color: lit ? const Color(0xFF12081C) : const Color(0xFF6C6580),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                child: NoteText(
+                  note: formatNoteForDisplay(note, notation),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: colour),
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 6),
-          Container(
-            width: 26,
-            height: 26,
-            margin: const EdgeInsets.only(bottom: 9),
-            decoration: BoxDecoration(
-                color: lit ? Colors.white : colour, shape: BoxShape.circle),
-            alignment: Alignment.center,
-            child: Text(degree,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w900,
-                  color: Color(0xFF12081C),
-                )),
           ),
         ],
       ),
@@ -511,31 +562,43 @@ class _KeyPicker extends StatelessWidget {
             behavior: HitTestBehavior.opaque,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 180),
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 11),
+              constraints: const BoxConstraints(minWidth: 56),
+              height: 48,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: k == selected
                     ? (AppColors.noteColors[k] ?? Colors.white)
-                    : Colors.white.withValues(alpha: 0.06),
+                    : Colors.white.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
                   color: k == selected
-                      ? Colors.white.withValues(alpha: 0.25)
-                      : Colors.white.withValues(alpha: 0.1),
+                      ? (AppColors.noteColors[k] ?? Colors.white)
+                      : Colors.white.withValues(alpha: 0.16),
                 ),
+                boxShadow: k == selected
+                    ? [
+                        BoxShadow(
+                          color: (AppColors.noteColors[k] ?? Colors.white).withValues(alpha: 0.8),
+                          blurRadius: 24,
+                          spreadRadius: -10,
+                          offset: const Offset(0, 10),
+                        ),
+                      ]
+                    : null,
               ),
               child: NoteText(
                 note: formatNoteForDisplay(k, notation),
                 style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w900,
-                  color: k == selected
-                      ? Colors.white
-                      : Colors.white.withValues(alpha: 0.55),
+                  fontFamily: 'Outfit',
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: k == selected ? Colors.white : Colors.white.withValues(alpha: 0.7),
                 ),
               ),
             ),
           ),
-          if (k != keys.last) const SizedBox(width: 10),
+          if (k != keys.last) const SizedBox(width: 12),
         ],
       ],
     );
@@ -562,6 +625,10 @@ class _TryItState extends State<_TryIt> {
     ('G', '3'),
     ('F', '2'),
   ];
+
+  /// The degree in the question. Gold rather than the degree's own colour:
+  /// the 5's blue would vanish into the blue field around it.
+  static const _accent = Color(0xFFFFDB4D);
 
   int _q = 0;
   String? _picked;
@@ -605,7 +672,6 @@ class _TryItState extends State<_TryIt> {
     final notation = context.select<AppProvider, String>((p) => p.notation);
     final q = _current;
     final solved = _picked == q.answer;
-    final colour = AppColors.degreeColors[q.degree] ?? Colors.white;
 
     return Column(
       children: [
@@ -613,102 +679,101 @@ class _TryItState extends State<_TryIt> {
         // it right and the key lights: the number, the letter and the sound of
         // "that's it" land on one object.
         _Keyboard(musicalKey: q.key, litDegree: solved ? q.degree : null),
-        const SizedBox(height: 18),
+        const SizedBox(height: 16),
         Container(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Column(
-        children: [
-          // The question, in words, with the degree carrying its own colour —
-          // the same colour it wears on the keyboard above and in the game.
-          Text.rich(
-            TextSpan(
-              style: TextStyle(
-                  fontSize: 15,
-                  height: 1.4,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white.withValues(alpha: 0.75)),
-              children: _questionSpans(
-                  l.explainerQuestion(formatNoteForDisplay(q.key, notation), q.degree),
-                  q.degree,
-                  colour),
-            ),
-            textAlign: TextAlign.center,
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.10),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
+            borderRadius: BorderRadius.circular(24),
           ),
-          const SizedBox(height: 18),
-          Row(
+          child: Column(
             children: [
-              for (final n in q.options) ...[
-                Expanded(child: _AnswerButton(
-                  note: n,
-                  notation: notation,
-                  state: _picked == null
-                      ? _AnswerState.idle
-                      : n == q.answer && (solved || _picked == n)
-                          ? _AnswerState.right
-                          : _picked == n
-                              ? _AnswerState.wrong
-                              : _AnswerState.idle,
-                  onTap: () => _pick(n),
-                )),
-                if (n != q.options.last) const SizedBox(width: 10),
-              ],
+              Text.rich(
+                TextSpan(
+                  style: TextStyle(
+                      fontSize: 15.5,
+                      height: 1.4,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white.withValues(alpha: 0.9)),
+                  children: _questionSpans(
+                      l.explainerQuestion(formatNoteForDisplay(q.key, notation), q.degree),
+                      q.degree),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  for (final n in q.options) ...[
+                    Expanded(
+                        child: _AnswerButton(
+                      note: n,
+                      notation: notation,
+                      state: _picked == null
+                          ? _AnswerState.idle
+                          : n == q.answer && (solved || _picked == n)
+                              ? _AnswerState.right
+                              : _picked == n
+                                  ? _AnswerState.wrong
+                                  : _AnswerState.idle,
+                      onTap: () => _pick(n),
+                    )),
+                    if (n != q.options.last) const SizedBox(width: 12),
+                  ],
+                ],
+              ),
+              AnimatedSize(
+                duration: const Duration(milliseconds: 200),
+                child: _picked == null
+                    ? const SizedBox(width: double.infinity)
+                    : Padding(
+                        padding: const EdgeInsets.only(top: 14),
+                        child: solved
+                            ? GestureDetector(
+                                onTap: _again,
+                                behavior: HitTestBehavior.opaque,
+                                // Scaled, not clipped: "Esatto." plus "Un'altra"
+                                // is already wider than a narrow phone, and some
+                                // translations are wider still.
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.check_circle_rounded,
+                                          size: 16, color: Color(0xFFBBF7D0)),
+                                      const SizedBox(width: 7),
+                                      Text('${l.explainerRight}  ',
+                                          maxLines: 1,
+                                          style: const TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w800,
+                                              color: Color(0xFFBBF7D0))),
+                                      Text(l.explainerAgain,
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w700,
+                                              decoration: TextDecoration.underline,
+                                              decorationColor:
+                                                  Colors.white.withValues(alpha: 0.5),
+                                              color: Colors.white.withValues(alpha: 0.75))),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            : Text(l.explainerWrong,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFFFECDD3))),
+                      ),
+              ),
             ],
           ),
-          AnimatedSize(
-            duration: const Duration(milliseconds: 200),
-            child: _picked == null
-                ? const SizedBox(width: double.infinity)
-                : Padding(
-                    padding: const EdgeInsets.only(top: 14),
-                    child: solved
-                        ? GestureDetector(
-                            onTap: _again,
-                            behavior: HitTestBehavior.opaque,
-                            // Scaled, not clipped: "Esatto." plus "Un'altra"
-                            // is already wider than a narrow phone, and some
-                            // translations are wider still.
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(Icons.check_circle_rounded,
-                                      size: 16, color: Color(0xFF34D399)),
-                                  const SizedBox(width: 7),
-                                  Text('${l.explainerRight}  ',
-                                      maxLines: 1,
-                                      style: const TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w800,
-                                          color: Color(0xFF34D399))),
-                                  Text(l.explainerAgain,
-                                      maxLines: 1,
-                                      style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w700,
-                                          decoration: TextDecoration.underline,
-                                          decorationColor:
-                                              Colors.white.withValues(alpha: 0.4),
-                                          color: Colors.white.withValues(alpha: 0.5))),
-                                ],
-                              ),
-                            ),
-                          )
-                        : Text(l.explainerWrong,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFFFB7185))),
-                  ),
-          ),
-        ],
-      ),
         ),
       ],
     );
@@ -716,15 +781,15 @@ class _TryItState extends State<_TryIt> {
 
   /// Colours the degree where it appears in the sentence, wherever the
   /// translation happens to put it.
-  static List<InlineSpan> _questionSpans(String sentence, String degree, Color c) {
-    final i = sentence.indexOf(degree);
+  static List<InlineSpan> _questionSpans(String sentence, String degree) {
+    final i = sentence.lastIndexOf(degree);
     if (i < 0) return [TextSpan(text: sentence)];
     return [
       TextSpan(text: sentence.substring(0, i)),
       TextSpan(
           text: degree,
-          style: TextStyle(
-              color: c, fontWeight: FontWeight.w900, fontSize: 17)),
+          style: const TextStyle(
+              fontFamily: 'Outfit', color: _accent, fontWeight: FontWeight.w700)),
       TextSpan(text: sentence.substring(i + degree.length)),
     ];
   }
@@ -753,14 +818,14 @@ class _AnswerButton extends StatelessWidget {
           const Color(0xFF34D399)
         ),
       _AnswerState.wrong => (
-          const Color(0x33F43F5E),
-          const Color(0xFFFB7185),
-          const Color(0x66F43F5E)
+          const Color(0x40F43F5E),
+          Colors.white,
+          const Color(0x99FB7185)
         ),
       _AnswerState.idle => (
-          Colors.white.withValues(alpha: 0.06),
-          Colors.white.withValues(alpha: 0.75),
-          Colors.white.withValues(alpha: 0.1)
+          Colors.white.withValues(alpha: 0.12),
+          Colors.white.withValues(alpha: 0.85),
+          Colors.white.withValues(alpha: 0.16)
         ),
     };
     return GestureDetector(
@@ -768,72 +833,19 @@ class _AnswerButton extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        height: 52,
+        height: 50,
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: bg,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(color: border),
         ),
         child: NoteText(
           note: formatNoteForDisplay(note, notation),
-          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: fg),
+          style: TextStyle(
+              fontFamily: 'Outfit', fontSize: 18, fontWeight: FontWeight.w600, color: fg),
         ),
       ),
     );
   }
-}
-
-/// The poster's colour field, reused: a four-stop diagonal wash with a soft
-/// pool of warm light in one corner, rounded off at the bottom the way the
-/// poster's is.
-class _ColourField extends StatelessWidget {
-  final Gradient gradient;
-  final Color glow;
-  const _ColourField({super.key, required this.gradient, required this.glow});
-
-  @override
-  Widget build(BuildContext context) => DecoratedBox(
-        decoration: BoxDecoration(gradient: gradient),
-        child: Stack(
-          children: [
-            // Bottom-left, as on the poster: it lifts the corner the content
-            // does not use and keeps the field from reading as flat colour.
-            Positioned(
-              left: -90,
-              bottom: -140,
-              child: Container(
-                width: 380,
-                height: 380,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [glow.withValues(alpha: 0.4), glow.withValues(alpha: 0)],
-                    stops: const [0.0, 0.7],
-                  ),
-                ),
-              ),
-            ),
-            // A wash of the page's own darkness over the lower half: the body
-            // text and the white button need somewhere quiet to sit, and the
-            // bare field left them fighting the gradient.
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      const Color(0xFF0F0A1A).withValues(alpha: 0.10),
-                      const Color(0xFF0F0A1A).withValues(alpha: 0.62),
-                      const Color(0xFF0F0A1A).withValues(alpha: 0.88),
-                    ],
-                    stops: const [0.0, 0.55, 1.0],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
 }

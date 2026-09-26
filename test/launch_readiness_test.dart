@@ -158,13 +158,15 @@ void main() {
       await pumpExplainer(t, () {});
       await t.tap(find.text('Next'));
       await t.pumpAndSettle();
-      // Two plain F's on screen in C: one on the keyboard, one on the key
-      // picker. In G the keyboard's becomes F♯ — a Text.rich, not a plain
-      // Text — so only the picker's remains.
-      expect(find.text('F'), findsNWidgets(2));
+      // The white keys carry the scale. In C one of them is a plain F; in G
+      // it becomes F♯ — a Text.rich, not a plain Text. (The black keys and
+      // the key picker keep their own F's: in G the ♭7 is F natural.)
+      final whiteF = find.byWidgetPredicate(
+          (w) => w is Text && w.data == 'F' && w.style?.fontSize == 16);
+      expect(whiteF, findsOneWidget);
       await t.tap(find.text('G').last);
       await t.pumpAndSettle();
-      expect(find.text('F'), findsOneWidget,
+      expect(whiteF, findsNothing,
           reason: 'G major replaces the keyboard F with F♯ — that is the lesson');
       // And every degree is still on the board.
       for (var d = 1; d <= 7; d++) {
