@@ -298,6 +298,21 @@ void main() {
     // plugin, and the "missing plugin" it reports is about the sound, not
     // about anything on screen.
     while (t.takeException() != null) {}
+    // Let it run a few questions, then stop on an answer being revealed —
+    // the degree called, its note lit on the keyboard — instead of the
+    // empty first second of a session.
+    for (var k = 0; k < 900; k++) {
+      await t.pump(const Duration(milliseconds: 100));
+      while (t.takeException() != null) {}
+      final revealed = find.text('ANSWER').evaluate().isNotEmpty;
+      final far = find.textContaining('/30').evaluate().any((e) {
+        final v = int.tryParse(((e.widget as Text).data ?? '').split('/').first) ?? 0;
+        return v >= 8;
+      });
+      if (revealed && far) break;
+    }
+    await t.pump(const Duration(milliseconds: 600));
+    while (t.takeException() != null) {}
     await save(t, 'pocket');
     // Its speech loop runs on timers; let them fire and end before the test
     // does.

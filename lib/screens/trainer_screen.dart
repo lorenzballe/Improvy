@@ -728,6 +728,12 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
                   // Question — fills the top, keeping the input pinned low.
                   // Fades out under the minimal feedback so they don't overlap.
                   Expanded(
+                    // Breathing room above and below: when the question has
+                    // to shrink to fit (the fifteen-button grid), FittedBox
+                    // fills the whole slot, and its label ended up touching
+                    // the stats card above.
+                    child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                     child: Center(
                       child: AnimatedOpacity(
                         opacity: _showFeedback ? 0.0 : 1.0,
@@ -750,6 +756,7 @@ class _TrainerScreenState extends State<TrainerScreen> with TickerProviderStateM
                                 ),
                         ),
                       ),
+                    ),
                     ),
                   ),
                   // Input area — sits at the bottom, just above the toggle
