@@ -2,11 +2,10 @@ name: Web Preview
 
 # Builds the Flutter app for web and publishes it to GitHub Pages so the
 # latest UI can be previewed from any browser (phone included).
-#
-# Manual only: the app is public now, and a copy of it playable in any
-# browser should not appear on its own with every push. Run it by hand when a
-# preview is actually wanted (and unpublish the Pages site afterwards).
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
