@@ -1,0 +1,58 @@
+name: Review account
+
+# Creates (or refreshes) the demo account App Review signs in with, and gives
+# it Pro. Actions → Review account → Run workflow. Same secrets as the
+# Firebase deploy; the password is masked in the log.
+
+on:
+  workflow_dispatch:
+    inputs:
+      email:
+        description: "Demo account email"
+        required: true
+        default: "appreview@improvy.app"
+      password:
+        description: "Demo account password (at least 10 characters)"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  create:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mask the password
+        env:
+          PW: ${{ inputs.password }}
+        run: echo "::add-mask::$PW"
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install
+        run: npm ci
+        working-directory: functions
+
+      - name: Google credentials
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          set -e
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "::error::repository secret FIREBASE_SERVICE_ACCOUNT is not set."
+            exit 1
+          fi
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/sa.json" >> "$GITHUB_ENV"
+          echo "GOOGLE_CLOUD_PROJECT=improvy-f470f" >> "$GITHUB_ENV"
+
+      - name: Create the account and grant Pro
+        working-directory: functions
+        env:
+          EMAIL: ${{ inputs.email }}
+          REVIEW_PASSWORD: ${{ inputs.password }}
+        run: node tools/review-account.mjs "$EMAIL"
