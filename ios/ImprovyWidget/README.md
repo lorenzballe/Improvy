@@ -5,6 +5,11 @@ Twelve widgets, built with the app. Nothing here needs Xcode any more.
 * `ImprovyKit.swift` — the shared data access, design tokens and pieces.
 * `ImprovyWidgets.swift` — the twelve widgets and the bundle.
 * `Info.plist`, `ImprovyWidget.entitlements` — the extension's own.
+* `ImprovyWidget.xcconfig` — the extension's own base configuration. It must
+  never be Flutter's `Debug/Release.xcconfig`: `flutter build` adds the
+  CocoaPods include to those, the extension then links the app's frameworks
+  it does not contain, dyld kills it at launch, and Improvy is simply missing
+  from the widget gallery while every check says the extension is fine.
 * `../add_widget_target.rb` — the script that put the target in the project.
 
 The extension target `ImprovyWidget` (`com.improvy.app.ImprovyWidget`) is in

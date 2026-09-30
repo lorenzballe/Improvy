@@ -49,16 +49,16 @@ end
 end
 
 ext.build_configurations.each do |config|
-  # Flutter's own xcconfig, which is where FLUTTER_BUILD_NAME and
-  # FLUTTER_BUILD_NUMBER are defined. Without it the two settings below expand
-  # to NOTHING in this target — the extension ships with an empty version, and
-  # App Store Connect answers "Invalid Binary" after the upload has already
-  # succeeded. Debug.xcconfig and Release.xcconfig both only include
-  # Generated.xcconfig, so nothing else comes in with them.
-  base = config.name == 'Debug' ? 'Flutter/Debug.xcconfig' : 'Flutter/Release.xcconfig'
+  # The extension's own xcconfig, which includes only Generated.xcconfig —
+  # where FLUTTER_BUILD_NAME and FLUTTER_BUILD_NUMBER are defined. Without it
+  # the two settings below expand to NOTHING and App Store Connect answers
+  # "Invalid Binary". Never Flutter/Debug.xcconfig or Flutter/Release.xcconfig:
+  # `flutter build` prepends the Pods-Runner xcconfig to those, which links the
+  # app's frameworks into the extension and gets it killed at launch.
+  base = 'ImprovyWidget.xcconfig'
   config.base_configuration_reference =
-    project.files.find { |f| f.path == base } ||
-    project.new_file(base)
+    group.files.find { |f| f.path == base } ||
+    group.new_reference(base)
 
   config.build_settings.merge!(
     'PRODUCT_BUNDLE_IDENTIFIER' => BUNDLE_ID,

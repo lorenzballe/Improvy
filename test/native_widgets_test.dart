@@ -195,12 +195,23 @@ void main() {
       expect(config, contains(r'MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)"'));
       expect(config, contains('baseConfigurationReference'),
           reason: 'without an xcconfig those two variables are undefined here');
-      expect(config, matches(RegExp(r'baseConfigurationReference = \w+ /\* (Debug|Release)\.xcconfig')));
+      // Its own, never Flutter's: `flutter build` prepends the Pods-Runner
+      // xcconfig to Debug/Release.xcconfig, and an extension based on them
+      // links frameworks it does not carry — dyld kills it at launch and
+      // Improvy is missing from the widget gallery.
+      expect(config, contains('baseConfigurationReference = A1C0DE0000000000000000A1 /* ImprovyWidget.xcconfig */;'));
     }
-    // And the xcconfigs they point at must be the ones that carry the values.
-    for (final f in ['ios/Flutter/Debug.xcconfig', 'ios/Flutter/Release.xcconfig']) {
-      expect(_src(f), contains('#include "Generated.xcconfig"'), reason: f);
-    }
+    // Settings only — the file's comment quotes the include it must not have.
+    final own = _src('ios/ImprovyWidget/ImprovyWidget.xcconfig')
+        .split('\n')
+        .where((l) => !l.trimLeft().startsWith('//'))
+        .join('\n');
+    expect(own, contains('#include "../Flutter/Generated.xcconfig"'),
+        reason: 'the version variables live there and nowhere else');
+    expect(own, isNot(contains('#include "../Flutter/Release.xcconfig"')));
+    expect(own, isNot(contains('#include "../Flutter/Debug.xcconfig"')));
+    expect(own, isNot(contains('#include? "Pods')));
+    expect(own, contains('OTHER_LDFLAGS ='));
   });
 
   test('both bundle ids are signed for on Codemagic', () {

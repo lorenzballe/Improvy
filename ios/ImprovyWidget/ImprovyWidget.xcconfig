@@ -1,0 +1,23 @@
+// The widget extension's own base configuration.
+//
+// It must NOT be Flutter/Debug.xcconfig or Flutter/Release.xcconfig. At build
+// time `flutter build` prepends to those two files
+//
+//   #include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"
+//
+// which links every CocoaPods framework the app uses (home_widget,
+// flutter_local_notifications, sign_in_with_apple, …) into whatever target is
+// based on them. The extension then carries load commands for frameworks that
+// live in Runner.app/Frameworks, not in the extension, so dyld kills it the
+// moment iOS launches it to ask which widgets it offers — and Improvy never
+// appears in the widget gallery, although the extension is inside the app,
+// signed, versioned and able to open the App Group.
+//
+// All it needs from Flutter is the version: FLUTTER_BUILD_NAME and
+// FLUTTER_BUILD_NUMBER, which live in Generated.xcconfig and nowhere else.
+#include "../Flutter/Generated.xcconfig"
+
+// SwiftUI and WidgetKit only. Nothing to link, nothing to look up.
+OTHER_LDFLAGS =
+LD_RUNPATH_SEARCH_PATHS = @executable_path/Frameworks @executable_path/../../Frameworks
+APPLICATION_EXTENSION_API_ONLY = YES

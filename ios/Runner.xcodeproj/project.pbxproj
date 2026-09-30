@@ -88,6 +88,7 @@
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		ADE9F112CCAEBA3284D8BE3E /* ImprovyKit.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ImprovyKit.swift; sourceTree = "<group>"; };
 		B808B669F6E7C664E38AFDF8 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A1C0DE0000000000000000A1 /* ImprovyWidget.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = ImprovyWidget.xcconfig; sourceTree = "<group>"; };
 		FBFEEDF125DA46BAF8538B34 /* ImprovyWidget.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = ImprovyWidget.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -126,6 +127,7 @@
 				96822F424910B8EAD4E42443 /* ImprovyWidgets.swift */,
 				B808B669F6E7C664E38AFDF8 /* Info.plist */,
 				FBFEEDF125DA46BAF8538B34 /* ImprovyWidget.entitlements */,
+				A1C0DE0000000000000000A1 /* ImprovyWidget.xcconfig */,
 			);
 			name = ImprovyWidget;
 			path = ImprovyWidget;
@@ -553,7 +555,7 @@
 		};
 		5F7A805CF3B30C9BC149E44C /* Profile */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
+			baseConfigurationReference = A1C0DE0000000000000000A1 /* ImprovyWidget.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				CLANG_ENABLE_OBJC_WEAK = NO;
@@ -577,7 +579,7 @@
 		};
 		607DB58C0EF411A19C08E1FE /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
+			baseConfigurationReference = A1C0DE0000000000000000A1 /* ImprovyWidget.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				CLANG_ENABLE_OBJC_WEAK = NO;
@@ -757,7 +759,7 @@
 		};
 		C587BBD1C90A1B2A72CBA95E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9740EEB21CF90195004384FC /* Debug.xcconfig */;
+			baseConfigurationReference = A1C0DE0000000000000000A1 /* ImprovyWidget.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				CLANG_ENABLE_OBJC_WEAK = NO;
