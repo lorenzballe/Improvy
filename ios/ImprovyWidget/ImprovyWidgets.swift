@@ -103,37 +103,50 @@ struct QuizView: View {
     var entry: HourEntry
     var wide = false
 
+    private var gold: LinearGradient {
+        LinearGradient(colors: [Color(red: 1, green: 0.91, blue: 0.55), Ink.gold, Ink.amber],
+                       startPoint: .top, endPoint: .bottom)
+    }
+
     var body: some View {
         HStack(spacing: 14) {
             VStack(alignment: .leading, spacing: 0) {
                 Eyebrow(wide ? Improvy.label("questionLong", "TODAY'S QUESTION")
-                              : Improvy.label("question", "QUESTION"))
-                Spacer(minLength: 6)
-                Text(entry.degree)
-                    .font(.display(wide ? 46 : 40))
-                    .foregroundStyle(Ink.gold)
-                    .shadow(color: Ink.gold.opacity(0.35), radius: 14)
+                             : Improvy.label("question", "QUESTION"),
+                        symbol: "questionmark.circle.fill", accent: Ink.gold)
+                Spacer(minLength: 4)
+                music(entry.degree, size: wide ? 58 : 50)
+                    .foregroundStyle(gold)
                     .fitted()
                 if !entry.key.isEmpty {
-                    Text("\(Improvy.label("of", "of")) \(entry.key)")
-                        .font(.ui(wide ? 15 : 13, .medium))
-                        .foregroundStyle(.white.opacity(0.55))
+                    (Text("\(Improvy.label("of", "of")) ").font(.ui(wide ? 17 : 15, .medium))
+                        + music(entry.key, size: wide ? 17 : 15, weight: .semibold))
+                        .foregroundStyle(.white.opacity(0.72))
                         .fitted(0.7)
-                        .padding(.top, 1)
                 }
-                Spacer(minLength: 6)
-                Text(Improvy.label("reveal", "Tap to reveal"))
-                    .font(.ui(10, .medium))
-                    .foregroundStyle(.white.opacity(0.42))
+                Spacer(minLength: 4)
+                if !wide {
+                    HStack(spacing: 4) {
+                        Image(systemName: "eye.fill").font(.system(size: 9, weight: .semibold))
+                        Text(Improvy.label("reveal", "Tap to reveal")).font(.ui(11, .medium))
+                    }
+                    .foregroundStyle(Ink.quiet)
                     .fitted(0.8)
+                }
             }
             if wide {
                 Spacer(minLength: 0)
-                GlyphButton(system: "eye.fill", colour: Ink.gold, size: 54)
+                VStack(spacing: 8) {
+                    GlyphButton(system: "eye.fill", colour: Ink.gold, size: 56, filled: true)
+                    Text(Improvy.label("reveal", "Tap to reveal"))
+                        .font(.ui(11, .medium))
+                        .foregroundStyle(Ink.quiet)
+                        .fitted(0.8)
+                }
+                .frame(width: 96)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        .padding(wide ? 4 : 0)
         .surface(Ink.gold)
         .widgetURL(URL(string: "improvy://quiz?s=\(entry.slot)"))
     }
@@ -169,72 +182,108 @@ struct DailyView: View {
     private var played: Bool { Improvy.bool("daily_played") }
     private var key: String { Improvy.string("daily_key") }
     private var colour: Color { Improvy.colour("daily_key_color", Ink.gold) }
-
+    private var streak: Int { Improvy.int("daily_streak") }
     private var small: Bool { family == .systemSmall }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Eyebrow(text: small ? Improvy.label("daily", "DAILY")
-                                : Improvy.label("dailyLong", "DAILY CHALLENGE"),
-                    accent: played ? .white.opacity(0.45) : Ink.gold) {
-                Chip(text: "🔥 \(Improvy.int("daily_streak"))",
-                     colour: played ? .white.opacity(0.55) : Ink.gold)
-            }
-            Spacer(minLength: 8)
-            if small {
-                // On the small tile the key IS the headline — repeating it as
-                // "Key of B♭" beside a tile that already says B♭ cost the line
-                // that says what the run actually is.
-                HStack(alignment: .bottom, spacing: 10) {
-                    KeyTile(key: key.isEmpty ? "?" : key,
-                            colour: played ? Ink.violet : colour, size: 52)
-                    Text(played ? Improvy.string("daily_score", Improvy.label("done", "Done"))
-                              : Improvy.label("today", "today"))
-                        .font(.display(played ? 24 : 15))
-                        .foregroundStyle(played ? .white : .white.opacity(0.55))
-                        .fitted(0.6)
-                }
-                Spacer(minLength: 6)
-                Text(played
-                     ? Improvy.string("daily_grid", Improvy.label("tomorrow", "Next one tomorrow"))
-                     : Improvy.string("daily_sub", "10 questions"))
-                    .font(.ui(11, .medium))
-                    .foregroundStyle(.white.opacity(0.5))
-                    .fitted(0.7)
-            } else {
-                HStack(spacing: 12) {
-                    KeyTile(key: key.isEmpty ? "?" : key, colour: colour, size: 52)
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(played
-                             ? Improvy.string("daily_score", Improvy.label("done", "Done"))
-                             : (key.isEmpty ? "Daily Challenge"
-                                            : "\(Improvy.label("keyOf", "Key of")) \(key)"))
-                            .font(.display(23))
-                            .foregroundStyle(.white)
-                            .fitted(0.6)
-                        Text(played
-                             ? Improvy.string("daily_grid", Improvy.label("tomorrow", "Next one tomorrow"))
-                             : Improvy.string("daily_sub", "10 questions"))
-                            .font(.ui(11, .medium))
-                            .foregroundStyle(.white.opacity(0.5))
-                            .fitted(0.7)
-                        if !played {
-                            Text(Improvy.string("daily_mode"))
-                                .font(.ui(10, .bold))
-                                .foregroundStyle(colour.opacity(0.9))
-                                .fitted(0.7)
-                        }
-                    }
-                    Spacer(minLength: 0)
-                    if !played { GlyphButton(system: "play.fill", colour: Ink.gold, size: 46) }
-                }
-                Spacer(minLength: 0)
-            }
+        Group {
+            if small { smallBody } else { wideBody }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        // The gold frame only while there is still something to do today.
-        .surface(played ? Ink.violet : Ink.gold, lit: !played)
+        // The gold light only while there is still something to do today.
+        .surface(played ? Ink.mint : Ink.gold, lit: !played)
         .widgetURL(URL(string: "improvy://daily"))
+    }
+
+    private var eyebrow: some View {
+        Eyebrow(text: small ? Improvy.label("daily", "DAILY")
+                            : Improvy.label("dailyLong", "DAILY CHALLENGE"),
+                symbol: played ? "checkmark.seal.fill" : "calendar",
+                accent: played ? Ink.mint : Ink.gold) {
+            StreakChip(count: streak, dim: played)
+        }
+    }
+
+    private var score: String { Improvy.string("daily_score", Improvy.label("done", "Done")) }
+
+    @ViewBuilder private var smallBody: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            eyebrow
+            Spacer(minLength: 6)
+            if played {
+                Text(score)
+                    .font(.display(40))
+                    .monospacedDigit()
+                    .foregroundStyle(.white)
+                    .fitted(0.6)
+                Spacer(minLength: 6)
+                ResultBars(grid: Improvy.string("daily_grid"))
+                Text(Improvy.label("tomorrow", "Next one tomorrow"))
+                    .font(.ui(10.5, .medium))
+                    .foregroundStyle(Ink.quiet)
+                    .fitted(0.7)
+                    .padding(.top, 6)
+            } else {
+                HStack(spacing: 10) {
+                    KeyBadge(key: key.isEmpty ? "?" : key, colour: colour, size: 50)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(Improvy.label("today", "today").capitalized)
+                            .font(.ui(15, .semibold))
+                            .foregroundStyle(.white)
+                            .fitted(0.6)
+                        Text(Improvy.string("daily_mode"))
+                            .font(.ui(11, .semibold))
+                            .foregroundStyle(colour)
+                            .fitted(0.6)
+                    }
+                }
+                Spacer(minLength: 6)
+                Text(Improvy.string("daily_sub", "10 questions"))
+                    .font(.ui(10.5, .medium))
+                    .foregroundStyle(Ink.quiet)
+                    .fitted(0.7)
+            }
+        }
+    }
+
+    @ViewBuilder private var wideBody: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            eyebrow
+            Spacer(minLength: 6)
+            HStack(spacing: 14) {
+                KeyBadge(key: key.isEmpty ? "?" : key, colour: colour, size: 60)
+                VStack(alignment: .leading, spacing: 4) {
+                    if played {
+                        Text(score)
+                            .font(.display(30))
+                            .monospacedDigit()
+                            .foregroundStyle(.white)
+                            .fitted(0.6)
+                        ResultBars(grid: Improvy.string("daily_grid"), height: 5)
+                            .frame(maxWidth: 170)
+                    } else {
+                        (Text("\(Improvy.label("keyOf", "Key of")) ").font(.display(22, .semibold))
+                            + music(key, size: 22, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .fitted(0.6)
+                        Text(Improvy.string("daily_mode"))
+                            .font(.ui(12, .semibold))
+                            .foregroundStyle(colour)
+                            .fitted(0.7)
+                    }
+                    Text(played ? Improvy.label("tomorrow", "Next one tomorrow")
+                                : Improvy.string("daily_sub", "10 questions"))
+                        .font(.ui(11, .medium))
+                        .foregroundStyle(Ink.quiet)
+                        .fitted(0.7)
+                }
+                Spacer(minLength: 0)
+                if !played {
+                    GlyphButton(system: "play.fill", colour: Ink.gold, size: 50, filled: true)
+                }
+            }
+            Spacer(minLength: 0)
+        }
     }
 }
 
@@ -257,31 +306,42 @@ struct LevelView: View {
     var body: some View {
         let pct = min(max(Improvy.int("progress_pct"), 0), 100)
         VStack(alignment: .leading, spacing: 0) {
-            Eyebrow(text: Improvy.label("level", "YOUR LEVEL"), accent: colour) {
+            Eyebrow(text: Improvy.label("level", "YOUR LEVEL"), symbol: "sparkles", accent: colour) {
                 Text("\(Improvy.int("animal_level", 1))/\(Improvy.int("animal_levels_total", 8))")
-                    .font(.ui(10, .black))
-                    .foregroundStyle(.white.opacity(0.40))
+                    .font(.ui(10.5, .semibold))
+                    .monospacedDigit()
+                    .foregroundStyle(Ink.quiet)
             }
             Spacer(minLength: 4)
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text(Improvy.string("animal_emoji", "🐌"))
-                    .font(.system(size: 30))
-                Text("\(pct)%")
-                    .font(.display(30))
-                    .foregroundStyle(.white)
-                    .fitted(0.6)
+            HStack(spacing: 9) {
+                ZStack {
+                    Circle().fill(colour.opacity(0.18))
+                    Text(Improvy.string("animal_emoji", "🐌")).font(.system(size: 21))
+                }
+                .frame(width: 38, height: 38)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(Improvy.string("animal_name", "Snail"))
+                        .font(.ui(15, .bold))
+                        .foregroundStyle(.white)
+                        .fitted(0.6)
+                    Text(Improvy.string("animal_quote"))
+                        .font(.ui(10, .medium))
+                        .foregroundStyle(Ink.quiet)
+                        .fitted(0.7)
+                }
             }
-            Text(Improvy.string("animal_name", "Snail"))
-                .font(.ui(13, .black))
-                .foregroundStyle(colour)
-                .fitted(0.6)
-            Spacer(minLength: 6)
+            Spacer(minLength: 4)
+            HStack(alignment: .firstTextBaseline, spacing: 2) {
+                Text("\(pct)")
+                    .font(.display(34))
+                    .monospacedDigit()
+                    .foregroundStyle(.white)
+                Text("%")
+                    .font(.display(17, .semibold))
+                    .foregroundStyle(.white.opacity(0.55))
+            }
             Bar(value: Double(pct) / 100, colour: colour)
-            Text(Improvy.string("animal_quote"))
-                .font(.ui(9.5, .medium))
-                .foregroundStyle(.white.opacity(0.42))
-                .lineLimit(2)
-                .padding(.top, 5)
+                .padding(.top, 4)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .surface(colour)
@@ -302,9 +362,9 @@ struct ImprovyLevelWidget: Widget {
 
 // MARK: - ④ Key mastery map
 //
-// Twelve keys in chromatic order, each tile filled by how well it is known. A
-// key never played is drawn hollow rather than at 0%: "not started" and
-// "started badly" are different facts and must not look the same.
+// Twelve keys in chromatic order, each with a bar as long as it is known. A
+// key never played is drawn quiet, with no bar, rather than at 0%: "not
+// started" and "started badly" are different facts and must not look the same.
 
 struct KeyDatum {
     let name: String
@@ -334,55 +394,49 @@ struct MapView: View {
     var body: some View {
         let keys = KeyDatum.all
         let columns = tall ? 4 : 6
-        VStack(alignment: .leading, spacing: tall ? 10 : 8) {
-            Eyebrow(text: Improvy.label("mastery", "KEY MASTERY"), accent: Ink.cyan) {
+        let gap: CGFloat = tall ? 8 : 6
+        VStack(alignment: .leading, spacing: tall ? 12 : 9) {
+            Eyebrow(text: Improvy.label("mastery", "KEY MASTERY"),
+                    symbol: "square.grid.3x3.fill", accent: Ink.cyan) {
                 Text("\(Improvy.int("progress_pct"))%")
-                    .font(.ui(11, .black))
-                    .foregroundStyle(.white.opacity(0.55))
+                    .font(.ui(11, .bold))
+                    .monospacedDigit()
+                    .foregroundStyle(.white.opacity(0.75))
             }
             if keys.isEmpty {
                 Text(Improvy.label("openApp", "Open Improvy to fill this in."))
                     .font(.ui(12, .medium))
-                    .foregroundStyle(.white.opacity(0.45))
+                    .foregroundStyle(Ink.quiet)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             } else {
-                GeometryReader { geo in
-                    let gap: CGFloat = tall ? 9 : 7
-                    let rows = (keys.count + columns - 1) / columns
-                    // Never let a cramped container drive the tiles negative.
-                    let side = max(12, min(
-                        (geo.size.width - gap * CGFloat(columns - 1)) / CGFloat(columns),
-                        (geo.size.height - gap * CGFloat(rows - 1)) / CGFloat(rows)
-                    ))
-                    // The large widget has more height than the rows need;
-                    // spreading them beats a block of tiles above a hole.
-                    VStack(spacing: tall ? nil : gap) {
-                        ForEach(0..<rows, id: \.self) { row in
-                            HStack(spacing: gap) {
-                                ForEach(0..<columns, id: \.self) { col in
-                                    let i = row * columns + col
-                                    if i < keys.count {
-                                        let k = keys[i]
-                                        KeyTile(
-                                            key: k.name,
-                                            colour: k.played ? k.colour : .white.opacity(0.30),
-                                            size: side,
-                                            fill: k.played ? Double(k.pct) / 100 : 0
-                                        )
-                                    }
+                let rows = (keys.count + columns - 1) / columns
+                VStack(spacing: gap) {
+                    ForEach(0..<rows, id: \.self) { row in
+                        HStack(spacing: gap) {
+                            ForEach(0..<columns, id: \.self) { col in
+                                let i = row * columns + col
+                                if i < keys.count {
+                                    let k = keys[i]
+                                    KeyCell(key: k.name, colour: k.colour, pct: k.pct,
+                                            played: k.played, large: tall)
+                                } else {
+                                    Color.clear.frame(maxWidth: .infinity)
                                 }
                             }
                         }
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 }
+                .frame(maxHeight: .infinity)
             }
             if tall {
-                Bar(value: Double(Improvy.int("progress_pct")) / 100, colour: Ink.cyan, height: 7)
-                Text("\(Improvy.string("animal_emoji", "🐌"))  \(Improvy.string("animal_name", "Snail"))")
-                    .font(.ui(11, .black))
-                    .foregroundStyle(Improvy.colour("animal_color", Ink.mint))
-                    .fitted(0.7)
+                HStack(spacing: 8) {
+                    Text(Improvy.string("animal_emoji", "🐌")).font(.system(size: 15))
+                    Text(Improvy.string("animal_name", "Snail"))
+                        .font(.ui(12, .bold))
+                        .foregroundStyle(Improvy.colour("animal_color", Ink.mint))
+                        .fitted(0.7)
+                    Bar(value: Double(Improvy.int("progress_pct")) / 100, colour: Ink.cyan, height: 5)
+                }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -423,58 +477,61 @@ struct StreakView: View {
         // Only warn when there is actually something to lose.
         let atRisk = streak > 0 && !Improvy.bool("played_today")
         let colour = atRisk ? Ink.gold : Ink.ember
+        let caption = atRisk ? Improvy.label("atRisk", "Play today to keep it")
+                             : Improvy.label("days", "days in a row")
 
         Group {
             if wide {
-                HStack(spacing: 16) {
-                    flame(size: 54)
-                    VStack(alignment: .leading, spacing: 3) {
+                HStack(spacing: 14) {
+                    ZStack {
+                        Circle().fill(Ink.ember.opacity(0.16))
+                        Flame(size: 26)
+                    }
+                    .frame(width: 54, height: 54)
+                    VStack(alignment: .leading, spacing: 2) {
                         Text("\(streak)")
-                            .font(.display(40))
+                            .font(.display(42))
+                            .monospacedDigit()
                             .foregroundStyle(.white)
                             .fitted()
-                        Text(atRisk ? Improvy.label("atRisk", "Play today to keep it")
-                              : Improvy.label("dayStreak", "day streak"))
+                        Text(atRisk ? caption : Improvy.label("dayStreak", "day streak"))
                             .font(.ui(12, .semibold))
-                            .foregroundStyle(atRisk ? Ink.gold : .white.opacity(0.5))
-                            .fitted(0.7)
+                            .foregroundStyle(atRisk ? Ink.gold : Ink.quiet)
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.8)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
+                    .layoutPriority(1)
                     Spacer(minLength: 0)
-                    VStack(alignment: .trailing, spacing: 10) {
-                        WeekDots(colour: colour, size: 11)
-                        if atRisk { GlyphButton(system: "play.fill", colour: Ink.gold, size: 44) }
+                    VStack(alignment: .trailing, spacing: 12) {
+                        WeekDots(colour: colour, size: 12, letters: true)
+                        if atRisk {
+                            GlyphButton(system: "play.fill", colour: Ink.gold, size: 36, filled: true)
+                        }
                     }
                 }
             } else {
                 VStack(alignment: .leading, spacing: 0) {
-                    Eyebrow(Improvy.label("streak", "STREAK"), accent: colour)
+                    Eyebrow(Improvy.label("streak", "STREAK"), symbol: "flame.fill", accent: colour)
                     Spacer(minLength: 4)
-                    HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        flame(size: 30)
-                        Text("\(streak)")
-                            .font(.display(42))
-                            .foregroundStyle(.white)
-                            .fitted()
-                    }
-                    Spacer(minLength: 4)
-                    WeekDots(colour: colour)
-                        .padding(.bottom, 7)
-                    Text(atRisk ? Improvy.label("atRisk", "Play today to keep it")
-                              : Improvy.label("days", "days in a row"))
+                    Text("\(streak)")
+                        .font(.display(50))
+                        .monospacedDigit()
+                        .foregroundStyle(.white)
+                        .fitted()
+                    Text(caption)
                         .font(.ui(11, .semibold))
-                        .foregroundStyle(atRisk ? Ink.gold : .white.opacity(0.45))
+                        .foregroundStyle(atRisk ? Ink.gold : Ink.quiet)
                         .lineLimit(2)
-                        .minimumScaleFactor(0.7)
+                        .minimumScaleFactor(0.75)
+                    Spacer(minLength: 6)
+                    WeekDots(colour: colour, size: 10)
                 }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .surface(colour, lit: atRisk)
         .widgetURL(URL(string: "improvy://daily"))
-    }
-
-    private func flame(size: CGFloat) -> some View {
-        Text("🔥").font(.system(size: size))
     }
 }
 
@@ -510,32 +567,37 @@ struct WeakestView: View {
         let key = Improvy.string("weak_key")
         let colour = Improvy.colour("weak_color", Ink.rose)
         VStack(alignment: .leading, spacing: 0) {
-            Eyebrow(Improvy.label("needsWork", "NEEDS WORK"), accent: colour)
+            Eyebrow(Improvy.label("needsWork", "NEEDS WORK"), symbol: "scope", accent: Ink.rose)
             Spacer(minLength: 6)
-            HStack(spacing: 10) {
-                KeyTile(key: key.isEmpty ? "?" : key, colour: colour, size: 52)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(key.isEmpty ? "—" : "\(Improvy.int("weak_pct"))%")
-                        .font(.display(26))
-                        .foregroundStyle(colour)
-                        .fitted(0.6)
+            HStack(spacing: 11) {
+                KeyBadge(key: key.isEmpty ? "?" : key, colour: colour, size: 50)
+                VStack(alignment: .leading, spacing: 1) {
+                    HStack(alignment: .firstTextBaseline, spacing: 1) {
+                        Text(key.isEmpty ? "—" : "\(Improvy.int("weak_pct"))")
+                            .font(.display(28))
+                            .monospacedDigit()
+                            .foregroundStyle(.white)
+                        if !key.isEmpty {
+                            Text("%").font(.display(14, .semibold)).foregroundStyle(.white.opacity(0.55))
+                        }
+                    }
                     Text(key.isEmpty ? Improvy.label("weakEmpty", "Play a key first")
-                              : Improvy.label("mastered", "mastered"))
-                        .font(.ui(10, .medium))
-                        .foregroundStyle(.white.opacity(0.45))
+                                     : Improvy.label("mastered", "mastered"))
+                        .font(.ui(10.5, .medium))
+                        .foregroundStyle(Ink.quiet)
                         .fitted(0.7)
                 }
             }
             Spacer(minLength: 6)
             Text(key.isEmpty ? Improvy.label("weakEmptyHint", "Tap to start training")
-                 : Improvy.label("weakHint", "Your weakest key. Tap to train it."))
+                             : Improvy.label("weakHint", "Your weakest key. Tap to train it."))
                 .font(.ui(10.5, .medium))
-                .foregroundStyle(.white.opacity(0.45))
+                .foregroundStyle(.white.opacity(0.6))
                 .lineLimit(2)
                 .minimumScaleFactor(0.8)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        .surface(colour)
+        .surface(Ink.rose)
         .widgetURL(URL(string: key.isEmpty
                        ? "improvy://train"
                        : "improvy://key?k=\(key.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? key)"))
@@ -575,32 +637,27 @@ struct LauncherView: View {
     ]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Eyebrow(Improvy.label("start", "START TRAINING"), accent: Ink.indigo)
-            HStack(spacing: 9) {
+        VStack(alignment: .leading, spacing: 10) {
+            Eyebrow(Improvy.label("start", "START TRAINING"), symbol: "play.circle.fill", accent: Ink.indigo)
+            HStack(spacing: 8) {
                 ForEach(Self.modes) { mode in
-                    let colour = mode.colour
                     Link(destination: URL(string: mode.url)!) {
-                        VStack(spacing: 6) {
-                            GlyphButton(system: mode.glyph, colour: colour, size: 40)
+                        VStack(spacing: 8) {
+                            GlyphButton(system: mode.glyph, colour: mode.colour, size: 40, filled: true)
                             Text(mode.id)
-                                .font(.ui(9.5, .black))
-                                .foregroundStyle(.white.opacity(0.72))
+                                .font(.ui(11, .semibold))
+                                .foregroundStyle(.white.opacity(0.85))
                                 .fitted(0.6)
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .background(
                             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .fill(colour.opacity(0.10))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                        .strokeBorder(colour.opacity(0.22), lineWidth: 1)
-                                )
+                                .fill(Color.white.opacity(0.06))
                         )
                     }
                 }
             }
+            .frame(maxHeight: .infinity)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .surface(Ink.indigo)
@@ -623,19 +680,20 @@ struct ImprovyLauncherWidget: Widget {
 struct PocketView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Eyebrow(Improvy.label("handsFree", "HANDS-FREE"), accent: Ink.indigo)
+            Eyebrow(Improvy.label("handsFree", "HANDS-FREE"), symbol: "waveform", accent: Ink.indigo)
             Spacer(minLength: 6)
-            GlyphButton(system: "headphones", colour: Ink.indigo, size: 46)
+            GlyphButton(system: "headphones", colour: Ink.indigo, size: 48, filled: true)
             Spacer(minLength: 6)
             Text("Pocket Mode")
-                .font(.display(19))
+                .font(.display(19, .bold))
                 .foregroundStyle(.white)
                 .fitted(0.6)
             Text(Improvy.label("pocketSub", "Train with the screen off"))
-                .font(.ui(10.5, .medium))
-                .foregroundStyle(.white.opacity(0.45))
+                .font(.ui(11, .medium))
+                .foregroundStyle(Ink.quiet)
                 .lineLimit(2)
                 .minimumScaleFactor(0.8)
+                .padding(.top, 1)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .surface(Ink.indigo)
@@ -659,24 +717,24 @@ struct ImprovyPocketWidget: Widget {
 struct TheoryView: View {
     var body: some View {
         let colour = Improvy.colour("theory_color", Ink.rose)
-        HStack(spacing: 14) {
+        HStack(spacing: 16) {
             ZStack {
                 Circle().fill(colour.opacity(0.14))
-                Circle().strokeBorder(colour.opacity(0.35), lineWidth: 1)
-                Text(Improvy.string("theory_degree", "5"))
-                    .font(.display(28))
+                Circle().strokeBorder(colour.opacity(0.30), lineWidth: 1)
+                music(Improvy.string("theory_degree", "5"), size: 30)
                     .foregroundStyle(colour)
                     .fitted(0.5)
-                    .padding(6)
+                    .padding(8)
             }
-            .frame(width: 64, height: 64)
-            VStack(alignment: .leading, spacing: 5) {
-                Eyebrow(Improvy.label("theory", "DEGREE OF THE DAY"), accent: colour)
+            .frame(width: 70, height: 70)
+            VStack(alignment: .leading, spacing: 6) {
+                Eyebrow(Improvy.label("theory", "DEGREE OF THE DAY"), symbol: "book.fill", accent: colour)
                 Text(Improvy.string("theory_text", "Open Improvy to see today's card."))
-                    .font(.ui(13, .semibold))
-                    .foregroundStyle(.white.opacity(0.88))
+                    .font(.ui(13.5, .medium))
+                    .foregroundStyle(.white.opacity(0.9))
+                    .lineSpacing(1.5)
                     .lineLimit(4)
-                    .minimumScaleFactor(0.75)
+                    .minimumScaleFactor(0.8)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }

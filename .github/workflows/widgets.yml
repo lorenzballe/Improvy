@@ -7,7 +7,8 @@ name: Widgets check
 #   2. does iOS register it on a simulator, and does it start;
 #   3. what do the twelve REAL SwiftUI widgets look like, with the payload the
 #      app really writes.
-# The renders and the report are pushed to the `widget-renders` branch.
+# The renders go to the `widget-renders` branch, the build report to
+# `widget-report`. The two jobs run side by side, so the pictures come first.
 
 on:
   workflow_dispatch:
@@ -24,13 +25,13 @@ permissions:
   contents: write
 
 concurrency:
-  group: widgets
+  group: widgets-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  check:
+  render:
     runs-on: macos-15
-    timeout-minutes: 75
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -57,14 +58,55 @@ jobs:
                   if x["name"].startswith("iPhone") and "Pro" in x["name"] and "Max" not in x["name"]:
                       best=(rt,x["udid"],x["name"])
           print(best[1])')
+          xcrun simctl boot "$udid"
+          xcrun simctl bootstatus "$udid" -b
+
+      - name: Render the real widgets
+        run: ios/WidgetRender/render.sh build/widget_payload out/renders
+
+      - name: Publish renders
+        if: always()
+        run: |
+          set -e
+          cp -R out "$RUNNER_TEMP/out"
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git checkout --orphan widget-renders
+          git rm -rf -q . > /dev/null
+          rm -rf ./*
+          cp -R "$RUNNER_TEMP/out/." .
+          echo "$GITHUB_SHA" > COMMIT
+          git add -A
+          git commit -q -m "Widget renders for $GITHUB_SHA"
+          git push -f origin widget-renders
+
+  build:
+    runs-on: macos-15
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Boot a simulator
+        run: |
+          udid=$(xcrun simctl list devices available -j | python3 -c '
+          import json,sys
+          d=json.load(sys.stdin)["devices"]
+          best=None
+          for rt,devs in d.items():
+              if "iOS" not in rt: continue
+              for x in devs:
+                  if x["name"].startswith("iPhone") and "Pro" in x["name"] and "Max" not in x["name"]:
+                      best=(rt,x["udid"],x["name"])
+          print(best[1])')
           echo "SIM=$udid" >> "$GITHUB_ENV"
           xcrun simctl boot "$udid"
           xcrun simctl bootstatus "$udid" -b
           mkdir -p report
-          xcrun simctl list devices booted | tee report/simulator.txt
-
-      - name: Render the real widgets
-        run: ios/WidgetRender/render.sh build/widget_payload report/renders
 
       - name: Release build — what the App Store gets
         run: |
@@ -116,18 +158,18 @@ jobs:
           fi
           echo "PASS: registered, starts" >> report/simulator.md
 
-      - name: Publish renders and report
+      - name: Publish report
         if: always()
         run: |
           set -e
           cp -R report "$RUNNER_TEMP/report"
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git checkout --orphan widget-renders
+          git checkout --orphan widget-report
           git rm -rf -q . > /dev/null
           rm -rf ./*
           cp -R "$RUNNER_TEMP/report/." .
           echo "$GITHUB_SHA" > COMMIT
           git add -A
-          git commit -q -m "Widget renders for $GITHUB_SHA"
-          git push -f origin widget-renders
+          git commit -q -m "Widget report for $GITHUB_SHA"
+          git push -f origin widget-report
