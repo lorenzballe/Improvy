@@ -76,14 +76,14 @@ void main() {
     expect(closed, 1);
   });
 
-  testWidgets('level up: Awesome! plays the entrance backwards', (t) async {
+  testWidgets('level up: Continue plays the entrance backwards', (t) async {
     var closed = 0;
     await pumpIn(t, LevelUpModal(
       animal: getAnimalLevel(100),
       onClose: () => closed++,
     ));
 
-    await t.tap(find.text('Awesome!'));
+    await t.tap(find.text('Continue'));
     await t.pump(const Duration(milliseconds: 60));
     expect(closed, 0);
 

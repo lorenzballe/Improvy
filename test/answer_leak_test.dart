@@ -159,7 +159,7 @@ void main() {
     expect(opened, isTrue,
         reason: 'the tap must ask for the paywall immediately');
     // …and must not have quietly switched to the mode it cannot afford.
-    expect(find.textContaining('Focus on the 7 notes'), findsOneWidget,
+    expect(find.textContaining('The 7 notes of the major'), findsOneWidget,
         reason: 'a free user must still be on Diatonic afterwards');
   });
 }
