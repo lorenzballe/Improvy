@@ -396,13 +396,8 @@ class _ScoreCard extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(22, 20, 22, 18),
             child: Column(children: [
               Row(children: [
-                ShaderMask(
-                  shaderCallback: (b) => const LinearGradient(
-                    colors: [Color(0xFF22D3EE), Color(0xFFA855F7), Color(0xFFF43F5E)],
-                  ).createShader(b),
-                  child: const Text('IMPROVY',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.white)),
-                ),
+                const Text('IMPROVY',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.white)),
                 const Spacer(),
                 Text(date, style: label),
               ]),
