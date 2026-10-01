@@ -125,6 +125,8 @@ Future<void> frame(WidgetTester t, Widget home, AppProvider p) async {
         scaffoldBackgroundColor: const Color(0xFF0F0A1A),
         useMaterial3: true,
         fontFamily: 'Lexend',
+        // As in main.dart: accidentals from the bundled music font.
+        fontFamilyFallback: const ['NotoMusic'],
       ),
       home: home,
     ),

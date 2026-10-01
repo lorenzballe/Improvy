@@ -362,13 +362,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeChooseMode => 'Choose Mode';
 
   @override
-  String get homeChooseModeSub => 'Select how you want to train today';
+  String get homeChooseModeSub => 'Two ways to train this key.';
 
   @override
-  String get homeDiatonicDesc => 'Master the 7 notes of the scale.';
+  String get homeDiatonicDesc => 'The 7 notes of the major scale.';
 
   @override
-  String get homeChromaticDesc => 'Challenge yourself with all 12 semitones.';
+  String get homeChromaticDesc => 'All 12 notes, the altered degrees included.';
 
   @override
   String homeLockedTier(String prev) {
@@ -1090,7 +1090,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feedbackKindOther => 'Something else';
 
   @override
-  String get levelUp => 'Level Up!';
+  String get levelUp => 'Level up';
 
   @override
   String get levelUpYouAreNow => 'You are now a ';

@@ -751,19 +751,19 @@ abstract class AppLocalizations {
   /// No description provided for @homeChooseModeSub.
   ///
   /// In en, this message translates to:
-  /// **'Select how you want to train today'**
+  /// **'Two ways to train this key.'**
   String get homeChooseModeSub;
 
   /// No description provided for @homeDiatonicDesc.
   ///
   /// In en, this message translates to:
-  /// **'Master the 7 notes of the scale.'**
+  /// **'The 7 notes of the major scale.'**
   String get homeDiatonicDesc;
 
   /// No description provided for @homeChromaticDesc.
   ///
   /// In en, this message translates to:
-  /// **'Challenge yourself with all 12 semitones.'**
+  /// **'All 12 notes, the altered degrees included.'**
   String get homeChromaticDesc;
 
   /// No description provided for @homeLockedTier.
@@ -2077,7 +2077,7 @@ abstract class AppLocalizations {
   /// No description provided for @levelUp.
   ///
   /// In en, this message translates to:
-  /// **'Level Up!'**
+  /// **'Level up'**
   String get levelUp;
 
   /// No description provided for @levelUpYouAreNow.

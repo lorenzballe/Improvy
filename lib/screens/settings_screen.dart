@@ -349,7 +349,8 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              // The Pro card's raised base takes up part of the gap.
+              const SizedBox(height: 40),
 
               // ACCOUNT — so that Pro follows the person, not the phone.
               _sectionLabel(context.l10n.settingsAccount),
@@ -358,7 +359,7 @@ class SettingsScreen extends StatelessWidget {
                 shadow: const [BoxShadow(color: Color(0x4D000000), blurRadius: 32, offset: Offset(0, 8))],
                 child: const AccountCard(),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 28),
 
               // TRAINING
               _sectionLabel(context.l10n.settingsTraining),
@@ -426,15 +427,20 @@ class SettingsScreen extends StatelessWidget {
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          context.l10n.settingsAdaptive,
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w900,
-                                            color: provider.adaptiveDifficulty ? Colors.white : Colors.white.withAlpha(179),
-                                            letterSpacing: 0.4,
+                                        Padding(padding: const EdgeInsets.only(right: 12), child: FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          alignment: Alignment.centerLeft,
+                                          child: Text(
+                                            context.l10n.settingsAdaptive,
+                                            maxLines: 1,
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w900,
+                                              color: provider.adaptiveDifficulty ? Colors.white : Colors.white.withAlpha(179),
+                                              letterSpacing: 0.4,
+                                            ),
                                           ),
-                                        ),
+                                        )),
                                         const SizedBox(height: 3),
                                         Text(
                                           context.l10n.settingsAdaptiveTag,
@@ -548,19 +554,19 @@ class SettingsScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 28),
 
               // FREE MODE
               _sectionLabel(context.l10n.settingsFreeMode),
               const SizedBox(height: 12),
               _freeModeRow(context),
-              const SizedBox(height: 16),
+              const SizedBox(height: 28),
 
               // NOTIFICATIONS
               _sectionLabel(context.l10n.settingsNotifications),
               const SizedBox(height: 12),
               _NotificationsCard(provider: provider),
-              const SizedBox(height: 16),
+              const SizedBox(height: 28),
 
               // NEWS & UPDATES
               _sectionLabel(context.l10n.settingsNews),
@@ -651,7 +657,7 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 ),
               ],
-              const SizedBox(height: 16),
+              const SizedBox(height: 28),
 
               // STORE
               _sectionLabel(context.l10n.settingsStore),
@@ -735,7 +741,7 @@ class SettingsScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 28),
 
               // PROMOTIONAL CODES — spent on the account, see PromoCodeCard.
               // Shown to someone who is not Pro yet, and to someone whose Pro
@@ -940,7 +946,7 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 10),
-              const SizedBox(height: 16),
+              const SizedBox(height: 28),
 
               // LEGAL
               _sectionLabel(context.l10n.settingsLegal),
@@ -1320,13 +1326,19 @@ class _SimpleNotesCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(context.l10n.settingsSimpleNotes,
+                      // One line: a two-line title beside a switch reads as broken.
+                      Padding(padding: const EdgeInsets.only(right: 12), child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(context.l10n.settingsSimpleNotes,
+                            maxLines: 1,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w900,
                             color: on ? Colors.white : Colors.white.withAlpha(179),
                             letterSpacing: 0.4,
                           )),
+                      )),
                       const SizedBox(height: 3),
                       Text(context.l10n.settingsSimpleNotesTag,
                           style: TextStyle(
@@ -1405,13 +1417,19 @@ class _KeyboardFromTonicCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(context.l10n.settingsKeyboardTonic,
+                      // One line: a two-line title beside a switch reads as broken.
+                      Padding(padding: const EdgeInsets.only(right: 12), child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(context.l10n.settingsKeyboardTonic,
+                            maxLines: 1,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w900,
                             color: on ? Colors.white : Colors.white.withAlpha(179),
                             letterSpacing: 0.4,
                           )),
+                      )),
                       const SizedBox(height: 3),
                       Text(context.l10n.settingsKeyboardTonicTag,
                           style: TextStyle(

@@ -340,7 +340,7 @@ class _ModeCardNow extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 const Text(
-                  'Master the 7 notes of the scale.',
+                  'The 7 notes of the major scale.',
                   maxLines: 2,
                   style: TextStyle(fontSize: 14, color: Colors.white60, height: 1.5),
                 ),
@@ -894,7 +894,7 @@ class _SystemSheet extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 4),
                                   const Text(
-                                    'Master the 7 notes of the scale.',
+                                    'The 7 notes of the major scale.',
                                     style: TextStyle(fontSize: 12, color: Colors.white60, height: 1.5),
                                   ),
                                 ],

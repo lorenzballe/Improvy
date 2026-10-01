@@ -154,9 +154,9 @@
   "homeReadyBody": "Select a key from above",
   "homeGamesPlayed": "GAMES PLAYED",
   "homeChooseMode": "Choose Mode",
-  "homeChooseModeSub": "Select how you want to train today",
-  "homeDiatonicDesc": "Master the 7 notes of the scale.",
-  "homeChromaticDesc": "Challenge yourself with all 12 semitones.",
+  "homeChooseModeSub": "Two ways to train this key.",
+  "homeDiatonicDesc": "The 7 notes of the major scale.",
+  "homeChromaticDesc": "All 12 notes, the altered degrees included.",
   "homeLockedTier": "Keep training in {prev} mode to unlock this difficulty.",
   "@homeLockedTier": {
     "placeholders": {
@@ -536,7 +536,7 @@
   "feedbackKindBug": "Something is broken",
   "feedbackKindIdea": "An idea",
   "feedbackKindOther": "Something else",
-  "levelUp": "Level Up!",
+  "levelUp": "Level up",
   "levelUpYouAreNow": "You are now a ",
   "awesome": "Continue",
   "whatsNewVersionHere": "Version {v}\nis here",

@@ -83,7 +83,7 @@ void main() {
       onClose: () => closed++,
     ));
 
-    await t.tap(find.text('Continue'));
+    await t.tap(find.text('CONTINUE'));
     await t.pump(const Duration(milliseconds: 60));
     expect(closed, 0);
 

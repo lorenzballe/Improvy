@@ -143,7 +143,7 @@ class _LevelUpModalState extends State<LevelUpModal>
                                 gradient: LinearGradient(
                                   begin: edge,
                                   end: -edge,
-                                  colors: [color.withValues(alpha:0.45 * glowPulse), Colors.transparent],
+                                  colors: [color.withValues(alpha:0.2 * glowPulse), Colors.transparent],
                                 ),
                               ),
                             ),
@@ -329,12 +329,12 @@ class _ModalCard extends StatelessWidget {
                       children: [
                         // "LEVEL UP!" in animal color
                         Text(
-                          context.l10n.levelUp,
+                          context.l10n.levelUp.toUpperCase(),
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w900,
                             color: color.withValues(alpha:0.8),
-                            letterSpacing: 4,
+                            letterSpacing: 3,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -425,7 +425,8 @@ class _RaysPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = 3000.0; // Estendi i raggi all'infinito oltre i bordi dello schermo
     final paint = Paint()
-      ..color = color.withValues(alpha:0.17)
+      // Quiet: the rays are atmosphere, not a starburst.
+      ..color = color.withValues(alpha:0.08)
       ..style = PaintingStyle.fill;
 
     for (int i = 0; i < 12; i++) {
@@ -485,12 +486,12 @@ class _AwesomeButtonState extends State<_AwesomeButton> {
             ],
           ),
           child: Text(
-            context.l10n.awesome,
+            context.l10n.awesome.toUpperCase(),
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 13,
               fontWeight: FontWeight.w900,
-              letterSpacing: 1.4,
+              letterSpacing: 2,
               color: Colors.white,
             ),
           ),
