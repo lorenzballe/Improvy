@@ -126,7 +126,7 @@
   "homeKeyTileLabel": "Tonalidade de {key}, {pct} por cento",
   "setupTrainingSetup": "CONFIGURAR TREINO",
   "setupHarmonizeSetup": "CONFIGURAR HARMONIZAÇÃO",
-  "setupPersonalized": "PRÁTICA LIVRE · NÃO CONTA PARA O DOMÍNIO",
+  "setupPersonalized": "PRÁTICA LIVRE",
   "setupHandsFree": "MÃOS-LIVRES · ÁUDIO",
   "setupSelectRootKey": "Escolhe a tonalidade",
   "setupSelectRootKeySub": "Escolhe a base do teu treino.",

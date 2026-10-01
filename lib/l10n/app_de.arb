@@ -126,7 +126,7 @@
   "homeKeyTileLabel": "Tonart {key}, {pct} Prozent",
   "setupTrainingSetup": "TRAININGS-SETUP",
   "setupHarmonizeSetup": "HARMONISIER-SETUP",
-  "setupPersonalized": "FREIES ÜBEN · ZÄHLT NICHT ZUR BEHERRSCHUNG",
+  "setupPersonalized": "FREIES ÜBEN",
   "setupHandsFree": "FREIHÄNDIG · AUDIO",
   "setupSelectRootKey": "Tonart wählen",
   "setupSelectRootKeySub": "Wähle die Grundlage deines Trainings.",

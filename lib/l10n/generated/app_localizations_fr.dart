@@ -427,8 +427,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get setupHarmonizeSetup => 'RÉGLAGES D\'HARMONISATION';
 
   @override
-  String get setupPersonalized =>
-      'PRATIQUE LIBRE · NE COMPTE PAS POUR LA MAÎTRISE';
+  String get setupPersonalized => 'PRATIQUE LIBRE';
 
   @override
   String get setupHandsFree => 'MAINS LIBRES · AUDIO';

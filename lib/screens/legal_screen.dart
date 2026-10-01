@@ -8,6 +8,51 @@ class LegalScreen extends StatelessWidget {
   final String body;
   const LegalScreen({super.key, required this.title, required this.body});
 
+  /// The plain-text document set as a document: the title it opens with is
+  /// already in the header, section headings ("1. INFORMATION WE COLLECT")
+  /// stand out, the date is quiet, and the prose is the prose.
+  List<Widget> _paragraphs() {
+    final heading = RegExp(r"^(\d+\.\s+)?[A-Z0-9 &,'’()/\-—]+$");
+    final blocks = body
+        .trim()
+        .split(RegExp(r'\n\s*\n'))
+        .map((b) => b.trim())
+        .where((b) => b.isNotEmpty)
+        .toList();
+    if (blocks.isNotEmpty && blocks.first.toUpperCase() == blocks.first &&
+        !blocks.first.contains('\n')) {
+      blocks.removeAt(0);
+    }
+    final out = <Widget>[];
+    for (final b in blocks) {
+      if (!b.contains('\n') && heading.hasMatch(b)) {
+        out.add(Padding(
+          padding: const EdgeInsets.only(top: 22, bottom: 8),
+          child: Text(b,
+              style: const TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.2,
+                  color: Colors.white)),
+        ));
+      } else if (b.startsWith('Last updated') || b.startsWith('Ultimo aggiornamento')) {
+        out.add(Padding(
+          padding: const EdgeInsets.only(bottom: 14),
+          child: Text(b,
+              style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600,
+                  color: Colors.white.withValues(alpha: 0.4))),
+        ));
+      } else {
+        out.add(Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Text(b,
+              style: TextStyle(fontSize: 14, height: 1.6, color: Colors.white.withValues(alpha: 0.72))),
+        ));
+      }
+    }
+    return out;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,9 +87,9 @@ class LegalScreen extends StatelessWidget {
               child: SingleChildScrollView(
                 physics: kAppScrollPhysics,
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
-                child: Text(
-                  body,
-                  style: TextStyle(fontSize: 14, height: 1.6, color: Colors.white.withValues(alpha: 0.7)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: _paragraphs(),
                 ),
               ),
             ),

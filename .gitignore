@@ -57,3 +57,4 @@ functions/.env.local
 # flutter_test writes golden-comparison diffs here when a golden test fails.
 # They are output, not sources — never commit them.
 test/failures/
+test/tour/

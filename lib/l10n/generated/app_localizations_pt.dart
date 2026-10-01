@@ -426,7 +426,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get setupHarmonizeSetup => 'CONFIGURAR HARMONIZAÇÃO';
 
   @override
-  String get setupPersonalized => 'PRÁTICA LIVRE · NÃO CONTA PARA O DOMÍNIO';
+  String get setupPersonalized => 'PRÁTICA LIVRE';
 
   @override
   String get setupHandsFree => 'MÃOS-LIVRES · ÁUDIO';

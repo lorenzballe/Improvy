@@ -967,6 +967,11 @@ class _DegreeRow extends StatelessWidget {
   final int accuracy;
   const _DegreeRow({required this.label, required this.color, required this.plays, required this.accuracy});
 
+  /// Never asked in the last 30 games. Shown as a dash in grey, not as 0% in
+  /// the degree's colour — "not played" and "always wrong" must not look alike.
+  bool get played => plays > 0;
+  Color get tint => played ? color : Colors.white.withAlpha(70);
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -983,7 +988,7 @@ class _DegreeRow extends StatelessWidget {
           Container(
             width: 48, height: 48,
             decoration: BoxDecoration(
-              color: color.withAlpha(21),
+              color: played ? color.withAlpha(21) : Colors.white.withAlpha(8),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.white.withAlpha(26)),
               boxShadow: [BoxShadow(color: Colors.black.withAlpha(13), blurRadius: 4, offset: const Offset(0, 2))],
@@ -991,22 +996,26 @@ class _DegreeRow extends StatelessWidget {
             // NoteText renders ♯/♭ from the bundled Noto Music font — a plain
             // Text falls back to a runtime Google-Fonts download for ♯, which
             // shows a placeholder box when the device is offline.
-            child: Center(child: NoteText(note: label,
-              style: TextStyle(fontSize: label.length > 2 ? 11 : 14, fontWeight: FontWeight.w900, color: color,
-                shadows: [Shadow(color: color.withAlpha(128), blurRadius: 8)]))),
+            child: Center(child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: FittedBox(fit: BoxFit.scaleDown, child: NoteText(note: label,
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: tint,
+                  shadows: played ? [Shadow(color: color.withAlpha(128), blurRadius: 8)] : null))),
+            )),
           ),
           const SizedBox(width: 12),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(context.l10n.statsPlays, style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900,
               color: Colors.white.withAlpha(77), letterSpacing: 0.8)),
-            Text(plays > 0 ? plays.toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (_) => ',') : '0',
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.6)),
+            Text(plays > 0 ? plays.toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (_) => ',') : '—',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900,
+                color: played ? Colors.white : Colors.white.withAlpha(70), letterSpacing: -0.6)),
           ])),
           Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
             Text(context.l10n.statsAccuracy, style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900,
               color: Colors.white.withAlpha(77), letterSpacing: 0.8)),
-            Text('$accuracy%', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900,
-              color: color, letterSpacing: -0.9)),
+            Text(played ? '$accuracy%' : '—', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900,
+              color: tint, letterSpacing: -0.9)),
           ]),
         ]),
         const SizedBox(height: 8),

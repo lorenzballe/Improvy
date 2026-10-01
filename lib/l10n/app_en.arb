@@ -209,7 +209,7 @@
   },
   "setupTrainingSetup": "TRAINING SETUP",
   "setupHarmonizeSetup": "HARMONIZE SETUP",
-  "setupPersonalized": "FREE PRACTICE · DOES NOT COUNT TOWARDS MASTERY",
+  "setupPersonalized": "FREE PRACTICE",
   "setupHandsFree": "HANDS-FREE · AUDIO",
   "setupSelectRootKey": "Select Root Key",
   "setupSelectRootKeySub": "Choose the foundation for your training.",

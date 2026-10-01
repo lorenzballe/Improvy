@@ -426,8 +426,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get setupHarmonizeSetup => 'HARMONIZE SETUP';
 
   @override
-  String get setupPersonalized =>
-      'FREE PRACTICE · DOES NOT COUNT TOWARDS MASTERY';
+  String get setupPersonalized => 'FREE PRACTICE';
 
   @override
   String get setupHandsFree => 'HANDS-FREE · AUDIO';

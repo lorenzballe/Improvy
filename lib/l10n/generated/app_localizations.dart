@@ -865,7 +865,7 @@ abstract class AppLocalizations {
   /// No description provided for @setupPersonalized.
   ///
   /// In en, this message translates to:
-  /// **'FREE PRACTICE · DOES NOT COUNT TOWARDS MASTERY'**
+  /// **'FREE PRACTICE'**
   String get setupPersonalized;
 
   /// No description provided for @setupHandsFree.

@@ -425,7 +425,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get setupHarmonizeSetup => 'HARMONISIER-SETUP';
 
   @override
-  String get setupPersonalized => 'FREIES ÜBEN · ZÄHLT NICHT ZUR BEHERRSCHUNG';
+  String get setupPersonalized => 'FREIES ÜBEN';
 
   @override
   String get setupHandsFree => 'FREIHÄNDIG · AUDIO';

@@ -145,7 +145,7 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
     final chromDegrees = kRomanDegrees.map((label) {
       final d = degTone[label] ?? (0, 0);
       final acc = d.$2 > 0 ? (d.$1 / d.$2 * 100).round() : 0;
-      return (label: label, accuracy: acc);
+      return (label: label, accuracy: acc, played: d.$2 > 0);
     }).toList();
 
     // Common confusions (top 3, min 2 occurrences)
@@ -440,7 +440,7 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                             for (final d in chromDegrees)
                               SizedBox(
                                 width: cellW,
-                                child: _DegreeMasteryCell(label: d.label, accuracy: d.accuracy, color: color),
+                                child: _DegreeMasteryCell(label: d.label, accuracy: d.accuracy, played: d.played, color: color),
                               ),
                           ],
                         );
@@ -751,8 +751,12 @@ class _StatCard extends StatelessWidget {
 class _DegreeMasteryCell extends StatelessWidget {
   final String label;
   final int accuracy;
+  /// Asked at least once. An unasked degree reads as a grey dash, not as 0%.
+  final bool played;
   final Color color;
-  const _DegreeMasteryCell({required this.label, required this.accuracy, required this.color});
+  const _DegreeMasteryCell({required this.label, required this.accuracy, required this.played, required this.color});
+
+  Color get _tint => played ? color : Colors.white.withAlpha(70);
 
   @override
   Widget build(BuildContext context) => Container(
@@ -772,15 +776,19 @@ class _DegreeMasteryCell extends StatelessWidget {
                   width: 32, height: 32,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: color.withAlpha(33),
+                    color: played ? color.withAlpha(33) : Colors.white.withAlpha(8),
                     borderRadius: BorderRadius.circular(9),
                   ),
                   // NoteText draws ♯/♭ from the bundled Noto Music font (a
                   // plain Text needs a runtime font download for ♯ — offline
                   // it renders a placeholder box).
-                  child: NoteText(note: label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: color)),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 2),
+                    child: FittedBox(fit: BoxFit.scaleDown,
+                        child: NoteText(note: label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: _tint))),
+                  ),
                 ),
-                Text('$accuracy%', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: color)),
+                Text(played ? '$accuracy%' : '—', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: _tint)),
               ],
             ),
             const SizedBox(height: 10),
