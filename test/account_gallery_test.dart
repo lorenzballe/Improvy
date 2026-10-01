@@ -60,7 +60,6 @@ void main() {
 
     await t.pumpWidget(MaterialApp(
       debugShowCheckedModeBanner: false,
-      locale: const Locale('it'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       theme: ThemeData(

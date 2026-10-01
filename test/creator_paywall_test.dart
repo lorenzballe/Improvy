@@ -20,7 +20,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(loadRealFonts);
 
-  for (final locale in const [Locale('it'), Locale('en')]) {
+  for (final locale in const [Locale('en')]) {
     testWidgets('creator paywall, ${locale.languageCode}', (t) async {
       SharedPreferences.setMockInitialValues({});
       final storage = StorageService();
@@ -58,8 +58,8 @@ void main() {
                 creatorOffer: CreatorOffer(
                   code: 'MARCO10',
                   pct: 14,
-                  regularPrice: locale.languageCode == 'it' ? '20,99 €' : '€20.99',
-                  price: locale.languageCode == 'it' ? '17,99 €' : '€17.99',
+                  regularPrice: '€20.99',
+                  price: '€17.99',
                 ),
               ),
             ]),

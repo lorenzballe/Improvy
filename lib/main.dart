@@ -110,7 +110,15 @@ class ImprovyApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFF0F0A1A),
         useMaterial3: true,
         fontFamily: 'Lexend',
-        textTheme: ThemeData.dark().textTheme.apply(fontFamily: 'Lexend'),
+        // Lexend and Outfit have no ♭ ♯ 𝄫 𝄪. Without a fallback of our own,
+        // every plain Text that names a note borrowed the accidental from
+        // whatever the phone had — a different shape on every device. The
+        // bundled music font draws them the same everywhere, and matches
+        // NoteText.
+        fontFamilyFallback: const ['NotoMusic'],
+        textTheme: ThemeData.dark()
+            .textTheme
+            .apply(fontFamily: 'Lexend', fontFamilyFallback: const ['NotoMusic']),
       ),
       home: const RootScreen(),
     );

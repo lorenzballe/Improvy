@@ -159,8 +159,10 @@ class SettingsScreen extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 10,
                             height: 1.5,
-                            fontFamily: 'monospace',
                             fontWeight: FontWeight.w600,
+                            // 'monospace' is not a font on iOS; tabular
+                            // figures keep the diagnostic's columns aligned.
+                            fontFeatures: const [FontFeature.tabularFigures()],
                             color: Colors.white.withAlpha(120),
                           ),
                         ),

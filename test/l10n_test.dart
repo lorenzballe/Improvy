@@ -12,39 +12,33 @@ import 'package:improvy/services/storage_service.dart';
 import 'package:improvy/l10n/l10n.dart';
 import 'package:improvy/screens/explainer_screen.dart';
 
-/// A translation that drifts is worse than none: the app would fall back to
-/// English for one string in the middle of an Italian screen, or crash on a
-/// placeholder the translator renamed. These keep the six files in step.
+/// The app is English, with Do Re Mi kept as a notation.
 void main() {
   final en = jsonDecode(File('lib/l10n/app_en.arb').readAsStringSync()) as Map<String, dynamic>;
-  final keys = en.keys.where((k) => !k.startsWith('@')).toSet();
-  final placeholders = RegExp(r'\{(\w+)[,}]');
 
-  for (final locale in ['it', 'es', 'fr', 'de', 'pt']) {
-    test('$locale has every key, and every placeholder, that English has', () {
-      final f = File('lib/l10n/app_$locale.arb');
-      expect(f.existsSync(), isTrue, reason: 'app_$locale.arb is missing');
-      final d = jsonDecode(f.readAsStringSync()) as Map<String, dynamic>;
-      final have = d.keys.where((k) => !k.startsWith('@')).toSet();
-      expect(keys.difference(have), isEmpty, reason: 'untranslated in $locale');
-      expect(have.difference(keys), isEmpty, reason: 'keys in $locale that English lacks');
-      for (final k in keys) {
-        final pe = placeholders.allMatches(en[k] as String).map((m) => m.group(1)).toSet();
-        final pl = placeholders.allMatches(d[k] as String).map((m) => m.group(1)).toSet();
-        expect(pl, pe, reason: 'placeholders differ on "$k" in $locale');
-      }
-    });
-  }
-
-  test('every supported locale resolves, and an unknown one falls back to English', () {
-    expect(L10n.forLocale(const Locale('it')).next, 'Avanti');
-    expect(L10n.forLocale(const Locale('de')).next, 'Weiter');
-    expect(L10n.forLocale(const Locale('ja')).next, 'Next');
-    // A regional variant maps to its language.
-    expect(L10n.forLocale(const Locale('pt', 'BR')).next, 'Seguinte');
+  test('the app speaks English only', () {
+    // One language, written with care, rather than six that drift. A string
+    // added in English is the whole job.
+    expect(AppLocalizations.supportedLocales, [const Locale('en')]);
+    final arbs = Directory('lib/l10n')
+        .listSync()
+        .where((f) => f.path.endsWith('.arb'))
+        .map((f) => f.uri.pathSegments.last)
+        .toList();
+    expect(arbs, ['app_en.arb']);
+    expect(en.keys.where((k) => !k.startsWith('@')), isNotEmpty);
   });
 
-  test('the languages that write Do Re Mi get it on first run', () {
+  test('every device language gets the English app', () {
+    for (final code in ['en', 'it', 'de', 'ja']) {
+      expect(L10n.forLocale(Locale(code)).next, 'Next', reason: code);
+    }
+  });
+
+  test('the languages that write Do Re Mi still get it on first run', () {
+    // The notation is not a translation: an Italian musician reads Do Re Mi
+    // whatever language the buttons are in, and Pocket Mode's voice follows
+    // the notation.
     for (final code in ['it', 'es', 'fr', 'pt']) {
       expect(L10n.prefersSolfege(Locale(code)), isTrue, reason: code);
     }
@@ -53,26 +47,7 @@ void main() {
     }
   });
 
-  test('the modes are called the same thing in every language', () {
-    // Product names, not words: the store listing, the website and the people
-    // recommending the app all say "Note to Number", so a player reading
-    // "Nota a Numero" would be looking at a different product.
-    const modeNames = [
-      'modeDiatonic', 'modeChromatic', 'modeCustom', 'modeNoteToNumber',
-      'modeOfWhat', 'modePocket', 'modeNormal',
-      'featChromatic', 'featNtn', 'featOfWhat', 'featPocket', 'featCustom',
-      'kaOfWhat', 'kaHarmonizer', 'pocketTitle',
-    ];
-    for (final code in ['it', 'es', 'fr', 'de', 'pt']) {
-      final loc = jsonDecode(File('lib/l10n/app_$code.arb').readAsStringSync())
-          as Map<String, dynamic>;
-      for (final k in modeNames) {
-        expect(loc[k], en[k], reason: '$k in $code');
-      }
-    }
-  });
-
-  testWidgets('a screen renders in the device language', (t) async {
+  testWidgets('an Italian phone gets English words', (t) async {
     SharedPreferences.setMockInitialValues({});
     final storage = StorageService();
     await storage.init();
@@ -88,8 +63,8 @@ void main() {
       ),
     ));
     await t.pump();
-    expect(find.textContaining('Ogni tasto'), findsOneWidget);
-    expect(find.text('Avanti'), findsOneWidget);
-    expect(find.text('Salta'), findsOneWidget);
+    expect(find.textContaining('Every key'), findsOneWidget);
+    expect(find.text('Next'), findsOneWidget);
+    expect(find.text('Skip'), findsOneWidget);
   });
 }

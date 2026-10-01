@@ -66,7 +66,7 @@ void main() {
 
   explainerShots();
 
-  testWidgets('note to number, in Italian', (t) async {
+  testWidgets('note to number, in Do Re Mi', (t) async {
     await loadRealFonts();
     t.view.physicalSize = const Size(780, 1800);
     t.view.devicePixelRatio = 2.0;
@@ -79,14 +79,13 @@ void main() {
       child: MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        locale: const Locale('it'),
         theme: ThemeData(fontFamily: 'Lexend', useMaterial3: true),
         home: NoteToNumberSetup(
             initialKey: 'C', isPro: true, onShowPaywall: () {}, onCancel: () {}, onStart: (_, _, _, _) {}),
       ),
     ));
     await t.pumpAndSettle();
-    await expectLater(find.byType(MaterialApp), matchesGoldenFile('goldens/shot_note_to_number_it.png'));
+    await expectLater(find.byType(MaterialApp), matchesGoldenFile('goldens/shot_note_to_number_doremi.png'));
   });
 
   testWidgets('note to number', (t) async {

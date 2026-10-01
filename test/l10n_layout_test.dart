@@ -35,6 +35,7 @@ void main() {
     t.view.devicePixelRatio = 1.0;
     addTearDown(t.view.resetPhysicalSize);
     addTearDown(t.view.resetDevicePixelRatio);
+    provider.setNotation('DoReMi');
 
     await t.pumpWidget(ChangeNotifierProvider<AppProvider>.value(
       value: provider,
@@ -55,7 +56,9 @@ void main() {
     await t.pump(const Duration(milliseconds: 700));
   }
 
-  for (final code in ['it', 'es', 'fr', 'de', 'pt']) {
+  // English only now — kept as the small-phone layout pass, with Do Re Mi
+  // names, the longer of the two notations.
+  for (final code in ['en']) {
     final locale = Locale(code);
 
     group(code, () {
