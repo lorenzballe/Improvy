@@ -1,0 +1,133 @@
+name: Widgets check
+
+# The home-screen widgets are native, and only a Mac can build them. This job
+# answers, on a real build:
+#   1. is the widget extension inside the app, and does it link only system
+#      libraries (anything else and dyld kills it before iOS can list a widget);
+#   2. does iOS register it on a simulator, and does it start;
+#   3. what do the twelve REAL SwiftUI widgets look like, with the payload the
+#      app really writes.
+# The renders and the report are pushed to the `widget-renders` branch.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "ios/ImprovyWidget/**"
+      - "ios/WidgetRender/**"
+      - "ios/Runner.xcodeproj/project.pbxproj"
+      - "lib/services/widget_service.dart"
+      - ".github/workflows/widgets.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: widgets
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: macos-15
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Payload the app writes
+        run: |
+          flutter pub get
+          flutter test test/widget_payload_test.dart --run-skipped
+          ls build/widget_payload
+
+      - name: Boot a simulator
+        run: |
+          udid=$(xcrun simctl list devices available -j | python3 -c '
+          import json,sys
+          d=json.load(sys.stdin)["devices"]
+          best=None
+          for rt,devs in d.items():
+              if "iOS" not in rt: continue
+              for x in devs:
+                  if x["name"].startswith("iPhone") and "Pro" in x["name"] and "Max" not in x["name"]:
+                      best=(rt,x["udid"],x["name"])
+          print(best[1])')
+          echo "SIM=$udid" >> "$GITHUB_ENV"
+          xcrun simctl boot "$udid"
+          xcrun simctl bootstatus "$udid" -b
+          mkdir -p report
+          xcrun simctl list devices booted | tee report/simulator.txt
+
+      - name: Render the real widgets
+        run: ios/WidgetRender/render.sh build/widget_payload report/renders
+
+      - name: Release build — what the App Store gets
+        run: |
+          flutter build ios --release --no-codesign
+          app=build/ios/iphoneos/Runner.app
+          appex=$app/PlugIns/ImprovyWidget.appex
+          {
+            echo "## Release build"
+            echo
+            echo "PlugIns: $(ls $app/PlugIns 2>/dev/null || echo MISSING)"
+            echo "Version: $(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' $appex/Info.plist) ($(/usr/libexec/PlistBuddy -c 'Print CFBundleVersion' $appex/Info.plist))"
+            echo
+            echo '```'
+            otool -L $appex/ImprovyWidget
+            echo '```'
+          } | tee report/release.md
+          # Every library the extension loads must come with iOS itself.
+          bad=$(otool -L $appex/ImprovyWidget | tail -n +2 | awk '{print $1}' | grep -v -E '^/(System|usr/lib)/' || true)
+          if [ -n "$bad" ]; then
+            echo "::error::the widget extension links libraries iOS does not provide: $bad"
+            echo "FAIL: links $bad" >> report/release.md
+            exit 1
+          fi
+          echo "PASS: system libraries only" >> report/release.md
+
+      - name: Simulator build — does iOS register the extension and start it
+        run: |
+          flutter build ios --simulator --debug
+          app=build/ios/iphonesimulator/Runner.app
+          xcrun simctl install "$SIM" "$app"
+          xcrun simctl launch "$SIM" com.improvy.app || true
+          sleep 15
+          {
+            echo "## Simulator"
+            echo
+            echo '```'
+            xcrun simctl spawn "$SIM" pluginkit -m -A -v -i com.improvy.app.ImprovyWidget || true
+            echo '```'
+          } | tee report/simulator.md
+          xcrun simctl spawn "$SIM" pluginkit -m -A -i com.improvy.app.ImprovyWidget | grep -q ImprovyWidget \
+            || { echo "::error::iOS did not register the widget extension"; echo "FAIL: not registered" >> report/simulator.md; exit 1; }
+          # Start the extension's binary directly: a missing library shows up
+          # here as a dyld error within a second.
+          appex=$(xcrun simctl get_app_container "$SIM" com.improvy.app)/PlugIns/ImprovyWidget.appex/ImprovyWidget
+          ( xcrun simctl spawn "$SIM" "$appex" > report/launch.txt 2>&1 & pid=$!; sleep 8; kill $pid 2>/dev/null || true ) || true
+          cat report/launch.txt
+          if grep -q -i "Library not loaded\|dyld" report/launch.txt; then
+            echo "::error::the widget extension does not start"; echo "FAIL: dyld" >> report/simulator.md; exit 1
+          fi
+          echo "PASS: registered, starts" >> report/simulator.md
+
+      - name: Publish renders and report
+        if: always()
+        run: |
+          set -e
+          cp -R report "$RUNNER_TEMP/report"
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git checkout --orphan widget-renders
+          git rm -rf -q . > /dev/null
+          rm -rf ./*
+          cp -R "$RUNNER_TEMP/report/." .
+          echo "$GITHUB_SHA" > COMMIT
+          git add -A
+          git commit -q -m "Widget renders for $GITHUB_SHA"
+          git push -f origin widget-renders
