@@ -1722,4 +1722,16 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get theoryCard11 =>
       'La nota che scurisce una tonalità minore in qualcosa di più antico. Alzala di un semitono e il modo diventa dorico: è ciò che il minore melodico solleva salendo.';
+
+  @override
+  String get dailyCardKey => 'TONALITÀ';
+
+  @override
+  String get dailyCardOn => 'SU';
+
+  @override
+  String get dailyCardTime => 'TEMPO';
+
+  @override
+  String get dailyCardStreak => 'SERIE';
 }

@@ -508,5 +508,9 @@
   "theoryCard8": "Ein Halbton über dem Grundton. Die instabilste Note der Tonart – und genau deshalb über einer Dominante so brauchbar.",
   "theoryCard9": "Der Leitton. Er ist da, um nach oben aufzulösen – eine Tonart ohne ihn schließt sich nie ganz.",
   "theoryCard10": "Ein Halbton über der Terz, also will sie fallen. Hält man sie stattdessen, entsteht der vertrauteste Vorhalt der Musik.",
-  "theoryCard11": "Die Note, die eine Molltonart in etwas Älteres verdunkelt. Einen Halbton höher wird daraus Dorisch – genau die Stufe, die Melodisch-Moll aufwärts anhebt."
+  "theoryCard11": "Die Note, die eine Molltonart in etwas Älteres verdunkelt. Einen Halbton höher wird daraus Dorisch – genau die Stufe, die Melodisch-Moll aufwärts anhebt.",
+  "dailyCardKey": "TONART",
+  "dailyCardOn": "AUF",
+  "dailyCardTime": "ZEIT",
+  "dailyCardStreak": "SERIE"
 }

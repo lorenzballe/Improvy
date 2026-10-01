@@ -3117,6 +3117,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The note that darkens a minor key into something older. Raise it a semitone and the mode turns dorian — it is what melodic minor lifts on the way up.'**
   String get theoryCard11;
+
+  /// No description provided for @dailyCardKey.
+  ///
+  /// In en, this message translates to:
+  /// **'KEY'**
+  String get dailyCardKey;
+
+  /// No description provided for @dailyCardOn.
+  ///
+  /// In en, this message translates to:
+  /// **'ON'**
+  String get dailyCardOn;
+
+  /// No description provided for @dailyCardTime.
+  ///
+  /// In en, this message translates to:
+  /// **'TIME'**
+  String get dailyCardTime;
+
+  /// No description provided for @dailyCardStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'STREAK'**
+  String get dailyCardStreak;
 }
 
 class _AppLocalizationsDelegate

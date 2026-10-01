@@ -1719,4 +1719,16 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get theoryCard11 =>
       'La nota que oscurece una tonalidad menor hacia algo más antiguo. Súbela un semitono y el modo se vuelve dórico: es lo que el menor melódico eleva al subir.';
+
+  @override
+  String get dailyCardKey => 'TONALIDAD';
+
+  @override
+  String get dailyCardOn => 'SOBRE';
+
+  @override
+  String get dailyCardTime => 'TIEMPO';
+
+  @override
+  String get dailyCardStreak => 'RACHA';
 }

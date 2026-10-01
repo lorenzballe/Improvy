@@ -868,5 +868,9 @@
   "theoryCard8": "One semitone above home. The most unstable note in the key, which is exactly why it is so useful over a dominant.",
   "theoryCard9": "The leading tone. It exists to resolve upward, and a key without it never quite closes.",
   "theoryCard10": "A semitone above the third, so it wants to fall. Suspend it instead and you get the most familiar delay in music.",
-  "theoryCard11": "The note that darkens a minor key into something older. Raise it a semitone and the mode turns dorian — it is what melodic minor lifts on the way up."
+  "theoryCard11": "The note that darkens a minor key into something older. Raise it a semitone and the mode turns dorian — it is what melodic minor lifts on the way up.",
+  "dailyCardKey": "KEY",
+  "dailyCardOn": "ON",
+  "dailyCardTime": "TIME",
+  "dailyCardStreak": "STREAK"
 }

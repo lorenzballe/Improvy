@@ -1727,4 +1727,16 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get theoryCard11 =>
       'La note qui assombrit une tonalité mineure vers quelque chose de plus ancien. Montez-la d’un demi-ton et le mode devient dorien : c’est ce que le mineur mélodique relève en montant.';
+
+  @override
+  String get dailyCardKey => 'TONALITÉ';
+
+  @override
+  String get dailyCardOn => 'SUR';
+
+  @override
+  String get dailyCardTime => 'TEMPS';
+
+  @override
+  String get dailyCardStreak => 'SÉRIE';
 }

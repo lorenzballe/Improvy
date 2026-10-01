@@ -1717,4 +1717,16 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get theoryCard11 =>
       'A nota que escurece uma tonalidade menor para algo mais antigo. Sobe-a um meio-tom e o modo torna-se dórico: é o que o menor melódico eleva ao subir.';
+
+  @override
+  String get dailyCardKey => 'TOM';
+
+  @override
+  String get dailyCardOn => 'SOBRE';
+
+  @override
+  String get dailyCardTime => 'TEMPO';
+
+  @override
+  String get dailyCardStreak => 'SEQUÊNCIA';
 }

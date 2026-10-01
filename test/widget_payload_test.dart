@@ -15,7 +15,7 @@ import 'package:improvy/services/widget_service.dart';
 import 'site_screens_test.dart' show seeded;
 
 /// Writes the exact payload the app hands the home-screen widgets, for a
-/// believable player, to build/widget_payload/<state>.json.
+/// believable player, to `build/widget_payload/<state>.json`.
 ///
 /// The widgets only render what this writes, so the renders made from it on a
 /// Mac (.github/workflows/widgets.yml) show the real widgets with real data —

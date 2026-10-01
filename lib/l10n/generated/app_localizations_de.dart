@@ -1720,4 +1720,16 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get theoryCard11 =>
       'Die Note, die eine Molltonart in etwas Älteres verdunkelt. Einen Halbton höher wird daraus Dorisch – genau die Stufe, die Melodisch-Moll aufwärts anhebt.';
+
+  @override
+  String get dailyCardKey => 'TONART';
+
+  @override
+  String get dailyCardOn => 'AUF';
+
+  @override
+  String get dailyCardTime => 'ZEIT';
+
+  @override
+  String get dailyCardStreak => 'SERIE';
 }

@@ -508,5 +508,9 @@
   "theoryCard8": "Un demi-ton au-dessus de la maison. La note la plus instable de la tonalité, et c’est justement pour cela qu’elle est si utile sur une dominante.",
   "theoryCard9": "La sensible. Elle existe pour se résoudre vers le haut, et une tonalité sans elle ne se referme jamais tout à fait.",
   "theoryCard10": "Un demi-ton au-dessus de la tierce, donc elle veut descendre. Suspendez-la plutôt, et vous obtenez le retard le plus familier de la musique.",
-  "theoryCard11": "La note qui assombrit une tonalité mineure vers quelque chose de plus ancien. Montez-la d’un demi-ton et le mode devient dorien : c’est ce que le mineur mélodique relève en montant."
+  "theoryCard11": "La note qui assombrit une tonalité mineure vers quelque chose de plus ancien. Montez-la d’un demi-ton et le mode devient dorien : c’est ce que le mineur mélodique relève en montant.",
+  "dailyCardKey": "TONALITÉ",
+  "dailyCardOn": "SUR",
+  "dailyCardTime": "TEMPS",
+  "dailyCardStreak": "SÉRIE"
 }

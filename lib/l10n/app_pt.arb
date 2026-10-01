@@ -508,5 +508,9 @@
   "theoryCard8": "Um meio-tom acima de casa. A nota mais instável da tonalidade, e é precisamente por isso que é tão útil sobre uma dominante.",
   "theoryCard9": "A sensível. Existe para resolver para cima, e uma tonalidade sem ela nunca fecha por completo.",
   "theoryCard10": "Um meio-tom acima da terceira, por isso quer descer. Suspende-a em vez disso e tens o retardo mais familiar da música.",
-  "theoryCard11": "A nota que escurece uma tonalidade menor para algo mais antigo. Sobe-a um meio-tom e o modo torna-se dórico: é o que o menor melódico eleva ao subir."
+  "theoryCard11": "A nota que escurece uma tonalidade menor para algo mais antigo. Sobe-a um meio-tom e o modo torna-se dórico: é o que o menor melódico eleva ao subir.",
+  "dailyCardKey": "TOM",
+  "dailyCardOn": "SOBRE",
+  "dailyCardTime": "TEMPO",
+  "dailyCardStreak": "SEQUÊNCIA"
 }

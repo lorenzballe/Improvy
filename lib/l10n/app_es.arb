@@ -508,5 +508,9 @@
   "theoryCard8": "Un semitono por encima de casa. La nota más inestable de la tonalidad, y justo por eso tan útil sobre una dominante.",
   "theoryCard9": "La sensible. Existe para resolver hacia arriba, y una tonalidad sin ella nunca termina de cerrarse.",
   "theoryCard10": "Un semitono por encima de la tercera, así que quiere bajar. Suspéndela en cambio y tienes el retardo más familiar de la música.",
-  "theoryCard11": "La nota que oscurece una tonalidad menor hacia algo más antiguo. Súbela un semitono y el modo se vuelve dórico: es lo que el menor melódico eleva al subir."
+  "theoryCard11": "La nota que oscurece una tonalidad menor hacia algo más antiguo. Súbela un semitono y el modo se vuelve dórico: es lo que el menor melódico eleva al subir.",
+  "dailyCardKey": "TONALIDAD",
+  "dailyCardOn": "SOBRE",
+  "dailyCardTime": "TIEMPO",
+  "dailyCardStreak": "RACHA"
 }

@@ -1715,4 +1715,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get theoryCard11 =>
       'The note that darkens a minor key into something older. Raise it a semitone and the mode turns dorian — it is what melodic minor lifts on the way up.';
+
+  @override
+  String get dailyCardKey => 'KEY';
+
+  @override
+  String get dailyCardOn => 'ON';
+
+  @override
+  String get dailyCardTime => 'TIME';
+
+  @override
+  String get dailyCardStreak => 'STREAK';
 }
