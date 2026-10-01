@@ -1726,4 +1726,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dailyCardStreak => 'STREAK';
+
+  @override
+  String get dailyCardScore => 'SCORE';
 }

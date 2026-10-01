@@ -872,5 +872,6 @@
   "dailyCardKey": "KEY",
   "dailyCardOn": "ON",
   "dailyCardTime": "TIME",
-  "dailyCardStreak": "STREAK"
+  "dailyCardStreak": "STREAK",
+  "dailyCardScore": "SCORE"
 }

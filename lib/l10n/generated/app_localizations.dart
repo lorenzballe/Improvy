@@ -3129,6 +3129,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'STREAK'**
   String get dailyCardStreak;
+
+  /// No description provided for @dailyCardScore.
+  ///
+  /// In en, this message translates to:
+  /// **'SCORE'**
+  String get dailyCardScore;
 }
 
 class _AppLocalizationsDelegate
