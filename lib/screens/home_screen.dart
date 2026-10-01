@@ -1199,15 +1199,6 @@ class _WithSession extends StatelessWidget {
   final VoidCallback onResume;
   const _WithSession({required this.session, required this.onResume});
 
-  String _quoteFor(BuildContext context, int diff) {
-    final quotes = [
-      context.l10n.homeQuote1,
-      context.l10n.homeQuote2,
-      context.l10n.homeQuote3,
-    ];
-    return quotes[(diff - 1).clamp(0, quotes.length - 1)];
-  }
-
   String _relativeTime(BuildContext context, int ts) {
     final l = context.l10n;
     final diff = DateTime.now().millisecondsSinceEpoch - ts;
@@ -1301,13 +1292,14 @@ class _WithSession extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 16),
-        Text('“${_quoteFor(context, diff)}”',
-          style: TextStyle(
-            fontSize: 13, fontStyle: FontStyle.italic, fontWeight: FontWeight.w500,
-            color: Colors.white.withAlpha(102), height: 1.6,
-          )),
-        const SizedBox(height: 24),
+        // Where that key stands — a fact about the player, where a stock
+        // motivational line used to sit.
+        if (!isPocket && kKeys.contains(key)) ...[
+          const SizedBox(height: 18),
+          _KeyStanding(keyName: key),
+          const SizedBox(height: 22),
+        ] else
+          const SizedBox(height: 20),
         GestureDetector(
           onTap: onResume,
           child: Container(
@@ -1328,6 +1320,47 @@ class _WithSession extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+/// One key's overall progress, as the session summary shows it.
+class _KeyStanding extends StatelessWidget {
+  final String keyName;
+  const _KeyStanding({required this.keyName});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.select<AppProvider, int>((p) => p.progressFor(keyName).totalProgress);
+    final notation = context.select<AppProvider, String>((p) => p.notation);
+    final label = context.l10n.summaryKeyOverall(formatNoteForDisplay(keyName, notation));
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Row(children: [
+        Expanded(
+          child: NoteText(
+            note: label,
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Colors.white.withAlpha(150)),
+          ),
+        ),
+        Text('$p%',
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Color(0xFF60A5FA))),
+      ]),
+      const SizedBox(height: 8),
+      ClipRRect(
+        borderRadius: BorderRadius.circular(99),
+        child: Stack(children: [
+          Container(height: 6, color: Colors.white.withAlpha(15)),
+          FractionallySizedBox(
+            widthFactor: (p / 100).clamp(0.0, 1.0),
+            child: Container(
+              height: 6,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(colors: [Color(0xFF2563EB), Color(0xFF60A5FA)]),
+              ),
+            ),
+          ),
+        ]),
+      ),
+    ]);
   }
 }
 

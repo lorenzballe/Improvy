@@ -193,9 +193,6 @@
       }
     }
   },
-  "homeQuote1": "Every master was once a beginner. Let's visualize those first notes!",
-  "homeQuote2": "Halfway to mastery — your instincts are sharpening. Keep pushing!",
-  "homeQuote3": "True mastery lives in the details. Trust your instincts and play!",
   "homeKeyTileLabel": "Key of {key}, {pct} percent",
   "@homeKeyTileLabel": {
     "placeholders": {
@@ -212,12 +209,12 @@
   "setupPersonalized": "FREE PRACTICE",
   "setupHandsFree": "HANDS-FREE · AUDIO",
   "setupSelectRootKey": "Select Root Key",
-  "setupSelectRootKeySub": "Choose the foundation for your training.",
+  "setupSelectRootKeySub": "Every question in this session is in this key.",
   "setupSelectNote": "Select Note",
   "setupSelectNoteSub": "The melody note held for the whole session.",
-  "setupIntensity": "Training Intensity",
-  "setupIntensityChromatic": "Master all 12 chromatic notes in this key.",
-  "setupIntensityDiatonic": "Focus on the 7 notes of the major scale.",
+  "setupIntensity": "Degrees",
+  "setupIntensityChromatic": "All 12 notes, the altered degrees included.",
+  "setupIntensityDiatonic": "The 7 notes of the major scale.",
   "setupDifficulty": "Difficulty",
   "setupDifficultySub": "Higher difficulty means less time to answer.",
   "setupMode": "Mode",
@@ -484,7 +481,7 @@
   "kaNoteToDegree": "NOTE › DEGREE",
   "kaOfWhat": "…OF WHAT?",
   "kaConfusions": "Common Confusions",
-  "kaNoConfusions": "NO CONFUSIONS YET. GREAT JOB!",
+  "kaNoConfusions": "NO CONFUSIONS YET",
   "kaNote": "NOTE",
   "kaHarmonizer": "Harmonizer",
   "kaHarmonizerSub": "“…Of What?” mastery",
@@ -541,7 +538,7 @@
   "feedbackKindOther": "Something else",
   "levelUp": "Level Up!",
   "levelUpYouAreNow": "You are now a ",
-  "awesome": "Awesome!",
+  "awesome": "Continue",
   "whatsNewVersionHere": "Version {v}\nis here",
   "@whatsNewVersionHere": {
     "placeholders": {

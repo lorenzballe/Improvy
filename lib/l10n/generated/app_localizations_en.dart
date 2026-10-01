@@ -403,18 +403,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get homeQuote1 =>
-      'Every master was once a beginner. Let\'s visualize those first notes!';
-
-  @override
-  String get homeQuote2 =>
-      'Halfway to mastery — your instincts are sharpening. Keep pushing!';
-
-  @override
-  String get homeQuote3 =>
-      'True mastery lives in the details. Trust your instincts and play!';
-
-  @override
   String homeKeyTileLabel(String key, int pct) {
     return 'Key of $key, $pct percent';
   }
@@ -436,7 +424,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get setupSelectRootKeySub =>
-      'Choose the foundation for your training.';
+      'Every question in this session is in this key.';
 
   @override
   String get setupSelectNote => 'Select Note';
@@ -446,15 +434,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'The melody note held for the whole session.';
 
   @override
-  String get setupIntensity => 'Training Intensity';
+  String get setupIntensity => 'Degrees';
 
   @override
   String get setupIntensityChromatic =>
-      'Master all 12 chromatic notes in this key.';
+      'All 12 notes, the altered degrees included.';
 
   @override
-  String get setupIntensityDiatonic =>
-      'Focus on the 7 notes of the major scale.';
+  String get setupIntensityDiatonic => 'The 7 notes of the major scale.';
 
   @override
   String get setupDifficulty => 'Difficulty';
@@ -975,7 +962,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get kaConfusions => 'Common Confusions';
 
   @override
-  String get kaNoConfusions => 'NO CONFUSIONS YET. GREAT JOB!';
+  String get kaNoConfusions => 'NO CONFUSIONS YET';
 
   @override
   String get kaNote => 'NOTE';
@@ -1109,7 +1096,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get levelUpYouAreNow => 'You are now a ';
 
   @override
-  String get awesome => 'Awesome!';
+  String get awesome => 'Continue';
 
   @override
   String whatsNewVersionHere(String v) {

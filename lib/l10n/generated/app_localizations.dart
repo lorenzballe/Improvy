@@ -814,24 +814,6 @@ abstract class AppLocalizations {
   /// **'{n}d ago'**
   String homeDaysAgo(int n);
 
-  /// No description provided for @homeQuote1.
-  ///
-  /// In en, this message translates to:
-  /// **'Every master was once a beginner. Let\'s visualize those first notes!'**
-  String get homeQuote1;
-
-  /// No description provided for @homeQuote2.
-  ///
-  /// In en, this message translates to:
-  /// **'Halfway to mastery — your instincts are sharpening. Keep pushing!'**
-  String get homeQuote2;
-
-  /// No description provided for @homeQuote3.
-  ///
-  /// In en, this message translates to:
-  /// **'True mastery lives in the details. Trust your instincts and play!'**
-  String get homeQuote3;
-
   /// No description provided for @homeKeyTileLabel.
   ///
   /// In en, this message translates to:
@@ -871,7 +853,7 @@ abstract class AppLocalizations {
   /// No description provided for @setupSelectRootKeySub.
   ///
   /// In en, this message translates to:
-  /// **'Choose the foundation for your training.'**
+  /// **'Every question in this session is in this key.'**
   String get setupSelectRootKeySub;
 
   /// No description provided for @setupSelectNote.
@@ -889,19 +871,19 @@ abstract class AppLocalizations {
   /// No description provided for @setupIntensity.
   ///
   /// In en, this message translates to:
-  /// **'Training Intensity'**
+  /// **'Degrees'**
   String get setupIntensity;
 
   /// No description provided for @setupIntensityChromatic.
   ///
   /// In en, this message translates to:
-  /// **'Master all 12 chromatic notes in this key.'**
+  /// **'All 12 notes, the altered degrees included.'**
   String get setupIntensityChromatic;
 
   /// No description provided for @setupIntensityDiatonic.
   ///
   /// In en, this message translates to:
-  /// **'Focus on the 7 notes of the major scale.'**
+  /// **'The 7 notes of the major scale.'**
   String get setupIntensityDiatonic;
 
   /// No description provided for @setupDifficulty.
@@ -1849,7 +1831,7 @@ abstract class AppLocalizations {
   /// No description provided for @kaNoConfusions.
   ///
   /// In en, this message translates to:
-  /// **'NO CONFUSIONS YET. GREAT JOB!'**
+  /// **'NO CONFUSIONS YET'**
   String get kaNoConfusions;
 
   /// No description provided for @kaNote.
@@ -2107,7 +2089,7 @@ abstract class AppLocalizations {
   /// No description provided for @awesome.
   ///
   /// In en, this message translates to:
-  /// **'Awesome!'**
+  /// **'Continue'**
   String get awesome;
 
   /// No description provided for @whatsNewVersionHere.
