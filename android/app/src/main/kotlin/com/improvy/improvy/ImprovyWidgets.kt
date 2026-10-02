@@ -42,7 +42,6 @@ import java.util.TimeZone
  * Each widget is built by a function in [WidgetViews] from the payload alone,
  * so androidTest/WidgetRenderTest can draw exactly what a home screen shows.
  */
- */
 
 /** Days since 1970-01-01 for *today's local calendar date*.
  *
@@ -652,15 +651,16 @@ object WidgetViews {
     fun launcher(context: Context, data: SharedPreferences): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_launcher)
         views.glow(R.id.launcher_glow, Ink.indigo)
+        class Mode(val cell: Int, val bg: Int, val glyph: Int, val colour: Int, val uri: String)
         val modes = listOf(
-            arrayOf(R.id.launch_daily, R.id.launch_daily_glyph_bg, R.id.launch_daily_glyph, Ink.gold, "improvy://daily"),
-            arrayOf(R.id.launch_pocket, R.id.launch_pocket_glyph_bg, R.id.launch_pocket_glyph, Ink.indigo, "improvy://pocket"),
-            arrayOf(R.id.launch_chromatic, R.id.launch_chromatic_glyph_bg, R.id.launch_chromatic_glyph, Ink.violet, "improvy://chromatic"),
-            arrayOf(R.id.launch_custom, R.id.launch_custom_glyph_bg, R.id.launch_custom_glyph, Ink.magenta, "improvy://custom")
+            Mode(R.id.launch_daily, R.id.launch_daily_glyph_bg, R.id.launch_daily_glyph, Ink.gold, "improvy://daily"),
+            Mode(R.id.launch_pocket, R.id.launch_pocket_glyph_bg, R.id.launch_pocket_glyph, Ink.indigo, "improvy://pocket"),
+            Mode(R.id.launch_chromatic, R.id.launch_chromatic_glyph_bg, R.id.launch_chromatic_glyph, Ink.violet, "improvy://chromatic"),
+            Mode(R.id.launch_custom, R.id.launch_custom_glyph_bg, R.id.launch_custom_glyph, Ink.magenta, "improvy://custom")
         )
         for (m in modes) {
-            views.glyphButton(m[1] as Int, m[2] as Int, m[3] as Int)
-            views.link(context, m[0] as Int, m[4] as String)
+            views.glyphButton(m.bg, m.glyph, m.colour)
+            views.link(context, m.cell, m.uri)
         }
         return views
     }
