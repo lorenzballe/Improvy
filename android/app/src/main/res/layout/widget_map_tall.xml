@@ -19,6 +19,7 @@
         android:src="@drawable/w_glow"
         android:importantForAccessibility="no"
         android:tint="#2B22D3EE"
+        android:tintMode="src_in"
         android:scaleType="fitXY" />
 
     <LinearLayout
@@ -96,6 +97,7 @@
                         android:src="@drawable/w_cell_large"
                         android:importantForAccessibility="no"
                         android:tint="#09FFFFFF"
+                        android:tintMode="src_in"
                         android:scaleType="fitXY" />
 
                     <LinearLayout
@@ -169,6 +171,7 @@
                         android:src="@drawable/w_cell_large"
                         android:importantForAccessibility="no"
                         android:tint="#09FFFFFF"
+                        android:tintMode="src_in"
                         android:scaleType="fitXY" />
 
                     <LinearLayout
@@ -242,6 +245,7 @@
                         android:src="@drawable/w_cell_large"
                         android:importantForAccessibility="no"
                         android:tint="#09FFFFFF"
+                        android:tintMode="src_in"
                         android:scaleType="fitXY" />
 
                     <LinearLayout
@@ -315,6 +319,7 @@
                         android:src="@drawable/w_cell_large"
                         android:importantForAccessibility="no"
                         android:tint="#09FFFFFF"
+                        android:tintMode="src_in"
                         android:scaleType="fitXY" />
 
                     <LinearLayout
@@ -395,6 +400,7 @@
                         android:src="@drawable/w_cell_large"
                         android:importantForAccessibility="no"
                         android:tint="#09FFFFFF"
+                        android:tintMode="src_in"
                         android:scaleType="fitXY" />
 
                     <LinearLayout
@@ -468,6 +474,7 @@
                         android:src="@drawable/w_cell_large"
                         android:importantForAccessibility="no"
                         android:tint="#09FFFFFF"
+                        android:tintMode="src_in"
                         android:scaleType="fitXY" />
 
                     <LinearLayout
@@ -541,6 +548,7 @@
                         android:src="@drawable/w_cell_large"
                         android:importantForAccessibility="no"
                         android:tint="#09FFFFFF"
+                        android:tintMode="src_in"
                         android:scaleType="fitXY" />
 
                     <LinearLayout
@@ -614,6 +622,7 @@
                         android:src="@drawable/w_cell_large"
                         android:importantForAccessibility="no"
                         android:tint="#09FFFFFF"
+                        android:tintMode="src_in"
                         android:scaleType="fitXY" />
 
                     <LinearLayout
@@ -694,6 +703,7 @@
                         android:src="@drawable/w_cell_large"
                         android:importantForAccessibility="no"
                         android:tint="#09FFFFFF"
+                        android:tintMode="src_in"
                         android:scaleType="fitXY" />
 
                     <LinearLayout
@@ -767,6 +777,7 @@
                         android:src="@drawable/w_cell_large"
                         android:importantForAccessibility="no"
                         android:tint="#09FFFFFF"
+                        android:tintMode="src_in"
                         android:scaleType="fitXY" />
 
                     <LinearLayout
@@ -840,6 +851,7 @@
                         android:src="@drawable/w_cell_large"
                         android:importantForAccessibility="no"
                         android:tint="#09FFFFFF"
+                        android:tintMode="src_in"
                         android:scaleType="fitXY" />
 
                     <LinearLayout
@@ -913,6 +925,7 @@
                         android:src="@drawable/w_cell_large"
                         android:importantForAccessibility="no"
                         android:tint="#09FFFFFF"
+                        android:tintMode="src_in"
                         android:scaleType="fitXY" />
 
                     <LinearLayout

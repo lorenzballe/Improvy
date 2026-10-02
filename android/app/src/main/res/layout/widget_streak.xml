@@ -19,6 +19,7 @@
         android:src="@drawable/w_glow"
         android:importantForAccessibility="no"
         android:tint="#2BF97316"
+        android:tintMode="src_in"
         android:scaleType="fitXY" />
 
     <LinearLayout
@@ -115,7 +116,8 @@
                     android:layout_height="10dp"
                     android:src="@drawable/w_dot"
                     android:importantForAccessibility="no"
-                    android:tint="#1AFFFFFF" />
+                    android:tint="#1AFFFFFF"
+                    android:tintMode="src_in" />
             </LinearLayout>
 
             <LinearLayout
@@ -131,7 +133,8 @@
                     android:layout_height="10dp"
                     android:src="@drawable/w_dot"
                     android:importantForAccessibility="no"
-                    android:tint="#1AFFFFFF" />
+                    android:tint="#1AFFFFFF"
+                    android:tintMode="src_in" />
             </LinearLayout>
 
             <LinearLayout
@@ -147,7 +150,8 @@
                     android:layout_height="10dp"
                     android:src="@drawable/w_dot"
                     android:importantForAccessibility="no"
-                    android:tint="#1AFFFFFF" />
+                    android:tint="#1AFFFFFF"
+                    android:tintMode="src_in" />
             </LinearLayout>
 
             <LinearLayout
@@ -163,7 +167,8 @@
                     android:layout_height="10dp"
                     android:src="@drawable/w_dot"
                     android:importantForAccessibility="no"
-                    android:tint="#1AFFFFFF" />
+                    android:tint="#1AFFFFFF"
+                    android:tintMode="src_in" />
             </LinearLayout>
 
             <LinearLayout
@@ -179,7 +184,8 @@
                     android:layout_height="10dp"
                     android:src="@drawable/w_dot"
                     android:importantForAccessibility="no"
-                    android:tint="#1AFFFFFF" />
+                    android:tint="#1AFFFFFF"
+                    android:tintMode="src_in" />
             </LinearLayout>
 
             <LinearLayout
@@ -195,7 +201,8 @@
                     android:layout_height="10dp"
                     android:src="@drawable/w_dot"
                     android:importantForAccessibility="no"
-                    android:tint="#1AFFFFFF" />
+                    android:tint="#1AFFFFFF"
+                    android:tintMode="src_in" />
             </LinearLayout>
 
             <LinearLayout
@@ -211,7 +218,8 @@
                     android:layout_height="10dp"
                     android:src="@drawable/w_dot"
                     android:importantForAccessibility="no"
-                    android:tint="#1AFFFFFF" />
+                    android:tint="#1AFFFFFF"
+                    android:tintMode="src_in" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

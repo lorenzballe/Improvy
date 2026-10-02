@@ -19,6 +19,7 @@
         android:src="@drawable/w_glow"
         android:importantForAccessibility="no"
         android:tint="#2BF97316"
+        android:tintMode="src_in"
         android:scaleType="fitXY" />
 
     <LinearLayout
@@ -37,7 +38,8 @@
                 android:layout_height="match_parent"
                 android:src="@drawable/w_circle"
                 android:importantForAccessibility="no"
-                android:tint="#29F97316" />
+                android:tint="#29F97316"
+                android:tintMode="src_in" />
 
             <ImageView
                 android:layout_width="26dp"
@@ -108,7 +110,8 @@
                         android:layout_height="12dp"
                         android:src="@drawable/w_dot"
                         android:importantForAccessibility="no"
-                        android:tint="#1AFFFFFF" />
+                        android:tint="#1AFFFFFF"
+                        android:tintMode="src_in" />
 
                     <TextView
                         android:id="@+id/streakt_l0"
@@ -136,7 +139,8 @@
                         android:layout_height="12dp"
                         android:src="@drawable/w_dot"
                         android:importantForAccessibility="no"
-                        android:tint="#1AFFFFFF" />
+                        android:tint="#1AFFFFFF"
+                        android:tintMode="src_in" />
 
                     <TextView
                         android:id="@+id/streakt_l1"
@@ -164,7 +168,8 @@
                         android:layout_height="12dp"
                         android:src="@drawable/w_dot"
                         android:importantForAccessibility="no"
-                        android:tint="#1AFFFFFF" />
+                        android:tint="#1AFFFFFF"
+                        android:tintMode="src_in" />
 
                     <TextView
                         android:id="@+id/streakt_l2"
@@ -192,7 +197,8 @@
                         android:layout_height="12dp"
                         android:src="@drawable/w_dot"
                         android:importantForAccessibility="no"
-                        android:tint="#1AFFFFFF" />
+                        android:tint="#1AFFFFFF"
+                        android:tintMode="src_in" />
 
                     <TextView
                         android:id="@+id/streakt_l3"
@@ -220,7 +226,8 @@
                         android:layout_height="12dp"
                         android:src="@drawable/w_dot"
                         android:importantForAccessibility="no"
-                        android:tint="#1AFFFFFF" />
+                        android:tint="#1AFFFFFF"
+                        android:tintMode="src_in" />
 
                     <TextView
                         android:id="@+id/streakt_l4"
@@ -248,7 +255,8 @@
                         android:layout_height="12dp"
                         android:src="@drawable/w_dot"
                         android:importantForAccessibility="no"
-                        android:tint="#1AFFFFFF" />
+                        android:tint="#1AFFFFFF"
+                        android:tintMode="src_in" />
 
                     <TextView
                         android:id="@+id/streakt_l5"
@@ -276,7 +284,8 @@
                         android:layout_height="12dp"
                         android:src="@drawable/w_dot"
                         android:importantForAccessibility="no"
-                        android:tint="#1AFFFFFF" />
+                        android:tint="#1AFFFFFF"
+                        android:tintMode="src_in" />
 
                     <TextView
                         android:id="@+id/streakt_l6"

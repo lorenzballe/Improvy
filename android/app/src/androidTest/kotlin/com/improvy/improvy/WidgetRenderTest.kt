@@ -36,11 +36,11 @@ class WidgetRenderTest {
 
     private val specs = listOf(
         Spec("quiz", 170, 170) { c, d -> WidgetViews.quiz(c, d, false) },
-        Spec("daily", 360, 170) { c, d -> WidgetViews.daily(c, d) },
         Spec("level", 170, 170) { c, d -> WidgetViews.level(c, d) },
         Spec("streak", 170, 170) { c, d -> WidgetViews.streak(c, d, false) },
         Spec("weakest", 170, 170) { c, d -> WidgetViews.weakest(c, d) },
         Spec("pocket", 170, 170) { c, d -> WidgetViews.pocket(c, d) },
+        Spec("daily", 360, 170) { c, d -> WidgetViews.daily(c, d) },
         Spec("quiz_wide", 360, 170) { c, d -> WidgetViews.quiz(c, d, true) },
         Spec("streak_wide", 360, 170) { c, d -> WidgetViews.streak(c, d, true) },
         Spec("map", 360, 170) { c, d -> WidgetViews.map(c, d, false) },

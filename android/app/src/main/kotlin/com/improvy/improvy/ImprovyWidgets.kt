@@ -381,6 +381,7 @@ object WidgetViews {
         } catch (_: Exception) {
             // Malformed or missing payload: keep the placeholder.
         }
+        views.glow(if (wide) R.id.quizw_glow else R.id.quiz_glow, Ink.gold)
         if (wide) {
             views.setTextViewText(R.id.quizw_degree, music(degree))
             views.setTextViewText(R.id.quizw_of, music(ofKey))

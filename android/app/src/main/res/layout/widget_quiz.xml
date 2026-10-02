@@ -19,6 +19,7 @@
         android:src="@drawable/w_glow"
         android:importantForAccessibility="no"
         android:tint="#2BFCD34D"
+        android:tintMode="src_in"
         android:scaleType="fitXY" />
 
     <LinearLayout
@@ -109,7 +110,8 @@
                 android:layout_height="11dp"
                 android:src="@drawable/w_ic_eye"
                 android:importantForAccessibility="no"
-                android:tint="#7AFFFFFF" />
+                android:tint="#7AFFFFFF"
+                android:tintMode="src_in" />
 
             <TextView
                 android:layout_width="wrap_content"

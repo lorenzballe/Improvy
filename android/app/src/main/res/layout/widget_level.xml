@@ -19,6 +19,7 @@
         android:src="@drawable/w_glow"
         android:importantForAccessibility="no"
         android:tint="#2B34D399"
+        android:tintMode="src_in"
         android:scaleType="fitXY" />
 
     <LinearLayout
@@ -90,7 +91,8 @@
                     android:layout_height="match_parent"
                     android:src="@drawable/w_circle"
                     android:importantForAccessibility="no"
-                    android:tint="#2E34D399" />
+                    android:tint="#2E34D399"
+                    android:tintMode="src_in" />
 
                 <ImageView
                     android:id="@+id/level_animal"
