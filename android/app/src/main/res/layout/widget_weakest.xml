@@ -1,89 +1,180 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Design 8 (Weakest key 2x2).
-     RemoteViews only inflates the classes tagged @RemoteView: no Space,
-     no plain View, no ConstraintLayout, no custom drawing. Weighted
-     FrameLayouts are the spacers. Colour that varies per key or per mode
-     is a setColorFilter on widget_tile_white / widget_square_white,
-     because a background drawable cannot be recoloured from here. -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- ⑥ Weakest key 2×2 — the iOS small needs-work widget.
+     RemoteViews inflates only @RemoteView classes: no Space, no plain View,
+     no ConstraintLayout. Weighted FrameLayouts are the spacers. Every colour
+     that changes at runtime is a setColorFilter on a white drawable, set from
+     ImprovyWidgets.kt; the colours written here are the picker preview. -->
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/weak_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@drawable/widget_bg_rose"
-    android:padding="14dp">
+    android:background="@drawable/w_surface"
+    android:clipToOutline="true">
 
-    <TextView
-        android:id="@+id/weak_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/widget_weak_label"
-        android:textColor="#FCD34D"
-        android:textSize="9sp"
-        android:letterSpacing="0.18"
-        android:maxLines="1"
-        android:fontFamily="@font/lexend_semibold" />
+    <ImageView
+        android:id="@+id/weak_glow"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/w_glow"
+        android:importantForAccessibility="no"
+        android:tint="#2BFB7185"
+        android:scaleType="fitXY" />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="match_parent"
         android:orientation="vertical"
-        android:gravity="center_vertical">
+        android:padding="16dp">
 
-        <FrameLayout
-            android:layout_width="52dp"
-            android:layout_height="52dp">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
             <ImageView
-                android:id="@+id/weak_key_bg"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@drawable/widget_square_white"
-                android:importantForAccessibility="no" />
+                android:id="@+id/weak_eb_icon"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:src="@drawable/w_ic_target"
+                android:importantForAccessibility="no"
+                android:tint="#FB7185" />
 
             <TextView
-                android:id="@+id/weak_key_letter"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:text="@string/widget_daily_key_placeholder"
-                android:textColor="#FF4D94"
-                android:textSize="20sp"
+                android:id="@+id/weak_eb_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/widget_weak_label"
+                android:textColor="#FB7185"
+                android:textSize="10.5sp"
+                android:fontFamily="@font/lexend_semibold"
                 android:maxLines="1"
-                android:fontFamily="@font/outfit_semibold" />
-        </FrameLayout>
+                android:includeFontPadding="false"
+                android:layout_weight="1"
+                android:layout_marginStart="5dp"
+                android:letterSpacing="0.06"
+                android:ellipsize="end" />
+        </LinearLayout>
 
-        <TextView
-            android:id="@+id/weak_pct"
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:minHeight="6dp" />
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="10dp"
-            android:text="@string/widget_level_pct_placeholder"
-            android:textColor="#FF4D94"
-            android:textSize="24sp"
-            android:maxLines="1"
-            android:fontFamily="@font/outfit_semibold" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <FrameLayout
+                android:layout_width="50dp"
+                android:layout_height="50dp">
+
+                <ImageView
+                    android:id="@+id/weak_badge"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/w_badge"
+                    android:importantForAccessibility="no"
+                    android:tint="#FCD34D" />
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/w_badge_sheen"
+                    android:importantForAccessibility="no" />
+
+                <TextView
+                    android:id="@+id/weak_badge_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="?"
+                    android:textColor="#140F1C"
+                    android:textSize="21sp"
+                    android:fontFamily="@font/lexend_bold"
+                    android:maxLines="1"
+                    android:includeFontPadding="false"
+                    android:gravity="center"
+                    android:paddingStart="3dp"
+                    android:paddingEnd="3dp"
+                    android:autoSizeTextType="uniform"
+                    android:autoSizeMinTextSize="10sp"
+                    android:autoSizeMaxTextSize="21sp"
+                    android:autoSizeStepGranularity="1sp" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="11dp">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="bottom">
+
+                    <TextView
+                        android:id="@+id/weak_pct"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="—"
+                        android:textColor="#FFFFFF"
+                        android:textSize="28sp"
+                        android:fontFamily="@font/lexend_bold"
+                        android:maxLines="1"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/weak_pct_sign"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="%"
+                        android:textColor="#8CFFFFFF"
+                        android:textSize="14sp"
+                        android:fontFamily="@font/lexend_semibold"
+                        android:maxLines="1"
+                        android:includeFontPadding="false"
+                        android:layout_marginStart="1dp"
+                        android:paddingBottom="3dp" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/weak_sub"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/widget_weak_mastered"
+                    android:textColor="#7AFFFFFF"
+                    android:textSize="10.5sp"
+                    android:fontFamily="@font/lexend_medium"
+                    android:maxLines="1"
+                    android:includeFontPadding="false"
+                    android:ellipsize="end"
+                    android:layout_marginTop="1dp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:minHeight="6dp" />
 
         <TextView
-            android:id="@+id/weak_sub"
+            android:id="@+id/weak_hint"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="5dp"
-            android:text="@string/widget_weak_sub_placeholder"
-            android:textColor="#73FFFFFF"
+            android:text="@string/widget_weak_hint"
+            android:textColor="#99FFFFFF"
             android:textSize="10.5sp"
-            android:maxLines="1"
-            android:ellipsize="end"
-            android:fontFamily="@font/lexend_medium" />
+            android:fontFamily="@font/lexend_medium"
+            android:maxLines="2"
+            android:includeFontPadding="false"
+            android:ellipsize="end" />
     </LinearLayout>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/widget_weak_hint"
-        android:textColor="#73FFFFFF"
-        android:textSize="10sp"
-        android:maxLines="1"
-        android:fontFamily="@font/lexend_medium" />
-</LinearLayout>
+</FrameLayout>

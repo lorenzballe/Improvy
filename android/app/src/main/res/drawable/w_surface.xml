@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The surface every widget sits on, as on iOS: near-black with depth and a
+     faint sheen along the top edge. The accent light is w_glow, on top. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/widget_radius" />
+            <gradient android:angle="270" android:startColor="#FF1A1424" android:endColor="#FF0D0A14" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/widget_radius" />
+            <gradient android:angle="270" android:startColor="#0DFFFFFF"
+                android:centerY="0.35" android:centerColor="#00FFFFFF" android:endColor="#00FFFFFF" />
+        </shape>
+    </item>
+</layer-list>

@@ -1,68 +1,121 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Design 8 (Theory of the day 4x2).
-     RemoteViews only inflates the classes tagged @RemoteView: no Space,
-     no plain View, no ConstraintLayout, no custom drawing. Weighted
-     FrameLayouts are the spacers. Colour that varies per key or per mode
-     is a setColorFilter on widget_tile_white / widget_square_white,
-     because a background drawable cannot be recoloured from here. -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- ⑨ Degree of the day 4×2 — the iOS medium theory widget.
+     RemoteViews inflates only @RemoteView classes: no Space, no plain View,
+     no ConstraintLayout. Weighted FrameLayouts are the spacers. Every colour
+     that changes at runtime is a setColorFilter on a white drawable, set from
+     ImprovyWidgets.kt; the colours written here are the picker preview. -->
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/theory_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@drawable/widget_bg_rose"
-    android:padding="16dp">
+    android:background="@drawable/w_surface"
+    android:clipToOutline="true">
 
-    <TextView
-        android:id="@+id/theory_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/widget_theory_label"
-        android:textColor="#FCD34D"
-        android:textSize="9sp"
-        android:letterSpacing="0.18"
-        android:maxLines="1"
-        android:fontFamily="@font/lexend_semibold" />
+    <ImageView
+        android:id="@+id/theory_glow"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/w_glow"
+        android:importantForAccessibility="no"
+        android:tint="#2BFB7185"
+        android:scaleType="fitXY" />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="match_parent"
         android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingTop="6dp">
+        android:padding="16dp"
+        android:gravity="center_vertical">
 
-        <TextView
-            android:id="@+id/theory_degree"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/widget_theory_degree_placeholder"
-            android:textColor="#FF4D94"
-            android:textSize="46sp"
-            android:maxLines="1"
-            android:fontFamily="@font/outfit_semibold" />
+        <FrameLayout
+            android:layout_width="70dp"
+            android:layout_height="70dp">
 
-        <TextView
-            android:id="@+id/theory_text"
+            <ImageView
+                android:id="@+id/theory_circle"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/w_circle"
+                android:importantForAccessibility="no"
+                android:tint="#24FB7185" />
+
+            <ImageView
+                android:id="@+id/theory_ring"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/w_ring"
+                android:importantForAccessibility="no"
+                android:tint="#4DFB7185" />
+
+            <TextView
+                android:id="@+id/theory_degree"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/widget_theory_degree_placeholder"
+                android:textColor="#FB7185"
+                android:textSize="30sp"
+                android:fontFamily="@font/lexend_bold"
+                android:maxLines="1"
+                android:includeFontPadding="false"
+                android:gravity="center"
+                android:padding="8dp"
+                android:autoSizeTextType="uniform"
+                android:autoSizeMinTextSize="12sp"
+                android:autoSizeMaxTextSize="30sp"
+                android:autoSizeStepGranularity="1sp" />
+        </FrameLayout>
+
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:paddingStart="16dp"
-            android:paddingEnd="0dp"
-            android:text="@string/widget_theory_text_placeholder"
-            android:textColor="#B8FFFFFF"
-            android:textSize="13sp"
-            android:maxLines="4"
-            android:ellipsize="end"
-            android:fontFamily="@font/lexend_medium" />
-    </LinearLayout>
+            android:orientation="vertical"
+            android:layout_marginStart="16dp">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/widget_theory_hint"
-        android:textColor="#66FFFFFF"
-        android:textSize="10sp"
-        android:maxLines="1"
-        android:fontFamily="@font/lexend_medium" />
-</LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:id="@+id/theory_eb_icon"
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:src="@drawable/w_ic_book"
+                    android:importantForAccessibility="no"
+                    android:tint="#FB7185" />
+
+                <TextView
+                    android:id="@+id/theory_eb_text"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/widget_theory_label"
+                    android:textColor="#FB7185"
+                    android:textSize="10.5sp"
+                    android:fontFamily="@font/lexend_semibold"
+                    android:maxLines="1"
+                    android:includeFontPadding="false"
+                    android:layout_weight="1"
+                    android:layout_marginStart="5dp"
+                    android:letterSpacing="0.06"
+                    android:ellipsize="end" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/theory_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/widget_theory_text_placeholder"
+                android:textColor="#E6FFFFFF"
+                android:textSize="13.5sp"
+                android:fontFamily="@font/lexend_medium"
+                android:maxLines="4"
+                android:includeFontPadding="false"
+                android:ellipsize="end"
+                android:layout_marginTop="6dp"
+                android:lineSpacingExtra="1.5dp" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

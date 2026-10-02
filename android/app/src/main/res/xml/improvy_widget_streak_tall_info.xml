@@ -4,12 +4,12 @@
      fresh. previewLayout draws the real thing in the picker — an unset preview
      shows a grey box, and a grey box in the picker is a widget nobody adds. -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-    android:minWidth="130dp"
+    android:minWidth="270dp"
     android:minHeight="130dp"
-    android:targetCellWidth="2"
+    android:targetCellWidth="4"
     android:targetCellHeight="2"
-    android:minResizeWidth="60dp"
-    android:minResizeHeight="60dp"
+    android:minResizeWidth="250dp"
+    android:minResizeHeight="110dp"
     android:updatePeriodMillis="1800000"
     android:initialLayout="@layout/widget_streak_tall"
     android:previewLayout="@layout/widget_streak_tall"

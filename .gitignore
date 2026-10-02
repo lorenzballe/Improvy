@@ -58,3 +58,6 @@ functions/.env.local
 # They are output, not sources — never commit them.
 test/failures/
 test/tour/
+
+# Filled from build/widget_payload by the android-widgets workflow.
+android/app/src/androidTest/assets/

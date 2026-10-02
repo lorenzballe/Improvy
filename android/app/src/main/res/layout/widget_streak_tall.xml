@@ -1,127 +1,329 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Design 8 (Streak 2x2).
-     RemoteViews only inflates the classes tagged @RemoteView: no Space,
-     no plain View, no ConstraintLayout, no custom drawing. Weighted
-     FrameLayouts are the spacers. Colour that varies per key or per mode
-     is a setColorFilter on widget_tile_white / widget_square_white,
-     because a background drawable cannot be recoloured from here. -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- ⑤ Streak 4×2 — the iOS medium streak banner.
+     RemoteViews inflates only @RemoteView classes: no Space, no plain View,
+     no ConstraintLayout. Weighted FrameLayouts are the spacers. Every colour
+     that changes at runtime is a setColorFilter on a white drawable, set from
+     ImprovyWidgets.kt; the colours written here are the picker preview. -->
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/streakt_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@drawable/widget_bg_ember"
-    android:padding="14dp">
+    android:background="@drawable/w_surface"
+    android:clipToOutline="true">
 
-    <TextView
-        android:id="@+id/streakt_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/widget_streak_label"
-        android:textColor="#FCD34D"
-        android:textSize="9sp"
-        android:letterSpacing="0.18"
-        android:maxLines="1"
-        android:fontFamily="@font/lexend_semibold" />
-    <FrameLayout
+    <ImageView
+        android:id="@+id/streakt_glow"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_height="match_parent"
+        android:src="@drawable/w_glow"
+        android:importantForAccessibility="no"
+        android:tint="#2BF97316"
+        android:scaleType="fitXY" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="@string/widget_flame_glyph"
-        android:textSize="34sp"
-        android:maxLines="1" />
-
-    <TextView
-        android:id="@+id/streakt_count"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:paddingTop="6dp"
-        android:text="@string/widget_zero"
-        android:textColor="#FFFFFFFF"
-        android:textSize="40sp"
-        android:maxLines="1"
-        android:fontFamily="@font/outfit_semibold" />
-
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
-
-    <!-- The last seven days, oldest first. The number says how long the run
-         is; the dots say what it looks like. -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="horizontal"
-        android:gravity="center"
-        android:paddingBottom="8dp">
+        android:padding="16dp"
+        android:gravity="center_vertical">
 
-        <ImageView
-            android:id="@+id/streakt_d0"
-            android:layout_width="9dp"
-            android:layout_height="9dp"
-            android:layout_marginStart="0dp"
-            android:src="@drawable/widget_dot_white"
-            android:contentDescription="@null" />
-        <ImageView
-            android:id="@+id/streakt_d1"
-            android:layout_width="9dp"
-            android:layout_height="9dp"
-            android:layout_marginStart="6dp"
-            android:src="@drawable/widget_dot_white"
-            android:contentDescription="@null" />
-        <ImageView
-            android:id="@+id/streakt_d2"
-            android:layout_width="9dp"
-            android:layout_height="9dp"
-            android:layout_marginStart="6dp"
-            android:src="@drawable/widget_dot_white"
-            android:contentDescription="@null" />
-        <ImageView
-            android:id="@+id/streakt_d3"
-            android:layout_width="9dp"
-            android:layout_height="9dp"
-            android:layout_marginStart="6dp"
-            android:src="@drawable/widget_dot_white"
-            android:contentDescription="@null" />
-        <ImageView
-            android:id="@+id/streakt_d4"
-            android:layout_width="9dp"
-            android:layout_height="9dp"
-            android:layout_marginStart="6dp"
-            android:src="@drawable/widget_dot_white"
-            android:contentDescription="@null" />
-        <ImageView
-            android:id="@+id/streakt_d5"
-            android:layout_width="9dp"
-            android:layout_height="9dp"
-            android:layout_marginStart="6dp"
-            android:src="@drawable/widget_dot_white"
-            android:contentDescription="@null" />
-        <ImageView
-            android:id="@+id/streakt_d6"
-            android:layout_width="9dp"
-            android:layout_height="9dp"
-            android:layout_marginStart="6dp"
-            android:src="@drawable/widget_dot_white"
-            android:contentDescription="@null" />
+        <FrameLayout
+            android:layout_width="54dp"
+            android:layout_height="54dp">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/w_circle"
+                android:importantForAccessibility="no"
+                android:tint="#29F97316" />
+
+            <ImageView
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:src="@drawable/w_flame_fill"
+                android:importantForAccessibility="no"
+                android:layout_gravity="center" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="14dp">
+
+            <TextView
+                android:id="@+id/streakt_count"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="0"
+                android:textColor="#FFFFFF"
+                android:textSize="42sp"
+                android:fontFamily="@font/lexend_bold"
+                android:maxLines="1"
+                android:includeFontPadding="false"
+                android:gravity="center_vertical"
+                android:autoSizeTextType="uniform"
+                android:autoSizeMinTextSize="20sp"
+                android:autoSizeMaxTextSize="42sp"
+                android:autoSizeStepGranularity="1sp" />
+
+            <TextView
+                android:id="@+id/streakt_caption"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/widget_streak_caption"
+                android:textColor="#7AFFFFFF"
+                android:textSize="12sp"
+                android:fontFamily="@font/lexend_semibold"
+                android:maxLines="2"
+                android:includeFontPadding="false"
+                android:ellipsize="end"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="end"
+            android:layout_marginStart="10dp">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center_horizontal">
+
+                    <ImageView
+                        android:id="@+id/streakt_d0"
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:src="@drawable/w_dot"
+                        android:importantForAccessibility="no"
+                        android:tint="#1AFFFFFF" />
+
+                    <TextView
+                        android:id="@+id/streakt_l0"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="M"
+                        android:textColor="#59FFFFFF"
+                        android:textSize="8.5sp"
+                        android:fontFamily="@font/lexend_semibold"
+                        android:maxLines="1"
+                        android:includeFontPadding="false"
+                        android:layout_marginTop="5dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center_horizontal"
+                    android:layout_marginStart="11dp">
+
+                    <ImageView
+                        android:id="@+id/streakt_d1"
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:src="@drawable/w_dot"
+                        android:importantForAccessibility="no"
+                        android:tint="#1AFFFFFF" />
+
+                    <TextView
+                        android:id="@+id/streakt_l1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="T"
+                        android:textColor="#59FFFFFF"
+                        android:textSize="8.5sp"
+                        android:fontFamily="@font/lexend_semibold"
+                        android:maxLines="1"
+                        android:includeFontPadding="false"
+                        android:layout_marginTop="5dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center_horizontal"
+                    android:layout_marginStart="11dp">
+
+                    <ImageView
+                        android:id="@+id/streakt_d2"
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:src="@drawable/w_dot"
+                        android:importantForAccessibility="no"
+                        android:tint="#1AFFFFFF" />
+
+                    <TextView
+                        android:id="@+id/streakt_l2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="W"
+                        android:textColor="#59FFFFFF"
+                        android:textSize="8.5sp"
+                        android:fontFamily="@font/lexend_semibold"
+                        android:maxLines="1"
+                        android:includeFontPadding="false"
+                        android:layout_marginTop="5dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center_horizontal"
+                    android:layout_marginStart="11dp">
+
+                    <ImageView
+                        android:id="@+id/streakt_d3"
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:src="@drawable/w_dot"
+                        android:importantForAccessibility="no"
+                        android:tint="#1AFFFFFF" />
+
+                    <TextView
+                        android:id="@+id/streakt_l3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="T"
+                        android:textColor="#59FFFFFF"
+                        android:textSize="8.5sp"
+                        android:fontFamily="@font/lexend_semibold"
+                        android:maxLines="1"
+                        android:includeFontPadding="false"
+                        android:layout_marginTop="5dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center_horizontal"
+                    android:layout_marginStart="11dp">
+
+                    <ImageView
+                        android:id="@+id/streakt_d4"
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:src="@drawable/w_dot"
+                        android:importantForAccessibility="no"
+                        android:tint="#1AFFFFFF" />
+
+                    <TextView
+                        android:id="@+id/streakt_l4"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="F"
+                        android:textColor="#59FFFFFF"
+                        android:textSize="8.5sp"
+                        android:fontFamily="@font/lexend_semibold"
+                        android:maxLines="1"
+                        android:includeFontPadding="false"
+                        android:layout_marginTop="5dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center_horizontal"
+                    android:layout_marginStart="11dp">
+
+                    <ImageView
+                        android:id="@+id/streakt_d5"
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:src="@drawable/w_dot"
+                        android:importantForAccessibility="no"
+                        android:tint="#1AFFFFFF" />
+
+                    <TextView
+                        android:id="@+id/streakt_l5"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="S"
+                        android:textColor="#59FFFFFF"
+                        android:textSize="8.5sp"
+                        android:fontFamily="@font/lexend_semibold"
+                        android:maxLines="1"
+                        android:includeFontPadding="false"
+                        android:layout_marginTop="5dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center_horizontal"
+                    android:layout_marginStart="11dp">
+
+                    <ImageView
+                        android:id="@+id/streakt_d6"
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:src="@drawable/w_dot"
+                        android:importantForAccessibility="no"
+                        android:tint="#1AFFFFFF" />
+
+                    <TextView
+                        android:id="@+id/streakt_l6"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="S"
+                        android:textColor="#59FFFFFF"
+                        android:textSize="8.5sp"
+                        android:fontFamily="@font/lexend_semibold"
+                        android:maxLines="1"
+                        android:includeFontPadding="false"
+                        android:layout_marginTop="5dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="12dp" />
+
+            <FrameLayout
+                android:id="@+id/streakt_play"
+                android:layout_width="36dp"
+                android:layout_height="36dp">
+
+                <ImageView
+                    android:id="@+id/streakt_glyph_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/w_circle"
+                    android:importantForAccessibility="no"
+                    android:tint="#FCD34D" />
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/w_circle_shade"
+                    android:importantForAccessibility="no" />
+
+                <ImageView
+                    android:id="@+id/streakt_glyph"
+                    android:layout_width="15dp"
+                    android:layout_height="15dp"
+                    android:src="@drawable/w_ic_play"
+                    android:importantForAccessibility="no"
+                    android:tint="#140F1C"
+                    android:layout_gravity="center" />
+            </FrameLayout>
+        </LinearLayout>
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/streakt_caption"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="@string/widget_streak_caption"
-        android:textColor="#73FFFFFF"
-        android:textSize="10.5sp"
-        android:maxLines="2"
-        android:ellipsize="end"
-        android:fontFamily="@font/lexend_medium" />
-</LinearLayout>
+</FrameLayout>

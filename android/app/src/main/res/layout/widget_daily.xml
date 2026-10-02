@@ -1,147 +1,252 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Design 8 (Daily Challenge 4x2).
-     RemoteViews only inflates the classes tagged @RemoteView: no Space,
-     no plain View, no ConstraintLayout, no custom drawing. Weighted
-     FrameLayouts are the spacers. Colour that varies per key or per mode
-     is a setColorFilter on widget_tile_white / widget_square_white,
-     because a background drawable cannot be recoloured from here. -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- ② Daily Challenge 4×2 — the iOS medium daily widget.
+     RemoteViews inflates only @RemoteView classes: no Space, no plain View,
+     no ConstraintLayout. Weighted FrameLayouts are the spacers. Every colour
+     that changes at runtime is a setColorFilter on a white drawable, set from
+     ImprovyWidgets.kt; the colours written here are the picker preview. -->
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/daily_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@drawable/widget_bg_gold_lit"
-    android:padding="16dp">
+    android:background="@drawable/w_surface"
+    android:clipToOutline="true">
+
+    <ImageView
+        android:id="@+id/daily_glow"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/w_glow"
+        android:importantForAccessibility="no"
+        android:tint="#2BFCD34D"
+        android:scaleType="fitXY" />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
-
-    <TextView
-        android:id="@+id/daily_label"
-        android:layout_width="0dp"
-        android:layout_weight="1"
-        android:layout_height="wrap_content"
-        android:text="@string/widget_daily_label"
-        android:textColor="#FCD34D"
-        android:textSize="9sp"
-        android:letterSpacing="0.18"
-        android:maxLines="1"
-        android:fontFamily="@font/lexend_semibold" />
-
-        <TextView
-            android:id="@+id/daily_streak"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/widget_chip_gold"
-            android:paddingStart="9dp"
-            android:paddingEnd="9dp"
-            android:paddingTop="4dp"
-            android:paddingBottom="4dp"
-            android:text="@string/widget_daily_streak_placeholder"
-            android:textColor="#FCD34D"
-            android:textSize="11sp"
-            android:maxLines="1"
-            android:fontFamily="@font/lexend_semibold" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
-
-        <FrameLayout
-            android:layout_width="56dp"
-            android:layout_height="56dp">
-
-            <ImageView
-                android:id="@+id/daily_key_bg"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@drawable/widget_square_white"
-                android:importantForAccessibility="no" />
-
-            <TextView
-                android:id="@+id/daily_key_letter"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:text="@string/widget_daily_key_placeholder"
-                android:textColor="#FF4D94"
-                android:textSize="21sp"
-                android:maxLines="1"
-                android:fontFamily="@font/outfit_semibold" />
-        </FrameLayout>
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp">
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:paddingStart="16dp"
-            android:paddingEnd="12dp">
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:id="@+id/daily_eb_icon"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:src="@drawable/w_ic_calendar"
+                android:importantForAccessibility="no"
+                android:tint="#FCD34D" />
 
             <TextView
-                android:id="@+id/daily_headline"
-                android:layout_width="match_parent"
+                android:id="@+id/daily_eb_text"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="@string/widget_daily_placeholder"
-                android:textColor="#FFFFFFFF"
-                android:textSize="24sp"
+                android:text="@string/widget_daily_label"
+                android:textColor="#FCD34D"
+                android:textSize="10.5sp"
+                android:fontFamily="@font/lexend_semibold"
                 android:maxLines="1"
-                android:ellipsize="end"
-                android:fontFamily="@font/outfit_semibold" />
+                android:includeFontPadding="false"
+                android:layout_weight="1"
+                android:layout_marginStart="5dp"
+                android:letterSpacing="0.06"
+                android:ellipsize="end" />
 
-            <TextView
-                android:id="@+id/daily_sub"
-                android:layout_width="match_parent"
+            <LinearLayout
+                android:id="@+id/daily_chip"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingTop="7dp"
-                android:text="@string/widget_daily_sub_placeholder"
-                android:textColor="#80FFFFFF"
-                android:textSize="12sp"
-                android:maxLines="1"
-                android:ellipsize="end"
-                android:fontFamily="@font/lexend_medium" />
-
-            <!-- Which direction today asks, in the key's own colour, so a tap
-                 is never a surprise. -->
-            <TextView
-                android:id="@+id/daily_mode"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/w_chip"
+                android:paddingStart="7dp"
+                android:paddingEnd="7dp"
                 android:paddingTop="3dp"
-                android:textColor="#80FFFFFF"
-                android:textSize="11sp"
-                android:maxLines="1"
-                android:ellipsize="end"
-                android:fontFamily="@font/lexend_semibold" />
+                android:paddingBottom="3dp">
+
+                <ImageView
+                    android:id="@+id/daily_chip_flame"
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:src="@drawable/w_flame_fill"
+                    android:importantForAccessibility="no" />
+
+                <TextView
+                    android:id="@+id/daily_chip_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="#F2FFFFFF"
+                    android:textSize="11sp"
+                    android:fontFamily="@font/lexend_bold"
+                    android:maxLines="1"
+                    android:includeFontPadding="false"
+                    android:layout_marginStart="3dp" />
+            </LinearLayout>
         </LinearLayout>
 
         <FrameLayout
-            android:layout_width="44dp"
-            android:layout_height="44dp">
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:minHeight="6dp" />
 
-            <ImageView
-                android:id="@+id/daily_play_bg"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@drawable/widget_pill_white"
-                android:importantForAccessibility="no" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-            <!-- A drawable, not the character ▶ in Lexend: that font has no
-                 such glyph, so every phone drew an empty box here. -->
-            <ImageView
-                android:id="@+id/daily_play_glyph"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="12dp"
-                android:src="@drawable/ic_widget_play"
-                android:importantForAccessibility="no" />
-        </FrameLayout>
+            <FrameLayout
+                android:layout_width="60dp"
+                android:layout_height="60dp">
+
+                <ImageView
+                    android:id="@+id/daily_badge"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/w_badge"
+                    android:importantForAccessibility="no"
+                    android:tint="#FCD34D" />
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/w_badge_sheen"
+                    android:importantForAccessibility="no" />
+
+                <TextView
+                    android:id="@+id/daily_badge_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="?"
+                    android:textColor="#140F1C"
+                    android:textSize="25sp"
+                    android:fontFamily="@font/lexend_bold"
+                    android:maxLines="1"
+                    android:includeFontPadding="false"
+                    android:gravity="center"
+                    android:paddingStart="3dp"
+                    android:paddingEnd="3dp"
+                    android:autoSizeTextType="uniform"
+                    android:autoSizeMinTextSize="10sp"
+                    android:autoSizeMaxTextSize="25sp"
+                    android:autoSizeStepGranularity="1sp" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="14dp">
+
+                <TextView
+                    android:id="@+id/daily_headline"
+                    android:layout_width="match_parent"
+                    android:layout_height="28dp"
+                    android:text="Key of B♭"
+                    android:textColor="#FFFFFF"
+                    android:textSize="22sp"
+                    android:fontFamily="@font/lexend_semibold"
+                    android:maxLines="1"
+                    android:includeFontPadding="false"
+                    android:autoSizeTextType="uniform"
+                    android:autoSizeMinTextSize="13sp"
+                    android:autoSizeMaxTextSize="22sp"
+                    android:autoSizeStepGranularity="1sp" />
+
+                <TextView
+                    android:id="@+id/daily_score"
+                    android:layout_width="match_parent"
+                    android:layout_height="36dp"
+                    android:text="9/10"
+                    android:textColor="#FFFFFF"
+                    android:textSize="30sp"
+                    android:fontFamily="@font/lexend_bold"
+                    android:maxLines="1"
+                    android:includeFontPadding="false"
+                    android:visibility="gone"
+                    android:autoSizeTextType="uniform"
+                    android:autoSizeMinTextSize="16sp"
+                    android:autoSizeMaxTextSize="30sp"
+                    android:autoSizeStepGranularity="1sp" />
+
+                <TextView
+                    android:id="@+id/daily_mode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Chromatic"
+                    android:textColor="#FCD34D"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/lexend_semibold"
+                    android:maxLines="1"
+                    android:includeFontPadding="false"
+                    android:ellipsize="end"
+                    android:layout_marginTop="4dp" />
+
+                <ImageView
+                    android:id="@+id/daily_bars"
+                    android:layout_width="150dp"
+                    android:layout_height="5dp"
+                    android:src="@drawable/w_dot"
+                    android:importantForAccessibility="no"
+                    android:visibility="gone"
+                    android:layout_marginTop="6dp"
+                    android:scaleType="fitXY" />
+
+                <TextView
+                    android:id="@+id/daily_sub"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/widget_daily_sub_placeholder"
+                    android:textColor="#7AFFFFFF"
+                    android:textSize="11sp"
+                    android:fontFamily="@font/lexend_medium"
+                    android:maxLines="1"
+                    android:includeFontPadding="false"
+                    android:ellipsize="end"
+                    android:layout_marginTop="4dp" />
+            </LinearLayout>
+
+            <FrameLayout
+                android:id="@+id/daily_play"
+                android:layout_width="50dp"
+                android:layout_height="50dp">
+
+                <ImageView
+                    android:id="@+id/daily_glyph_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/w_circle"
+                    android:importantForAccessibility="no"
+                    android:tint="#FCD34D" />
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/w_circle_shade"
+                    android:importantForAccessibility="no" />
+
+                <ImageView
+                    android:id="@+id/daily_glyph"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/w_ic_play"
+                    android:importantForAccessibility="no"
+                    android:tint="#140F1C"
+                    android:layout_gravity="center" />
+            </FrameLayout>
+        </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:minHeight="0dp" />
     </LinearLayout>
-</LinearLayout>
+</FrameLayout>

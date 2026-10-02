@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The app's mastery bar: a quiet track and a rounded fill. The fill is
+     scaled, not clipped, so its end stays round; its colour is a progress
+     tint set from ImprovyWidgets.kt (Android 12+), white before that. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@android:id/background">
+        <shape android:shape="rectangle">
+            <corners android:radius="99dp" />
+            <solid android:color="#1AFFFFFF" />
+        </shape>
+    </item>
+    <item android:id="@android:id/progress">
+        <scale android:scaleWidth="100%" android:scaleGravity="left">
+            <shape android:shape="rectangle">
+                <corners android:radius="99dp" />
+                <solid android:color="#D9FFFFFF" />
+            </shape>
+        </scale>
+    </item>
+</layer-list>

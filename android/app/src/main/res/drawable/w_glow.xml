@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The widget's own light from the top-right corner. White, so one drawable
+     serves every accent: tinted and faded from ImprovyWidgets.kt. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <corners android:radius="@dimen/widget_radius" />
+    <gradient android:type="radial" android:centerX="1" android:centerY="0"
+        android:gradientRadius="210dp" android:startColor="#FFFFFFFF" android:endColor="#00FFFFFF" />
+</shape>

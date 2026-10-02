@@ -1,42 +1,126 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Design 8 (Pocket 2x1).
-     RemoteViews only inflates the classes tagged @RemoteView: no Space,
-     no plain View, no ConstraintLayout, no custom drawing. Weighted
-     FrameLayouts are the spacers. Colour that varies per key or per mode
-     is a setColorFilter on widget_tile_white / widget_square_white,
-     because a background drawable cannot be recoloured from here. -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- ⑧ Pocket Mode 2×2 — the iOS small Pocket widget.
+     RemoteViews inflates only @RemoteView classes: no Space, no plain View,
+     no ConstraintLayout. Weighted FrameLayouts are the spacers. Every colour
+     that changes at runtime is a setColorFilter on a white drawable, set from
+     ImprovyWidgets.kt; the colours written here are the picker preview. -->
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/pocket_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@drawable/widget_bg_indigo"
-    android:padding="10dp">
+    android:background="@drawable/w_surface"
+    android:clipToOutline="true">
+
+    <ImageView
+        android:id="@+id/pocket_glow"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/w_glow"
+        android:importantForAccessibility="no"
+        android:tint="#2B6366F1"
+        android:scaleType="fitXY" />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:background="@drawable/widget_button_indigo">
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp">
 
-        <ImageView
-            android:id="@+id/pocket_icon"
-            android:layout_width="18dp"
-            android:layout_height="18dp"
-            android:src="@drawable/ic_widget_headphones"
-            android:importantForAccessibility="no" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:id="@+id/pocket_eb_icon"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:src="@drawable/w_ic_waveform"
+                android:importantForAccessibility="no"
+                android:tint="#6366F1" />
+
+            <TextView
+                android:id="@+id/pocket_eb_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/widget_pocket_eyebrow"
+                android:textColor="#6366F1"
+                android:textSize="10.5sp"
+                android:fontFamily="@font/lexend_semibold"
+                android:maxLines="1"
+                android:includeFontPadding="false"
+                android:layout_weight="1"
+                android:layout_marginStart="5dp"
+                android:letterSpacing="0.06"
+                android:ellipsize="end" />
+        </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:minHeight="6dp" />
+
+        <FrameLayout
+            android:layout_width="48dp"
+            android:layout_height="48dp">
+
+            <ImageView
+                android:id="@+id/pocket_glyph_bg"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/w_circle"
+                android:importantForAccessibility="no"
+                android:tint="#6366F1" />
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/w_circle_shade"
+                android:importantForAccessibility="no" />
+
+            <ImageView
+                android:id="@+id/pocket_glyph"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/w_ic_headphones"
+                android:importantForAccessibility="no"
+                android:tint="#FFFFFF"
+                android:layout_gravity="center" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:minHeight="6dp" />
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingStart="8dp"
-            android:paddingEnd="0dp"
+            android:layout_width="match_parent"
+            android:layout_height="24dp"
             android:text="@string/widget_pocket_label"
-            android:textColor="#FFFFFFFF"
-            android:textSize="14sp"
+            android:textColor="#FFFFFF"
+            android:textSize="19sp"
+            android:fontFamily="@font/lexend_bold"
             android:maxLines="1"
-            android:fontFamily="@font/outfit_semibold" />
+            android:includeFontPadding="false"
+            android:autoSizeTextType="uniform"
+            android:autoSizeMinTextSize="11sp"
+            android:autoSizeMaxTextSize="19sp"
+            android:autoSizeStepGranularity="1sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/widget_pocket_sub"
+            android:textColor="#7AFFFFFF"
+            android:textSize="11sp"
+            android:fontFamily="@font/lexend_medium"
+            android:maxLines="2"
+            android:includeFontPadding="false"
+            android:ellipsize="end"
+            android:layout_marginTop="2dp" />
     </LinearLayout>
-</LinearLayout>
+</FrameLayout>

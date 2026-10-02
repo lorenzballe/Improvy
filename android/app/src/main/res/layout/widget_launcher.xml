@@ -1,176 +1,274 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Design 8 (Quick launch 4x1).
-     RemoteViews only inflates the classes tagged @RemoteView: no Space,
-     no plain View, no ConstraintLayout, no custom drawing. Weighted
-     FrameLayouts are the spacers. Colour that varies per key or per mode
-     is a setColorFilter on widget_tile_white / widget_square_white,
-     because a background drawable cannot be recoloured from here. -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- ⑦ Quick start 4×2 — the iOS medium launcher.
+     RemoteViews inflates only @RemoteView classes: no Space, no plain View,
+     no ConstraintLayout. Weighted FrameLayouts are the spacers. Every colour
+     that changes at runtime is a setColorFilter on a white drawable, set from
+     ImprovyWidgets.kt; the colours written here are the picker preview. -->
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/launcher_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
-    android:gravity="center_vertical"
-    android:background="@drawable/widget_bg_indigo"
-    android:paddingStart="8dp"
-    android:paddingEnd="8dp"
-    android:paddingTop="10dp"
-    android:paddingBottom="10dp">
+    android:background="@drawable/w_surface"
+    android:clipToOutline="true">
+
+    <ImageView
+        android:id="@+id/launcher_glow"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/w_glow"
+        android:importantForAccessibility="no"
+        android:tint="#2B6366F1"
+        android:scaleType="fitXY" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp">
 
         <LinearLayout
-            android:id="@+id/launch_daily"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center">
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-            <FrameLayout
-                android:layout_width="34dp"
-                android:layout_height="34dp">
-
-                <ImageView
-                    android:id="@+id/launch_daily_bg"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/widget_tile_white"
-                    android:importantForAccessibility="no" />
-
-                <ImageView
-                    android:id="@+id/launch_daily_icon"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="9dp"
-                    android:src="@drawable/ic_widget_flame"
-                    android:importantForAccessibility="no" />
-            </FrameLayout>
+            <ImageView
+                android:id="@+id/launcher_eb_icon"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:src="@drawable/w_ic_play_circle"
+                android:importantForAccessibility="no"
+                android:tint="#6366F1" />
 
             <TextView
-                android:layout_width="wrap_content"
+                android:id="@+id/launcher_eb_text"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:paddingTop="6dp"
-                android:text="@string/widget_launch_daily"
-                android:textColor="#C7FFFFFF"
-                android:textSize="10sp"
+                android:text="@string/widget_launcher_label"
+                android:textColor="#6366F1"
+                android:textSize="10.5sp"
+                android:fontFamily="@font/lexend_semibold"
                 android:maxLines="1"
-                android:ellipsize="end"
-                android:fontFamily="@font/lexend_medium" />
+                android:includeFontPadding="false"
+                android:layout_weight="1"
+                android:layout_marginStart="5dp"
+                android:letterSpacing="0.06"
+                android:ellipsize="end" />
         </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="10dp" />
+
         <LinearLayout
-            android:id="@+id/launch_pocket"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
             android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center">
+            android:orientation="horizontal">
 
-            <FrameLayout
-                android:layout_width="34dp"
-                android:layout_height="34dp">
+            <LinearLayout
+                android:id="@+id/launch_daily"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="@drawable/w_mode_cell">
 
-                <ImageView
-                    android:id="@+id/launch_pocket_bg"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/widget_tile_white"
-                    android:importantForAccessibility="no" />
+                <FrameLayout
+                    android:layout_width="40dp"
+                    android:layout_height="40dp">
 
-                <ImageView
-                    android:id="@+id/launch_pocket_icon"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="9dp"
-                    android:src="@drawable/ic_widget_headphones"
-                    android:importantForAccessibility="no" />
-            </FrameLayout>
+                    <ImageView
+                        android:id="@+id/launch_daily_glyph_bg"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/w_circle"
+                        android:importantForAccessibility="no"
+                        android:tint="#FCD34D" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingTop="6dp"
-                android:text="@string/widget_pocket_label"
-                android:textColor="#C7FFFFFF"
-                android:textSize="10sp"
-                android:maxLines="1"
-                android:ellipsize="end"
-                android:fontFamily="@font/lexend_medium" />
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/w_circle_shade"
+                        android:importantForAccessibility="no" />
+
+                    <ImageView
+                        android:id="@+id/launch_daily_glyph"
+                        android:layout_width="17dp"
+                        android:layout_height="17dp"
+                        android:src="@drawable/w_flame_white"
+                        android:importantForAccessibility="no"
+                        android:tint="#140F1C"
+                        android:layout_gravity="center" />
+                </FrameLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/widget_launch_daily"
+                    android:textColor="#D9FFFFFF"
+                    android:textSize="11sp"
+                    android:fontFamily="@font/lexend_semibold"
+                    android:maxLines="1"
+                    android:includeFontPadding="false"
+                    android:layout_marginTop="8dp"
+                    android:ellipsize="end" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/launch_pocket"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="@drawable/w_mode_cell"
+                android:layout_marginStart="8dp">
+
+                <FrameLayout
+                    android:layout_width="40dp"
+                    android:layout_height="40dp">
+
+                    <ImageView
+                        android:id="@+id/launch_pocket_glyph_bg"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/w_circle"
+                        android:importantForAccessibility="no"
+                        android:tint="#6366F1" />
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/w_circle_shade"
+                        android:importantForAccessibility="no" />
+
+                    <ImageView
+                        android:id="@+id/launch_pocket_glyph"
+                        android:layout_width="17dp"
+                        android:layout_height="17dp"
+                        android:src="@drawable/w_ic_headphones"
+                        android:importantForAccessibility="no"
+                        android:tint="#FFFFFF"
+                        android:layout_gravity="center" />
+                </FrameLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/widget_launch_pocket"
+                    android:textColor="#D9FFFFFF"
+                    android:textSize="11sp"
+                    android:fontFamily="@font/lexend_semibold"
+                    android:maxLines="1"
+                    android:includeFontPadding="false"
+                    android:layout_marginTop="8dp"
+                    android:ellipsize="end" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/launch_chromatic"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="@drawable/w_mode_cell"
+                android:layout_marginStart="8dp">
+
+                <FrameLayout
+                    android:layout_width="40dp"
+                    android:layout_height="40dp">
+
+                    <ImageView
+                        android:id="@+id/launch_chromatic_glyph_bg"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/w_circle"
+                        android:importantForAccessibility="no"
+                        android:tint="#A855F7" />
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/w_circle_shade"
+                        android:importantForAccessibility="no" />
+
+                    <ImageView
+                        android:id="@+id/launch_chromatic_glyph"
+                        android:layout_width="17dp"
+                        android:layout_height="17dp"
+                        android:src="@drawable/w_ic_note"
+                        android:importantForAccessibility="no"
+                        android:tint="#FFFFFF"
+                        android:layout_gravity="center" />
+                </FrameLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/widget_launch_chromatic"
+                    android:textColor="#D9FFFFFF"
+                    android:textSize="11sp"
+                    android:fontFamily="@font/lexend_semibold"
+                    android:maxLines="1"
+                    android:includeFontPadding="false"
+                    android:layout_marginTop="8dp"
+                    android:ellipsize="end" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/launch_custom"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="@drawable/w_mode_cell"
+                android:layout_marginStart="8dp">
+
+                <FrameLayout
+                    android:layout_width="40dp"
+                    android:layout_height="40dp">
+
+                    <ImageView
+                        android:id="@+id/launch_custom_glyph_bg"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/w_circle"
+                        android:importantForAccessibility="no"
+                        android:tint="#D857EC" />
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/w_circle_shade"
+                        android:importantForAccessibility="no" />
+
+                    <ImageView
+                        android:id="@+id/launch_custom_glyph"
+                        android:layout_width="17dp"
+                        android:layout_height="17dp"
+                        android:src="@drawable/w_ic_tune"
+                        android:importantForAccessibility="no"
+                        android:tint="#FFFFFF"
+                        android:layout_gravity="center" />
+                </FrameLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/widget_launch_custom"
+                    android:textColor="#D9FFFFFF"
+                    android:textSize="11sp"
+                    android:fontFamily="@font/lexend_semibold"
+                    android:maxLines="1"
+                    android:includeFontPadding="false"
+                    android:layout_marginTop="8dp"
+                    android:ellipsize="end" />
+            </LinearLayout>
         </LinearLayout>
-        <LinearLayout
-            android:id="@+id/launch_chromatic"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center">
-
-            <FrameLayout
-                android:layout_width="34dp"
-                android:layout_height="34dp">
-
-                <ImageView
-                    android:id="@+id/launch_chromatic_bg"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/widget_tile_white"
-                    android:importantForAccessibility="no" />
-
-                <ImageView
-                    android:id="@+id/launch_chromatic_icon"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="9dp"
-                    android:src="@drawable/ic_widget_note"
-                    android:importantForAccessibility="no" />
-            </FrameLayout>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingTop="6dp"
-                android:text="@string/widget_launch_chromatic"
-                android:textColor="#C7FFFFFF"
-                android:textSize="10sp"
-                android:maxLines="1"
-                android:ellipsize="end"
-                android:fontFamily="@font/lexend_medium" />
-        </LinearLayout>
-        <LinearLayout
-            android:id="@+id/launch_custom"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center">
-
-            <FrameLayout
-                android:layout_width="34dp"
-                android:layout_height="34dp">
-
-                <ImageView
-                    android:id="@+id/launch_custom_bg"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/widget_tile_white"
-                    android:importantForAccessibility="no" />
-
-                <ImageView
-                    android:id="@+id/launch_custom_icon"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="9dp"
-                    android:src="@drawable/ic_widget_tune"
-                    android:importantForAccessibility="no" />
-            </FrameLayout>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingTop="6dp"
-                android:text="@string/widget_launch_custom"
-                android:textColor="#C7FFFFFF"
-                android:textSize="10sp"
-                android:maxLines="1"
-                android:ellipsize="end"
-                android:fontFamily="@font/lexend_medium" />
-        </LinearLayout>
-</LinearLayout>
+    </LinearLayout>
+</FrameLayout>

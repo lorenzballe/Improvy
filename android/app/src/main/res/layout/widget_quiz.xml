@@ -1,69 +1,127 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Design 8 (Question 2x2). RemoteViews only inflates the classes tagged
-     @RemoteView — no Space, no View, no ConstraintLayout, no custom drawing.
-     Weighted FrameLayouts are the spacers. Colours that vary per key or per
-     mode arrive as a tint applied to widget_tile_white / widget_square_white,
-     because a background drawable cannot be recoloured from RemoteViews. -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- ① Question 2×2 — the same card as the iOS small question widget.
+     RemoteViews inflates only @RemoteView classes: no Space, no plain View,
+     no ConstraintLayout. Weighted FrameLayouts are the spacers. Every colour
+     that changes at runtime is a setColorFilter on a white drawable, set from
+     ImprovyWidgets.kt; the colours written here are the picker preview. -->
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/quiz_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@drawable/widget_bg_gold"
-    android:padding="14dp">
+    android:background="@drawable/w_surface"
+    android:clipToOutline="true">
 
-    <TextView
-        android:id="@+id/quiz_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/widget_quiz_label"
-        android:textColor="#FCD34D"
-        android:textSize="9sp"
-        android:letterSpacing="0.18"
-        android:maxLines="1"
-        android:fontFamily="@font/lexend_semibold" />
-
-    <FrameLayout
+    <ImageView
+        android:id="@+id/quiz_glow"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_height="match_parent"
+        android:src="@drawable/w_glow"
+        android:importantForAccessibility="no"
+        android:tint="#2BFCD34D"
+        android:scaleType="fitXY" />
 
-    <TextView
-        android:id="@+id/quiz_degree"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="@string/widget_quiz_degree_placeholder"
-        android:textColor="#FFFF4D"
-        android:textSize="38sp"
-        android:maxLines="1"
-        android:fontFamily="@font/outfit_semibold" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <TextView
-        android:id="@+id/quiz_of"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:paddingTop="4dp"
-        android:text="@string/widget_quiz_of_placeholder"
-        android:textColor="#8CFFFFFF"
-        android:textSize="13sp"
-        android:maxLines="1"
-        android:fontFamily="@font/lexend_medium" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+            <ImageView
+                android:id="@+id/quiz_eb_icon"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:src="@drawable/w_ic_question"
+                android:importantForAccessibility="no"
+                android:tint="#FCD34D" />
 
-    <TextView
-        android:id="@+id/quiz_hint"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="@string/widget_quiz_hint"
-        android:textColor="#73FFFFFF"
-        android:textSize="10sp"
-        android:maxLines="1"
-        android:fontFamily="@font/lexend_medium" />
-</LinearLayout>
+            <TextView
+                android:id="@+id/quiz_eb_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/widget_quiz_short_label"
+                android:textColor="#FCD34D"
+                android:textSize="10.5sp"
+                android:fontFamily="@font/lexend_semibold"
+                android:maxLines="1"
+                android:includeFontPadding="false"
+                android:layout_weight="1"
+                android:layout_marginStart="5dp"
+                android:letterSpacing="0.06"
+                android:ellipsize="end" />
+        </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:minHeight="4dp" />
+
+        <TextView
+            android:id="@+id/quiz_degree"
+            android:layout_width="match_parent"
+            android:layout_height="58dp"
+            android:text="♭3"
+            android:textColor="#FCD34D"
+            android:textSize="50sp"
+            android:fontFamily="@font/lexend_bold"
+            android:maxLines="1"
+            android:includeFontPadding="false"
+            android:gravity="center_vertical"
+            android:autoSizeTextType="uniform"
+            android:autoSizeMinTextSize="22sp"
+            android:autoSizeMaxTextSize="50sp"
+            android:autoSizeStepGranularity="1sp" />
+
+        <TextView
+            android:id="@+id/quiz_of"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="of E♭"
+            android:textColor="#B8FFFFFF"
+            android:textSize="15sp"
+            android:fontFamily="@font/lexend_medium"
+            android:maxLines="1"
+            android:includeFontPadding="false"
+            android:ellipsize="end"
+            android:layout_marginTop="2dp" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:minHeight="4dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="11dp"
+                android:layout_height="11dp"
+                android:src="@drawable/w_ic_eye"
+                android:importantForAccessibility="no"
+                android:tint="#7AFFFFFF" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/widget_quiz_hint"
+                android:textColor="#7AFFFFFF"
+                android:textSize="11sp"
+                android:fontFamily="@font/lexend_medium"
+                android:maxLines="1"
+                android:includeFontPadding="false"
+                android:layout_marginStart="4dp"
+                android:ellipsize="end" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

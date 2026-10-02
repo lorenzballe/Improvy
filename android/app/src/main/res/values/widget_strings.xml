@@ -27,7 +27,7 @@
     <string name="widget_daily_sub_placeholder">10 questions · 40 seconds</string>
     <string name="widget_daily_streak_placeholder">🔥 0</string>
     <string name="widget_daily_done">Done</string>
-    <string name="widget_daily_done_sub">Next challenge tomorrow</string>
+    <string name="widget_daily_done_sub">Next one tomorrow</string>
 
     <string name="widget_level_widget_name">Improvy · Level</string>
     <string name="widget_level_description">Your animal, your rank, and how far through you are.</string>
@@ -42,7 +42,7 @@
     <string name="widget_streak_widget_name">Improvy · Streak</string>
     <string name="widget_streak_description">Days in a row, and a warning before you lose them.</string>
     <string name="widget_streak_label">STREAK</string>
-    <string name="widget_streak_caption">day streak</string>
+    <string name="widget_streak_caption">days in a row</string>
     <!-- Shown only while today is still unplayed: the one number here worth
          interrupting someone for is the one they are about to lose. -->
     <string name="widget_streak_at_risk">Play today to keep it</string>
@@ -56,10 +56,10 @@
 
     <string name="widget_weak_name">Improvy · Weakest key</string>
     <string name="widget_weak_description">The key worth practising, one tap from training it.</string>
-    <string name="widget_weak_label">WEAKEST KEY</string>
-    <string name="widget_weak_hint">Tap to train it</string>
+    <string name="widget_weak_label">NEEDS WORK</string>
+    <string name="widget_weak_hint">Your weakest key. Tap to train it.</string>
     <string name="widget_weak_sub_placeholder">Nothing played yet</string>
-    <string name="widget_weak_empty">Play a key to find out</string>
+    <string name="widget_weak_empty">Play a key first</string>
 
     <string name="widget_launcher_name">Improvy · Quick launch</string>
     <string name="widget_launcher_description">Straight into the daily, Pocket, Chromatic or Custom.</string>
@@ -73,7 +73,7 @@
 
     <string name="widget_theory_name">Improvy · Theory of the day</string>
     <string name="widget_theory_description">One scale degree a day, and what it actually does.</string>
-    <string name="widget_theory_label">THEORY OF THE DAY</string>
+    <string name="widget_theory_label">DEGREE OF THE DAY</string>
     <string name="widget_theory_hint">Tap for the full card</string>
     <string name="widget_theory_degree_placeholder">♭7</string>
     <string name="widget_theory_text_placeholder">The note that turns a major chord into a dominant.</string>
@@ -81,4 +81,14 @@
     <string name="widget_map_tall_description">Twelve keys, lit by how well you know them, with your total progress.</string>
     <string name="widget_streak_tall_name">Improvy · Streak (tall)</string>
     <string name="widget_streak_tall_description">Days in a row on a taller tile, and a warning before you lose them.</string>
+    <string name="widget_quiz_short_label">QUESTION</string>
+    <string name="widget_weak_mastered">mastered</string>
+    <string name="widget_weak_empty_hint">Tap to start training</string>
+    <string name="widget_streak_day_streak">day streak</string>
+    <string name="widget_launcher_label">START TRAINING</string>
+    <string name="widget_launch_pocket">Pocket</string>
+    <string name="widget_pocket_eyebrow">HANDS-FREE</string>
+    <string name="widget_pocket_sub">Train with the screen off</string>
+    <string name="widget_daily_today">Today</string>
+    <string name="widget_map_empty">Open Improvy to fill this in.</string>
 </resources>

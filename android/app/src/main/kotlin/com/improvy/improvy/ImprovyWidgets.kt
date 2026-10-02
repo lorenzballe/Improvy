@@ -3,18 +3,33 @@ package com.improvy.improvy
 import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.res.ColorStateList
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.RectF
 import android.net.Uri
+import android.os.Build
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.style.RelativeSizeSpan
+import android.text.style.SuperscriptSpan
 import android.view.View
 import android.widget.RemoteViews
 import es.antonborri.home_widget.HomeWidgetLaunchIntent
 import es.antonborri.home_widget.HomeWidgetProvider
 import org.json.JSONArray
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 import java.util.TimeZone
 
 /**
- * Home-screen widgets — design 8.
+ * Home-screen widgets — the same design as the iOS ones
+ * (ios/ImprovyWidget/ImprovyKit.swift): a near-black surface lit from the
+ * top-right in the widget's own accent, a small eyebrow header, keys as filled
+ * badges in their own colour, round accent buttons, the app's mastery bars.
  *
  * These only ever *render*: every string arrives already formatted from
  * `lib/services/widget_service.dart`, which owns notation (C-D-E vs Do-Re-Mi),
@@ -23,6 +38,10 @@ import java.util.TimeZone
  *
  * The widgets must also survive days without the app launching, so the quiz
  * rotation is written a week ahead and indexed by the clock — see [currentSlot].
+ *
+ * Each widget is built by a function in [WidgetViews] from the payload alone,
+ * so androidTest/WidgetRenderTest can draw exactly what a home screen shows.
+ */
  */
 
 /** Days since 1970-01-01 for *today's local calendar date*.
@@ -119,217 +138,178 @@ private fun RemoteViews.tint(viewId: Int, colour: Int, alpha: Int = 255) {
     setInt(viewId, "setImageAlpha", alpha)
 }
 
-// ─── ① Question 2×2 ──────────────────────────────────────────────────────────
+
+/** The design tokens, the same values as `Ink` in ImprovyKit.swift. */
+private object Ink {
+    val gold = Color.parseColor("#FCD34D")
+    val indigo = Color.parseColor("#6366F1")
+    val violet = Color.parseColor("#A855F7")
+    val magenta = Color.parseColor("#D857EC")
+    val mint = Color.parseColor("#34D399")
+    val cyan = Color.parseColor("#22D3EE")
+    val ember = Color.parseColor("#F97316")
+    val rose = Color.parseColor("#FB7185")
+    /** The ink that reads on a light key colour (the yellows and greens). */
+    val dark = Color.parseColor("#140F1C")
+    val quiet = Color.parseColor("#7AFFFFFF")
+}
 
 /**
- * "The little question" — a flashcard on the home screen.
- *
- * The answer is withheld on purpose: the unresolved question is what makes the
- * widget worth keeping, and the tap that resolves it opens the app on the
- * reveal (`improvy://quiz?s=…`, carrying the absolute slot so the app rebuilds
- * exactly the question that was on screen).
+ * White on deep colours, the dark ink on light ones — a yellow key tile with a
+ * white "D" on it is a key nobody can read. Same weights and threshold as
+ * `Color.onFill` on iOS.
  */
-open class ImprovyQuizWidgetProvider : HomeWidgetProvider() {
-    /** Overridden by the wide variant; everything else about the two is shared. */
-    open val layout: Int get() = R.layout.widget_quiz
-    open val rootId: Int get() = R.id.quiz_root
-    open val degreeId: Int get() = R.id.quiz_degree
-    open val ofId: Int get() = R.id.quiz_of
-
-    override fun onUpdate(
-        context: Context,
-        appWidgetManager: AppWidgetManager,
-        appWidgetIds: IntArray,
-        widgetData: SharedPreferences
-    ) = guarded {
-        appWidgetIds.forEach { id ->
-            val views = RemoteViews(context.packageName, layout)
-
-            var degree = context.getString(R.string.widget_quiz_degree_placeholder)
-            var ofKey = context.getString(R.string.widget_quiz_of_placeholder)
-            var slot = currentSlot()
-            try {
-                val raw = widgetData.getString("quiz_json", null)
-                if (!raw.isNullOrEmpty()) {
-                    val list = JSONArray(raw)
-                    val length = list.length()
-                    if (length > 0) {
-                        val base = widgetData.number("quiz_base_slot")
-                        // A phone left alone past the end of the written week
-                        // wraps rather than going blank; the next launch
-                        // rewrites the rotation anyway.
-                        val offset = currentSlot() - base
-                        val index = (((offset % length) + length) % length).toInt()
-                        // Report the slot actually shown, not the wall clock —
-                        // after a wrap they differ, and the app must reveal the
-                        // question the user was looking at.
-                        slot = base + index
-                        val q = list.getJSONObject(index).optString("q", "")
-                        if (q.isNotEmpty()) {
-                            // The degree is the headline and the key is the
-                            // quiet line under it, so the one string has to be
-                            // split. " of " is what widget_service writes.
-                            val cut = q.indexOf(" of ")
-                            if (cut > 0) {
-                                degree = q.substring(0, cut)
-                                ofKey = context.getString(
-                                    R.string.widget_quiz_of, q.substring(cut + 4)
-                                )
-                            } else {
-                                degree = q
-                                ofKey = ""
-                            }
-                        }
-                    }
-                }
-            } catch (_: Exception) {
-                // Malformed or missing payload: keep the placeholder rather
-                // than showing an empty card.
-            }
-
-            views.setTextViewText(degreeId, degree)
-            views.setTextViewText(ofId, ofKey)
-            views.link(context, rootId, "improvy://quiz?s=$slot")
-            appWidgetManager.updateAppWidget(id, views)
-        }
-    }
+private fun onFill(colour: Int): Int {
+    val l = 0.2126 * Color.red(colour) / 255 +
+        0.7152 * Color.green(colour) / 255 +
+        0.0722 * Color.blue(colour) / 255
+    return if (l > 0.62) Ink.dark else Color.WHITE
 }
 
-// ─── ⑩ Question 4×2 ──────────────────────────────────────────────────────────
-
-/** The same question with room to breathe. */
-class ImprovyQuizWideWidgetProvider : ImprovyQuizWidgetProvider() {
-    override val layout: Int get() = R.layout.widget_quiz_wide
-    override val rootId: Int get() = R.id.quizw_root
-    override val degreeId: Int get() = R.id.quizw_degree
-    override val ofId: Int get() = R.id.quizw_of
-}
-
-// ─── ② Daily Challenge 4×2 ───────────────────────────────────────────────────
+/** [colour] at [alpha] (0–255). */
+private fun withAlpha(colour: Int, alpha: Int): Int =
+    Color.argb(alpha, Color.red(colour), Color.green(colour), Color.blue(colour))
 
 /**
- * Today's challenge: the key to play in, or the score once it's done — with the
- * streak always in sight, because the streak is what brings people back.
+ * A note or degree with its accidental set the way music sets it: smaller and
+ * raised, so "D♭" reads as D-flat rather than as "Db" in a heavy font.
  */
-class ImprovyDailyWidgetProvider : HomeWidgetProvider() {
-    override fun onUpdate(
-        context: Context,
-        appWidgetManager: AppWidgetManager,
-        appWidgetIds: IntArray,
-        widgetData: SharedPreferences
-    ) = guarded {
-        appWidgetIds.forEach { id ->
-            val views = RemoteViews(context.packageName, R.layout.widget_daily)
+private fun music(s: String): CharSequence {
+    val out = SpannableStringBuilder()
+    var i = 0
+    while (i < s.length) {
+        val cp = s.codePointAt(i)
+        val n = Character.charCount(cp)
+        val start = out.length
+        out.append(s, i, i + n)
+        if (cp == 0x266D || cp == 0x266F || cp == 0x1D12B || cp == 0x1D12A) {
+            out.setSpan(RelativeSizeSpan(0.62f), start, out.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            out.setSpan(SuperscriptSpan(), start, out.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+        i += n
+    }
+    return out
+}
 
-            val played = widgetData.getBoolean("daily_played", false)
-            val key = widgetData.getString("daily_key", "") ?: ""
-            val score = widgetData.getString("daily_score", "") ?: ""
-            val grid = widgetData.getString("daily_grid", "") ?: ""
-            val streak = widgetData.number("daily_streak")
-            val keyColour = widgetData.color("daily_key_color", Color.parseColor("#FF4D94"))
+/** The accent light: [lit] for the states worth interrupting someone for. */
+private fun RemoteViews.glow(viewId: Int, accent: Int, lit: Boolean = false) =
+    tint(viewId, accent, if (lit) 77 else 43)
 
-            // The key's own tile, in the key's own colour — the same square the
-            // app puts it in.
-            views.tint(R.id.daily_key_bg, keyColour, 40)
-            views.setTextColor(R.id.daily_key_letter, keyColour)
-            views.setTextViewText(
-                R.id.daily_key_letter,
-                if (key.isEmpty()) context.getString(R.string.widget_daily_key_placeholder) else key
-            )
+/** An eyebrow's icon and label in the accent. */
+private fun RemoteViews.eyebrow(icon: Int, label: Int, accent: Int) {
+    tint(icon, accent)
+    setTextColor(label, accent)
+}
 
-            if (played) {
-                views.setTextViewText(
-                    R.id.daily_headline,
-                    if (score.isEmpty()) context.getString(R.string.widget_daily_done) else score
-                )
-                views.setTextViewText(
-                    R.id.daily_sub,
-                    if (grid.isEmpty()) context.getString(R.string.widget_daily_done_sub) else grid
-                )
-                // The frame drops out of the gold "your move" state once there
-                // is nothing left to do today, and the play button goes with it.
-                views.setInt(R.id.daily_root, "setBackgroundResource", R.drawable.widget_bg_violet)
-                views.setViewVisibility(R.id.daily_play_bg, View.INVISIBLE)
-                views.setViewVisibility(R.id.daily_play_glyph, View.INVISIBLE)
-            } else {
-                views.setTextViewText(
-                    R.id.daily_headline,
-                    if (key.isEmpty()) context.getString(R.string.widget_daily_placeholder)
-                    else context.getString(R.string.widget_daily_key, key)
-                )
-                // The rule comes from the app (derived from the challenge
-                // constants); the XML string is only the picker preview.
-                val sub = widgetData.getString("daily_sub", null)
-                views.setTextViewText(
-                    R.id.daily_sub,
-                    if (sub.isNullOrEmpty()) context.getString(R.string.widget_daily_sub_placeholder)
-                    else sub
-                )
-                views.setInt(R.id.daily_root, "setBackgroundResource", R.drawable.widget_bg_gold_lit)
-                views.setViewVisibility(R.id.daily_play_bg, View.VISIBLE)
-                views.setViewVisibility(R.id.daily_play_glyph, View.VISIBLE)
-                views.tint(R.id.daily_play_bg, Color.parseColor("#FCD34D"))
-                views.tint(R.id.daily_play_glyph, Color.parseColor("#2A1B04"))
+/** A key badge: the key's colour, filled, with ink that can always be read. */
+private fun RemoteViews.badge(bg: Int, label: Int, key: String, colour: Int) {
+    tint(bg, colour)
+    setTextViewText(label, music(key.ifEmpty { "?" }))
+    setTextColor(label, onFill(colour))
+}
+
+/** A filled round button: the accent, and the glyph in the ink that reads on it. */
+private fun RemoteViews.glyphButton(bg: Int, glyph: Int, colour: Int) {
+    tint(bg, colour)
+    tint(glyph, onFill(colour))
+}
+
+/**
+ * A mastery bar's fill colour. A progress tint is only remotable from
+ * Android 12; before that the bar keeps its quiet white fill.
+ */
+private fun RemoteViews.barColour(viewId: Int, colour: Int) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        setColorStateList(viewId, "setProgressTintList", ColorStateList.valueOf(colour))
+    }
+}
+
+/** The streak chip in an eyebrow: the drawn flame and the count. */
+private fun RemoteViews.streakChip(flame: Int, count: Int, streak: Long, dim: Boolean) {
+    setTextViewText(count, "$streak")
+    setTextColor(count, if (dim) Color.parseColor("#99FFFFFF") else Color.parseColor("#F2FFFFFF"))
+    setInt(flame, "setImageAlpha", if (dim) 153 else 255)
+}
+
+/** The last seven days, oldest first, today last. */
+private fun SharedPreferences.week(): BooleanArray {
+    val week = BooleanArray(7)
+    try {
+        val raw = getString("week_json", null)
+        if (!raw.isNullOrEmpty()) {
+            val list = JSONArray(raw)
+            for (i in 0 until minOf(list.length(), 7)) week[i] = list.optBoolean(i, false)
+        }
+    } catch (_: Exception) {
+        // A missing payload reads as a quiet week, never as a week of failures.
+    }
+    return week
+}
+
+/**
+ * Lights the week, as WeekDots on iOS: played days in the accent, the rest
+ * quiet, and today ringed in the accent while it is still to play.
+ */
+private fun RemoteViews.weekDots(dots: IntArray, week: BooleanArray, colour: Int, letters: IntArray? = null) {
+    for (i in dots.indices) {
+        val today = i == dots.size - 1
+        when {
+            week[i] -> {
+                setImageViewResource(dots[i], R.drawable.w_dot)
+                tint(dots[i], colour)
             }
-            // Which direction today asks, in the key's own colour — hidden
-            // once it is played, where the score is the whole story.
-            val mode = widgetData.getString("daily_mode", "") ?: ""
-            views.setTextViewText(R.id.daily_mode, if (played) "" else mode)
-            views.setTextColor(R.id.daily_mode, keyColour)
-            views.setViewVisibility(
-                R.id.daily_mode,
-                if (played || mode.isEmpty()) View.GONE else View.VISIBLE
-            )
-            views.setTextViewText(R.id.daily_streak, "🔥 $streak")
-
-            views.link(context, R.id.daily_root, "improvy://daily")
-            appWidgetManager.updateAppWidget(id, views)
+            today -> {
+                setImageViewResource(dots[i], R.drawable.w_ring_today)
+                tint(dots[i], colour, 230)
+            }
+            else -> {
+                setImageViewResource(dots[i], R.drawable.w_dot)
+                tint(dots[i], Color.WHITE, 26)
+            }
+        }
+    }
+    if (letters != null) {
+        // The weekday initials for the last seven days, ending today, in the
+        // phone's language.
+        val format = SimpleDateFormat("EEEEE", Locale.getDefault())
+        val day = Calendar.getInstance()
+        day.add(Calendar.DAY_OF_YEAR, -(letters.size - 1))
+        for (i in letters.indices) {
+            setTextViewText(letters[i], format.format(day.time))
+            setTextColor(letters[i], if (i == letters.size - 1) Color.parseColor("#D9FFFFFF") else Color.parseColor("#59FFFFFF"))
+            day.add(Calendar.DAY_OF_YEAR, 1)
         }
     }
 }
 
-// ─── ③ Level & progress 2×2 ──────────────────────────────────────────────────
-
-class ImprovyLevelWidgetProvider : HomeWidgetProvider() {
-    override fun onUpdate(
-        context: Context,
-        appWidgetManager: AppWidgetManager,
-        appWidgetIds: IntArray,
-        widgetData: SharedPreferences
-    ) = guarded {
-        appWidgetIds.forEach { id ->
-            val views = RemoteViews(context.packageName, R.layout.widget_level)
-
-            val colour = widgetData.color("animal_color", Color.parseColor("#A3E635"))
-            val pct = widgetData.number("progress_pct").toInt().coerceIn(0, 100)
-            val level = widgetData.number("animal_level", 1L).toInt()
-            val total = widgetData.number("animal_levels_total", 8L).toInt()
-
-            // The animal the app draws, not an emoji: same line art, tinted
-            // with the level's own colour. Indexed by level rather than by
-            // name — the name is a word and words get translated.
-            views.setImageViewResource(R.id.level_animal, animalDrawable(level))
-            views.tint(R.id.level_animal, colour)
-            views.setTextViewText(
-                R.id.level_name,
-                widgetData.getString("animal_name", "Snail") ?: "Snail"
-            )
-            views.setTextColor(R.id.level_name, colour)
-            views.setTextViewText(
-                R.id.level_rank,
-                context.getString(R.string.widget_level_rank, level, total)
-            )
-            views.setTextViewText(R.id.level_pct, "$pct%")
-            views.setProgressBar(R.id.level_bar, 100, pct, false)
-            views.setTextViewText(
-                R.id.level_quote,
-                widgetData.getString("animal_quote", "") ?: ""
-            )
-
-            views.link(context, R.id.level_root, "improvy://stats")
-            appWidgetManager.updateAppWidget(id, views)
-        }
+/**
+ * The daily's answers as a row of short bars, right and wrong — ResultBars on
+ * iOS. Drawn as a bitmap at the view's exact size, because the number of bars
+ * is the payload's and RemoteViews cannot add views.
+ */
+private fun resultBars(context: Context, grid: String, widthDp: Int, heightDp: Int): Bitmap? {
+    val marks = mutableListOf<Boolean>()
+    var i = 0
+    while (i < grid.length) {
+        val cp = grid.codePointAt(i)
+        if (cp == 0x1F7E9) marks.add(true) else if (cp == 0x1F7E5) marks.add(false)
+        i += Character.charCount(cp)
     }
+    if (marks.isEmpty()) return null
+    val d = context.resources.displayMetrics.density
+    val w = (widthDp * d).toInt()
+    val h = (heightDp * d).toInt()
+    val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bmp)
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    val gap = 2.5f * d
+    val each = (w - gap * (marks.size - 1)) / marks.size
+    marks.forEachIndexed { n, ok ->
+        paint.color = if (ok) Ink.mint else Ink.rose
+        val x = n * (each + gap)
+        canvas.drawRoundRect(RectF(x, 0f, x + each, h.toFloat()), h / 2f, h / 2f, paint)
+    }
+    return bmp
 }
 
 /**
@@ -351,315 +331,431 @@ private val kAnimalDrawables = intArrayOf(
 private fun animalDrawable(level: Int): Int =
     kAnimalDrawables[(level - 1).coerceIn(0, kAnimalDrawables.size - 1)]
 
-// ─── ④ Key mastery map ───────────────────────────────────────────────────────
+/** Every widget, built from the payload alone. */
+object WidgetViews {
 
-/**
- * Twelve keys, chromatic order, lit by how well they are known.
- *
- * A key never played is drawn hollow rather than at 0%: "not started" and
- * "started badly" are different facts and must not look the same.
- */
-open class ImprovyMapWidgetProvider : HomeWidgetProvider() {
-    open val layout: Int get() = R.layout.widget_map
-    open val showsTotal: Boolean get() = false
+    // ─── ① Question 2×2 · ⑩ Question 4×2 ───────────────────────────────────
 
-    override fun onUpdate(
-        context: Context,
-        appWidgetManager: AppWidgetManager,
-        appWidgetIds: IntArray,
-        widgetData: SharedPreferences
-    ) = guarded {
-        val tiles = intArrayOf(
-            R.id.map_tile_0, R.id.map_tile_1, R.id.map_tile_2, R.id.map_tile_3,
-            R.id.map_tile_4, R.id.map_tile_5, R.id.map_tile_6, R.id.map_tile_7,
-            R.id.map_tile_8, R.id.map_tile_9, R.id.map_tile_10, R.id.map_tile_11
+    /**
+     * "The little question" — a flashcard on the home screen. The answer is
+     * withheld on purpose: the unresolved question is what makes the widget
+     * worth keeping, and the tap that resolves it opens the app on the reveal
+     * (`improvy://quiz?s=…`, carrying the absolute slot so the app rebuilds
+     * exactly the question that was on screen).
+     */
+    fun quiz(context: Context, data: SharedPreferences, wide: Boolean): RemoteViews {
+        val views = RemoteViews(
+            context.packageName, if (wide) R.layout.widget_quiz_wide else R.layout.widget_quiz
         )
-        val keys = intArrayOf(
-            R.id.map_key_0, R.id.map_key_1, R.id.map_key_2, R.id.map_key_3,
-            R.id.map_key_4, R.id.map_key_5, R.id.map_key_6, R.id.map_key_7,
-            R.id.map_key_8, R.id.map_key_9, R.id.map_key_10, R.id.map_key_11
-        )
-        val pcts = intArrayOf(
-            R.id.map_pct_0, R.id.map_pct_1, R.id.map_pct_2, R.id.map_pct_3,
-            R.id.map_pct_4, R.id.map_pct_5, R.id.map_pct_6, R.id.map_pct_7,
-            R.id.map_pct_8, R.id.map_pct_9, R.id.map_pct_10, R.id.map_pct_11
-        )
-
-        appWidgetIds.forEach { id ->
-            val views = RemoteViews(context.packageName, layout)
-            val raw = widgetData.getString("keys_json", null)
-            val list = try {
-                if (raw.isNullOrEmpty()) JSONArray() else JSONArray(raw)
-            } catch (_: Exception) {
-                JSONArray()
-            }
-
-            for (i in tiles.indices) {
-                val o = if (i < list.length()) list.optJSONObject(i) else null
-                val name = o?.optString("k", "") ?: ""
-                val pct = o?.optInt("p", 0) ?: 0
-                val everPlayed = o?.optBoolean("played", false) ?: false
-                val colour = try {
-                    Color.parseColor(o?.optString("c", "#FFFFFF") ?: "#FFFFFF")
-                } catch (_: Exception) {
-                    Color.WHITE
-                }
-
-                views.setTextViewText(keys[i], if (name.isEmpty()) "—" else name)
-
-                if (!everPlayed) {
-                    views.setImageViewResource(tiles[i], R.drawable.widget_tile_empty)
-                    views.tint(tiles[i], Color.WHITE, 255)
-                    views.setTextColor(keys[i], Color.parseColor("#52FFFFFF"))
-                    views.setTextViewText(pcts[i], "—")
-                    views.setTextColor(pcts[i], Color.parseColor("#47FFFFFF"))
-                } else {
-                    views.setImageViewResource(tiles[i], R.drawable.widget_tile_white)
-                    // Opacity carries the mastery, so the grid reads at a glance
-                    // before any number is.
-                    val alpha = (0.18f + pct / 100f * 0.78f).coerceIn(0f, 1f)
-                    views.tint(tiles[i], colour, (alpha * 255).toInt())
-                    // Past roughly 60% the tile is bright enough that white type
-                    // stops being legible on it, so the text flips to the dark ink.
-                    val dark = pct >= 60
-                    views.setTextColor(keys[i], if (dark) Color.parseColor("#160D22") else colour)
-                    views.setTextViewText(pcts[i], "$pct%")
-                    views.setTextColor(
-                        pcts[i],
-                        if (dark) Color.parseColor("#B3160D22") else Color.parseColor("#8CFFFFFF")
-                    )
+        var degree = context.getString(R.string.widget_quiz_degree_placeholder)
+        var ofKey = context.getString(R.string.widget_quiz_of_placeholder)
+        var slot = currentSlot()
+        try {
+            val raw = data.getString("quiz_json", null)
+            if (!raw.isNullOrEmpty()) {
+                val list = JSONArray(raw)
+                val length = list.length()
+                if (length > 0) {
+                    val base = data.number("quiz_base_slot")
+                    // A phone left alone past the end of the written week wraps
+                    // rather than going blank; the next launch rewrites it.
+                    val offset = currentSlot() - base
+                    val index = (((offset % length) + length) % length).toInt()
+                    // Report the slot actually shown, not the wall clock —
+                    // after a wrap they differ.
+                    slot = base + index
+                    val q = list.getJSONObject(index).optString("q", "")
+                    if (q.isNotEmpty()) {
+                        // The degree is the headline and the key the quiet line
+                        // under it. " of " is what widget_service writes.
+                        val cut = q.indexOf(" of ")
+                        if (cut > 0) {
+                            degree = q.substring(0, cut)
+                            ofKey = context.getString(R.string.widget_quiz_of, q.substring(cut + 4))
+                        } else {
+                            degree = q
+                            ofKey = ""
+                        }
+                    }
                 }
             }
-
-            if (showsTotal) {
-                views.setTextViewText(
-                    R.id.map_total,
-                    "${widgetData.number("progress_pct").toInt()}%"
-                )
-            }
-
-            views.link(context, R.id.map_root, "improvy://stats")
-            appWidgetManager.updateAppWidget(id, views)
+        } catch (_: Exception) {
+            // Malformed or missing payload: keep the placeholder.
         }
-    }
-}
-
-/** The same grid with room for the running total. */
-class ImprovyMapTallWidgetProvider : ImprovyMapWidgetProvider() {
-    override val layout: Int get() = R.layout.widget_map_tall
-    override val showsTotal: Boolean get() = true
-}
-
-// ─── ⑤ Streak ────────────────────────────────────────────────────────────────
-
-class ImprovyStreakWidgetProvider : HomeWidgetProvider() {
-    override fun onUpdate(
-        context: Context,
-        appWidgetManager: AppWidgetManager,
-        appWidgetIds: IntArray,
-        widgetData: SharedPreferences
-    ) = guarded {
-        appWidgetIds.forEach { id ->
-            val views = RemoteViews(context.packageName, R.layout.widget_streak)
-            views.setTextViewText(R.id.streak_count, "${widgetData.number("daily_streak")}")
-            views.setTextViewText(R.id.streak_caption, streakCaption(context, widgetData))
-            views.setInt(R.id.streak_root, "setBackgroundResource", streakSurface(widgetData))
-            views.link(context, R.id.streak_root, "improvy://daily")
-            appWidgetManager.updateAppWidget(id, views)
+        if (wide) {
+            views.setTextViewText(R.id.quizw_degree, music(degree))
+            views.setTextViewText(R.id.quizw_of, music(ofKey))
+            views.glyphButton(R.id.quizw_glyph_bg, R.id.quizw_glyph, Ink.gold)
+            views.link(context, R.id.quizw_root, "improvy://quiz?s=$slot")
+        } else {
+            views.setTextViewText(R.id.quiz_degree, music(degree))
+            views.setTextViewText(R.id.quiz_of, music(ofKey))
+            views.link(context, R.id.quiz_root, "improvy://quiz?s=$slot")
         }
+        return views
     }
-}
 
-/** The 2×2, which has the room to say the streak is in danger. */
-class ImprovyStreakTallWidgetProvider : HomeWidgetProvider() {
-    override fun onUpdate(
-        context: Context,
-        appWidgetManager: AppWidgetManager,
-        appWidgetIds: IntArray,
-        widgetData: SharedPreferences
-    ) = guarded {
-        appWidgetIds.forEach { id ->
-            val views = RemoteViews(context.packageName, R.layout.widget_streak_tall)
-            val streak = widgetData.number("daily_streak")
-            views.setTextViewText(R.id.streakt_count, "$streak")
-            views.setTextViewText(R.id.streakt_caption, streakCaption(context, widgetData))
-            // Only warn when there is actually something to lose.
-            val atRisk = streak > 0 && !widgetData.getBoolean("played_today", false)
-            views.setTextColor(
-                R.id.streakt_caption,
-                if (atRisk) Color.parseColor("#FCD34D") else Color.parseColor("#73FFFFFF")
+    // ─── ② Daily Challenge 4×2 ─────────────────────────────────────────────
+
+    /**
+     * Today's challenge: the key to play in, or the score once it is done —
+     * with the streak always in sight. The gold light only while there is
+     * still something to do today.
+     */
+    fun daily(context: Context, data: SharedPreferences): RemoteViews {
+        val views = RemoteViews(context.packageName, R.layout.widget_daily)
+        val played = data.getBoolean("daily_played", false)
+        val key = data.getString("daily_key", "") ?: ""
+        val colour = data.color("daily_key_color", Ink.gold)
+        val accent = if (played) Ink.mint else Ink.gold
+
+        views.glow(R.id.daily_glow, accent, lit = !played)
+        views.eyebrow(R.id.daily_eb_icon, R.id.daily_eb_text, accent)
+        views.setImageViewResource(
+            R.id.daily_eb_icon, if (played) R.drawable.w_ic_check else R.drawable.w_ic_calendar
+        )
+        views.streakChip(R.id.daily_chip_flame, R.id.daily_chip_count, data.number("daily_streak"), played)
+        views.badge(R.id.daily_badge, R.id.daily_badge_text, key, colour)
+
+        if (played) {
+            val score = data.getString("daily_score", "") ?: ""
+            views.setTextViewText(
+                R.id.daily_score, score.ifEmpty { context.getString(R.string.widget_daily_done) }
             )
-            views.setInt(R.id.streakt_root, "setBackgroundResource", streakSurface(widgetData))
-            views.weekDots(widgetData, if (atRisk) Color.parseColor("#FCD34D") else Color.parseColor("#FB923C"))
-            views.link(context, R.id.streakt_root, "improvy://daily")
-            appWidgetManager.updateAppWidget(id, views)
-        }
-    }
-}
-
-/** The seven day-dots of the streak week, oldest first, today last. */
-private val kWeekDotIds = intArrayOf(
-    R.id.streakt_d0, R.id.streakt_d1, R.id.streakt_d2, R.id.streakt_d3,
-    R.id.streakt_d4, R.id.streakt_d5, R.id.streakt_d6
-)
-
-/**
- * Lights the week. A missing or malformed payload reads as a quiet week rather
- * than as a week of failures — the widget must never invent a bad record.
- */
-private fun RemoteViews.weekDots(data: SharedPreferences, colour: Int) {
-    val week = BooleanArray(7)
-    try {
-        val raw = data.getString("week_json", null)
-        if (!raw.isNullOrEmpty()) {
-            val list = JSONArray(raw)
-            for (i in 0 until minOf(list.length(), 7)) week[i] = list.optBoolean(i, false)
-        }
-    } catch (_: Exception) {
-    }
-    for (i in kWeekDotIds.indices) {
-        // Today is the last dot and always wears the accent, lit or not, so
-        // the row reads as a calendar rather than a score.
-        val done = week[i]
-        tint(kWeekDotIds[i], if (done) colour else Color.WHITE, if (done) 255 else 36)
-    }
-}
-
-/** Gold while there is a streak about to break; the quiet ember otherwise. */
-private fun streakSurface(data: SharedPreferences): Int {
-    val atRisk = data.number("daily_streak") > 0 && !data.getBoolean("played_today", false)
-    return if (atRisk) R.drawable.widget_bg_gold_lit else R.drawable.widget_bg_ember
-}
-
-private fun streakCaption(context: Context, data: SharedPreferences): String {
-    val streak = data.number("daily_streak")
-    val atRisk = streak > 0 && !data.getBoolean("played_today", false)
-    return context.getString(
-        if (atRisk) R.string.widget_streak_at_risk else R.string.widget_streak_caption
-    )
-}
-
-// ─── ⑥ Weakest key 2×2 ───────────────────────────────────────────────────────
-
-class ImprovyWeakestWidgetProvider : HomeWidgetProvider() {
-    override fun onUpdate(
-        context: Context,
-        appWidgetManager: AppWidgetManager,
-        appWidgetIds: IntArray,
-        widgetData: SharedPreferences
-    ) = guarded {
-        appWidgetIds.forEach { id ->
-            val views = RemoteViews(context.packageName, R.layout.widget_weakest)
-            val key = widgetData.getString("weak_key", "") ?: ""
-            val pct = widgetData.number("weak_pct").toInt()
-            val colour = widgetData.color("weak_color", Color.parseColor("#FF4D94"))
-
-            if (key.isEmpty()) {
-                // "Weakest" means nothing until there is something to compare,
-                // so an untouched profile gets an invitation, not a arbitrary C.
-                views.setTextViewText(R.id.weak_key_letter, "?")
-                views.setTextViewText(R.id.weak_pct, "—")
-                views.setTextViewText(
-                    R.id.weak_sub, context.getString(R.string.widget_weak_empty)
-                )
+            views.setViewVisibility(R.id.daily_score, View.VISIBLE)
+            views.setViewVisibility(R.id.daily_headline, View.GONE)
+            views.setViewVisibility(R.id.daily_mode, View.GONE)
+            val bars = resultBars(context, data.getString("daily_grid", "") ?: "", 150, 5)
+            if (bars != null) {
+                views.setImageViewBitmap(R.id.daily_bars, bars)
+                views.setViewVisibility(R.id.daily_bars, View.VISIBLE)
             } else {
-                views.setTextViewText(R.id.weak_key_letter, key)
-                views.setTextViewText(R.id.weak_pct, "$pct%")
-                views.setTextViewText(
-                    R.id.weak_sub, context.getString(R.string.widget_weak_sub_placeholder)
-                )
+                views.setViewVisibility(R.id.daily_bars, View.GONE)
             }
-            views.tint(R.id.weak_key_bg, colour, 40)
-            views.setTextColor(R.id.weak_key_letter, colour)
-            views.setTextColor(R.id.weak_pct, colour)
-
-            views.link(
-                context, R.id.weak_root,
-                if (key.isEmpty()) "improvy://train" else "improvy://key?k=${Uri.encode(key)}"
+            views.setTextViewText(R.id.daily_sub, context.getString(R.string.widget_daily_done_sub))
+            views.setViewVisibility(R.id.daily_play, View.GONE)
+        } else {
+            val headline = SpannableStringBuilder(context.getString(R.string.widget_daily_key, ""))
+                .append(music(key.ifEmpty { "?" }))
+            views.setTextViewText(R.id.daily_headline, headline)
+            views.setViewVisibility(R.id.daily_headline, View.VISIBLE)
+            views.setViewVisibility(R.id.daily_score, View.GONE)
+            views.setViewVisibility(R.id.daily_bars, View.GONE)
+            val mode = data.getString("daily_mode", "") ?: ""
+            views.setTextViewText(R.id.daily_mode, mode)
+            views.setTextColor(R.id.daily_mode, colour)
+            views.setViewVisibility(R.id.daily_mode, if (mode.isEmpty()) View.GONE else View.VISIBLE)
+            // The rule comes from the app (derived from the challenge
+            // constants); the XML string is only the picker preview.
+            val sub = data.getString("daily_sub", null)
+            views.setTextViewText(
+                R.id.daily_sub,
+                if (sub.isNullOrEmpty()) context.getString(R.string.widget_daily_sub_placeholder) else sub
             )
-            appWidgetManager.updateAppWidget(id, views)
+            views.setViewVisibility(R.id.daily_play, View.VISIBLE)
+            views.glyphButton(R.id.daily_glyph_bg, R.id.daily_glyph, Ink.gold)
         }
+        views.link(context, R.id.daily_root, "improvy://daily")
+        return views
     }
-}
 
-// ─── ⑦ Quick launch 4×1 ──────────────────────────────────────────────────────
+    // ─── ③ Level 2×2 ───────────────────────────────────────────────────────
 
-class ImprovyLauncherWidgetProvider : HomeWidgetProvider() {
-    override fun onUpdate(
-        context: Context,
-        appWidgetManager: AppWidgetManager,
-        appWidgetIds: IntArray,
-        widgetData: SharedPreferences
-    ) = guarded {
-        // Each mode wears its own accent from home_screen.dart — the widget
-        // must not invent colours the app does not use.
-        val modes = listOf(
-            Triple(R.id.launch_daily, R.id.launch_daily_bg, "#FCD34D" to "improvy://daily"),
-            Triple(R.id.launch_pocket, R.id.launch_pocket_bg, "#6366F1" to "improvy://pocket"),
-            Triple(R.id.launch_chromatic, R.id.launch_chromatic_bg, "#A855F7" to "improvy://chromatic"),
-            Triple(R.id.launch_custom, R.id.launch_custom_bg, "#D857EC" to "improvy://custom")
+    fun level(context: Context, data: SharedPreferences): RemoteViews {
+        val views = RemoteViews(context.packageName, R.layout.widget_level)
+        val colour = data.color("animal_color", Ink.mint)
+        val pct = data.number("progress_pct").toInt().coerceIn(0, 100)
+        val level = data.number("animal_level", 1L).toInt()
+        val total = data.number("animal_levels_total", 8L).toInt()
+
+        views.glow(R.id.level_glow, colour)
+        views.eyebrow(R.id.level_eb_icon, R.id.level_eb_text, colour)
+        views.setTextViewText(R.id.level_rank, "$level/$total")
+        // The animal the app draws, not an emoji: the same line art, in the
+        // level's own colour. Indexed by level — the name is a word.
+        views.setImageViewResource(R.id.level_animal, animalDrawable(level))
+        views.tint(R.id.level_animal, colour)
+        views.tint(R.id.level_circle, colour, 46)
+        views.setTextViewText(R.id.level_name, data.getString("animal_name", null) ?: "Snail")
+        views.setTextViewText(R.id.level_quote, data.getString("animal_quote", "") ?: "")
+        views.setTextViewText(R.id.level_pct, "$pct")
+        views.setProgressBar(R.id.level_bar, 100, pct, false)
+        views.barColour(R.id.level_bar, colour)
+        views.link(context, R.id.level_root, "improvy://stats")
+        return views
+    }
+
+    // ─── ④ Key mastery 4×2 · 4×4 ───────────────────────────────────────────
+
+    private val kKeyIds = intArrayOf(
+        R.id.map_key_0, R.id.map_key_1, R.id.map_key_2, R.id.map_key_3,
+        R.id.map_key_4, R.id.map_key_5, R.id.map_key_6, R.id.map_key_7,
+        R.id.map_key_8, R.id.map_key_9, R.id.map_key_10, R.id.map_key_11
+    )
+    private val kTileIds = intArrayOf(
+        R.id.map_tile_0, R.id.map_tile_1, R.id.map_tile_2, R.id.map_tile_3,
+        R.id.map_tile_4, R.id.map_tile_5, R.id.map_tile_6, R.id.map_tile_7,
+        R.id.map_tile_8, R.id.map_tile_9, R.id.map_tile_10, R.id.map_tile_11
+    )
+    private val kBarIds = intArrayOf(
+        R.id.map_bar_0, R.id.map_bar_1, R.id.map_bar_2, R.id.map_bar_3,
+        R.id.map_bar_4, R.id.map_bar_5, R.id.map_bar_6, R.id.map_bar_7,
+        R.id.map_bar_8, R.id.map_bar_9, R.id.map_bar_10, R.id.map_bar_11
+    )
+    private val kPctIds = intArrayOf(
+        R.id.map_pct_0, R.id.map_pct_1, R.id.map_pct_2, R.id.map_pct_3,
+        R.id.map_pct_4, R.id.map_pct_5, R.id.map_pct_6, R.id.map_pct_7,
+        R.id.map_pct_8, R.id.map_pct_9, R.id.map_pct_10, R.id.map_pct_11
+    )
+
+    /**
+     * Twelve keys, chromatic order, each with a bar as long as it is known. A
+     * key never played is drawn quiet, with no bar, rather than at 0%: "not
+     * started" and "started badly" are different facts.
+     */
+    fun map(context: Context, data: SharedPreferences, large: Boolean): RemoteViews {
+        val views = RemoteViews(
+            context.packageName, if (large) R.layout.widget_map_tall else R.layout.widget_map
         )
-        appWidgetIds.forEach { id ->
-            val views = RemoteViews(context.packageName, R.layout.widget_launcher)
-            for ((cell, bg, spec) in modes) {
-                val (hex, uri) = spec
-                val colour = Color.parseColor(hex)
-                views.tint(bg, colour, 46)
-                views.tint(iconFor(cell), colour)
-                views.link(context, cell, uri)
+        val list = try {
+            val raw = data.getString("keys_json", null)
+            if (raw.isNullOrEmpty()) JSONArray() else JSONArray(raw)
+        } catch (_: Exception) {
+            JSONArray()
+        }
+        views.glow(R.id.map_glow, Ink.cyan)
+        views.setTextViewText(R.id.map_total, "${data.number("progress_pct").toInt()}%")
+
+        for (i in kKeyIds.indices) {
+            val o = if (i < list.length()) list.optJSONObject(i) else null
+            val name = o?.optString("k", "") ?: ""
+            val pct = (o?.optInt("p", 0) ?: 0).coerceIn(0, 100)
+            val played = o?.optBoolean("played", false) ?: false
+            val colour = try {
+                Color.parseColor(o?.optString("c", "#FFFFFF") ?: "#FFFFFF")
+            } catch (_: Exception) {
+                Color.WHITE
             }
-            appWidgetManager.updateAppWidget(id, views)
+            views.setTextViewText(kKeyIds[i], music(name.ifEmpty { "—" }))
+            views.setTextColor(kKeyIds[i], if (played) Color.WHITE else Color.parseColor("#52FFFFFF"))
+            views.tint(kTileIds[i], Color.WHITE, if (played) 18 else 9)
+            // Never shorter than a dot once played: 2% would vanish.
+            views.setProgressBar(kBarIds[i], 100, if (played) maxOf(pct, 6) else 0, false)
+            views.barColour(kBarIds[i], colour)
+            if (large) {
+                views.setTextViewText(kPctIds[i], if (played) "$pct%" else "—")
+                views.setTextColor(kPctIds[i], if (played) colour else Color.parseColor("#40FFFFFF"))
+            }
         }
+        if (large) {
+            val animal = data.color("animal_color", Ink.mint)
+            views.setImageViewResource(R.id.map_animal, animalDrawable(data.number("animal_level", 1L).toInt()))
+            views.tint(R.id.map_animal, animal)
+            views.setTextViewText(R.id.map_animal_name, data.getString("animal_name", null) ?: "Snail")
+            views.setTextColor(R.id.map_animal_name, animal)
+            views.setProgressBar(R.id.map_progress, 100, data.number("progress_pct").toInt().coerceIn(0, 100), false)
+            views.barColour(R.id.map_progress, Ink.cyan)
+        }
+        views.link(context, R.id.map_root, "improvy://stats")
+        return views
+    }
+
+    // ─── ⑤ Streak 2×2 · 4×2 ────────────────────────────────────────────────
+
+    private val kSmallDots = intArrayOf(
+        R.id.streak_d0, R.id.streak_d1, R.id.streak_d2, R.id.streak_d3,
+        R.id.streak_d4, R.id.streak_d5, R.id.streak_d6
+    )
+    private val kWideDots = intArrayOf(
+        R.id.streakt_d0, R.id.streakt_d1, R.id.streakt_d2, R.id.streakt_d3,
+        R.id.streakt_d4, R.id.streakt_d5, R.id.streakt_d6
+    )
+    private val kWideLetters = intArrayOf(
+        R.id.streakt_l0, R.id.streakt_l1, R.id.streakt_l2, R.id.streakt_l3,
+        R.id.streakt_l4, R.id.streakt_l5, R.id.streakt_l6
+    )
+
+    /** Days in a row — and a warning, in gold, on the day it is about to break. */
+    fun streak(context: Context, data: SharedPreferences, wide: Boolean): RemoteViews {
+        val streak = data.number("daily_streak")
+        // Only warn when there is actually something to lose.
+        val atRisk = streak > 0 && !data.getBoolean("played_today", false)
+        val colour = if (atRisk) Ink.gold else Ink.ember
+        val caption = context.getString(
+            when {
+                atRisk -> R.string.widget_streak_at_risk
+                wide -> R.string.widget_streak_day_streak
+                else -> R.string.widget_streak_caption
+            }
+        )
+        val captionColour = if (atRisk) Ink.gold else Ink.quiet
+        val views: RemoteViews
+        if (wide) {
+            views = RemoteViews(context.packageName, R.layout.widget_streak_tall)
+            views.glow(R.id.streakt_glow, colour, lit = atRisk)
+            views.setTextViewText(R.id.streakt_count, "$streak")
+            views.setTextViewText(R.id.streakt_caption, caption)
+            views.setTextColor(R.id.streakt_caption, captionColour)
+            views.weekDots(kWideDots, data.week(), colour, kWideLetters)
+            views.setViewVisibility(R.id.streakt_play, if (atRisk) View.VISIBLE else View.GONE)
+            views.glyphButton(R.id.streakt_glyph_bg, R.id.streakt_glyph, Ink.gold)
+            views.link(context, R.id.streakt_root, "improvy://daily")
+        } else {
+            views = RemoteViews(context.packageName, R.layout.widget_streak)
+            views.glow(R.id.streak_glow, colour, lit = atRisk)
+            views.eyebrow(R.id.streak_eb_icon, R.id.streak_eb_text, colour)
+            views.setTextViewText(R.id.streak_count, "$streak")
+            views.setTextViewText(R.id.streak_caption, caption)
+            views.setTextColor(R.id.streak_caption, captionColour)
+            views.weekDots(kSmallDots, data.week(), colour)
+            views.link(context, R.id.streak_root, "improvy://daily")
+        }
+        return views
+    }
+
+    // ─── ⑥ Weakest key 2×2 ─────────────────────────────────────────────────
+
+    /**
+     * "Weakest" means nothing until there is something to compare, so an
+     * untouched profile gets an invitation rather than an arbitrary C.
+     */
+    fun weakest(context: Context, data: SharedPreferences): RemoteViews {
+        val views = RemoteViews(context.packageName, R.layout.widget_weakest)
+        val key = data.getString("weak_key", "") ?: ""
+        val colour = data.color("weak_color", Ink.rose)
+        views.glow(R.id.weak_glow, Ink.rose)
+        views.badge(R.id.weak_badge, R.id.weak_badge_text, key, colour)
+        if (key.isEmpty()) {
+            views.setTextViewText(R.id.weak_pct, "—")
+            views.setViewVisibility(R.id.weak_pct_sign, View.GONE)
+            views.setTextViewText(R.id.weak_sub, context.getString(R.string.widget_weak_empty))
+            views.setTextViewText(R.id.weak_hint, context.getString(R.string.widget_weak_empty_hint))
+        } else {
+            views.setTextViewText(R.id.weak_pct, "${data.number("weak_pct")}")
+            views.setViewVisibility(R.id.weak_pct_sign, View.VISIBLE)
+            views.setTextViewText(R.id.weak_sub, context.getString(R.string.widget_weak_mastered))
+            views.setTextViewText(R.id.weak_hint, context.getString(R.string.widget_weak_hint))
+        }
+        views.link(
+            context, R.id.weak_root,
+            if (key.isEmpty()) "improvy://train" else "improvy://key?k=${Uri.encode(key)}"
+        )
+        return views
+    }
+
+    // ─── ⑦ Quick start 4×2 ─────────────────────────────────────────────────
+
+    /**
+     * Four modes, one tap each. Each wears its own accent from
+     * home_screen.dart — the widget must not invent colours the app does not use.
+     */
+    fun launcher(context: Context, data: SharedPreferences): RemoteViews {
+        val views = RemoteViews(context.packageName, R.layout.widget_launcher)
+        views.glow(R.id.launcher_glow, Ink.indigo)
+        val modes = listOf(
+            arrayOf(R.id.launch_daily, R.id.launch_daily_glyph_bg, R.id.launch_daily_glyph, Ink.gold, "improvy://daily"),
+            arrayOf(R.id.launch_pocket, R.id.launch_pocket_glyph_bg, R.id.launch_pocket_glyph, Ink.indigo, "improvy://pocket"),
+            arrayOf(R.id.launch_chromatic, R.id.launch_chromatic_glyph_bg, R.id.launch_chromatic_glyph, Ink.violet, "improvy://chromatic"),
+            arrayOf(R.id.launch_custom, R.id.launch_custom_glyph_bg, R.id.launch_custom_glyph, Ink.magenta, "improvy://custom")
+        )
+        for (m in modes) {
+            views.glyphButton(m[1] as Int, m[2] as Int, m[3] as Int)
+            views.link(context, m[0] as Int, m[4] as String)
+        }
+        return views
+    }
+
+    // ─── ⑧ Pocket Mode 2×2 ─────────────────────────────────────────────────
+
+    fun pocket(context: Context, data: SharedPreferences): RemoteViews {
+        val views = RemoteViews(context.packageName, R.layout.widget_pocket)
+        views.glow(R.id.pocket_glow, Ink.indigo)
+        views.glyphButton(R.id.pocket_glyph_bg, R.id.pocket_glyph, Ink.indigo)
+        views.link(context, R.id.pocket_root, "improvy://pocket")
+        return views
+    }
+
+    // ─── ⑨ Degree of the day 4×2 ───────────────────────────────────────────
+
+    fun theory(context: Context, data: SharedPreferences): RemoteViews {
+        val views = RemoteViews(context.packageName, R.layout.widget_theory)
+        val colour = data.color("theory_color", Ink.rose)
+        val degree = data.getString("theory_degree", null)
+        val text = data.getString("theory_text", null)
+        views.glow(R.id.theory_glow, colour)
+        views.eyebrow(R.id.theory_eb_icon, R.id.theory_eb_text, colour)
+        views.tint(R.id.theory_circle, colour, 36)
+        views.tint(R.id.theory_ring, colour, 77)
+        if (!degree.isNullOrEmpty()) views.setTextViewText(R.id.theory_degree, music(degree))
+        views.setTextColor(R.id.theory_degree, colour)
+        if (!text.isNullOrEmpty()) views.setTextViewText(R.id.theory_text, text)
+        views.link(context, R.id.theory_root, "improvy://theory")
+        return views
     }
 }
 
-/** The icon inside a launcher cell. */
-private fun iconFor(cell: Int): Int = when (cell) {
-    R.id.launch_daily -> R.id.launch_daily_icon
-    R.id.launch_pocket -> R.id.launch_pocket_icon
-    R.id.launch_chromatic -> R.id.launch_chromatic_icon
-    else -> R.id.launch_custom_icon
-}
+/**
+ * One provider per widget. The view does not depend on the instance, so it
+ * is built once and handed to every copy on the home screen.
+ */
+abstract class ImprovyWidgetProvider : HomeWidgetProvider() {
+    abstract fun build(context: Context, data: SharedPreferences): RemoteViews
 
-// ─── ⑧ Pocket Mode 2×1 ───────────────────────────────────────────────────────
-
-class ImprovyPocketWidgetProvider : HomeWidgetProvider() {
     override fun onUpdate(
         context: Context,
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray,
         widgetData: SharedPreferences
     ) = guarded {
-        appWidgetIds.forEach { id ->
-            val views = RemoteViews(context.packageName, R.layout.widget_pocket)
-            views.tint(R.id.pocket_icon, Color.WHITE)
-            views.link(context, R.id.pocket_root, "improvy://pocket")
-            appWidgetManager.updateAppWidget(id, views)
-        }
+        val views = build(context, widgetData)
+        appWidgetIds.forEach { appWidgetManager.updateAppWidget(it, views) }
     }
 }
 
-// ─── ⑨ Theory of the day 4×2 ─────────────────────────────────────────────────
+class ImprovyQuizWidgetProvider : ImprovyWidgetProvider() {
+    override fun build(context: Context, data: SharedPreferences) = WidgetViews.quiz(context, data, false)
+}
 
-class ImprovyTheoryWidgetProvider : HomeWidgetProvider() {
-    override fun onUpdate(
-        context: Context,
-        appWidgetManager: AppWidgetManager,
-        appWidgetIds: IntArray,
-        widgetData: SharedPreferences
-    ) = guarded {
-        appWidgetIds.forEach { id ->
-            val views = RemoteViews(context.packageName, R.layout.widget_theory)
-            val degree = widgetData.getString("theory_degree", null)
-            val text = widgetData.getString("theory_text", null)
-            val colour = widgetData.color("theory_color", Color.parseColor("#FF4D94"))
+class ImprovyQuizWideWidgetProvider : ImprovyWidgetProvider() {
+    override fun build(context: Context, data: SharedPreferences) = WidgetViews.quiz(context, data, true)
+}
 
-            if (!degree.isNullOrEmpty()) views.setTextViewText(R.id.theory_degree, degree)
-            if (!text.isNullOrEmpty()) views.setTextViewText(R.id.theory_text, text)
-            views.setTextColor(R.id.theory_degree, colour)
+class ImprovyDailyWidgetProvider : ImprovyWidgetProvider() {
+    override fun build(context: Context, data: SharedPreferences) = WidgetViews.daily(context, data)
+}
 
-            views.link(context, R.id.theory_root, "improvy://theory")
-            appWidgetManager.updateAppWidget(id, views)
-        }
-    }
+class ImprovyLevelWidgetProvider : ImprovyWidgetProvider() {
+    override fun build(context: Context, data: SharedPreferences) = WidgetViews.level(context, data)
+}
+
+class ImprovyMapWidgetProvider : ImprovyWidgetProvider() {
+    override fun build(context: Context, data: SharedPreferences) = WidgetViews.map(context, data, false)
+}
+
+class ImprovyMapTallWidgetProvider : ImprovyWidgetProvider() {
+    override fun build(context: Context, data: SharedPreferences) = WidgetViews.map(context, data, true)
+}
+
+class ImprovyStreakWidgetProvider : ImprovyWidgetProvider() {
+    override fun build(context: Context, data: SharedPreferences) = WidgetViews.streak(context, data, false)
+}
+
+class ImprovyStreakTallWidgetProvider : ImprovyWidgetProvider() {
+    override fun build(context: Context, data: SharedPreferences) = WidgetViews.streak(context, data, true)
+}
+
+class ImprovyWeakestWidgetProvider : ImprovyWidgetProvider() {
+    override fun build(context: Context, data: SharedPreferences) = WidgetViews.weakest(context, data)
+}
+
+class ImprovyLauncherWidgetProvider : ImprovyWidgetProvider() {
+    override fun build(context: Context, data: SharedPreferences) = WidgetViews.launcher(context, data)
+}
+
+class ImprovyPocketWidgetProvider : ImprovyWidgetProvider() {
+    override fun build(context: Context, data: SharedPreferences) = WidgetViews.pocket(context, data)
+}
+
+class ImprovyTheoryWidgetProvider : ImprovyWidgetProvider() {
+    override fun build(context: Context, data: SharedPreferences) = WidgetViews.theory(context, data)
 }

@@ -1,57 +1,218 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Design 8 (Streak 2x1).
-     RemoteViews only inflates the classes tagged @RemoteView: no Space,
-     no plain View, no ConstraintLayout, no custom drawing. Weighted
-     FrameLayouts are the spacers. Colour that varies per key or per mode
-     is a setColorFilter on widget_tile_white / widget_square_white,
-     because a background drawable cannot be recoloured from here. -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- ⑤ Streak 2×2 — the iOS small streak widget.
+     RemoteViews inflates only @RemoteView classes: no Space, no plain View,
+     no ConstraintLayout. Weighted FrameLayouts are the spacers. Every colour
+     that changes at runtime is a setColorFilter on a white drawable, set from
+     ImprovyWidgets.kt; the colours written here are the picker preview. -->
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/streak_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
-    android:gravity="center_vertical"
-    android:background="@drawable/widget_bg_ember"
-    android:paddingStart="14dp"
-    android:paddingEnd="14dp"
-    android:paddingTop="12dp"
-    android:paddingBottom="12dp">
+    android:background="@drawable/w_surface"
+    android:clipToOutline="true">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/widget_flame_glyph"
-        android:textSize="25sp"
-        android:maxLines="1" />
+    <ImageView
+        android:id="@+id/streak_glow"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/w_glow"
+        android:importantForAccessibility="no"
+        android:tint="#2BF97316"
+        android:scaleType="fitXY" />
 
     <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:orientation="vertical"
-        android:paddingStart="12dp"
-        android:paddingEnd="0dp">
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:id="@+id/streak_eb_icon"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:src="@drawable/w_ic_flame"
+                android:importantForAccessibility="no"
+                android:tint="#F97316" />
+
+            <TextView
+                android:id="@+id/streak_eb_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/widget_streak_label"
+                android:textColor="#F97316"
+                android:textSize="10.5sp"
+                android:fontFamily="@font/lexend_semibold"
+                android:maxLines="1"
+                android:includeFontPadding="false"
+                android:layout_weight="1"
+                android:layout_marginStart="5dp"
+                android:letterSpacing="0.06"
+                android:ellipsize="end" />
+        </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:minHeight="4dp" />
 
         <TextView
             android:id="@+id/streak_count"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/widget_zero"
-            android:textColor="#FFFFFFFF"
-            android:textSize="25sp"
+            android:layout_height="56dp"
+            android:text="0"
+            android:textColor="#FFFFFF"
+            android:textSize="50sp"
+            android:fontFamily="@font/lexend_bold"
             android:maxLines="1"
-            android:fontFamily="@font/outfit_semibold" />
+            android:includeFontPadding="false"
+            android:gravity="center_vertical"
+            android:autoSizeTextType="uniform"
+            android:autoSizeMinTextSize="24sp"
+            android:autoSizeMaxTextSize="50sp"
+            android:autoSizeStepGranularity="1sp" />
 
         <TextView
             android:id="@+id/streak_caption"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="3dp"
             android:text="@string/widget_streak_caption"
-            android:textColor="#73FFFFFF"
-            android:textSize="10sp"
-            android:maxLines="1"
+            android:textColor="#7AFFFFFF"
+            android:textSize="11sp"
+            android:fontFamily="@font/lexend_semibold"
+            android:maxLines="2"
+            android:includeFontPadding="false"
             android:ellipsize="end"
-            android:fontFamily="@font/lexend_medium" />
+            android:layout_marginTop="2dp" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:minHeight="6dp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal">
+
+                <ImageView
+                    android:id="@+id/streak_d0"
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:src="@drawable/w_dot"
+                    android:importantForAccessibility="no"
+                    android:tint="#1AFFFFFF" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:layout_marginStart="6dp">
+
+                <ImageView
+                    android:id="@+id/streak_d1"
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:src="@drawable/w_dot"
+                    android:importantForAccessibility="no"
+                    android:tint="#1AFFFFFF" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:layout_marginStart="6dp">
+
+                <ImageView
+                    android:id="@+id/streak_d2"
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:src="@drawable/w_dot"
+                    android:importantForAccessibility="no"
+                    android:tint="#1AFFFFFF" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:layout_marginStart="6dp">
+
+                <ImageView
+                    android:id="@+id/streak_d3"
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:src="@drawable/w_dot"
+                    android:importantForAccessibility="no"
+                    android:tint="#1AFFFFFF" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:layout_marginStart="6dp">
+
+                <ImageView
+                    android:id="@+id/streak_d4"
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:src="@drawable/w_dot"
+                    android:importantForAccessibility="no"
+                    android:tint="#1AFFFFFF" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:layout_marginStart="6dp">
+
+                <ImageView
+                    android:id="@+id/streak_d5"
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:src="@drawable/w_dot"
+                    android:importantForAccessibility="no"
+                    android:tint="#1AFFFFFF" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:layout_marginStart="6dp">
+
+                <ImageView
+                    android:id="@+id/streak_d6"
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:src="@drawable/w_dot"
+                    android:importantForAccessibility="no"
+                    android:tint="#1AFFFFFF" />
+            </LinearLayout>
+        </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+</FrameLayout>
