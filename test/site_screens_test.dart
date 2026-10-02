@@ -106,10 +106,13 @@ Future<AppProvider> seeded() async {
   return p;
 }
 
-Future<void> frame(WidgetTester t, Widget home, AppProvider p) async {
-  t.view.physicalSize = _points * _scale;
-  t.view.devicePixelRatio = _scale;
-  const pad = FakeViewPadding(top: _top * _scale, bottom: _bottom * _scale);
+/// [points], [scale] and the safe areas default to the iPhone 16 Pro; the
+/// store screenshots pass other devices.
+Future<void> frame(WidgetTester t, Widget home, AppProvider p,
+    {Size points = _points, double scale = _scale, double top = _top, double bottom = _bottom}) async {
+  t.view.physicalSize = points * scale;
+  t.view.devicePixelRatio = scale;
+  final pad = FakeViewPadding(top: top * scale, bottom: bottom * scale);
   t.view.padding = pad;
   t.view.viewPadding = pad;
   addTearDown(t.view.reset);
@@ -323,3 +326,10 @@ void main() {
     while (t.takeException() != null) {}
   });
 }
+
+/// For the store screenshots: [label] is a right answer to [degree] in [key].
+bool noteAnswers(String degree, String key, String label) => _noteAnswers(degree, key, label);
+
+/// For the store screenshots: [label] names the degree that [note] is in [key].
+bool degreeAnswers(String note, String key, String label) =>
+    _semi(note) != null && _degreeIn(label, key) == _semi(note);

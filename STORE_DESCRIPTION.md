@@ -1,4 +1,4 @@
-# App Store listing
+# App Store and Google Play listing
 
 Every field below is plain ASCII. App Store Connect rejects the description
 when it contains flat and sharp signs, bullets, em dashes, ellipses or curly
@@ -7,41 +7,60 @@ prints them properly.
 
 Nothing here claims a feature the app does not have. In particular there is no
 minor-key mode and no interval-recognition ear training, and neither is
-mentioned.
+mentioned - nor used as a keyword, which Apple treats the same as a claim.
+
+Screenshots: `store_listing/` (made by `tool/store_screenshots.py` from the
+real app screens, see its header). Upload them in their numbered order: the
+first three are the ones people see in search results.
 
 ---
 
-## Name
+## Name (30 max, using 29) - App Store and Google Play
+
+The words in the name weigh most in search on both stores, so the name says
+what the app is. "Scale degree" is exactly what people who need this type.
 
 ```
-Improvy
+Improvy: Scale Degree Trainer
 ```
 
-## Subtitle (30 max, using 25)
+## Subtitle (30 max, using 28) - App Store
+
+Apple indexes the subtitle too; no word here repeats one in the name.
 
 ```
-Know every note by number
+Music theory for improvisers
 ```
 
-## Promotional text (170 max, using 118)
+## Promotional text (170 max, using 132) - App Store
 
 Editable any time without a review, so this is the field to change when
 something new ships.
 
 ```
-New: Free Mode for open practice, a harder Daily Challenge, and simple note names if you never want to see a double flat.
+New: home screen widgets with a question every hour, a new Daily Challenge every day, and Pro as one purchase. Never a subscription.
 ```
 
-## Keywords (100 max, using 96)
+## Keywords (100 max, using 100) - App Store
 
-No spaces after the commas - a space costs a character and Apple splits on the
-comma anyway.
+No spaces after the commas, and no word that is already in the name or
+subtitle (improvy, scale, degree, trainer, music, theory, improvisers): Apple
+indexes those already, and repeating them wastes characters.
 
 ```
-music theory,scale degrees,jazz,improvisation,nashville,solfege,fretboard,intervals,guitar,piano
+jazz,improvise,nashville,number system,solfege,chords,keys,guitar,piano,transpose,fretboard,sax,bass
 ```
 
-## Description
+## Short description (80 max, using 74) - Google Play
+
+Play has no keyword field: it reads the title, this line and the description,
+so the same words carry the search there.
+
+```
+Name any scale degree in any key, instantly. Music theory for improvisers.
+```
+
+## Description - App Store and Google Play (4000 max)
 
 ```
 Musicians talk in numbers. The flat three. The sharp eleven. The five of the five.
@@ -70,7 +89,11 @@ Pocket Mode - hands free. A voice asks, waits, then says the answer. It runs wit
 
 DAILY CHALLENGE
 
-Fifteen chromatic questions against the clock, the same for everyone, once a day. Miss a day and the streak goes. That is the point.
+Fifteen questions against one clock, the same for everyone in the world, once a day. A different mode every day: chromatic degrees, note to number, or naming the root. Miss a day and the streak goes. That is the point.
+
+ON YOUR HOME SCREEN
+
+Widgets put a scale degree on your home screen and change it every hour. Tap to reveal the answer. Others show today's challenge, your streak, your weakest key and all twelve keys at a glance.
 
 FREE MODE
 
