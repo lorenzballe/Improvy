@@ -378,6 +378,7 @@ class PurchaseService {
         if (kDebugMode) debugPrint('[PurchaseService] attribution failed: $e');
       }
     }
+    await AnalyticsService.instance.setCreator(code.ref, code.code);
     final offer = await creatorOffer();
     AnalyticsService.instance.capture(Ev.creatorCodeApplied, {
       'creator': code.ref,

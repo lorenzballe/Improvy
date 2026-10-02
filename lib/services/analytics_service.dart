@@ -218,6 +218,22 @@ class AnalyticsService {
     } catch (_) {}
   }
 
+  /// The creator whose code this person entered, carried by every later
+  /// event so activation, paywall and purchase charts split by creator —
+  /// the same `creator` the store attribution gets. The first creator also
+  /// sticks to the person, so a later code does not steal the credit.
+  Future<void> setCreator(String ref, String code) async {
+    if (!_enabled) return;
+    try {
+      await Posthog().register('creator', ref);
+      await Posthog().register('creator_code', code);
+      await Posthog().setPersonProperties(
+        userPropertiesToSet: {'creator': ref, 'creator_code': code},
+        userPropertiesToSetOnce: {'first_creator': ref},
+      );
+    } catch (_) {}
+  }
+
   /// Ties everything this device has done to the person who just signed in.
   ///
   /// Until this is called PostHog knows the device by a random anonymous id,

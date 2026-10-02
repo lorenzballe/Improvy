@@ -63,6 +63,11 @@ void main() async {
   PurchaseService.instance.onProChanged = provider.setIsPro;
   await attempt('purchases', PurchaseService.instance.init);
   await attempt('analytics', AnalyticsService.instance.init);
+  // A creator code entered on an earlier launch keeps tagging events.
+  final creator = PurchaseService.instance.creator;
+  if (creator != null) {
+    await AnalyticsService.instance.setCreator(creator.ref, creator.code);
+  }
   // Accounts. After purchases, because a signed-in user is handed to
   // RevenueCat the moment Firebase reports them. Inert until
   // firebase_options.dart carries a real project.
