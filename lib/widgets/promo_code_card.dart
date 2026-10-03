@@ -118,6 +118,7 @@ class _PromoCodeCardState extends State<PromoCodeCard> {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
+    final hintScaled = MediaQuery.textScalerOf(context).scale(1) > 1.0;
     final redeemed = context.select<AppProvider, String?>((p) => p.promoCode);
     if (redeemed != null) {
       return Row(
@@ -173,9 +174,32 @@ class _PromoCodeCardState extends State<PromoCodeCard> {
                   decoration: InputDecoration(
                     isCollapsed: true,
                     border: InputBorder.none,
-                    hintText: l.promoHint,
+                    // The field loses width at larger type — the REDEEM
+                    // button beside it grows — and the placeholder wrapped,
+                    // reading "ENTER CO…". Scaled type gets the scaleDown the
+                    // titles elsewhere use. Plain hintText is kept at 1.0x on
+                    // purpose: a FittedBox measures its child's own box, and
+                    // swapping it in there moved the hint by a fraction for
+                    // readers who had asked for nothing.
+                    hintText: hintScaled ? null : l.promoHint,
                     hintStyle: TextStyle(
                         fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.5, color: Colors.white.withAlpha(70)),
+                    hint: hintScaled
+                        ? FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              l.promoHint,
+                              maxLines: 1,
+                              softWrap: false,
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1.5,
+                                  color: Colors.white.withAlpha(70)),
+                            ),
+                          )
+                        : null,
                   ),
                 ),
               ),

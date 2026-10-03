@@ -531,7 +531,12 @@ class _KeyAnalyticsScreenState extends State<KeyAnalyticsScreen> {
                                   color: Colors.white, letterSpacing: 0.2)),
                               const SizedBox(height: 3),
                               Text(context.l10n.kaHarmonizerSub,
-                                maxLines: 1, overflow: TextOverflow.ellipsis,
+                                // Says which mastery the row is reporting, so
+                                // losing its end at larger type loses the
+                                // point of it. Scaled type only, for the same
+                                // reason as the heading above.
+                                maxLines: MediaQuery.textScalerOf(context).scale(1) > 1.0 ? 2 : 1,
+                                overflow: TextOverflow.ellipsis,
                                 style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600,
                                   color: Colors.white.withAlpha(102))),
                             ],
@@ -693,7 +698,14 @@ class _SectionTitle extends StatelessWidget {
             child: Icon(icon, size: 18, color: color),
           ),
           const SizedBox(width: 12),
-          Flexible(child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis,
+          // A heading is how the reader knows which figures below are which,
+          // and at larger type these were losing their last word. The second
+          // line is given only when the type is actually scaled: "Response
+          // Time" is already ellipsised at 1.0x by design, and granting it a
+          // second line there would reflow the whole screen for everyone.
+          Flexible(child: Text(title,
+            maxLines: MediaQuery.textScalerOf(context).scale(1) > 1.0 ? 2 : 1,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: 0.2))),
         ],
       );

@@ -91,7 +91,14 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         child: LayoutBuilder(
           builder: (context, c) {
             final free = c.maxHeight - inset.top - inset.bottom;
-            final s = math.min(c.maxWidth / 390, free / _designHeight)
+            // The poster is a fixed composition scaled to fit, so larger type
+            // is just less room: the lines inside it grow while `free` does
+            // not, and the bottom of the composition was being clipped by
+            // 19px. Dividing the fit by the reader's text scale buys that
+            // room back. A 1.0x screen divides by one and is unchanged.
+            final textScale = MediaQuery.textScalerOf(context).scale(1);
+            final s = math
+                .min(c.maxWidth / 390, free / (_designHeight * textScale))
                 .clamp(0.5, 1.0);
             // The poster is a fixed composition scaled to fit, so it does not
             // scroll — it is one screen, and dragging it was never meant to do

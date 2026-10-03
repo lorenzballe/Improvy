@@ -182,7 +182,16 @@ class _PaywallModalState extends State<PaywallModal> with TickerProviderStateMix
                 // and the list between them takes everything that is left,
                 // spreading its own rows through it. Nothing on the page is
                 // sized by a spacer whose weight had to be tuned by eye.
-                _k = (c.maxHeight / 880).clamp(0.55, 1.0);
+                // Larger type is the same problem as a shorter phone: the
+                // zones above and below grow while the height does not, and
+                // the list in the middle is squeezed until the page overflows
+                // — 49px of it at the 1.3x ceiling, clipped, on the one
+                // screen that has to read well to earn anything. So the
+                // reader's text scale is folded into the zone factor and
+                // spent on the gaps. At 1.0x the factor is exactly what it
+                // was, so a normal page is untouched.
+                final textScale = MediaQuery.textScalerOf(context).scale(1);
+                _k = (c.maxHeight / 880 / textScale).clamp(0.55, 1.0);
                 // The hero — the logo and the air above it — gives way faster
                 // than the rest when height is short. A phone with room keeps
                 // it at full size (hero == 1 at k == 1); a 568pt one spends

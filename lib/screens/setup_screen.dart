@@ -1139,7 +1139,13 @@ class _SectionTitle extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           subtitle,
-          maxLines: 1,
+          // Two lines, not one. The title above this shrinks to fit inside a
+          // FittedBox; the caption had no such mercy and simply lost its end
+          // at larger type — and a caption is the one line on the screen that
+          // exists to explain, so the reader who asked the OS for bigger text
+          // was the only one not told what the section does. It sits in a
+          // SingleChildScrollView, so the second line costs nothing.
+          maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white.withValues(alpha:0.4)),
         ),

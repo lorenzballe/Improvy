@@ -1030,6 +1030,13 @@ class _BigSpecialCardState extends State<_BigSpecialCard> {
   Widget build(BuildContext context) {
     final locked = widget.isLocked;
     final accent = widget.accentColor;
+    // The card is 180pt because the web card is 180px, and that height holds
+    // an icon, a title and a two-line explanation. All three grow with the
+    // reader's type and the 180 did not, so at the 1.3x ceiling the card
+    // overflowed by 22px and the explanation — the only line that says what
+    // the mode is — lost its end. The box follows the type it contains. At
+    // 1.0x the scale is 1 and the card is the same 180 it always was.
+    final textScale = MediaQuery.textScalerOf(context).scale(1);
     return GestureDetector(
       onTapDown: (_) => setState(() => _pressed = true),
       onTapUp: (_) { setState(() => _pressed = false); widget.onTap(); },
@@ -1042,7 +1049,7 @@ class _BigSpecialCardState extends State<_BigSpecialCard> {
           // (0.5 was muddy, 0.7 read as unlocked; 0.6 is the sweet spot).
           opacity: locked ? 0.6 : 1.0,
           child: Container(
-            height: 180, // web: h-[180px] — both special cards are identical size
+            height: 180 * textScale, // web: h-[180px] — both special cards are identical size
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(32),
               boxShadow: [
@@ -1132,7 +1139,10 @@ class _BigSpecialCardState extends State<_BigSpecialCard> {
                           ]),
                           const SizedBox(height: 6),
                           Text(widget.subtitle,
-                            maxLines: 2,
+                            // Room for the longest of them once it is set
+                            // larger; at 1.0x they all occupy two and this
+                            // changes nothing.
+                            maxLines: 4,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(fontSize: 12, color: Colors.white.withAlpha(140), height: 1.4)),
                         ],
@@ -2162,8 +2172,20 @@ class _BigModeCardState extends State<_BigModeCard> with SingleTickerProviderSta
                 ),
               ),
             LayoutBuilder(builder: (context, c) {
+            // Both halves of that split are type, and type grows with what
+            // the reader asked the OS for while maxHeight stays put — which
+            // is why this card overflowed by 22px at the 1.3x ceiling. Each
+            // half is measured in the reader's own scale, so the factor falls
+            // the way it already does on a short phone. At 1.0x the scale is
+            // 1 and the arithmetic is exactly what it was.
+            final textScale = MediaQuery.textScalerOf(context).scale(1);
             _k = c.maxHeight.isFinite
-                ? ((c.maxHeight - _fixedH) / _scalableH).clamp(0.55, 1.0)
+                ? ((c.maxHeight - _fixedH * textScale) /
+                        (_scalableH * textScale))
+                    // The floor stops the card shrinking into illegibility.
+                    // It has to give way by the same amount the type grew,
+                    // or it is the floor itself that clips the card.
+                    .clamp(0.55 / textScale, 1.0)
                 : 1.0;
             final k = _k;
             return Padding(

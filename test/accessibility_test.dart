@@ -11,8 +11,15 @@ import 'package:improvy/screens/setup_screen.dart';
 import 'package:improvy/services/storage_service.dart';
 import 'package:improvy/l10n/l10n.dart';
 
+import 'screens_render_test.dart' show loadRealFonts;
+
 /// Larger type must not break the screens, and the controls a screen reader
 /// lands on must say what they are.
+///
+/// The real faces are loaded first. Without them the runner measures every
+/// glyph in its own uniform-width stand-in and the widths it reports are
+/// fiction — which is how this file could report three screens laying out
+/// cleanly at 1.3x while ten of them did not.
 Future<AppProvider> providerWith() async {
   SharedPreferences.setMockInitialValues({});
   final storage = StorageService();
@@ -66,6 +73,9 @@ List<String> spokenLabels(WidgetTester t) {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  setUpAll(loadRealFonts);
+
   group('large type', () {
     for (final scale in [1.3]) {
       testWidgets('home renders at $scale× without overflowing', (t) async {
