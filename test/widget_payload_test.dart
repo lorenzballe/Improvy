@@ -55,8 +55,10 @@ void main() {
       p.dailyResults[day(d)] = DailyResult(
         dateKey: day(d),
         key: 'E♭',
-        answers: [for (var q = 0; q < 10; q++) (q + i) % 7 != 3],
-        timeMs: 21000,
+        // As many questions as a real daily has, so the score and the bars
+        // the widgets draw are the ones a player sees (13/15, not 9/10).
+        answers: [for (var q = 0; q < DailyChallenge.questionCount; q++) (q + i) % 7 != 3],
+        timeMs: 27400,
         completed: true,
         timestamp: d.millisecondsSinceEpoch,
         mode: TrainingMode.chromatic,
