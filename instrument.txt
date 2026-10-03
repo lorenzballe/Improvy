@@ -1,0 +1,8 @@
+
+com.improvy.improvy.WidgetRenderTest:.
+
+Time: 11.895
+
+OK (1 test)
+
+
