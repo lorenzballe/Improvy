@@ -12,5 +12,7 @@ COSA C'E' QUI E DOVE VA
     Tablet                         -> stessa pagina > Screenshot tablet da 7" e da 10" (gli stessi 5 per entrambi)
     Immagine in evidenza 1024x500  -> stessa pagina > Grafica in primo piano
     Testi da incollare.txt         -> nome, descrizione breve, descrizione completa, note di rilascio
+    Traduzioni scheda (...).txt    -> Play Console > Scheda dello Store > Importa traduzioni con l'AI > Carica file
+                                       (italiano, spagnolo, francese, tedesco, portoghese BR; ognuna dice che l'app e' in inglese)
 
 Le immagini sono JPEG senza trasparenza, alle misure esatte richieste: si caricano cosi' come sono.

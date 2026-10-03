@@ -1,0 +1,342 @@
+Improvy - Google Play store listing translations
+Each section is one language: app name (max 30), short description (max 80), full description (max 4000).
+
+============================================================
+LANGUAGE: Italian (it-IT)
+============================================================
+
+App name:
+Improvy: Gradi della Scala
+
+Short description:
+Riconosci all'istante ogni grado della scala, in tutte le 12 tonalità.
+
+Full description:
+I musicisti parlano per numeri. La terza bemolle. L'undicesima aumentata. La quinta della quinta.
+
+Se ogni volta che ne senti uno conti ancora a partire dalla tonica, sul palco stai facendo aritmetica. Improvy chiude questa distanza nell'unico modo possibile: pochi secondi alla volta, centinaia di volte.
+
+COME FUNZIONA
+
+Compare un grado. Tocchi la nota. È tutto qui, ed è abbastanza veloce da farlo mentre bolle l'acqua.
+
+Ci sono tutte le 12 tonalità maggiori, e l'app scrive ogni nota come la scriverebbe un musicista. In Mib la seconda bemolle è Fab, non Mi. In Reb la seconda bemolle è Mi doppio bemolle. Quasi tutte le app su questo sbagliano in silenzio. Improvy no, perché altrimenti l'abitudine che stai costruendo sarebbe quella sbagliata.
+
+LE MODALITÀ
+
+Diatonic - le sette note della scala. Da dove si parte.
+
+Chromatic - tutte e dodici, con le estensioni alterate che si trovano davvero sugli spartiti: b9, #9, #11, b13.
+
+Note to Number - la direzione opposta. Vedi una nota, dici il suo grado. Sapere che Fa è la terza bemolle di Re non è la stessa cosa che sapere che la terza bemolle di Re è Fa, e servono entrambe.
+
+...Of What? - una nota è un certo grado: trova la tonica. È quella che trasforma una melodia in armonia: se quel La è l'undicesima aumentata, sei in Mib.
+
+Custom Mode - scegli tonalità, direzione e gradi esatti. Per quei sei che sbagli sempre.
+
+Pocket Mode - a mani libere. Una voce chiede, aspetta, poi dice la risposta. Funziona a schermo spento: durante una passeggiata, in treno, o nei dieci minuti prima di suonare.
+
+SFIDA DEL GIORNO
+
+Quindici domande contro un unico cronometro, uguali per tutti nel mondo, una volta al giorno. Ogni giorno una modalità diversa. Salti un giorno e la serie si azzera. È proprio questo il punto.
+
+SULLA SCHERMATA HOME
+
+I widget mettono un grado della scala sulla schermata home e lo cambiano ogni ora. Toccalo per scoprire la risposta. Altri mostrano la sfida del giorno, la tua serie, la tonalità più debole e tutte e dodici le tonalità a colpo d'occhio.
+
+MODALITÀ LIBERA
+
+Niente punteggio, niente timer, niente sessione. Un grado, poi un altro quando tocchi. Per scaldarti, per esercitarti con lo strumento in mano, per insegnare a qualcuno al pianoforte.
+
+COSA TI RESTITUISCE
+
+Precisione e velocità per ogni tonalità e per ogni grado, così vedi i tre che ti rallentano davvero invece di tirare a indovinare.
+
+LE IMPOSTAZIONI CHE CONTANO
+
+Notazione C-D-E oppure Do-Re-Mi. Simple Note Names toglie le enarmonie ovunque in un colpo solo, se preferisci lavorare con i dodici nomi che usi già.
+
+GRATIS E PRO
+
+Gratis hai Diatonic in tutte le 12 tonalità, Chromatic in Do, e Note to Number, ...Of What? e Pocket Mode con i gradi della scala. In più la sfida del giorno, la modalità libera e le tue statistiche. Basta una settimana per capire se fa per te.
+
+Pro sblocca Chromatic in tutte le 12 tonalità, le estensioni jazz (9, 11, 13 e quelle alterate), tutti i gradi cromatici in Note to Number, ...Of What? e Pocket Mode, la Custom Mode, la difficoltà adattiva e le statistiche per tonalità.
+
+Pro è un pagamento unico. Non un abbonamento. Lo compri una volta e resta tuo.
+
+Niente pubblicità. Nessun account obbligatorio: accedi solo se vuoi portare Pro su un altro telefono. Niente da disdire.
+
+L'app è in inglese.
+
+
+============================================================
+LANGUAGE: Spanish (es-ES)
+============================================================
+
+App name:
+Improvy: Grados de la Escala
+
+Short description:
+Nombra al instante cualquier grado de la escala, en las 12 tonalidades.
+
+Full description:
+Los músicos hablan en números. La tercera bemol. La oncena aumentada. La quinta de la quinta.
+
+Si cada vez que oyes uno todavía cuentas desde la tónica, estás haciendo cuentas en el escenario. Improvy cierra esa distancia de la única forma posible: unos segundos cada vez, cientos de veces.
+
+CÓMO FUNCIONA
+
+Aparece un grado. Tocas la nota. Eso es todo, y es lo bastante rápido como para hacerlo mientras hierve el agua.
+
+Están las 12 tonalidades mayores, y la app escribe cada nota como la escribiría un músico. En Mib la segunda bemol es Fab, no Mi. En Reb la segunda bemol es Mi doble bemol. Casi todas las apps se equivocan en esto sin decir nada. Improvy no, porque si lo hiciera, el hábito que estás construyendo sería el equivocado.
+
+LOS MODOS
+
+Diatonic - las siete notas de la escala. Por donde empieza todo el mundo.
+
+Chromatic - las doce, con las extensiones alteradas que de verdad aparecen en las partituras: b9, #9, #11, b13.
+
+Note to Number - la dirección contraria. Ves una nota y dices su grado. Saber que Fa es la tercera bemol de Re no es lo mismo que saber que la tercera bemol de Re es Fa, y necesitas las dos cosas.
+
+...Of What? - una nota es un grado dado: encuentra la tónica. Es la que convierte una melodía en armonía: si ese La es la oncena aumentada, estás en Mib.
+
+Custom Mode - elige la tonalidad, la dirección y los grados exactos. Para esos seis que siempre fallas.
+
+Pocket Mode - manos libres. Una voz pregunta, espera y dice la respuesta. Funciona con la pantalla apagada: paseando, en el tren o en los diez minutos antes de tocar.
+
+RETO DIARIO
+
+Quince preguntas contra un solo reloj, las mismas para todo el mundo, una vez al día. Cada día un modo distinto. Si te saltas un día, pierdes la racha. De eso se trata.
+
+EN TU PANTALLA DE INICIO
+
+Los widgets ponen un grado de la escala en tu pantalla de inicio y lo cambian cada hora. Tócalo para ver la respuesta. Otros muestran el reto del día, tu racha, tu tonalidad más débil y las doce tonalidades de un vistazo.
+
+MODO LIBRE
+
+Sin puntuación, sin cronómetro, sin sesión. Un grado y luego otro cuando tocas. Para calentar, para practicar con el instrumento en las manos, para enseñar a alguien al piano.
+
+LO QUE TE DEVUELVE
+
+Precisión y velocidad por tonalidad y por grado, para que veas los tres que de verdad te frenan en lugar de adivinarlo.
+
+AJUSTES QUE IMPORTAN
+
+Notación C-D-E o Do-Re-Mi. Simple Note Names quita las enarmonías en toda la app de una vez, si prefieres trabajar con los doce nombres que ya usas.
+
+GRATIS Y PRO
+
+Gratis tienes Diatonic en las 12 tonalidades, Chromatic en Do, y Note to Number, ...Of What? y Pocket Mode con los grados de la escala. Además, el reto diario, el modo libre y tus estadísticas. En una semana sabrás si es para ti.
+
+Pro desbloquea Chromatic en las 12 tonalidades, las extensiones de jazz (9, 11, 13 y las alteradas), todos los grados cromáticos en Note to Number, ...Of What? y Pocket Mode, Custom Mode, dificultad adaptativa y estadísticas por tonalidad.
+
+Pro es un pago único. No es una suscripción. Lo compras una vez y es tuyo.
+
+Sin anuncios. Sin cuenta obligatoria: inicia sesión solo si quieres llevar Pro a otro teléfono. Nada que cancelar.
+
+La app está en inglés.
+
+
+============================================================
+LANGUAGE: French (fr-FR)
+============================================================
+
+App name:
+Improvy : Degrés de la gamme
+
+Short description:
+Nommez instantanément chaque degré de la gamme, dans les 12 tonalités.
+
+Full description:
+Les musiciens parlent en chiffres. La tierce bémol. La onzième augmentée. La quinte de la quinte.
+
+Si vous comptez encore depuis la tonique chaque fois que vous en entendez un, vous faites du calcul mental sur scène. Improvy comble cet écart de la seule manière possible : quelques secondes à la fois, des centaines de fois.
+
+COMMENT ÇA MARCHE
+
+Un degré apparaît. Vous touchez la note. C'est tout, et c'est assez rapide pour le faire pendant que l'eau chauffe.
+
+Les 12 tonalités majeures sont là, et l'application écrit chaque note comme un musicien l'écrirait. En Mib, la seconde bémol est Fab, pas Mi. En Réb, la seconde bémol est Mi double bémol. La plupart des applications se trompent sans le dire. Pas Improvy, car sinon l'habitude que vous construisez serait la mauvaise.
+
+LES MODES
+
+Diatonic - les sept notes de la gamme. Là où tout le monde commence.
+
+Chromatic - les douze, avec les extensions altérées qu'on trouve vraiment sur les grilles : b9, #9, #11, b13.
+
+Note to Number - l'autre sens. Vous voyez une note, vous dites son degré. Savoir que Fa est la tierce bémol de Ré n'est pas la même chose que savoir que la tierce bémol de Ré est Fa, et il faut les deux.
+
+...Of What? - une note est un degré donné : trouvez la tonique. C'est celui qui transforme une mélodie en harmonie : si ce La est la onzième augmentée, vous êtes en Mib.
+
+Custom Mode - choisissez la tonalité, le sens et les degrés exacts. Pour ces six que vous ratez toujours.
+
+Pocket Mode - mains libres. Une voix pose la question, attend, puis donne la réponse. Ça marche écran éteint : en marchant, dans le train, ou dans les dix minutes avant de jouer.
+
+DÉFI DU JOUR
+
+Quinze questions contre un seul chrono, les mêmes pour tout le monde, une fois par jour. Un mode différent chaque jour. Ratez un jour et la série repart à zéro. C'est tout l'intérêt.
+
+SUR VOTRE ÉCRAN D'ACCUEIL
+
+Les widgets affichent un degré de la gamme sur votre écran d'accueil et le changent chaque heure. Touchez-le pour voir la réponse. D'autres montrent le défi du jour, votre série, votre tonalité la plus faible et les douze tonalités d'un coup d'œil.
+
+MODE LIBRE
+
+Pas de score, pas de chrono, pas de session. Un degré, puis un autre quand vous touchez. Pour s'échauffer, pour travailler l'instrument en main, pour enseigner à quelqu'un au piano.
+
+CE QUE VOUS EN RETIREZ
+
+Précision et vitesse par tonalité et par degré, pour voir les trois qui vous ralentissent vraiment au lieu de deviner.
+
+LES RÉGLAGES QUI COMPTENT
+
+Notation C-D-E ou Do-Ré-Mi. Simple Note Names supprime les enharmonies partout d'un coup, si vous préférez travailler avec les douze noms que vous utilisez déjà.
+
+GRATUIT ET PRO
+
+En gratuit : Diatonic dans les 12 tonalités, Chromatic en Do, et Note to Number, ...Of What? et Pocket Mode avec les degrés de la gamme. Plus le défi du jour, le mode libre et vos statistiques. Une semaine suffit pour savoir si c'est pour vous.
+
+Pro débloque Chromatic dans les 12 tonalités, les extensions jazz (9, 11, 13 et les altérées), tous les degrés chromatiques dans Note to Number, ...Of What? et Pocket Mode, Custom Mode, la difficulté adaptative et les statistiques par tonalité.
+
+Pro est un paiement unique. Pas un abonnement. Achetez-le une fois, il reste à vous.
+
+Pas de publicité. Pas de compte obligatoire : connectez-vous seulement si vous voulez retrouver Pro sur un autre téléphone. Rien à résilier.
+
+L'application est en anglais.
+
+
+============================================================
+LANGUAGE: German (de-DE)
+============================================================
+
+App name:
+Improvy: Tonleiterstufen
+
+Short description:
+Jede Tonleiterstufe in allen 12 Tonarten sofort benennen.
+
+Full description:
+Musiker sprechen in Zahlen. Die kleine Terz. Die übermäßige Undezime. Die Dominante der Dominante.
+
+Wenn du bei jeder Stufe immer noch vom Grundton aus zählst, rechnest du auf der Bühne. Improvy schließt diese Lücke auf die einzige Art, wie sie sich schließen lässt: ein paar Sekunden am Stück, hunderte Male.
+
+SO FUNKTIONIERT ES
+
+Eine Stufe erscheint. Du tippst die Note. Das ist alles, und es geht schnell genug, um es zu machen, während das Wasser kocht.
+
+Alle 12 Dur-Tonarten sind dabei, und die App schreibt jede Note so, wie ein Musiker sie schreibt. In Eb ist die kleine Sekunde ein Fb, kein E. In Db ist die kleine Sekunde ein Ebb. Die meisten Apps machen das stillschweigend falsch. Improvy nicht, denn sonst trainierst du dir die falsche Gewohnheit an.
+
+DIE MODI
+
+Diatonic - die sieben Töne der Tonleiter. Hier fängt jeder an.
+
+Chromatic - alle zwölf, mit den alterierten Optionstönen, die wirklich in Leadsheets stehen: b9, #9, #11, b13.
+
+Note to Number - die andere Richtung. Du siehst einen Ton und nennst seine Stufe. Zu wissen, dass F die kleine Terz von D ist, ist etwas anderes, als zu wissen, dass die kleine Terz von D ein F ist, und du brauchst beides.
+
+...Of What? - ein Ton ist eine bestimmte Stufe: finde den Grundton. Damit wird aus einer Melodie Harmonie: Wenn dieses A die übermäßige Undezime ist, bist du in Eb.
+
+Custom Mode - wähle Tonart, Richtung und genau die Stufen, die du willst. Für die sechs, die du immer wieder verpasst.
+
+Pocket Mode - freihändig. Eine Stimme fragt, wartet und sagt dann die Antwort. Läuft bei ausgeschaltetem Bildschirm: beim Spaziergang, im Zug oder in den zehn Minuten vor dem Auftritt.
+
+DAILY CHALLENGE
+
+Fünfzehn Fragen gegen eine einzige Uhr, für alle auf der Welt dieselben, einmal am Tag. Jeden Tag ein anderer Modus. Verpasst du einen Tag, ist die Serie weg. Genau darum geht es.
+
+AUF DEINEM STARTBILDSCHIRM
+
+Widgets setzen eine Tonleiterstufe auf deinen Startbildschirm und wechseln sie jede Stunde. Tippe, um die Antwort zu sehen. Andere zeigen die Challenge des Tages, deine Serie, deine schwächste Tonart und alle zwölf Tonarten auf einen Blick.
+
+FREIER MODUS
+
+Keine Punkte, kein Timer, keine Session. Eine Stufe, dann die nächste, wenn du tippst. Zum Aufwärmen, zum Üben mit dem Instrument in der Hand, zum Unterrichten am Klavier.
+
+WAS DU ZURÜCKBEKOMMST
+
+Genauigkeit und Tempo pro Tonart und pro Stufe, damit du die drei siehst, die dich wirklich bremsen, statt zu raten.
+
+EINSTELLUNGEN, DIE ZÄHLEN
+
+Notation C-D-E oder Do-Re-Mi. Simple Note Names schaltet enharmonische Schreibweisen überall auf einmal ab, wenn du lieber mit den zwölf Namen arbeitest, die du schon kennst.
+
+KOSTENLOS UND PRO
+
+Kostenlos bekommst du Diatonic in allen 12 Tonarten, Chromatic in C sowie Note to Number, ...Of What? und Pocket Mode mit den Tonleiterstufen. Dazu die Daily Challenge, den freien Modus und deine Statistiken. Nach einer Woche weißt du, ob es etwas für dich ist.
+
+Pro schaltet Chromatic in allen 12 Tonarten frei, die Jazz-Optionstöne (9, 11, 13 und die alterierten), alle chromatischen Stufen in Note to Number, ...Of What? und Pocket Mode, den Custom Mode, adaptive Schwierigkeit und Statistiken pro Tonart.
+
+Pro ist eine Einmalzahlung. Kein Abo. Einmal kaufen, für immer behalten.
+
+Keine Werbung. Kein Konto nötig: Melde dich nur an, wenn Pro dich auf ein anderes Handy begleiten soll. Nichts zu kündigen.
+
+Die App ist auf Englisch.
+
+
+============================================================
+LANGUAGE: Portuguese (Brazil) (pt-BR)
+============================================================
+
+App name:
+Improvy: Graus da Escala
+
+Short description:
+Diga na hora qualquer grau da escala, nas 12 tonalidades.
+
+Full description:
+Músicos falam em números. A terça menor. A décima primeira aumentada. A dominante da dominante.
+
+Se você ainda conta a partir da tônica toda vez que ouve um grau, está fazendo conta no palco. O Improvy fecha essa distância do único jeito possível: alguns segundos por vez, centenas de vezes.
+
+COMO FUNCIONA
+
+Aparece um grau. Você toca a nota. É só isso, e é rápido o bastante para fazer enquanto a água ferve.
+
+Todas as 12 tonalidades maiores estão aqui, e o app escreve cada nota como um músico escreveria. Em Mib, a segunda menor é Fab, não Mi. Em Réb, a segunda menor é Mi dobrado bemol. A maioria dos apps erra isso sem avisar. O Improvy não, porque senão o hábito que você está criando seria o errado.
+
+OS MODOS
+
+Diatonic - as sete notas da escala. Onde todo mundo começa.
+
+Chromatic - as doze, com as extensões alteradas que aparecem de verdade nas cifras: b9, #9, #11, b13.
+
+Note to Number - a outra direção. Você vê uma nota e diz o grau dela. Saber que Fá é a terça menor de Ré não é o mesmo que saber que a terça menor de Ré é Fá, e você precisa das duas coisas.
+
+...Of What? - uma nota é um certo grau: encontre a tônica. É o que transforma uma melodia em harmonia: se aquele Lá é a décima primeira aumentada, você está em Mib.
+
+Custom Mode - escolha a tonalidade, a direção e os graus exatos. Para aqueles seis que você sempre erra.
+
+Pocket Mode - mãos livres. Uma voz pergunta, espera e diz a resposta. Funciona com a tela desligada: caminhando, no ônibus ou nos dez minutos antes de tocar.
+
+DESAFIO DIÁRIO
+
+Quinze perguntas contra um único relógio, as mesmas para todo mundo, uma vez por dia. Um modo diferente a cada dia. Perdeu um dia, perdeu a sequência. É exatamente essa a ideia.
+
+NA SUA TELA INICIAL
+
+Os widgets colocam um grau da escala na sua tela inicial e mudam a cada hora. Toque para ver a resposta. Outros mostram o desafio do dia, sua sequência, sua tonalidade mais fraca e as doze tonalidades num relance.
+
+MODO LIVRE
+
+Sem pontuação, sem cronômetro, sem sessão. Um grau, depois outro quando você toca. Para aquecer, para praticar com o instrumento na mão, para ensinar alguém ao piano.
+
+O QUE VOCÊ RECEBE DE VOLTA
+
+Precisão e velocidade por tonalidade e por grau, para ver os três que realmente te atrasam em vez de adivinhar.
+
+CONFIGURAÇÕES QUE IMPORTAM
+
+Notação C-D-E ou Dó-Ré-Mi. Simple Note Names desliga as enarmonias no app inteiro de uma vez, se você prefere trabalhar com os doze nomes que já usa.
+
+GRÁTIS E PRO
+
+No grátis você tem Diatonic nas 12 tonalidades, Chromatic em Dó, e Note to Number, ...Of What? e Pocket Mode com os graus da escala. Além do desafio diário, do modo livre e das suas estatísticas. Em uma semana você sabe se é para você.
+
+O Pro libera Chromatic nas 12 tonalidades, as extensões de jazz (9, 11, 13 e as alteradas), todos os graus cromáticos em Note to Number, ...Of What? e Pocket Mode, o Custom Mode, dificuldade adaptativa e estatísticas por tonalidade.
+
+O Pro é um pagamento único. Não é assinatura. Comprou uma vez, é seu.
+
+Sem anúncios. Sem conta obrigatória: entre só se quiser levar o Pro para outro celular. Nada para cancelar.
+
+O app está em inglês.
+
