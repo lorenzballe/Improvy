@@ -305,13 +305,20 @@ class _DailyChallengeCardState extends State<DailyChallengeCard> {
           // 412dp phone and got ellipsised mid-word. The single attempt is
           // stated where it actually bites — the quit dialog — and the card
           // turning to its "done" state says it plainly enough.
-          Text('${challenge.modeLabel} · ${challenge.rule}',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white.withValues(alpha: 0.5))),
+          // Shrinks a touch rather than cutting: "Note to Number · 15
+          // questions · 36 seconds" ran out of room on a 402pt iPhone and lost
+          // its last word to an ellipsis.
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text('${challenge.modeLabel} · ${challenge.rule}',
+                maxLines: 1,
+                softWrap: false,
+                style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white.withValues(alpha: 0.5))),
+          ),
         ]),
       ),
       const SizedBox(width: 10),
