@@ -509,3 +509,246 @@ struct GlyphButton: View {
         .frame(width: size, height: size)
     }
 }
+
+// MARK: - Level animals
+
+/// The level's animal in the app's own line art (lib/widgets/animal_icon.dart),
+/// in the level's colour — never an emoji, which drew a different, cartoon
+/// animal from the one the app shows.
+struct AnimalGlyph: View {
+    let level: Int
+    var colour: Color
+    var size: CGFloat
+
+    var body: some View {
+        AnimalArt.outline(level: level)
+            .applying(CGAffineTransform(scaleX: size / 24, y: size / 24))
+            .stroke(colour, style: StrokeStyle(lineWidth: 2 * size / 24, lineCap: .round, lineJoin: .round))
+            .frame(width: size, height: size)
+    }
+}
+
+// BEGIN GENERATED ANIMALS (tool/gen_animal_swift.py)
+// Do not edit by hand: regenerate from lib/widgets/animal_icon.dart.
+
+/// The eight level animals as the app draws them, on a 24 x 24 grid.
+enum AnimalArt {
+    /// Level 1-8, clamped, so a payload from a newer app never breaks an older widget.
+    static func outline(level: Int) -> Path {
+        switch min(max(level, 1), 8) {
+        case 1: return snail()
+        case 2: return turtle()
+        case 3: return penguin()
+        case 4: return rabbit()
+        case 5: return fox()
+        case 6: return horse()
+        case 7: return falcon()
+        case 8: return cheetah()
+        default: return snail()
+        }
+    }
+
+    private static func snail() -> Path {
+        var p = Path()
+        p.move(to: CGPoint(x: 2.000, y: 13.000))
+        p.addCurve(to: CGPoint(x: 14.000, y: 13.000), control1: CGPoint(x: 2.000, y: 19.928), control2: CGPoint(x: 14.000, y: 19.928))
+        p.addCurve(to: CGPoint(x: 6.000, y: 13.000), control1: CGPoint(x: 14.000, y: 8.381), control2: CGPoint(x: 6.000, y: 8.381))
+        p.addCurve(to: CGPoint(x: 10.000, y: 13.000), control1: CGPoint(x: 6.000, y: 15.309), control2: CGPoint(x: 10.000, y: 15.309))
+        p.move(to: CGPoint(x: 2.000, y: 13.000))
+        p.addCurve(to: CGPoint(x: 18.000, y: 13.000), control1: CGPoint(x: 2.000, y: 22.238), control2: CGPoint(x: 18.000, y: 22.238))
+        p.addCurve(to: CGPoint(x: 2.000, y: 13.000), control1: CGPoint(x: 18.000, y: 3.762), control2: CGPoint(x: 2.000, y: 3.762))
+        p.move(to: CGPoint(x: 2.000, y: 21.000))
+        p.addLine(to: CGPoint(x: 14.000, y: 21.000))
+        p.addCurve(to: CGPoint(x: 22.000, y: 13.000), control1: CGPoint(x: 18.400, y: 21.000), control2: CGPoint(x: 22.000, y: 17.400))
+        p.addLine(to: CGPoint(x: 22.000, y: 7.000))
+        p.addCurve(to: CGPoint(x: 18.000, y: 7.000), control1: CGPoint(x: 22.000, y: 4.691), control2: CGPoint(x: 18.000, y: 4.691))
+        p.addLine(to: CGPoint(x: 18.000, y: 13.000))
+        p.move(to: CGPoint(x: 18.000, y: 3.000))
+        p.addLine(to: CGPoint(x: 19.100, y: 5.200))
+        p.move(to: CGPoint(x: 22.000, y: 3.000))
+        p.addLine(to: CGPoint(x: 20.900, y: 5.200))
+        return p
+    }
+
+    private static func turtle() -> Path {
+        var p = Path()
+        p.move(to: CGPoint(x: 12.000, y: 10.000))
+        p.addLine(to: CGPoint(x: 14.000, y: 14.000))
+        p.addLine(to: CGPoint(x: 14.000, y: 17.000))
+        p.addCurve(to: CGPoint(x: 15.000, y: 18.000), control1: CGPoint(x: 14.000, y: 17.549), control2: CGPoint(x: 14.451, y: 18.000))
+        p.addLine(to: CGPoint(x: 17.000, y: 18.000))
+        p.addCurve(to: CGPoint(x: 18.000, y: 17.000), control1: CGPoint(x: 17.549, y: 18.000), control2: CGPoint(x: 18.000, y: 17.549))
+        p.addLine(to: CGPoint(x: 18.000, y: 14.000))
+        p.addCurve(to: CGPoint(x: 2.000, y: 14.000), control1: CGPoint(x: 18.000, y: 4.762), control2: CGPoint(x: 2.000, y: 4.762))
+        p.addLine(to: CGPoint(x: 2.000, y: 17.000))
+        p.addCurve(to: CGPoint(x: 3.000, y: 18.000), control1: CGPoint(x: 2.000, y: 17.549), control2: CGPoint(x: 2.451, y: 18.000))
+        p.addLine(to: CGPoint(x: 5.000, y: 18.000))
+        p.addCurve(to: CGPoint(x: 6.000, y: 17.000), control1: CGPoint(x: 5.549, y: 18.000), control2: CGPoint(x: 6.000, y: 17.549))
+        p.addLine(to: CGPoint(x: 6.000, y: 14.000))
+        p.addLine(to: CGPoint(x: 8.000, y: 10.000))
+        p.addLine(to: CGPoint(x: 12.000, y: 10.000))
+        p.closeSubpath()
+        p.move(to: CGPoint(x: 4.820, y: 7.900))
+        p.addLine(to: CGPoint(x: 8.000, y: 10.000))
+        p.move(to: CGPoint(x: 15.180, y: 7.900))
+        p.addLine(to: CGPoint(x: 12.000, y: 10.000))
+        p.move(to: CGPoint(x: 16.930, y: 10.000))
+        p.addLine(to: CGPoint(x: 20.000, y: 10.000))
+        p.addCurve(to: CGPoint(x: 20.000, y: 14.000), control1: CGPoint(x: 22.309, y: 10.000), control2: CGPoint(x: 22.309, y: 14.000))
+        p.addLine(to: CGPoint(x: 2.000, y: 14.000))
+        return p
+    }
+
+    private static func penguin() -> Path {
+        var p = Path()
+        p.move(to: CGPoint(x: 12.000, y: 2.000))
+        p.addCurve(to: CGPoint(x: 6.000, y: 8.000), control1: CGPoint(x: 8.700, y: 2.000), control2: CGPoint(x: 6.000, y: 4.700))
+        p.addLine(to: CGPoint(x: 6.000, y: 16.000))
+        p.addCurve(to: CGPoint(x: 18.000, y: 16.000), control1: CGPoint(x: 6.000, y: 22.928), control2: CGPoint(x: 18.000, y: 22.928))
+        p.addLine(to: CGPoint(x: 18.000, y: 8.000))
+        p.addCurve(to: CGPoint(x: 12.000, y: 2.000), control1: CGPoint(x: 18.000, y: 4.700), control2: CGPoint(x: 15.300, y: 2.000))
+        p.closeSubpath()
+        p.move(to: CGPoint(x: 9.000, y: 10.000))
+        p.addLine(to: CGPoint(x: 9.010, y: 10.000))
+        p.move(to: CGPoint(x: 15.000, y: 10.000))
+        p.addLine(to: CGPoint(x: 15.010, y: 10.000))
+        p.move(to: CGPoint(x: 12.000, y: 13.000))
+        p.addLine(to: CGPoint(x: 11.000, y: 12.000))
+        p.addLine(to: CGPoint(x: 13.000, y: 12.000))
+        p.addLine(to: CGPoint(x: 12.000, y: 13.000))
+        p.closeSubpath()
+        p.move(to: CGPoint(x: 6.000, y: 12.000))
+        p.addLine(to: CGPoint(x: 4.000, y: 14.000))
+        p.addLine(to: CGPoint(x: 5.000, y: 17.000))
+        p.move(to: CGPoint(x: 18.000, y: 12.000))
+        p.addLine(to: CGPoint(x: 20.000, y: 14.000))
+        p.addLine(to: CGPoint(x: 19.000, y: 17.000))
+        p.move(to: CGPoint(x: 9.000, y: 22.000))
+        p.addLine(to: CGPoint(x: 9.000, y: 20.000))
+        p.move(to: CGPoint(x: 15.000, y: 22.000))
+        p.addLine(to: CGPoint(x: 15.000, y: 20.000))
+        return p
+    }
+
+    private static func rabbit() -> Path {
+        var p = Path()
+        p.move(to: CGPoint(x: 13.000, y: 16.000))
+        p.addCurve(to: CGPoint(x: 15.240, y: 21.000), control1: CGPoint(x: 15.505, y: 15.997), control2: CGPoint(x: 16.910, y: 19.133))
+        p.move(to: CGPoint(x: 18.000, y: 12.000))
+        p.addLine(to: CGPoint(x: 18.010, y: 12.000))
+        p.move(to: CGPoint(x: 18.000, y: 21.000))
+        p.addLine(to: CGPoint(x: 10.000, y: 21.000))
+        p.addCurve(to: CGPoint(x: 6.000, y: 17.000), control1: CGPoint(x: 7.806, y: 21.000), control2: CGPoint(x: 6.000, y: 19.194))
+        p.addCurve(to: CGPoint(x: 13.000, y: 10.000), control1: CGPoint(x: 6.000, y: 13.160), control2: CGPoint(x: 9.160, y: 10.000))
+        p.addLine(to: CGPoint(x: 13.200, y: 10.000))
+        p.addLine(to: CGPoint(x: 9.600, y: 6.400))
+        p.addCurve(to: CGPoint(x: 12.400, y: 3.600), control1: CGPoint(x: 7.983, y: 4.783), control2: CGPoint(x: 10.783, y: 1.983))
+        p.addLine(to: CGPoint(x: 15.800, y: 7.000))
+        p.addLine(to: CGPoint(x: 16.000, y: 7.000))
+        p.addCurve(to: CGPoint(x: 22.000, y: 13.000), control1: CGPoint(x: 19.300, y: 7.000), control2: CGPoint(x: 22.000, y: 9.700))
+        p.addLine(to: CGPoint(x: 22.000, y: 14.000))
+        p.addCurve(to: CGPoint(x: 20.000, y: 16.000), control1: CGPoint(x: 22.000, y: 15.097), control2: CGPoint(x: 21.097, y: 16.000))
+        p.addLine(to: CGPoint(x: 19.000, y: 16.000))
+        p.addCurve(to: CGPoint(x: 16.000, y: 19.000), control1: CGPoint(x: 17.354, y: 16.000), control2: CGPoint(x: 16.000, y: 17.354))
+        p.move(to: CGPoint(x: 20.000, y: 8.540))
+        p.addLine(to: CGPoint(x: 20.000, y: 4.000))
+        p.addCurve(to: CGPoint(x: 16.000, y: 4.000), control1: CGPoint(x: 20.000, y: 1.691), control2: CGPoint(x: 16.000, y: 1.691))
+        p.addLine(to: CGPoint(x: 16.000, y: 7.000))
+        p.move(to: CGPoint(x: 7.612, y: 12.524))
+        p.addCurve(to: CGPoint(x: 6.012, y: 16.824), control1: CGPoint(x: 8.518, y: 14.127), control2: CGPoint(x: 7.745, y: 16.203))
+        return p
+    }
+
+    private static func fox() -> Path {
+        var p = Path()
+        p.move(to: CGPoint(x: 3.000, y: 3.000))
+        p.addLine(to: CGPoint(x: 6.000, y: 10.000))
+        p.move(to: CGPoint(x: 21.000, y: 3.000))
+        p.addLine(to: CGPoint(x: 18.000, y: 10.000))
+        p.move(to: CGPoint(x: 6.000, y: 10.000))
+        p.addLine(to: CGPoint(x: 12.000, y: 19.000))
+        p.addLine(to: CGPoint(x: 18.000, y: 10.000))
+        p.addLine(to: CGPoint(x: 12.000, y: 6.000))
+        p.addLine(to: CGPoint(x: 6.000, y: 10.000))
+        p.closeSubpath()
+        p.move(to: CGPoint(x: 9.000, y: 12.000))
+        p.addLine(to: CGPoint(x: 9.010, y: 12.000))
+        p.move(to: CGPoint(x: 15.000, y: 12.000))
+        p.addLine(to: CGPoint(x: 15.010, y: 12.000))
+        p.move(to: CGPoint(x: 12.000, y: 17.000))
+        p.addLine(to: CGPoint(x: 12.010, y: 17.000))
+        return p
+    }
+
+    private static func horse() -> Path {
+        var p = Path()
+        p.move(to: CGPoint(x: 8.000, y: 20.000))
+        p.addLine(to: CGPoint(x: 16.000, y: 20.000))
+        p.move(to: CGPoint(x: 10.000, y: 20.000))
+        p.addLine(to: CGPoint(x: 10.000, y: 14.000))
+        p.addLine(to: CGPoint(x: 6.000, y: 12.000))
+        p.addLine(to: CGPoint(x: 7.000, y: 8.000))
+        p.addLine(to: CGPoint(x: 10.000, y: 7.000))
+        p.addLine(to: CGPoint(x: 10.000, y: 4.000))
+        p.addLine(to: CGPoint(x: 13.000, y: 5.000))
+        p.addLine(to: CGPoint(x: 16.000, y: 9.000))
+        p.addLine(to: CGPoint(x: 16.000, y: 14.000))
+        p.addLine(to: CGPoint(x: 14.000, y: 16.000))
+        p.addLine(to: CGPoint(x: 14.000, y: 20.000))
+        p.move(to: CGPoint(x: 14.000, y: 4.000))
+        p.addLine(to: CGPoint(x: 15.000, y: 2.000))
+        p.addLine(to: CGPoint(x: 17.000, y: 3.000))
+        p.move(to: CGPoint(x: 10.000, y: 10.000))
+        p.addLine(to: CGPoint(x: 10.010, y: 10.000))
+        return p
+    }
+
+    private static func falcon() -> Path {
+        var p = Path()
+        p.move(to: CGPoint(x: 16.000, y: 7.000))
+        p.addLine(to: CGPoint(x: 16.010, y: 7.000))
+        p.move(to: CGPoint(x: 3.400, y: 18.000))
+        p.addLine(to: CGPoint(x: 12.000, y: 18.000))
+        p.addCurve(to: CGPoint(x: 20.000, y: 10.000), control1: CGPoint(x: 16.389, y: 18.000), control2: CGPoint(x: 20.000, y: 14.389))
+        p.addLine(to: CGPoint(x: 20.000, y: 7.000))
+        p.addCurve(to: CGPoint(x: 12.720, y: 4.700), control1: CGPoint(x: 20.010, y: 3.287), control2: CGPoint(x: 14.845, y: 1.656))
+        p.addLine(to: CGPoint(x: 2.000, y: 20.000))
+        p.move(to: CGPoint(x: 20.000, y: 7.000))
+        p.addLine(to: CGPoint(x: 22.000, y: 7.500))
+        p.addLine(to: CGPoint(x: 20.000, y: 8.000))
+        p.move(to: CGPoint(x: 10.000, y: 18.000))
+        p.addLine(to: CGPoint(x: 10.000, y: 21.000))
+        p.move(to: CGPoint(x: 14.000, y: 17.750))
+        p.addLine(to: CGPoint(x: 14.000, y: 21.000))
+        p.move(to: CGPoint(x: 7.000, y: 18.000))
+        p.addCurve(to: CGPoint(x: 10.840, y: 7.390), control1: CGPoint(x: 12.359, y: 18.000), control2: CGPoint(x: 14.957, y: 10.820))
+        return p
+    }
+
+    private static func cheetah() -> Path {
+        var p = Path()
+        p.move(to: CGPoint(x: 12.000, y: 5.000))
+        p.addCurve(to: CGPoint(x: 14.000, y: 5.260), control1: CGPoint(x: 12.670, y: 5.000), control2: CGPoint(x: 13.350, y: 5.090))
+        p.addCurve(to: CGPoint(x: 20.420, y: 3.000), control1: CGPoint(x: 15.780, y: 3.260), control2: CGPoint(x: 19.030, y: 2.420))
+        p.addCurve(to: CGPoint(x: 20.000, y: 10.000), control1: CGPoint(x: 21.820, y: 3.580), control2: CGPoint(x: 20.000, y: 10.000))
+        p.addCurve(to: CGPoint(x: 21.000, y: 13.440), control1: CGPoint(x: 20.570, y: 11.070), control2: CGPoint(x: 21.000, y: 12.240))
+        p.addCurve(to: CGPoint(x: 12.000, y: 21.000), control1: CGPoint(x: 21.000, y: 17.900), control2: CGPoint(x: 16.970, y: 21.000))
+        p.addCurve(to: CGPoint(x: 3.000, y: 13.440), control1: CGPoint(x: 7.030, y: 21.000), control2: CGPoint(x: 3.000, y: 18.000))
+        p.addCurve(to: CGPoint(x: 4.000, y: 10.000), control1: CGPoint(x: 3.000, y: 12.190), control2: CGPoint(x: 3.500, y: 11.040))
+        p.addCurve(to: CGPoint(x: 3.500, y: 3.000), control1: CGPoint(x: 4.000, y: 10.000), control2: CGPoint(x: 2.110, y: 3.580))
+        p.addCurve(to: CGPoint(x: 10.000, y: 5.230), control1: CGPoint(x: 4.890, y: 2.420), control2: CGPoint(x: 8.220, y: 3.230))
+        p.addCurve(to: CGPoint(x: 12.000, y: 5.000), control1: CGPoint(x: 10.656, y: 5.079), control2: CGPoint(x: 11.327, y: 5.002))
+        p.closeSubpath()
+        p.move(to: CGPoint(x: 8.000, y: 14.000))
+        p.addLine(to: CGPoint(x: 8.000, y: 14.500))
+        p.move(to: CGPoint(x: 16.000, y: 14.000))
+        p.addLine(to: CGPoint(x: 16.000, y: 14.500))
+        p.move(to: CGPoint(x: 11.250, y: 16.250))
+        p.addLine(to: CGPoint(x: 12.750, y: 16.250))
+        p.addLine(to: CGPoint(x: 12.000, y: 17.000))
+        p.addLine(to: CGPoint(x: 11.250, y: 16.250))
+        p.closeSubpath()
+        return p
+    }
+}
+// END GENERATED ANIMALS

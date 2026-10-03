@@ -316,7 +316,7 @@ struct LevelView: View {
             HStack(spacing: 9) {
                 ZStack {
                     Circle().fill(colour.opacity(0.18))
-                    Text(Improvy.string("animal_emoji", "🐌")).font(.system(size: 21))
+                    AnimalGlyph(level: Improvy.int("animal_level", 1), colour: colour, size: 22)
                 }
                 .frame(width: 38, height: 38)
                 VStack(alignment: .leading, spacing: 1) {
@@ -430,7 +430,8 @@ struct MapView: View {
             }
             if tall {
                 HStack(spacing: 8) {
-                    Text(Improvy.string("animal_emoji", "🐌")).font(.system(size: 15))
+                    AnimalGlyph(level: Improvy.int("animal_level", 1),
+                                colour: Improvy.colour("animal_color", Ink.mint), size: 16)
                     Text(Improvy.string("animal_name", "Snail"))
                         .font(.ui(12, .bold))
                         .foregroundStyle(Improvy.colour("animal_color", Ink.mint))

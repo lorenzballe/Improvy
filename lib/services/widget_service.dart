@@ -214,7 +214,6 @@ class WidgetService {
         HomeWidget.saveWidgetData<bool>('played_today', provider.playedToday),
 
         // ── Level & progress ──────────────────────────────────────────────
-        HomeWidget.saveWidgetData<String>('animal_emoji', animal.emoji),
         HomeWidget.saveWidgetData<String>('animal_name', localizedAnimalName(L10n.current, animal.level)),
         HomeWidget.saveWidgetData<String>('animal_color', animal.hex),
         HomeWidget.saveWidgetData<String>('animal_quote', localizedAnimalQuote(L10n.current, animal.level)),

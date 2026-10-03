@@ -89,6 +89,15 @@ void main() {
     });
   });
 
+  test('both platforms draw the app\'s own animal, never an emoji', () {
+    // The level animal is the app's line art (AnimalIcon). An emoji drew a
+    // different, cartoon animal on the home screen from the one in the app.
+    expect(dart, isNot(contains("'animal_emoji'")));
+    expect(swift, contains('AnimalGlyph('));
+    expect(_src('ios/ImprovyWidget/ImprovyKit.swift'), contains('enum AnimalArt'));
+    expect(kotlin, contains('animalDrawable('));
+  });
+
   test('every iOS tap target reaches the app', () {
     // home_widget drops a URL without a homeWidget query item: the tap opens
     // the app and goes nowhere. Every target goes through Improvy.link.
@@ -121,7 +130,6 @@ void main() {
     // reason here is what keeps this list from becoming a place to hide one.
     const iOSOnly = {
       'labels_json': 'Android localises its widget chrome in res/values-xx',
-      'animal_emoji': "Android draws the app's own line art for the animal",
     };
     for (final key in written) {
       final onIos = swift.contains('"$key"') || swiftKit.contains('"$key"');
