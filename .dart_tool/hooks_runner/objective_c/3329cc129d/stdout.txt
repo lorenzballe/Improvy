@@ -1,0 +1,55 @@
+Running `(cd /Users/runner/.pub-cache/hosted/pub.dev/objective_c-9.4.1/; ANDROID_HOME=/Users/runner/Library/Android/sdk TMPDIR=/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/ DOTNET_NOLOGO=1 ANDROID_NDK_ROOT=/Users/runner/Library/Android/sdk/ndk/29.0.14206865 ANDROID_NDK_LATEST_HOME=/Users/runner/Library/Android/sdk/ndk/29.0.14206865 DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1 PATH=/Applications/Xcode_16.4.app/Contents/SharedFrameworks/SwiftBuild.framework/Versions/A/PlugIns/SWBBuildService.bundle/Contents/PlugIns/SWBUniversalPlatformPlugin.bundle/Contents/Frameworks/SWBUniversalPlatform.framework/Resources:/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin:/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/local/bin:/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/libexec:/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/usr/bin:/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/usr/local/bin:/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin:/Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/local/bin:/Applications/Xcode_16.4.app/Contents/Developer/usr/bin:/Applications/Xcode_16.4.app/Contents/Developer/usr/local/bin:/Users/runner/.pub-cache/bin:/Users/runner/hostedtoolcache/flutter/stable-3.47.6-arm64/flutter/bin/cache/dart-sdk/bin:/Users/runner/hostedtoolcache/flutter/stable-3.47.6-arm64/flutter/bin:/opt/homebrew/lib/ruby/gems/3.3.0/bin:/opt/homebrew/opt/ruby@3.3/bin:/Users/runner/.local/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/Users/runner/.cargo/bin:/usr/local/opt/curl/bin:/usr/local/bin:/usr/local/sbin:/Users/runner/bin:/Users/runner/.yarn/bin:/Users/runner/Library/Android/sdk/tools:/Users/runner/Library/Android/sdk/platform-tools:/Library/Frameworks/Python.framework/Versions/Current/bin:/Library/Frameworks/Mono.framework/Versions/Current/Commands:/usr/bin:/bin:/usr/sbin:/sbin:/Users/runner/.dotnet/tools HOME=/Users/runner ANDROID_NDK=/Users/runner/Library/Android/sdk/ndk/27.3.13750724 ANDROID_NDK_HOME=/Users/runner/Library/Android/sdk/ndk/27.3.13750724 DOTNET_MULTILEVEL_LOOKUP=0 /Users/runner/hostedtoolcache/flutter/stable-3.47.6-arm64/flutter/bin/cache/dart-sdk/bin/dart --packages=/Users/runner/work/Improvy/Improvy/.dart_tool/package_config.json /Users/runner/work/Improvy/Improvy/.dart_tool/hooks_runner/objective_c/3329cc129d/hook.dill --config=/Users/runner/work/Improvy/Improvy/.dart_tool/hooks_runner/objective_c/3329cc129d/input.json )`.
+INFO: 2026-10-03 13:02:41.813696: Using compiler /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang from BuildInput.cCompiler.cc.
+
+INFO: 2026-10-03 13:02:41.823259: Running: /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -isysroot /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -target arm64-apple-ios -mios-version-min=15 -c /Users/runner/.pub-cache/hosted/pub.dev/objective_c-9.4.1/src/include/dart_api_dl.c -fpic -gline-tables-only -I src -o /Users/runner/work/Improvy/Improvy/.dart_tool/hooks_runner/shared/objective_c/build/3329cc129d/obj/src/include/dart_api_dl.c.o
+
+INFO: 2026-10-03 13:02:41.826722: Running: /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -isysroot /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -target arm64-apple-ios -mios-version-min=15 -c /Users/runner/.pub-cache/hosted/pub.dev/objective_c-9.4.1/src/objective_c.c -fpic -gline-tables-only -I src -o /Users/runner/work/Improvy/Improvy/.dart_tool/hooks_runner/shared/objective_c/build/3329cc129d/obj/src/objective_c.c.o
+
+INFO: 2026-10-03 13:02:41.829182: Running: /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -isysroot /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -target arm64-apple-ios -mios-version-min=15 -x objective-c -fobjc-arc -c /Users/runner/.pub-cache/hosted/pub.dev/objective_c-9.4.1/src/input_stream_adapter.m -fpic -gline-tables-only -I src -o /Users/runner/work/Improvy/Improvy/.dart_tool/hooks_runner/shared/objective_c/build/3329cc129d/obj/src/input_stream_adapter.m.o
+
+INFO: 2026-10-03 13:02:41.830451: Running: /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -isysroot /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -target arm64-apple-ios -mios-version-min=15 -x objective-c -fobjc-arc -c /Users/runner/.pub-cache/hosted/pub.dev/objective_c-9.4.1/src/objective_c.m -fpic -gline-tables-only -I src -o /Users/runner/work/Improvy/Improvy/.dart_tool/hooks_runner/shared/objective_c/build/3329cc129d/obj/src/objective_c.m.o
+
+INFO: 2026-10-03 13:02:41.831930: Running: /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -isysroot /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -target arm64-apple-ios -mios-version-min=15 -x objective-c -fobjc-arc -c /Users/runner/.pub-cache/hosted/pub.dev/objective_c-9.4.1/src/observer.m -fpic -gline-tables-only -I src -o /Users/runner/work/Improvy/Improvy/.dart_tool/hooks_runner/shared/objective_c/build/3329cc129d/obj/src/observer.m.o
+
+INFO: 2026-10-03 13:02:41.833930: Running: /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -isysroot /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -target arm64-apple-ios -mios-version-min=15 -x objective-c -fobjc-arc -c /Users/runner/.pub-cache/hosted/pub.dev/objective_c-9.4.1/src/ns_number.m -fpic -gline-tables-only -I src -o /Users/runner/work/Improvy/Improvy/.dart_tool/hooks_runner/shared/objective_c/build/3329cc129d/obj/src/ns_number.m.o
+
+INFO: 2026-10-03 13:02:41.835140: Running: /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -isysroot /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -target arm64-apple-ios -mios-version-min=15 -x objective-c -fobjc-arc -c /Users/runner/.pub-cache/hosted/pub.dev/objective_c-9.4.1/src/protocol.m -fpic -gline-tables-only -I src -o /Users/runner/work/Improvy/Improvy/.dart_tool/hooks_runner/shared/objective_c/build/3329cc129d/obj/src/protocol.m.o
+
+INFO: 2026-10-03 13:02:41.835962: Running: /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -isysroot /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -target arm64-apple-ios -mios-version-min=15 -x objective-c -fobjc-arc -c /Users/runner/.pub-cache/hosted/pub.dev/objective_c-9.4.1/src/objective_c_bindings_generated.m -fpic -gline-tables-only -I src -o /Users/runner/work/Improvy/Improvy/.dart_tool/hooks_runner/shared/objective_c/build/3329cc129d/obj/src/objective_c_bindings_generated.m.o
+
+INFO: 2026-10-03 13:02:42.564346: 
+INFO: 2026-10-03 13:02:42.564511: 
+INFO: 2026-10-03 13:02:42.564748: Generated /Users/runner/work/Improvy/Improvy/.dart_tool/hooks_runner/shared/objective_c/build/3329cc129d/obj/src/include/dart_api_dl.c.o
+INFO: 2026-10-03 13:02:42.565752: 
+INFO: 2026-10-03 13:02:42.565800: 
+INFO: 2026-10-03 13:02:42.565822: Generated /Users/runner/work/Improvy/Improvy/.dart_tool/hooks_runner/shared/objective_c/build/3329cc129d/obj/src/observer.m.o
+INFO: 2026-10-03 13:02:42.566060: 
+INFO: 2026-10-03 13:02:42.566092: 
+INFO: 2026-10-03 13:02:42.566101: Generated /Users/runner/work/Improvy/Improvy/.dart_tool/hooks_runner/shared/objective_c/build/3329cc129d/obj/src/protocol.m.o
+
+INFO: 2026-10-03 13:02:42.618068: 
+INFO: 2026-10-03 13:02:42.618134: 
+INFO: 2026-10-03 13:02:42.618159: Generated /Users/runner/work/Improvy/Improvy/.dart_tool/hooks_runner/shared/objective_c/build/3329cc129d/obj/src/objective_c.c.o
+
+INFO: 2026-10-03 13:02:43.670612: 
+INFO: 2026-10-03 13:02:43.670773: 
+INFO: 2026-10-03 13:02:43.670785: Generated /Users/runner/work/Improvy/Improvy/.dart_tool/hooks_runner/shared/objective_c/build/3329cc129d/obj/src/input_stream_adapter.m.o
+
+INFO: 2026-10-03 13:02:43.729194: 
+INFO: 2026-10-03 13:02:43.729253: 
+INFO: 2026-10-03 13:02:43.729265: Generated /Users/runner/work/Improvy/Improvy/.dart_tool/hooks_runner/shared/objective_c/build/3329cc129d/obj/src/ns_number.m.o
+
+INFO: 2026-10-03 13:02:43.769927: 
+INFO: 2026-10-03 13:02:43.769986: 
+INFO: 2026-10-03 13:02:43.769995: Generated /Users/runner/work/Improvy/Improvy/.dart_tool/hooks_runner/shared/objective_c/build/3329cc129d/obj/src/objective_c.m.o
+
+INFO: 2026-10-03 13:02:43.818800: 
+INFO: 2026-10-03 13:02:43.818874: 
+INFO: 2026-10-03 13:02:43.818885: Generated /Users/runner/work/Improvy/Improvy/.dart_tool/hooks_runner/shared/objective_c/build/3329cc129d/obj/src/objective_c_bindings_generated.m.o
+INFO: 2026-10-03 13:02:43.819602: Running: /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -shared -Wl,-encryptable -undefined dynamic_lookup -isysroot /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -target arm64-apple-ios -mios-version-min=15 /Users/runner/work/Improvy/Improvy/.dart_tool/hooks_runner/shared/objective_c/build/3329cc129d/obj/src/include/dart_api_dl.c.o /Users/runner/work/Improvy/Improvy/.dart_tool/hooks_runner/shared/objective_c/build/3329cc129d/obj/src/objective_c.c.o /Users/runner/work/Improvy/Improvy/.dart_tool/hooks_runner/shared/objective_c/build/3329cc129d/obj/src/input_stream_adapter.m.o /Users/runner/work/Improvy/Improvy/.dart_tool/hooks_runner/shared/objective_c/build/3329cc129d/obj/src/objective_c.m.o /Users/runner/work/Improvy/Improvy/.dart_tool/hooks_runner/shared/objective_c/build/3329cc129d/obj/src/observer.m.o /Users/runner/work/Improvy/Improvy/.dart_tool/hooks_runner/shared/objective_c/build/3329cc129d/obj/src/ns_number.m.o /Users/runner/work/Improvy/Improvy/.dart_tool/hooks_runner/shared/objective_c/build/3329cc129d/obj/src/protocol.m.o /Users/runner/work/Improvy/Improvy/.dart_tool/hooks_runner/shared/objective_c/build/3329cc129d/obj/src/objective_c_bindings_generated.m.o -o /Users/runner/work/Improvy/Improvy/.dart_tool/hooks_runner/shared/objective_c/build/3329cc129d/objective_c.dylib
+
+INFO: 2026-10-03 13:02:44.069073: 
+INFO: 2026-10-03 13:02:44.069297: ld: warning: -undefined dynamic_lookup is deprecated on iOS
+
+INFO: 2026-10-03 13:02:44.069337: Generated /Users/runner/work/Improvy/Improvy/.dart_tool/hooks_runner/shared/objective_c/build/3329cc129d/objective_c.dylib
+

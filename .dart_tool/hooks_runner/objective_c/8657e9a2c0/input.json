@@ -1,0 +1,30 @@
+{
+  "assets": {},
+  "config": {
+    "build_asset_types": [
+      "code_assets/code"
+    ],
+    "extensions": {
+      "code_assets": {
+        "c_compiler": {
+          "ar": "/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar",
+          "cc": "/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang",
+          "ld": "/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld"
+        },
+        "ios": {
+          "target_sdk": "iphonesimulator",
+          "target_version": 15
+        },
+        "link_mode_preference": "dynamic",
+        "target_architecture": "arm64",
+        "target_os": "ios"
+      }
+    },
+    "linking_enabled": false
+  },
+  "out_dir_shared": "/Users/runner/work/Improvy/Improvy/.dart_tool/hooks_runner/shared/objective_c/build/",
+  "out_file": "/Users/runner/work/Improvy/Improvy/.dart_tool/hooks_runner/objective_c/8657e9a2c0/output.json",
+  "package_name": "objective_c",
+  "package_root": "/Users/runner/.pub-cache/hosted/pub.dev/objective_c-9.4.1/",
+  "user_defines": {}
+}
