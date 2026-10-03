@@ -138,15 +138,18 @@
                 <TextView
                     android:id="@+id/level_quote"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="14dp"
                     android:text="@string/widget_level_quote_placeholder"
                     android:textColor="#7AFFFFFF"
                     android:textSize="10.6sp"
                     android:fontFamily="@font/outfit_medium"
                     android:maxLines="1"
                     android:includeFontPadding="false"
-                    android:ellipsize="end"
-                    android:layout_marginTop="1dp" />
+                    android:layout_marginTop="1dp"
+                    android:autoSizeTextType="uniform"
+                    android:autoSizeMinTextSize="7sp"
+                    android:autoSizeMaxTextSize="10.6sp"
+                    android:autoSizeStepGranularity="1sp" />
             </LinearLayout>
         </LinearLayout>
 

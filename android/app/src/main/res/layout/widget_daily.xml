@@ -113,27 +113,26 @@
             android:clipToPadding="false">
 
             <FrameLayout
-                android:layout_width="88dp"
-                android:layout_height="88dp"
-                android:layout_margin="-14dp"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
                 android:clipChildren="false"
                 android:clipToPadding="false">
 
                 <ImageView
                     android:id="@+id/daily_badge_glow"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_width="88dp"
+                    android:layout_height="88dp"
                     android:src="@drawable/w_soft_glow"
                     android:importantForAccessibility="no"
                     android:tint="#60FCD34D"
                     android:tintMode="src_in"
                     android:scaleType="fitXY"
-                    android:layout_marginTop="4dp" />
+                    android:translationX="-14dp"
+                    android:translationY="-10dp" />
 
                 <FrameLayout
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
-                    android:layout_gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
                     android:clipChildren="false"
                     android:clipToPadding="false">
 
@@ -256,27 +255,26 @@
 
             <FrameLayout
                 android:id="@+id/daily_play"
-                android:layout_width="78dp"
-                android:layout_height="78dp"
-                android:layout_margin="-14dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
                 android:clipChildren="false"
                 android:clipToPadding="false">
 
                 <ImageView
                     android:id="@+id/daily_glyph_glow"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_width="78dp"
+                    android:layout_height="78dp"
                     android:src="@drawable/w_soft_glow"
                     android:importantForAccessibility="no"
                     android:tint="#6EFCD34D"
                     android:tintMode="src_in"
                     android:scaleType="fitXY"
-                    android:layout_marginTop="4dp" />
+                    android:translationX="-14dp"
+                    android:translationY="-10dp" />
 
                 <FrameLayout
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:layout_gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
                     android:clipChildren="false"
                     android:clipToPadding="false">
 

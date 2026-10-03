@@ -88,27 +88,26 @@
                 android:clipToPadding="false">
 
                 <FrameLayout
-                    android:layout_width="68dp"
-                    android:layout_height="68dp"
-                    android:layout_margin="-14dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:clipChildren="false"
                     android:clipToPadding="false">
 
                     <ImageView
                         android:id="@+id/launch_daily_glyph_glow"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
+                        android:layout_width="68dp"
+                        android:layout_height="68dp"
                         android:src="@drawable/w_soft_glow"
                         android:importantForAccessibility="no"
                         android:tint="#6EFCD34D"
                         android:tintMode="src_in"
                         android:scaleType="fitXY"
-                        android:layout_marginTop="4dp" />
+                        android:translationX="-14dp"
+                        android:translationY="-10dp" />
 
                     <FrameLayout
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_gravity="center"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
                         android:clipChildren="false"
                         android:clipToPadding="false">
 
@@ -163,27 +162,26 @@
                 android:clipToPadding="false">
 
                 <FrameLayout
-                    android:layout_width="68dp"
-                    android:layout_height="68dp"
-                    android:layout_margin="-14dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:clipChildren="false"
                     android:clipToPadding="false">
 
                     <ImageView
                         android:id="@+id/launch_pocket_glyph_glow"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
+                        android:layout_width="68dp"
+                        android:layout_height="68dp"
                         android:src="@drawable/w_soft_glow"
                         android:importantForAccessibility="no"
                         android:tint="#6EFCD34D"
                         android:tintMode="src_in"
                         android:scaleType="fitXY"
-                        android:layout_marginTop="4dp" />
+                        android:translationX="-14dp"
+                        android:translationY="-10dp" />
 
                     <FrameLayout
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_gravity="center"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
                         android:clipChildren="false"
                         android:clipToPadding="false">
 
@@ -238,27 +236,26 @@
                 android:clipToPadding="false">
 
                 <FrameLayout
-                    android:layout_width="68dp"
-                    android:layout_height="68dp"
-                    android:layout_margin="-14dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:clipChildren="false"
                     android:clipToPadding="false">
 
                     <ImageView
                         android:id="@+id/launch_chromatic_glyph_glow"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
+                        android:layout_width="68dp"
+                        android:layout_height="68dp"
                         android:src="@drawable/w_soft_glow"
                         android:importantForAccessibility="no"
                         android:tint="#6EFCD34D"
                         android:tintMode="src_in"
                         android:scaleType="fitXY"
-                        android:layout_marginTop="4dp" />
+                        android:translationX="-14dp"
+                        android:translationY="-10dp" />
 
                     <FrameLayout
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_gravity="center"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
                         android:clipChildren="false"
                         android:clipToPadding="false">
 
@@ -313,27 +310,26 @@
                 android:clipToPadding="false">
 
                 <FrameLayout
-                    android:layout_width="68dp"
-                    android:layout_height="68dp"
-                    android:layout_margin="-14dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:clipChildren="false"
                     android:clipToPadding="false">
 
                     <ImageView
                         android:id="@+id/launch_custom_glyph_glow"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
+                        android:layout_width="68dp"
+                        android:layout_height="68dp"
                         android:src="@drawable/w_soft_glow"
                         android:importantForAccessibility="no"
                         android:tint="#6EFCD34D"
                         android:tintMode="src_in"
                         android:scaleType="fitXY"
-                        android:layout_marginTop="4dp" />
+                        android:translationX="-14dp"
+                        android:translationY="-10dp" />
 
                     <FrameLayout
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_gravity="center"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
                         android:clipChildren="false"
                         android:clipToPadding="false">
 

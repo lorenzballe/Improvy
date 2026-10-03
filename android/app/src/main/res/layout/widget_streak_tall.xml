@@ -333,27 +333,26 @@
 
             <FrameLayout
                 android:id="@+id/streakt_play"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:layout_margin="-14dp"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
                 android:clipChildren="false"
                 android:clipToPadding="false">
 
                 <ImageView
                     android:id="@+id/streakt_glyph_glow"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
                     android:src="@drawable/w_soft_glow"
                     android:importantForAccessibility="no"
                     android:tint="#6EFCD34D"
                     android:tintMode="src_in"
                     android:scaleType="fitXY"
-                    android:layout_marginTop="4dp" />
+                    android:translationX="-14dp"
+                    android:translationY="-10dp" />
 
                 <FrameLayout
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:layout_gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
                     android:clipChildren="false"
                     android:clipToPadding="false">
 
