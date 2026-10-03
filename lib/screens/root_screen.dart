@@ -87,6 +87,12 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
   /// app was already past the tutorial on this launch, so nothing should fade.
   int _arrivalId = 0;
 
+  /// Today's Daily Challenge result, opened from the widget once it is played.
+  bool _todayDailyOpen = false;
+
+  bool _showsTodayDaily(AppProvider p) =>
+      _todayDailyOpen && p.activeMode == null && p.todayDailyResult != null;
+
   @override
   void initState() {
     super.initState();
@@ -130,6 +136,9 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     // Android delivers improvy://quiz as host='quiz'; be lenient about the
     // shape rather than silently dropping a tap.
     final action = uri.host.isNotEmpty ? uri.host : uri.path.replaceAll('/', '');
+    // A tap on any widget lands on what that widget shows, not on a result
+    // left open by an earlier tap.
+    if (_todayDailyOpen) setState(() => _todayDailyOpen = false);
     if (action == 'quiz') {
       final slot = int.tryParse(uri.queryParameters['s'] ?? '');
       if (slot == null) return;
@@ -143,8 +152,8 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       if (provider.todayDailyResult == null) {
         provider.startDailyChallenge();
       } else {
-        // Already played: land on Home, where the card shows today's score.
-        _switchTab(0);
+        // Already played: today's result, the thing the widget is showing.
+        setState(() => _todayDailyOpen = true);
       }
     } else if (action == 'key') {
       // The weakest-key widget: open that key's training straight away, which
@@ -609,6 +618,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     if (_pendingSetup != null && provider.activeMode == null) {
       return 'setup-${_pendingSetup!.storageKey}';
     }
+    if (_showsTodayDaily(provider)) return 'today-daily';
     if (provider.activeMode != null) {
       if (_finishedSession != null) {
         return provider.dailyChallengeActive ? 'daily-results' : 'summary';
@@ -727,6 +737,17 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
           ),
         ]);
       }
+    }
+
+    if (_showsTodayDaily(provider)) {
+      void close() => setState(() => _todayDailyOpen = false);
+      return PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) close();
+        },
+        child: DailyResultsScreen(onDone: close),
+      );
     }
 
     if (provider.activeMode != null) {

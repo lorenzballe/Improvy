@@ -26,13 +26,17 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="16dp"
+        android:clipChildren="false"
+        android:clipToPadding="false">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <ImageView
                 android:id="@+id/weak_eb_icon"
@@ -48,13 +52,13 @@
                 android:layout_height="wrap_content"
                 android:text="@string/widget_weak_label"
                 android:textColor="#FB7185"
-                android:textSize="10.5sp"
-                android:fontFamily="@font/lexend_semibold"
+                android:textSize="11.1sp"
+                android:fontFamily="@font/outfit_semibold"
                 android:maxLines="1"
                 android:includeFontPadding="false"
                 android:layout_weight="1"
                 android:layout_marginStart="5dp"
-                android:letterSpacing="0.06"
+                android:letterSpacing="0.1"
                 android:ellipsize="end" />
         </LinearLayout>
 
@@ -62,49 +66,81 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:minHeight="6dp" />
+            android:minHeight="6dp"
+            android:clipChildren="false"
+            android:clipToPadding="false" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <FrameLayout
-                android:layout_width="50dp"
-                android:layout_height="50dp">
+                android:layout_width="78dp"
+                android:layout_height="78dp"
+                android:layout_margin="-14dp"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <ImageView
-                    android:id="@+id/weak_badge"
+                    android:id="@+id/weak_badge_glow"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:src="@drawable/w_badge"
+                    android:src="@drawable/w_soft_glow"
                     android:importantForAccessibility="no"
-                    android:tint="#FCD34D" />
+                    android:tint="#60FCD34D"
+                    android:tintMode="src_in"
+                    android:scaleType="fitXY"
+                    android:layout_marginTop="4dp" />
 
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/w_badge_sheen"
-                    android:importantForAccessibility="no" />
+                <FrameLayout
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_gravity="center"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
 
-                <TextView
-                    android:id="@+id/weak_badge_text"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:text="?"
-                    android:textColor="#140F1C"
-                    android:textSize="21sp"
-                    android:fontFamily="@font/lexend_bold"
-                    android:maxLines="1"
-                    android:includeFontPadding="false"
-                    android:gravity="center"
-                    android:paddingStart="3dp"
-                    android:paddingEnd="3dp"
-                    android:autoSizeTextType="uniform"
-                    android:autoSizeMinTextSize="10sp"
-                    android:autoSizeMaxTextSize="21sp"
-                    android:autoSizeStepGranularity="1sp" />
+                    <ImageView
+                        android:id="@+id/weak_badge"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/w_badge"
+                        android:importantForAccessibility="no"
+                        android:tint="#FCD34D" />
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/w_badge_shade"
+                        android:importantForAccessibility="no" />
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/w_badge_sheen"
+                        android:importantForAccessibility="no" />
+
+                    <TextView
+                        android:id="@+id/weak_badge_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:text="?"
+                        android:textColor="#140F1C"
+                        android:textSize="22.3sp"
+                        android:fontFamily="@font/outfit_semibold"
+                        android:maxLines="1"
+                        android:includeFontPadding="false"
+                        android:gravity="center"
+                        android:paddingStart="3dp"
+                        android:paddingEnd="3dp"
+                        android:autoSizeTextType="uniform"
+                        android:autoSizeMinTextSize="10sp"
+                        android:autoSizeMaxTextSize="22.3sp"
+                        android:autoSizeStepGranularity="1sp" />
+                </FrameLayout>
             </FrameLayout>
 
             <LinearLayout
@@ -112,13 +148,17 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="vertical"
-                android:layout_marginStart="11dp">
+                android:layout_marginStart="11dp"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:gravity="bottom">
+                    android:gravity="bottom"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
 
                     <TextView
                         android:id="@+id/weak_pct"
@@ -126,8 +166,8 @@
                         android:layout_height="wrap_content"
                         android:text="—"
                         android:textColor="#FFFFFF"
-                        android:textSize="28sp"
-                        android:fontFamily="@font/lexend_bold"
+                        android:textSize="29.7sp"
+                        android:fontFamily="@font/outfit_semibold"
                         android:maxLines="1"
                         android:includeFontPadding="false" />
 
@@ -137,8 +177,8 @@
                         android:layout_height="wrap_content"
                         android:text="%"
                         android:textColor="#8CFFFFFF"
-                        android:textSize="14sp"
-                        android:fontFamily="@font/lexend_semibold"
+                        android:textSize="14.8sp"
+                        android:fontFamily="@font/outfit_semibold"
                         android:maxLines="1"
                         android:includeFontPadding="false"
                         android:layout_marginStart="1dp"
@@ -151,8 +191,8 @@
                     android:layout_height="wrap_content"
                     android:text="@string/widget_weak_mastered"
                     android:textColor="#7AFFFFFF"
-                    android:textSize="10.5sp"
-                    android:fontFamily="@font/lexend_medium"
+                    android:textSize="11.1sp"
+                    android:fontFamily="@font/outfit_medium"
                     android:maxLines="1"
                     android:includeFontPadding="false"
                     android:ellipsize="end"
@@ -164,7 +204,9 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:minHeight="6dp" />
+            android:minHeight="6dp"
+            android:clipChildren="false"
+            android:clipToPadding="false" />
 
         <TextView
             android:id="@+id/weak_hint"
@@ -172,8 +214,8 @@
             android:layout_height="wrap_content"
             android:text="@string/widget_weak_hint"
             android:textColor="#99FFFFFF"
-            android:textSize="10.5sp"
-            android:fontFamily="@font/lexend_medium"
+            android:textSize="11.1sp"
+            android:fontFamily="@font/outfit_medium"
             android:maxLines="2"
             android:includeFontPadding="false"
             android:ellipsize="end" />

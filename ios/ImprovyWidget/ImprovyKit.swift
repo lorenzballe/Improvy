@@ -98,6 +98,17 @@ enum Improvy {
         localEpochDay(date) * 24 + Calendar.current.component(.hour, from: date)
     }
 
+    /// A widget's tap target, `improvy://<path>`.
+    ///
+    /// home_widget hands the app only URLs that carry a `homeWidget` query
+    /// item (SwiftHomeWidgetPlugin.isWidgetUrl); any other URL opens the app
+    /// and the tap is dropped — every widget then "just opens Improvy" instead
+    /// of the challenge, the question or the key it shows.
+    static func link(_ path: String) -> URL {
+        let separator = path.contains("?") ? "&" : "?"
+        return URL(string: "improvy://\(path)\(separator)homeWidget")!
+    }
+
     /// The next N hours, on the hour — the shape almost every timeline here
     /// wants. Starting at *this* hour rather than now keeps a widget added at
     /// 10:59 from sitting on a stale question for one minute.

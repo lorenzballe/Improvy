@@ -148,7 +148,7 @@ struct QuizView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .surface(Ink.gold)
-        .widgetURL(URL(string: "improvy://quiz?s=\(entry.slot)"))
+        .widgetURL(Improvy.link("quiz?s=\(entry.slot)"))
     }
 }
 
@@ -192,7 +192,7 @@ struct DailyView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         // The gold light only while there is still something to do today.
         .surface(played ? Ink.mint : Ink.gold, lit: !played)
-        .widgetURL(URL(string: "improvy://daily"))
+        .widgetURL(Improvy.link("daily"))
     }
 
     private var eyebrow: some View {
@@ -345,7 +345,7 @@ struct LevelView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .surface(colour)
-        .widgetURL(URL(string: "improvy://stats"))
+        .widgetURL(Improvy.link("stats"))
     }
 }
 
@@ -441,7 +441,7 @@ struct MapView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .surface(Ink.cyan)
-        .widgetURL(URL(string: "improvy://stats"))
+        .widgetURL(Improvy.link("stats"))
     }
 }
 
@@ -531,7 +531,7 @@ struct StreakView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .surface(colour, lit: atRisk)
-        .widgetURL(URL(string: "improvy://daily"))
+        .widgetURL(Improvy.link("daily"))
     }
 }
 
@@ -598,9 +598,9 @@ struct WeakestView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .surface(Ink.rose)
-        .widgetURL(URL(string: key.isEmpty
-                       ? "improvy://train"
-                       : "improvy://key?k=\(key.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? key)"))
+        .widgetURL(Improvy.link(key.isEmpty
+                       ? "train"
+                       : "key?k=\(key.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? key)"))
     }
 }
 
@@ -629,11 +629,11 @@ struct LaunchMode: Identifiable {
 
 struct LauncherView: View {
     private static let modes: [LaunchMode] = [
-        LaunchMode(id: "Daily", glyph: "flame.fill", colour: Ink.gold, url: "improvy://daily"),
-        LaunchMode(id: "Pocket", glyph: "headphones", colour: Ink.indigo, url: "improvy://pocket"),
-        LaunchMode(id: "Chromatic", glyph: "music.note", colour: Ink.violet, url: "improvy://chromatic"),
+        LaunchMode(id: "Daily", glyph: "flame.fill", colour: Ink.gold, url: "daily"),
+        LaunchMode(id: "Pocket", glyph: "headphones", colour: Ink.indigo, url: "pocket"),
+        LaunchMode(id: "Chromatic", glyph: "music.note", colour: Ink.violet, url: "chromatic"),
         LaunchMode(id: "Custom", glyph: "slider.horizontal.3",
-                   colour: Color(red: 0.847, green: 0.341, blue: 0.925), url: "improvy://custom"),
+                   colour: Color(red: 0.847, green: 0.341, blue: 0.925), url: "custom"),
     ]
 
     var body: some View {
@@ -641,7 +641,7 @@ struct LauncherView: View {
             Eyebrow(Improvy.label("start", "START TRAINING"), symbol: "play.circle.fill", accent: Ink.indigo)
             HStack(spacing: 8) {
                 ForEach(Self.modes) { mode in
-                    Link(destination: URL(string: mode.url)!) {
+                    Link(destination: Improvy.link(mode.url)) {
                         VStack(spacing: 8) {
                             GlyphButton(system: mode.glyph, colour: mode.colour, size: 40, filled: true)
                             Text(mode.id)
@@ -697,7 +697,7 @@ struct PocketView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .surface(Ink.indigo)
-        .widgetURL(URL(string: "improvy://pocket"))
+        .widgetURL(Improvy.link("pocket"))
     }
 }
 
@@ -740,7 +740,7 @@ struct TheoryView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .surface(colour)
-        .widgetURL(URL(string: "improvy://theory"))
+        .widgetURL(Improvy.link("theory"))
     }
 }
 

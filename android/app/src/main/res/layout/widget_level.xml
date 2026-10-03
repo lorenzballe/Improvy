@@ -26,13 +26,17 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="16dp"
+        android:clipChildren="false"
+        android:clipToPadding="false">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <ImageView
                 android:id="@+id/level_eb_icon"
@@ -48,13 +52,13 @@
                 android:layout_height="wrap_content"
                 android:text="@string/widget_level_label"
                 android:textColor="#34D399"
-                android:textSize="10.5sp"
-                android:fontFamily="@font/lexend_semibold"
+                android:textSize="11.1sp"
+                android:fontFamily="@font/outfit_semibold"
                 android:maxLines="1"
                 android:includeFontPadding="false"
                 android:layout_weight="1"
                 android:layout_marginStart="5dp"
-                android:letterSpacing="0.06"
+                android:letterSpacing="0.1"
                 android:ellipsize="end" />
 
             <TextView
@@ -63,8 +67,8 @@
                 android:layout_height="wrap_content"
                 android:text="1/8"
                 android:textColor="#7AFFFFFF"
-                android:textSize="10.5sp"
-                android:fontFamily="@font/lexend_semibold"
+                android:textSize="11.1sp"
+                android:fontFamily="@font/outfit_semibold"
                 android:maxLines="1"
                 android:includeFontPadding="false" />
         </LinearLayout>
@@ -73,17 +77,23 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:minHeight="4dp" />
+            android:minHeight="4dp"
+            android:clipChildren="false"
+            android:clipToPadding="false" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <FrameLayout
                 android:layout_width="38dp"
-                android:layout_height="38dp">
+                android:layout_height="38dp"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <ImageView
                     android:id="@+id/level_circle"
@@ -109,7 +119,9 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="vertical"
-                android:layout_marginStart="9dp">
+                android:layout_marginStart="9dp"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <TextView
                     android:id="@+id/level_name"
@@ -117,8 +129,8 @@
                     android:layout_height="wrap_content"
                     android:text="@string/widget_level_name_placeholder"
                     android:textColor="#FFFFFF"
-                    android:textSize="15sp"
-                    android:fontFamily="@font/lexend_bold"
+                    android:textSize="15.9sp"
+                    android:fontFamily="@font/outfit_semibold"
                     android:maxLines="1"
                     android:includeFontPadding="false"
                     android:ellipsize="end" />
@@ -129,8 +141,8 @@
                     android:layout_height="wrap_content"
                     android:text="@string/widget_level_quote_placeholder"
                     android:textColor="#7AFFFFFF"
-                    android:textSize="10sp"
-                    android:fontFamily="@font/lexend_medium"
+                    android:textSize="10.6sp"
+                    android:fontFamily="@font/outfit_medium"
                     android:maxLines="1"
                     android:includeFontPadding="false"
                     android:ellipsize="end"
@@ -142,13 +154,17 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:minHeight="4dp" />
+            android:minHeight="4dp"
+            android:clipChildren="false"
+            android:clipToPadding="false" />
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="bottom">
+            android:gravity="bottom"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <TextView
                 android:id="@+id/level_pct"
@@ -156,8 +172,8 @@
                 android:layout_height="wrap_content"
                 android:text="0"
                 android:textColor="#FFFFFF"
-                android:textSize="34sp"
-                android:fontFamily="@font/lexend_bold"
+                android:textSize="36.0sp"
+                android:fontFamily="@font/outfit_semibold"
                 android:maxLines="1"
                 android:includeFontPadding="false" />
 
@@ -166,8 +182,8 @@
                 android:layout_height="wrap_content"
                 android:text="%"
                 android:textColor="#8CFFFFFF"
-                android:textSize="17sp"
-                android:fontFamily="@font/lexend_semibold"
+                android:textSize="18.0sp"
+                android:fontFamily="@font/outfit_semibold"
                 android:maxLines="1"
                 android:includeFontPadding="false"
                 android:layout_marginStart="2dp"
@@ -177,7 +193,9 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp">
+            android:layout_marginTop="6dp"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <ProgressBar
                 android:id="@+id/level_bar"

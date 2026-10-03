@@ -26,13 +26,17 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="16dp"
+        android:clipChildren="false"
+        android:clipToPadding="false">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <ImageView
                 android:id="@+id/map_eb_icon"
@@ -48,13 +52,13 @@
                 android:layout_height="wrap_content"
                 android:text="@string/widget_map_label"
                 android:textColor="#22D3EE"
-                android:textSize="10.5sp"
-                android:fontFamily="@font/lexend_semibold"
+                android:textSize="11.1sp"
+                android:fontFamily="@font/outfit_semibold"
                 android:maxLines="1"
                 android:includeFontPadding="false"
                 android:layout_weight="1"
                 android:layout_marginStart="5dp"
-                android:letterSpacing="0.06"
+                android:letterSpacing="0.1"
                 android:ellipsize="end" />
 
             <TextView
@@ -63,32 +67,40 @@
                 android:layout_height="wrap_content"
                 android:text="0%"
                 android:textColor="#BFFFFFFF"
-                android:textSize="11sp"
-                android:fontFamily="@font/lexend_bold"
+                android:textSize="11.7sp"
+                android:fontFamily="@font/outfit_semibold"
                 android:maxLines="1"
                 android:includeFontPadding="false" />
         </LinearLayout>
 
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="12dp" />
+            android:layout_height="12dp"
+            android:clipChildren="false"
+            android:clipToPadding="false" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <FrameLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="1">
+                    android:layout_weight="1"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
 
                     <ImageView
                         android:id="@+id/map_tile_0"
@@ -105,7 +117,9 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:layout_gravity="center_vertical"
-                        android:gravity="center_horizontal">
+                        android:gravity="center_horizontal"
+                        android:clipChildren="false"
+                        android:clipToPadding="false">
 
                         <TextView
                             android:id="@+id/map_key_0"
@@ -113,14 +127,14 @@
                             android:layout_height="26dp"
                             android:text="—"
                             android:textColor="#52FFFFFF"
-                            android:textSize="21sp"
-                            android:fontFamily="@font/lexend_semibold"
+                            android:textSize="22.3sp"
+                            android:fontFamily="@font/outfit_semibold"
                             android:maxLines="1"
                             android:includeFontPadding="false"
                             android:gravity="center"
                             android:autoSizeTextType="uniform"
                             android:autoSizeMinTextSize="9sp"
-                            android:autoSizeMaxTextSize="21sp"
+                            android:autoSizeMaxTextSize="22.3sp"
                             android:autoSizeStepGranularity="1sp" />
 
                         <TextView
@@ -129,8 +143,8 @@
                             android:layout_height="wrap_content"
                             android:text="—"
                             android:textColor="#40FFFFFF"
-                            android:textSize="10.5sp"
-                            android:fontFamily="@font/lexend_semibold"
+                            android:textSize="11.1sp"
+                            android:fontFamily="@font/outfit_semibold"
                             android:maxLines="1"
                             android:includeFontPadding="false"
                             android:layout_marginTop="5dp"
@@ -141,7 +155,9 @@
                             android:layout_height="3dp"
                             android:layout_marginTop="7dp"
                             android:layout_marginStart="12dp"
-                            android:layout_marginEnd="12dp">
+                            android:layout_marginEnd="12dp"
+                            android:clipChildren="false"
+                            android:clipToPadding="false">
 
                             <ProgressBar
                                 android:id="@+id/map_bar_0"
@@ -162,7 +178,9 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:layout_marginStart="8dp">
+                    android:layout_marginStart="8dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
 
                     <ImageView
                         android:id="@+id/map_tile_1"
@@ -179,7 +197,9 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:layout_gravity="center_vertical"
-                        android:gravity="center_horizontal">
+                        android:gravity="center_horizontal"
+                        android:clipChildren="false"
+                        android:clipToPadding="false">
 
                         <TextView
                             android:id="@+id/map_key_1"
@@ -187,14 +207,14 @@
                             android:layout_height="26dp"
                             android:text="—"
                             android:textColor="#52FFFFFF"
-                            android:textSize="21sp"
-                            android:fontFamily="@font/lexend_semibold"
+                            android:textSize="22.3sp"
+                            android:fontFamily="@font/outfit_semibold"
                             android:maxLines="1"
                             android:includeFontPadding="false"
                             android:gravity="center"
                             android:autoSizeTextType="uniform"
                             android:autoSizeMinTextSize="9sp"
-                            android:autoSizeMaxTextSize="21sp"
+                            android:autoSizeMaxTextSize="22.3sp"
                             android:autoSizeStepGranularity="1sp" />
 
                         <TextView
@@ -203,8 +223,8 @@
                             android:layout_height="wrap_content"
                             android:text="—"
                             android:textColor="#40FFFFFF"
-                            android:textSize="10.5sp"
-                            android:fontFamily="@font/lexend_semibold"
+                            android:textSize="11.1sp"
+                            android:fontFamily="@font/outfit_semibold"
                             android:maxLines="1"
                             android:includeFontPadding="false"
                             android:layout_marginTop="5dp"
@@ -215,7 +235,9 @@
                             android:layout_height="3dp"
                             android:layout_marginTop="7dp"
                             android:layout_marginStart="12dp"
-                            android:layout_marginEnd="12dp">
+                            android:layout_marginEnd="12dp"
+                            android:clipChildren="false"
+                            android:clipToPadding="false">
 
                             <ProgressBar
                                 android:id="@+id/map_bar_1"
@@ -236,7 +258,9 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:layout_marginStart="8dp">
+                    android:layout_marginStart="8dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
 
                     <ImageView
                         android:id="@+id/map_tile_2"
@@ -253,7 +277,9 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:layout_gravity="center_vertical"
-                        android:gravity="center_horizontal">
+                        android:gravity="center_horizontal"
+                        android:clipChildren="false"
+                        android:clipToPadding="false">
 
                         <TextView
                             android:id="@+id/map_key_2"
@@ -261,14 +287,14 @@
                             android:layout_height="26dp"
                             android:text="—"
                             android:textColor="#52FFFFFF"
-                            android:textSize="21sp"
-                            android:fontFamily="@font/lexend_semibold"
+                            android:textSize="22.3sp"
+                            android:fontFamily="@font/outfit_semibold"
                             android:maxLines="1"
                             android:includeFontPadding="false"
                             android:gravity="center"
                             android:autoSizeTextType="uniform"
                             android:autoSizeMinTextSize="9sp"
-                            android:autoSizeMaxTextSize="21sp"
+                            android:autoSizeMaxTextSize="22.3sp"
                             android:autoSizeStepGranularity="1sp" />
 
                         <TextView
@@ -277,8 +303,8 @@
                             android:layout_height="wrap_content"
                             android:text="—"
                             android:textColor="#40FFFFFF"
-                            android:textSize="10.5sp"
-                            android:fontFamily="@font/lexend_semibold"
+                            android:textSize="11.1sp"
+                            android:fontFamily="@font/outfit_semibold"
                             android:maxLines="1"
                             android:includeFontPadding="false"
                             android:layout_marginTop="5dp"
@@ -289,7 +315,9 @@
                             android:layout_height="3dp"
                             android:layout_marginTop="7dp"
                             android:layout_marginStart="12dp"
-                            android:layout_marginEnd="12dp">
+                            android:layout_marginEnd="12dp"
+                            android:clipChildren="false"
+                            android:clipToPadding="false">
 
                             <ProgressBar
                                 android:id="@+id/map_bar_2"
@@ -310,7 +338,9 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:layout_marginStart="8dp">
+                    android:layout_marginStart="8dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
 
                     <ImageView
                         android:id="@+id/map_tile_3"
@@ -327,7 +357,9 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:layout_gravity="center_vertical"
-                        android:gravity="center_horizontal">
+                        android:gravity="center_horizontal"
+                        android:clipChildren="false"
+                        android:clipToPadding="false">
 
                         <TextView
                             android:id="@+id/map_key_3"
@@ -335,14 +367,14 @@
                             android:layout_height="26dp"
                             android:text="—"
                             android:textColor="#52FFFFFF"
-                            android:textSize="21sp"
-                            android:fontFamily="@font/lexend_semibold"
+                            android:textSize="22.3sp"
+                            android:fontFamily="@font/outfit_semibold"
                             android:maxLines="1"
                             android:includeFontPadding="false"
                             android:gravity="center"
                             android:autoSizeTextType="uniform"
                             android:autoSizeMinTextSize="9sp"
-                            android:autoSizeMaxTextSize="21sp"
+                            android:autoSizeMaxTextSize="22.3sp"
                             android:autoSizeStepGranularity="1sp" />
 
                         <TextView
@@ -351,8 +383,8 @@
                             android:layout_height="wrap_content"
                             android:text="—"
                             android:textColor="#40FFFFFF"
-                            android:textSize="10.5sp"
-                            android:fontFamily="@font/lexend_semibold"
+                            android:textSize="11.1sp"
+                            android:fontFamily="@font/outfit_semibold"
                             android:maxLines="1"
                             android:includeFontPadding="false"
                             android:layout_marginTop="5dp"
@@ -363,7 +395,9 @@
                             android:layout_height="3dp"
                             android:layout_marginTop="7dp"
                             android:layout_marginStart="12dp"
-                            android:layout_marginEnd="12dp">
+                            android:layout_marginEnd="12dp"
+                            android:clipChildren="false"
+                            android:clipToPadding="false">
 
                             <ProgressBar
                                 android:id="@+id/map_bar_3"
@@ -386,12 +420,16 @@
                 android:layout_height="0dp"
                 android:layout_weight="1"
                 android:orientation="horizontal"
-                android:layout_marginTop="8dp">
+                android:layout_marginTop="8dp"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <FrameLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="1">
+                    android:layout_weight="1"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
 
                     <ImageView
                         android:id="@+id/map_tile_4"
@@ -408,7 +446,9 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:layout_gravity="center_vertical"
-                        android:gravity="center_horizontal">
+                        android:gravity="center_horizontal"
+                        android:clipChildren="false"
+                        android:clipToPadding="false">
 
                         <TextView
                             android:id="@+id/map_key_4"
@@ -416,14 +456,14 @@
                             android:layout_height="26dp"
                             android:text="—"
                             android:textColor="#52FFFFFF"
-                            android:textSize="21sp"
-                            android:fontFamily="@font/lexend_semibold"
+                            android:textSize="22.3sp"
+                            android:fontFamily="@font/outfit_semibold"
                             android:maxLines="1"
                             android:includeFontPadding="false"
                             android:gravity="center"
                             android:autoSizeTextType="uniform"
                             android:autoSizeMinTextSize="9sp"
-                            android:autoSizeMaxTextSize="21sp"
+                            android:autoSizeMaxTextSize="22.3sp"
                             android:autoSizeStepGranularity="1sp" />
 
                         <TextView
@@ -432,8 +472,8 @@
                             android:layout_height="wrap_content"
                             android:text="—"
                             android:textColor="#40FFFFFF"
-                            android:textSize="10.5sp"
-                            android:fontFamily="@font/lexend_semibold"
+                            android:textSize="11.1sp"
+                            android:fontFamily="@font/outfit_semibold"
                             android:maxLines="1"
                             android:includeFontPadding="false"
                             android:layout_marginTop="5dp"
@@ -444,7 +484,9 @@
                             android:layout_height="3dp"
                             android:layout_marginTop="7dp"
                             android:layout_marginStart="12dp"
-                            android:layout_marginEnd="12dp">
+                            android:layout_marginEnd="12dp"
+                            android:clipChildren="false"
+                            android:clipToPadding="false">
 
                             <ProgressBar
                                 android:id="@+id/map_bar_4"
@@ -465,7 +507,9 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:layout_marginStart="8dp">
+                    android:layout_marginStart="8dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
 
                     <ImageView
                         android:id="@+id/map_tile_5"
@@ -482,7 +526,9 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:layout_gravity="center_vertical"
-                        android:gravity="center_horizontal">
+                        android:gravity="center_horizontal"
+                        android:clipChildren="false"
+                        android:clipToPadding="false">
 
                         <TextView
                             android:id="@+id/map_key_5"
@@ -490,14 +536,14 @@
                             android:layout_height="26dp"
                             android:text="—"
                             android:textColor="#52FFFFFF"
-                            android:textSize="21sp"
-                            android:fontFamily="@font/lexend_semibold"
+                            android:textSize="22.3sp"
+                            android:fontFamily="@font/outfit_semibold"
                             android:maxLines="1"
                             android:includeFontPadding="false"
                             android:gravity="center"
                             android:autoSizeTextType="uniform"
                             android:autoSizeMinTextSize="9sp"
-                            android:autoSizeMaxTextSize="21sp"
+                            android:autoSizeMaxTextSize="22.3sp"
                             android:autoSizeStepGranularity="1sp" />
 
                         <TextView
@@ -506,8 +552,8 @@
                             android:layout_height="wrap_content"
                             android:text="—"
                             android:textColor="#40FFFFFF"
-                            android:textSize="10.5sp"
-                            android:fontFamily="@font/lexend_semibold"
+                            android:textSize="11.1sp"
+                            android:fontFamily="@font/outfit_semibold"
                             android:maxLines="1"
                             android:includeFontPadding="false"
                             android:layout_marginTop="5dp"
@@ -518,7 +564,9 @@
                             android:layout_height="3dp"
                             android:layout_marginTop="7dp"
                             android:layout_marginStart="12dp"
-                            android:layout_marginEnd="12dp">
+                            android:layout_marginEnd="12dp"
+                            android:clipChildren="false"
+                            android:clipToPadding="false">
 
                             <ProgressBar
                                 android:id="@+id/map_bar_5"
@@ -539,7 +587,9 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:layout_marginStart="8dp">
+                    android:layout_marginStart="8dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
 
                     <ImageView
                         android:id="@+id/map_tile_6"
@@ -556,7 +606,9 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:layout_gravity="center_vertical"
-                        android:gravity="center_horizontal">
+                        android:gravity="center_horizontal"
+                        android:clipChildren="false"
+                        android:clipToPadding="false">
 
                         <TextView
                             android:id="@+id/map_key_6"
@@ -564,14 +616,14 @@
                             android:layout_height="26dp"
                             android:text="—"
                             android:textColor="#52FFFFFF"
-                            android:textSize="21sp"
-                            android:fontFamily="@font/lexend_semibold"
+                            android:textSize="22.3sp"
+                            android:fontFamily="@font/outfit_semibold"
                             android:maxLines="1"
                             android:includeFontPadding="false"
                             android:gravity="center"
                             android:autoSizeTextType="uniform"
                             android:autoSizeMinTextSize="9sp"
-                            android:autoSizeMaxTextSize="21sp"
+                            android:autoSizeMaxTextSize="22.3sp"
                             android:autoSizeStepGranularity="1sp" />
 
                         <TextView
@@ -580,8 +632,8 @@
                             android:layout_height="wrap_content"
                             android:text="—"
                             android:textColor="#40FFFFFF"
-                            android:textSize="10.5sp"
-                            android:fontFamily="@font/lexend_semibold"
+                            android:textSize="11.1sp"
+                            android:fontFamily="@font/outfit_semibold"
                             android:maxLines="1"
                             android:includeFontPadding="false"
                             android:layout_marginTop="5dp"
@@ -592,7 +644,9 @@
                             android:layout_height="3dp"
                             android:layout_marginTop="7dp"
                             android:layout_marginStart="12dp"
-                            android:layout_marginEnd="12dp">
+                            android:layout_marginEnd="12dp"
+                            android:clipChildren="false"
+                            android:clipToPadding="false">
 
                             <ProgressBar
                                 android:id="@+id/map_bar_6"
@@ -613,7 +667,9 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:layout_marginStart="8dp">
+                    android:layout_marginStart="8dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
 
                     <ImageView
                         android:id="@+id/map_tile_7"
@@ -630,7 +686,9 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:layout_gravity="center_vertical"
-                        android:gravity="center_horizontal">
+                        android:gravity="center_horizontal"
+                        android:clipChildren="false"
+                        android:clipToPadding="false">
 
                         <TextView
                             android:id="@+id/map_key_7"
@@ -638,14 +696,14 @@
                             android:layout_height="26dp"
                             android:text="—"
                             android:textColor="#52FFFFFF"
-                            android:textSize="21sp"
-                            android:fontFamily="@font/lexend_semibold"
+                            android:textSize="22.3sp"
+                            android:fontFamily="@font/outfit_semibold"
                             android:maxLines="1"
                             android:includeFontPadding="false"
                             android:gravity="center"
                             android:autoSizeTextType="uniform"
                             android:autoSizeMinTextSize="9sp"
-                            android:autoSizeMaxTextSize="21sp"
+                            android:autoSizeMaxTextSize="22.3sp"
                             android:autoSizeStepGranularity="1sp" />
 
                         <TextView
@@ -654,8 +712,8 @@
                             android:layout_height="wrap_content"
                             android:text="—"
                             android:textColor="#40FFFFFF"
-                            android:textSize="10.5sp"
-                            android:fontFamily="@font/lexend_semibold"
+                            android:textSize="11.1sp"
+                            android:fontFamily="@font/outfit_semibold"
                             android:maxLines="1"
                             android:includeFontPadding="false"
                             android:layout_marginTop="5dp"
@@ -666,7 +724,9 @@
                             android:layout_height="3dp"
                             android:layout_marginTop="7dp"
                             android:layout_marginStart="12dp"
-                            android:layout_marginEnd="12dp">
+                            android:layout_marginEnd="12dp"
+                            android:clipChildren="false"
+                            android:clipToPadding="false">
 
                             <ProgressBar
                                 android:id="@+id/map_bar_7"
@@ -689,12 +749,16 @@
                 android:layout_height="0dp"
                 android:layout_weight="1"
                 android:orientation="horizontal"
-                android:layout_marginTop="8dp">
+                android:layout_marginTop="8dp"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <FrameLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="1">
+                    android:layout_weight="1"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
 
                     <ImageView
                         android:id="@+id/map_tile_8"
@@ -711,7 +775,9 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:layout_gravity="center_vertical"
-                        android:gravity="center_horizontal">
+                        android:gravity="center_horizontal"
+                        android:clipChildren="false"
+                        android:clipToPadding="false">
 
                         <TextView
                             android:id="@+id/map_key_8"
@@ -719,14 +785,14 @@
                             android:layout_height="26dp"
                             android:text="—"
                             android:textColor="#52FFFFFF"
-                            android:textSize="21sp"
-                            android:fontFamily="@font/lexend_semibold"
+                            android:textSize="22.3sp"
+                            android:fontFamily="@font/outfit_semibold"
                             android:maxLines="1"
                             android:includeFontPadding="false"
                             android:gravity="center"
                             android:autoSizeTextType="uniform"
                             android:autoSizeMinTextSize="9sp"
-                            android:autoSizeMaxTextSize="21sp"
+                            android:autoSizeMaxTextSize="22.3sp"
                             android:autoSizeStepGranularity="1sp" />
 
                         <TextView
@@ -735,8 +801,8 @@
                             android:layout_height="wrap_content"
                             android:text="—"
                             android:textColor="#40FFFFFF"
-                            android:textSize="10.5sp"
-                            android:fontFamily="@font/lexend_semibold"
+                            android:textSize="11.1sp"
+                            android:fontFamily="@font/outfit_semibold"
                             android:maxLines="1"
                             android:includeFontPadding="false"
                             android:layout_marginTop="5dp"
@@ -747,7 +813,9 @@
                             android:layout_height="3dp"
                             android:layout_marginTop="7dp"
                             android:layout_marginStart="12dp"
-                            android:layout_marginEnd="12dp">
+                            android:layout_marginEnd="12dp"
+                            android:clipChildren="false"
+                            android:clipToPadding="false">
 
                             <ProgressBar
                                 android:id="@+id/map_bar_8"
@@ -768,7 +836,9 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:layout_marginStart="8dp">
+                    android:layout_marginStart="8dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
 
                     <ImageView
                         android:id="@+id/map_tile_9"
@@ -785,7 +855,9 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:layout_gravity="center_vertical"
-                        android:gravity="center_horizontal">
+                        android:gravity="center_horizontal"
+                        android:clipChildren="false"
+                        android:clipToPadding="false">
 
                         <TextView
                             android:id="@+id/map_key_9"
@@ -793,14 +865,14 @@
                             android:layout_height="26dp"
                             android:text="—"
                             android:textColor="#52FFFFFF"
-                            android:textSize="21sp"
-                            android:fontFamily="@font/lexend_semibold"
+                            android:textSize="22.3sp"
+                            android:fontFamily="@font/outfit_semibold"
                             android:maxLines="1"
                             android:includeFontPadding="false"
                             android:gravity="center"
                             android:autoSizeTextType="uniform"
                             android:autoSizeMinTextSize="9sp"
-                            android:autoSizeMaxTextSize="21sp"
+                            android:autoSizeMaxTextSize="22.3sp"
                             android:autoSizeStepGranularity="1sp" />
 
                         <TextView
@@ -809,8 +881,8 @@
                             android:layout_height="wrap_content"
                             android:text="—"
                             android:textColor="#40FFFFFF"
-                            android:textSize="10.5sp"
-                            android:fontFamily="@font/lexend_semibold"
+                            android:textSize="11.1sp"
+                            android:fontFamily="@font/outfit_semibold"
                             android:maxLines="1"
                             android:includeFontPadding="false"
                             android:layout_marginTop="5dp"
@@ -821,7 +893,9 @@
                             android:layout_height="3dp"
                             android:layout_marginTop="7dp"
                             android:layout_marginStart="12dp"
-                            android:layout_marginEnd="12dp">
+                            android:layout_marginEnd="12dp"
+                            android:clipChildren="false"
+                            android:clipToPadding="false">
 
                             <ProgressBar
                                 android:id="@+id/map_bar_9"
@@ -842,7 +916,9 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:layout_marginStart="8dp">
+                    android:layout_marginStart="8dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
 
                     <ImageView
                         android:id="@+id/map_tile_10"
@@ -859,7 +935,9 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:layout_gravity="center_vertical"
-                        android:gravity="center_horizontal">
+                        android:gravity="center_horizontal"
+                        android:clipChildren="false"
+                        android:clipToPadding="false">
 
                         <TextView
                             android:id="@+id/map_key_10"
@@ -867,14 +945,14 @@
                             android:layout_height="26dp"
                             android:text="—"
                             android:textColor="#52FFFFFF"
-                            android:textSize="21sp"
-                            android:fontFamily="@font/lexend_semibold"
+                            android:textSize="22.3sp"
+                            android:fontFamily="@font/outfit_semibold"
                             android:maxLines="1"
                             android:includeFontPadding="false"
                             android:gravity="center"
                             android:autoSizeTextType="uniform"
                             android:autoSizeMinTextSize="9sp"
-                            android:autoSizeMaxTextSize="21sp"
+                            android:autoSizeMaxTextSize="22.3sp"
                             android:autoSizeStepGranularity="1sp" />
 
                         <TextView
@@ -883,8 +961,8 @@
                             android:layout_height="wrap_content"
                             android:text="—"
                             android:textColor="#40FFFFFF"
-                            android:textSize="10.5sp"
-                            android:fontFamily="@font/lexend_semibold"
+                            android:textSize="11.1sp"
+                            android:fontFamily="@font/outfit_semibold"
                             android:maxLines="1"
                             android:includeFontPadding="false"
                             android:layout_marginTop="5dp"
@@ -895,7 +973,9 @@
                             android:layout_height="3dp"
                             android:layout_marginTop="7dp"
                             android:layout_marginStart="12dp"
-                            android:layout_marginEnd="12dp">
+                            android:layout_marginEnd="12dp"
+                            android:clipChildren="false"
+                            android:clipToPadding="false">
 
                             <ProgressBar
                                 android:id="@+id/map_bar_10"
@@ -916,7 +996,9 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:layout_marginStart="8dp">
+                    android:layout_marginStart="8dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
 
                     <ImageView
                         android:id="@+id/map_tile_11"
@@ -933,7 +1015,9 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:layout_gravity="center_vertical"
-                        android:gravity="center_horizontal">
+                        android:gravity="center_horizontal"
+                        android:clipChildren="false"
+                        android:clipToPadding="false">
 
                         <TextView
                             android:id="@+id/map_key_11"
@@ -941,14 +1025,14 @@
                             android:layout_height="26dp"
                             android:text="—"
                             android:textColor="#52FFFFFF"
-                            android:textSize="21sp"
-                            android:fontFamily="@font/lexend_semibold"
+                            android:textSize="22.3sp"
+                            android:fontFamily="@font/outfit_semibold"
                             android:maxLines="1"
                             android:includeFontPadding="false"
                             android:gravity="center"
                             android:autoSizeTextType="uniform"
                             android:autoSizeMinTextSize="9sp"
-                            android:autoSizeMaxTextSize="21sp"
+                            android:autoSizeMaxTextSize="22.3sp"
                             android:autoSizeStepGranularity="1sp" />
 
                         <TextView
@@ -957,8 +1041,8 @@
                             android:layout_height="wrap_content"
                             android:text="—"
                             android:textColor="#40FFFFFF"
-                            android:textSize="10.5sp"
-                            android:fontFamily="@font/lexend_semibold"
+                            android:textSize="11.1sp"
+                            android:fontFamily="@font/outfit_semibold"
                             android:maxLines="1"
                             android:includeFontPadding="false"
                             android:layout_marginTop="5dp"
@@ -969,7 +1053,9 @@
                             android:layout_height="3dp"
                             android:layout_marginTop="7dp"
                             android:layout_marginStart="12dp"
-                            android:layout_marginEnd="12dp">
+                            android:layout_marginEnd="12dp"
+                            android:clipChildren="false"
+                            android:clipToPadding="false">
 
                             <ProgressBar
                                 android:id="@+id/map_bar_11"
@@ -990,13 +1076,17 @@
 
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="12dp" />
+            android:layout_height="12dp"
+            android:clipChildren="false"
+            android:clipToPadding="false" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <ImageView
                 android:id="@+id/map_animal"
@@ -1012,8 +1102,8 @@
                 android:layout_height="wrap_content"
                 android:text="@string/widget_level_name_placeholder"
                 android:textColor="#34D399"
-                android:textSize="12sp"
-                android:fontFamily="@font/lexend_bold"
+                android:textSize="12.7sp"
+                android:fontFamily="@font/outfit_semibold"
                 android:maxLines="1"
                 android:includeFontPadding="false"
                 android:layout_marginStart="8dp" />
@@ -1022,7 +1112,9 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginStart="8dp">
+                android:layout_marginStart="8dp"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <ProgressBar
                     android:id="@+id/map_progress"

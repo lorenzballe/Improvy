@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The soft coloured shadow under a key badge or a filled button, as on iOS.
+     Opaque out to the middle of its radius, then fading to nothing: the
+     badge covers the opaque part, so what shows is a halo that falls off. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <gradient android:type="radial" android:gradientRadius="50%"
+        android:startColor="#FFFFFFFF" android:centerColor="#FFFFFFFF" android:endColor="#00FFFFFF" />
+</shape>

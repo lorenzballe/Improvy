@@ -26,13 +26,17 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="16dp"
+        android:clipChildren="false"
+        android:clipToPadding="false">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <ImageView
                 android:id="@+id/quiz_eb_icon"
@@ -48,13 +52,13 @@
                 android:layout_height="wrap_content"
                 android:text="@string/widget_quiz_short_label"
                 android:textColor="#FCD34D"
-                android:textSize="10.5sp"
-                android:fontFamily="@font/lexend_semibold"
+                android:textSize="11.1sp"
+                android:fontFamily="@font/outfit_semibold"
                 android:maxLines="1"
                 android:includeFontPadding="false"
                 android:layout_weight="1"
                 android:layout_marginStart="5dp"
-                android:letterSpacing="0.06"
+                android:letterSpacing="0.1"
                 android:ellipsize="end" />
         </LinearLayout>
 
@@ -62,7 +66,9 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:minHeight="4dp" />
+            android:minHeight="4dp"
+            android:clipChildren="false"
+            android:clipToPadding="false" />
 
         <TextView
             android:id="@+id/quiz_degree"
@@ -70,14 +76,14 @@
             android:layout_height="58dp"
             android:text="♭3"
             android:textColor="#FCD34D"
-            android:textSize="50sp"
-            android:fontFamily="@font/lexend_bold"
+            android:textSize="53.0sp"
+            android:fontFamily="@font/outfit_semibold"
             android:maxLines="1"
             android:includeFontPadding="false"
             android:gravity="center_vertical"
             android:autoSizeTextType="uniform"
             android:autoSizeMinTextSize="22sp"
-            android:autoSizeMaxTextSize="50sp"
+            android:autoSizeMaxTextSize="53.0sp"
             android:autoSizeStepGranularity="1sp" />
 
         <TextView
@@ -86,8 +92,8 @@
             android:layout_height="wrap_content"
             android:text="of E♭"
             android:textColor="#B8FFFFFF"
-            android:textSize="15sp"
-            android:fontFamily="@font/lexend_medium"
+            android:textSize="15.9sp"
+            android:fontFamily="@font/outfit_medium"
             android:maxLines="1"
             android:includeFontPadding="false"
             android:ellipsize="end"
@@ -97,13 +103,17 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:minHeight="4dp" />
+            android:minHeight="4dp"
+            android:clipChildren="false"
+            android:clipToPadding="false" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <ImageView
                 android:layout_width="11dp"
@@ -118,8 +128,8 @@
                 android:layout_height="wrap_content"
                 android:text="@string/widget_quiz_hint"
                 android:textColor="#7AFFFFFF"
-                android:textSize="11sp"
-                android:fontFamily="@font/lexend_medium"
+                android:textSize="11.7sp"
+                android:fontFamily="@font/outfit_medium"
                 android:maxLines="1"
                 android:includeFontPadding="false"
                 android:layout_marginStart="4dp"

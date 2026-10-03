@@ -2,11 +2,13 @@ package com.improvy.improvy
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.LinearGradient
 import android.graphics.Paint
-import android.graphics.Path
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
 import android.graphics.RectF
 import android.graphics.Shader
 import android.view.View
@@ -35,24 +37,28 @@ class WidgetRenderTest {
     private class Spec(val name: String, val wDp: Int, val hDp: Int, val build: (Context, SharedPreferences) -> RemoteViews)
 
     private val specs = listOf(
-        Spec("quiz", 170, 170) { c, d -> WidgetViews.quiz(c, d, false) },
-        Spec("level", 170, 170) { c, d -> WidgetViews.level(c, d) },
-        Spec("streak", 170, 170) { c, d -> WidgetViews.streak(c, d, false) },
-        Spec("weakest", 170, 170) { c, d -> WidgetViews.weakest(c, d) },
-        Spec("pocket", 170, 170) { c, d -> WidgetViews.pocket(c, d) },
-        Spec("daily", 360, 170) { c, d -> WidgetViews.daily(c, d) },
-        Spec("quiz_wide", 360, 170) { c, d -> WidgetViews.quiz(c, d, true) },
-        Spec("streak_wide", 360, 170) { c, d -> WidgetViews.streak(c, d, true) },
-        Spec("map", 360, 170) { c, d -> WidgetViews.map(c, d, false) },
-        Spec("launcher", 360, 170) { c, d -> WidgetViews.launcher(c, d) },
-        Spec("theory", 360, 170) { c, d -> WidgetViews.theory(c, d) },
-        Spec("map_tall", 360, 380) { c, d -> WidgetViews.map(c, d, true) },
+        Spec("quiz", 158, 158) { c, d -> WidgetViews.quiz(c, d, false) },
+        Spec("level", 158, 158) { c, d -> WidgetViews.level(c, d) },
+        Spec("streak", 158, 158) { c, d -> WidgetViews.streak(c, d, false) },
+        Spec("weakest", 158, 158) { c, d -> WidgetViews.weakest(c, d) },
+        Spec("pocket", 158, 158) { c, d -> WidgetViews.pocket(c, d) },
+        Spec("daily", 338, 158) { c, d -> WidgetViews.daily(c, d) },
+        Spec("quiz_wide", 338, 158) { c, d -> WidgetViews.quiz(c, d, true) },
+        Spec("streak_wide", 338, 158) { c, d -> WidgetViews.streak(c, d, true) },
+        Spec("map", 338, 158) { c, d -> WidgetViews.map(c, d, false) },
+        Spec("launcher", 338, 158) { c, d -> WidgetViews.launcher(c, d) },
+        Spec("theory", 338, 158) { c, d -> WidgetViews.theory(c, d) },
+        Spec("map_tall", 338, 354) { c, d -> WidgetViews.map(c, d, true) },
     )
 
     @Test
     fun renderAll() {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
-        val context = instrumentation.targetContext
+        // Drawn at 3x, the density the iOS renders use, whatever the
+        // emulator's own screen is.
+        val base = instrumentation.targetContext
+        val config = Configuration(base.resources.configuration).apply { densityDpi = 480 }
+        val context = base.createConfigurationContext(config)
         val out = File(context.filesDir, "renders").apply { deleteRecursively(); mkdirs() }
         val states = instrumentation.context.assets.list("")!!.filter { it.endsWith(".json") }
         for (asset in states) {
@@ -94,12 +100,16 @@ class WidgetRenderTest {
             View.MeasureSpec.makeMeasureSpec(h, View.MeasureSpec.EXACTLY)
         )
         parent.layout(0, 0, w, h)
+        val raw = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        parent.draw(Canvas(raw))
+        // A launcher rounds the widget to the system radius, antialiased.
+        val r = context.resources.getDimension(R.dimen.widget_radius)
         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bmp)
-        // A launcher clips the widget to the system corner radius.
-        val r = context.resources.getDimension(R.dimen.widget_radius)
-        canvas.clipPath(Path().apply { addRoundRect(RectF(0f, 0f, w.toFloat(), h.toFloat()), r, r, Path.Direction.CW) })
-        parent.draw(canvas)
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
+        canvas.drawRoundRect(RectF(0f, 0f, w.toFloat(), h.toFloat()), r, r, paint)
+        paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
+        canvas.drawBitmap(raw, 0f, 0f, paint)
         return bmp
     }
 
@@ -107,7 +117,7 @@ class WidgetRenderTest {
     private fun gallery(context: Context, shots: List<Pair<Spec, Bitmap>>): Bitmap {
         val d = context.resources.displayMetrics.density
         val gap = (16 * d).toInt()
-        val width = (360 * d).toInt() + gap * 2
+        val width = (338 * d).toInt() + gap * 2
         val placed = mutableListOf<Triple<Bitmap, Int, Int>>()
         var y = gap
         var x = gap

@@ -13,6 +13,11 @@ import '../utils/music_engine.dart';
 import '../services/haptics_service.dart';
 import '../widgets/note_text.dart';
 
+/// The answer pad is sized from its width, in square buttons. On a tablet the
+/// app lays out on a roomier phone (TabletFit), and a pad as wide as that
+/// would not fit its height; this is a little more than the widest iPhone's.
+const double _kMaxPadWidth = 440;
+
 class TrainerScreen extends StatefulWidget {
   final TrainingMode mode;
   final String selectedKey;
@@ -1514,8 +1519,9 @@ class _AnswerGrid extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
         child: LayoutBuilder(
           builder: (ctx, constraints) {
-            final bw = (constraints.maxWidth - 3 * gap) / 4;
-            return Column(
+            final w = min(constraints.maxWidth, _kMaxPadWidth);
+            final bw = (w - 3 * gap) / 4;
+            return Center(child: SizedBox(width: w, child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Row 1: 4 equal buttons
@@ -1561,7 +1567,7 @@ class _AnswerGrid extends StatelessWidget {
                   ],
                 ),
               ],
-            );
+            )));
           },
         ),
       );
@@ -1574,9 +1580,10 @@ class _AnswerGrid extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
       child: LayoutBuilder(
         builder: (ctx, constraints) {
-          final bw = (constraints.maxWidth - (cols - 1) * cgap) / cols;
+          final w = min(constraints.maxWidth, _kMaxPadWidth);
+          final bw = (w - (cols - 1) * cgap) / cols;
           final rowsCount = (count / cols).ceil();
-          return Column(
+          return Center(child: SizedBox(width: w, child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               for (int r = 0; r < rowsCount; r++) ...[
@@ -1606,7 +1613,7 @@ class _AnswerGrid extends StatelessWidget {
                 ),
               ],
             ],
-          );
+          )));
         },
       ),
     );

@@ -26,13 +26,17 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="16dp"
+        android:clipChildren="false"
+        android:clipToPadding="false">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <ImageView
                 android:id="@+id/daily_eb_icon"
@@ -48,13 +52,13 @@
                 android:layout_height="wrap_content"
                 android:text="@string/widget_daily_label"
                 android:textColor="#FCD34D"
-                android:textSize="10.5sp"
-                android:fontFamily="@font/lexend_semibold"
+                android:textSize="11.1sp"
+                android:fontFamily="@font/outfit_semibold"
                 android:maxLines="1"
                 android:includeFontPadding="false"
                 android:layout_weight="1"
                 android:layout_marginStart="5dp"
-                android:letterSpacing="0.06"
+                android:letterSpacing="0.1"
                 android:ellipsize="end" />
 
             <LinearLayout
@@ -67,7 +71,9 @@
                 android:paddingStart="7dp"
                 android:paddingEnd="7dp"
                 android:paddingTop="3dp"
-                android:paddingBottom="3dp">
+                android:paddingBottom="3dp"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <ImageView
                     android:id="@+id/daily_chip_flame"
@@ -82,8 +88,8 @@
                     android:layout_height="wrap_content"
                     android:text="0"
                     android:textColor="#F2FFFFFF"
-                    android:textSize="11sp"
-                    android:fontFamily="@font/lexend_bold"
+                    android:textSize="11.7sp"
+                    android:fontFamily="@font/outfit_semibold"
                     android:maxLines="1"
                     android:includeFontPadding="false"
                     android:layout_marginStart="3dp" />
@@ -94,49 +100,81 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:minHeight="6dp" />
+            android:minHeight="6dp"
+            android:clipChildren="false"
+            android:clipToPadding="false" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <FrameLayout
-                android:layout_width="60dp"
-                android:layout_height="60dp">
+                android:layout_width="88dp"
+                android:layout_height="88dp"
+                android:layout_margin="-14dp"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <ImageView
-                    android:id="@+id/daily_badge"
+                    android:id="@+id/daily_badge_glow"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:src="@drawable/w_badge"
+                    android:src="@drawable/w_soft_glow"
                     android:importantForAccessibility="no"
-                    android:tint="#FCD34D" />
+                    android:tint="#60FCD34D"
+                    android:tintMode="src_in"
+                    android:scaleType="fitXY"
+                    android:layout_marginTop="4dp" />
 
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/w_badge_sheen"
-                    android:importantForAccessibility="no" />
+                <FrameLayout
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_gravity="center"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
 
-                <TextView
-                    android:id="@+id/daily_badge_text"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:text="?"
-                    android:textColor="#140F1C"
-                    android:textSize="25sp"
-                    android:fontFamily="@font/lexend_bold"
-                    android:maxLines="1"
-                    android:includeFontPadding="false"
-                    android:gravity="center"
-                    android:paddingStart="3dp"
-                    android:paddingEnd="3dp"
-                    android:autoSizeTextType="uniform"
-                    android:autoSizeMinTextSize="10sp"
-                    android:autoSizeMaxTextSize="25sp"
-                    android:autoSizeStepGranularity="1sp" />
+                    <ImageView
+                        android:id="@+id/daily_badge"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/w_badge"
+                        android:importantForAccessibility="no"
+                        android:tint="#FCD34D" />
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/w_badge_shade"
+                        android:importantForAccessibility="no" />
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/w_badge_sheen"
+                        android:importantForAccessibility="no" />
+
+                    <TextView
+                        android:id="@+id/daily_badge_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:text="?"
+                        android:textColor="#140F1C"
+                        android:textSize="26.5sp"
+                        android:fontFamily="@font/outfit_semibold"
+                        android:maxLines="1"
+                        android:includeFontPadding="false"
+                        android:gravity="center"
+                        android:paddingStart="3dp"
+                        android:paddingEnd="3dp"
+                        android:autoSizeTextType="uniform"
+                        android:autoSizeMinTextSize="10sp"
+                        android:autoSizeMaxTextSize="26.5sp"
+                        android:autoSizeStepGranularity="1sp" />
+                </FrameLayout>
             </FrameLayout>
 
             <LinearLayout
@@ -144,7 +182,9 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="vertical"
-                android:layout_marginStart="14dp">
+                android:layout_marginStart="14dp"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <TextView
                     android:id="@+id/daily_headline"
@@ -152,13 +192,13 @@
                     android:layout_height="28dp"
                     android:text="Key of B♭"
                     android:textColor="#FFFFFF"
-                    android:textSize="22sp"
-                    android:fontFamily="@font/lexend_semibold"
+                    android:textSize="23.3sp"
+                    android:fontFamily="@font/outfit_semibold"
                     android:maxLines="1"
                     android:includeFontPadding="false"
                     android:autoSizeTextType="uniform"
                     android:autoSizeMinTextSize="13sp"
-                    android:autoSizeMaxTextSize="22sp"
+                    android:autoSizeMaxTextSize="23.3sp"
                     android:autoSizeStepGranularity="1sp" />
 
                 <TextView
@@ -167,14 +207,14 @@
                     android:layout_height="36dp"
                     android:text="9/10"
                     android:textColor="#FFFFFF"
-                    android:textSize="30sp"
-                    android:fontFamily="@font/lexend_bold"
+                    android:textSize="31.8sp"
+                    android:fontFamily="@font/outfit_semibold"
                     android:maxLines="1"
                     android:includeFontPadding="false"
                     android:visibility="gone"
                     android:autoSizeTextType="uniform"
                     android:autoSizeMinTextSize="16sp"
-                    android:autoSizeMaxTextSize="30sp"
+                    android:autoSizeMaxTextSize="31.8sp"
                     android:autoSizeStepGranularity="1sp" />
 
                 <TextView
@@ -183,8 +223,8 @@
                     android:layout_height="wrap_content"
                     android:text="Chromatic"
                     android:textColor="#FCD34D"
-                    android:textSize="12sp"
-                    android:fontFamily="@font/lexend_semibold"
+                    android:textSize="12.7sp"
+                    android:fontFamily="@font/outfit_semibold"
                     android:maxLines="1"
                     android:includeFontPadding="false"
                     android:ellipsize="end"
@@ -206,8 +246,8 @@
                     android:layout_height="wrap_content"
                     android:text="@string/widget_daily_sub_placeholder"
                     android:textColor="#7AFFFFFF"
-                    android:textSize="11sp"
-                    android:fontFamily="@font/lexend_medium"
+                    android:textSize="11.7sp"
+                    android:fontFamily="@font/outfit_medium"
                     android:maxLines="1"
                     android:includeFontPadding="false"
                     android:ellipsize="end"
@@ -216,31 +256,53 @@
 
             <FrameLayout
                 android:id="@+id/daily_play"
-                android:layout_width="50dp"
-                android:layout_height="50dp">
+                android:layout_width="78dp"
+                android:layout_height="78dp"
+                android:layout_margin="-14dp"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <ImageView
-                    android:id="@+id/daily_glyph_bg"
+                    android:id="@+id/daily_glyph_glow"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:src="@drawable/w_circle"
+                    android:src="@drawable/w_soft_glow"
                     android:importantForAccessibility="no"
-                    android:tint="#FCD34D" />
+                    android:tint="#6EFCD34D"
+                    android:tintMode="src_in"
+                    android:scaleType="fitXY"
+                    android:layout_marginTop="4dp" />
 
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/w_circle_shade"
-                    android:importantForAccessibility="no" />
+                <FrameLayout
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_gravity="center"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
 
-                <ImageView
-                    android:id="@+id/daily_glyph"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:src="@drawable/w_ic_play"
-                    android:importantForAccessibility="no"
-                    android:tint="#140F1C"
-                    android:layout_gravity="center" />
+                    <ImageView
+                        android:id="@+id/daily_glyph_bg"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/w_circle"
+                        android:importantForAccessibility="no"
+                        android:tint="#FCD34D" />
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/w_circle_shade"
+                        android:importantForAccessibility="no" />
+
+                    <ImageView
+                        android:id="@+id/daily_glyph"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/w_ic_play"
+                        android:importantForAccessibility="no"
+                        android:tint="#140F1C"
+                        android:layout_gravity="center" />
+                </FrameLayout>
             </FrameLayout>
         </LinearLayout>
 
@@ -248,6 +310,8 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:minHeight="0dp" />
+            android:minHeight="0dp"
+            android:clipChildren="false"
+            android:clipToPadding="false" />
     </LinearLayout>
 </FrameLayout>

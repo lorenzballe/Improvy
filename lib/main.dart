@@ -12,7 +12,7 @@ import 'services/keep_alive_audio.dart';
 import 'services/notification_service.dart';
 import 'services/widget_service.dart';
 import 'screens/root_screen.dart';
-import 'widgets/phone_column.dart';
+import 'widgets/tablet_fit.dart';
 import 'l10n/l10n.dart';
 
 void main() async {
@@ -109,7 +109,7 @@ class ImprovyApp extends StatelessWidget {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       builder: (context, child) => _StableInsets(
-        child: PhoneColumn(child: child ?? const SizedBox.shrink()),
+        child: TabletFit(child: child ?? const SizedBox.shrink()),
       ),
       theme: ThemeData(
         colorScheme: const ColorScheme.dark(surface: Color(0xFF0F0A1A)),

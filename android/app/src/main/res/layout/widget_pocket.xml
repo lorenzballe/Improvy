@@ -26,13 +26,17 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="16dp"
+        android:clipChildren="false"
+        android:clipToPadding="false">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <ImageView
                 android:id="@+id/pocket_eb_icon"
@@ -48,13 +52,13 @@
                 android:layout_height="wrap_content"
                 android:text="@string/widget_pocket_eyebrow"
                 android:textColor="#6366F1"
-                android:textSize="10.5sp"
-                android:fontFamily="@font/lexend_semibold"
+                android:textSize="11.1sp"
+                android:fontFamily="@font/outfit_semibold"
                 android:maxLines="1"
                 android:includeFontPadding="false"
                 android:layout_weight="1"
                 android:layout_marginStart="5dp"
-                android:letterSpacing="0.06"
+                android:letterSpacing="0.1"
                 android:ellipsize="end" />
         </LinearLayout>
 
@@ -62,54 +66,80 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:minHeight="6dp" />
+            android:minHeight="6dp"
+            android:clipChildren="false"
+            android:clipToPadding="false" />
 
         <FrameLayout
-            android:layout_width="48dp"
-            android:layout_height="48dp">
+            android:layout_width="76dp"
+            android:layout_height="76dp"
+            android:layout_margin="-14dp"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <ImageView
-                android:id="@+id/pocket_glyph_bg"
+                android:id="@+id/pocket_glyph_glow"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:src="@drawable/w_circle"
+                android:src="@drawable/w_soft_glow"
                 android:importantForAccessibility="no"
-                android:tint="#6366F1" />
+                android:tint="#6EFCD34D"
+                android:tintMode="src_in"
+                android:scaleType="fitXY"
+                android:layout_marginTop="4dp" />
 
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@drawable/w_circle_shade"
-                android:importantForAccessibility="no" />
+            <FrameLayout
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
-            <ImageView
-                android:id="@+id/pocket_glyph"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/w_ic_headphones"
-                android:importantForAccessibility="no"
-                android:tint="#FFFFFF"
-                android:layout_gravity="center" />
+                <ImageView
+                    android:id="@+id/pocket_glyph_bg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/w_circle"
+                    android:importantForAccessibility="no"
+                    android:tint="#6366F1" />
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/w_circle_shade"
+                    android:importantForAccessibility="no" />
+
+                <ImageView
+                    android:id="@+id/pocket_glyph"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/w_ic_headphones"
+                    android:importantForAccessibility="no"
+                    android:tint="#FFFFFF"
+                    android:layout_gravity="center" />
+            </FrameLayout>
         </FrameLayout>
 
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:minHeight="6dp" />
+            android:minHeight="6dp"
+            android:clipChildren="false"
+            android:clipToPadding="false" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="24dp"
             android:text="@string/widget_pocket_label"
             android:textColor="#FFFFFF"
-            android:textSize="19sp"
-            android:fontFamily="@font/lexend_bold"
+            android:textSize="20.1sp"
+            android:fontFamily="@font/outfit_semibold"
             android:maxLines="1"
             android:includeFontPadding="false"
             android:autoSizeTextType="uniform"
             android:autoSizeMinTextSize="11sp"
-            android:autoSizeMaxTextSize="19sp"
+            android:autoSizeMaxTextSize="20.1sp"
             android:autoSizeStepGranularity="1sp" />
 
         <TextView
@@ -117,8 +147,8 @@
             android:layout_height="wrap_content"
             android:text="@string/widget_pocket_sub"
             android:textColor="#7AFFFFFF"
-            android:textSize="11sp"
-            android:fontFamily="@font/lexend_medium"
+            android:textSize="11.7sp"
+            android:fontFamily="@font/outfit_medium"
             android:maxLines="2"
             android:includeFontPadding="false"
             android:ellipsize="end"

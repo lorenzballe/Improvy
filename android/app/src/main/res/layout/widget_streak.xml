@@ -26,13 +26,17 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="16dp"
+        android:clipChildren="false"
+        android:clipToPadding="false">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <ImageView
                 android:id="@+id/streak_eb_icon"
@@ -48,13 +52,13 @@
                 android:layout_height="wrap_content"
                 android:text="@string/widget_streak_label"
                 android:textColor="#F97316"
-                android:textSize="10.5sp"
-                android:fontFamily="@font/lexend_semibold"
+                android:textSize="11.1sp"
+                android:fontFamily="@font/outfit_semibold"
                 android:maxLines="1"
                 android:includeFontPadding="false"
                 android:layout_weight="1"
                 android:layout_marginStart="5dp"
-                android:letterSpacing="0.06"
+                android:letterSpacing="0.1"
                 android:ellipsize="end" />
         </LinearLayout>
 
@@ -62,7 +66,9 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:minHeight="4dp" />
+            android:minHeight="4dp"
+            android:clipChildren="false"
+            android:clipToPadding="false" />
 
         <TextView
             android:id="@+id/streak_count"
@@ -70,14 +76,14 @@
             android:layout_height="56dp"
             android:text="0"
             android:textColor="#FFFFFF"
-            android:textSize="50sp"
-            android:fontFamily="@font/lexend_bold"
+            android:textSize="53.0sp"
+            android:fontFamily="@font/outfit_semibold"
             android:maxLines="1"
             android:includeFontPadding="false"
             android:gravity="center_vertical"
             android:autoSizeTextType="uniform"
             android:autoSizeMinTextSize="24sp"
-            android:autoSizeMaxTextSize="50sp"
+            android:autoSizeMaxTextSize="53.0sp"
             android:autoSizeStepGranularity="1sp" />
 
         <TextView
@@ -86,8 +92,8 @@
             android:layout_height="wrap_content"
             android:text="@string/widget_streak_caption"
             android:textColor="#7AFFFFFF"
-            android:textSize="11sp"
-            android:fontFamily="@font/lexend_semibold"
+            android:textSize="11.7sp"
+            android:fontFamily="@font/outfit_semibold"
             android:maxLines="2"
             android:includeFontPadding="false"
             android:ellipsize="end"
@@ -97,18 +103,24 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:minHeight="6dp" />
+            android:minHeight="6dp"
+            android:clipChildren="false"
+            android:clipToPadding="false" />
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:gravity="center_horizontal">
+                android:gravity="center_horizontal"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <ImageView
                     android:id="@+id/streak_d0"
@@ -125,7 +137,9 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="center_horizontal"
-                android:layout_marginStart="6dp">
+                android:layout_marginStart="6dp"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <ImageView
                     android:id="@+id/streak_d1"
@@ -142,7 +156,9 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="center_horizontal"
-                android:layout_marginStart="6dp">
+                android:layout_marginStart="6dp"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <ImageView
                     android:id="@+id/streak_d2"
@@ -159,7 +175,9 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="center_horizontal"
-                android:layout_marginStart="6dp">
+                android:layout_marginStart="6dp"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <ImageView
                     android:id="@+id/streak_d3"
@@ -176,7 +194,9 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="center_horizontal"
-                android:layout_marginStart="6dp">
+                android:layout_marginStart="6dp"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <ImageView
                     android:id="@+id/streak_d4"
@@ -193,7 +213,9 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="center_horizontal"
-                android:layout_marginStart="6dp">
+                android:layout_marginStart="6dp"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <ImageView
                     android:id="@+id/streak_d5"
@@ -210,7 +232,9 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="center_horizontal"
-                android:layout_marginStart="6dp">
+                android:layout_marginStart="6dp"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <ImageView
                     android:id="@+id/streak_d6"

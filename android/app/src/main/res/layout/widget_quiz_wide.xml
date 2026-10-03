@@ -26,19 +26,25 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal"
-        android:padding="16dp">
+        android:padding="16dp"
+        android:clipChildren="false"
+        android:clipToPadding="false">
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:gravity="center_vertical"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <ImageView
                     android:id="@+id/quizw_eb_icon"
@@ -54,13 +60,13 @@
                     android:layout_height="wrap_content"
                     android:text="@string/widget_quiz_label"
                     android:textColor="#FCD34D"
-                    android:textSize="10.5sp"
-                    android:fontFamily="@font/lexend_semibold"
+                    android:textSize="11.1sp"
+                    android:fontFamily="@font/outfit_semibold"
                     android:maxLines="1"
                     android:includeFontPadding="false"
                     android:layout_weight="1"
                     android:layout_marginStart="5dp"
-                    android:letterSpacing="0.06"
+                    android:letterSpacing="0.1"
                     android:ellipsize="end" />
             </LinearLayout>
 
@@ -68,7 +74,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:minHeight="4dp" />
+                android:minHeight="4dp"
+                android:clipChildren="false"
+                android:clipToPadding="false" />
 
             <TextView
                 android:id="@+id/quizw_degree"
@@ -76,14 +84,14 @@
                 android:layout_height="66dp"
                 android:text="♭3"
                 android:textColor="#FCD34D"
-                android:textSize="58sp"
-                android:fontFamily="@font/lexend_bold"
+                android:textSize="61.5sp"
+                android:fontFamily="@font/outfit_semibold"
                 android:maxLines="1"
                 android:includeFontPadding="false"
                 android:gravity="center_vertical"
                 android:autoSizeTextType="uniform"
                 android:autoSizeMinTextSize="24sp"
-                android:autoSizeMaxTextSize="58sp"
+                android:autoSizeMaxTextSize="61.5sp"
                 android:autoSizeStepGranularity="1sp" />
 
             <TextView
@@ -92,8 +100,8 @@
                 android:layout_height="wrap_content"
                 android:text="of E♭"
                 android:textColor="#B8FFFFFF"
-                android:textSize="17sp"
-                android:fontFamily="@font/lexend_medium"
+                android:textSize="18.0sp"
+                android:fontFamily="@font/outfit_medium"
                 android:maxLines="1"
                 android:includeFontPadding="false"
                 android:ellipsize="end"
@@ -103,7 +111,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:minHeight="4dp" />
+                android:minHeight="4dp"
+                android:clipChildren="false"
+                android:clipToPadding="false" />
         </LinearLayout>
 
         <LinearLayout
@@ -111,34 +121,58 @@
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:gravity="center"
-            android:layout_marginStart="14dp">
+            android:layout_marginStart="14dp"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <FrameLayout
-                android:layout_width="56dp"
-                android:layout_height="56dp">
+                android:layout_width="84dp"
+                android:layout_height="84dp"
+                android:layout_margin="-14dp"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <ImageView
-                    android:id="@+id/quizw_glyph_bg"
+                    android:id="@+id/quizw_glyph_glow"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:src="@drawable/w_circle"
+                    android:src="@drawable/w_soft_glow"
                     android:importantForAccessibility="no"
-                    android:tint="#FCD34D" />
+                    android:tint="#6EFCD34D"
+                    android:tintMode="src_in"
+                    android:scaleType="fitXY"
+                    android:layout_marginTop="4dp" />
 
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/w_circle_shade"
-                    android:importantForAccessibility="no" />
+                <FrameLayout
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:layout_gravity="center"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
 
-                <ImageView
-                    android:id="@+id/quizw_glyph"
-                    android:layout_width="22dp"
-                    android:layout_height="22dp"
-                    android:src="@drawable/w_ic_eye"
-                    android:importantForAccessibility="no"
-                    android:tint="#140F1C"
-                    android:layout_gravity="center" />
+                    <ImageView
+                        android:id="@+id/quizw_glyph_bg"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/w_circle"
+                        android:importantForAccessibility="no"
+                        android:tint="#FCD34D" />
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/w_circle_shade"
+                        android:importantForAccessibility="no" />
+
+                    <ImageView
+                        android:id="@+id/quizw_glyph"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/w_ic_eye"
+                        android:importantForAccessibility="no"
+                        android:tint="#140F1C"
+                        android:layout_gravity="center" />
+                </FrameLayout>
             </FrameLayout>
 
             <TextView
@@ -146,8 +180,8 @@
                 android:layout_height="wrap_content"
                 android:text="@string/widget_quiz_hint"
                 android:textColor="#7AFFFFFF"
-                android:textSize="11sp"
-                android:fontFamily="@font/lexend_medium"
+                android:textSize="11.7sp"
+                android:fontFamily="@font/outfit_medium"
                 android:maxLines="1"
                 android:includeFontPadding="false"
                 android:layout_marginTop="8dp"

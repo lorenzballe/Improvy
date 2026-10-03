@@ -201,15 +201,17 @@ private fun RemoteViews.eyebrow(icon: Int, label: Int, accent: Int) {
 }
 
 /** A key badge: the key's colour, filled, with ink that can always be read. */
-private fun RemoteViews.badge(bg: Int, label: Int, key: String, colour: Int) {
+private fun RemoteViews.badge(bg: Int, label: Int, glow: Int, key: String, colour: Int) {
     tint(bg, colour)
+    tint(glow, colour, 96)
     setTextViewText(label, music(key.ifEmpty { "?" }))
     setTextColor(label, onFill(colour))
 }
 
 /** A filled round button: the accent, and the glyph in the ink that reads on it. */
-private fun RemoteViews.glyphButton(bg: Int, glyph: Int, colour: Int) {
+private fun RemoteViews.glyphButton(bg: Int, glyph: Int, glow: Int, colour: Int) {
     tint(bg, colour)
+    tint(glow, colour, 110)
     tint(glyph, onFill(colour))
 }
 
@@ -385,7 +387,7 @@ object WidgetViews {
         if (wide) {
             views.setTextViewText(R.id.quizw_degree, music(degree))
             views.setTextViewText(R.id.quizw_of, music(ofKey))
-            views.glyphButton(R.id.quizw_glyph_bg, R.id.quizw_glyph, Ink.gold)
+            views.glyphButton(R.id.quizw_glyph_bg, R.id.quizw_glyph, R.id.quizw_glyph_glow, Ink.gold)
             views.link(context, R.id.quizw_root, "improvy://quiz?s=$slot")
         } else {
             views.setTextViewText(R.id.quiz_degree, music(degree))
@@ -415,7 +417,7 @@ object WidgetViews {
             R.id.daily_eb_icon, if (played) R.drawable.w_ic_check else R.drawable.w_ic_calendar
         )
         views.streakChip(R.id.daily_chip_flame, R.id.daily_chip_count, data.number("daily_streak"), played)
-        views.badge(R.id.daily_badge, R.id.daily_badge_text, key, colour)
+        views.badge(R.id.daily_badge, R.id.daily_badge_text, R.id.daily_badge_glow, key, colour)
 
         if (played) {
             val score = data.getString("daily_score", "") ?: ""
@@ -453,7 +455,7 @@ object WidgetViews {
                 if (sub.isNullOrEmpty()) context.getString(R.string.widget_daily_sub_placeholder) else sub
             )
             views.setViewVisibility(R.id.daily_play, View.VISIBLE)
-            views.glyphButton(R.id.daily_glyph_bg, R.id.daily_glyph, Ink.gold)
+            views.glyphButton(R.id.daily_glyph_bg, R.id.daily_glyph, R.id.daily_glyph_glow, Ink.gold)
         }
         views.link(context, R.id.daily_root, "improvy://daily")
         return views
@@ -598,7 +600,7 @@ object WidgetViews {
             views.setTextColor(R.id.streakt_caption, captionColour)
             views.weekDots(kWideDots, data.week(), colour, kWideLetters)
             views.setViewVisibility(R.id.streakt_play, if (atRisk) View.VISIBLE else View.GONE)
-            views.glyphButton(R.id.streakt_glyph_bg, R.id.streakt_glyph, Ink.gold)
+            views.glyphButton(R.id.streakt_glyph_bg, R.id.streakt_glyph, R.id.streakt_glyph_glow, Ink.gold)
             views.link(context, R.id.streakt_root, "improvy://daily")
         } else {
             views = RemoteViews(context.packageName, R.layout.widget_streak)
@@ -624,7 +626,7 @@ object WidgetViews {
         val key = data.getString("weak_key", "") ?: ""
         val colour = data.color("weak_color", Ink.rose)
         views.glow(R.id.weak_glow, Ink.rose)
-        views.badge(R.id.weak_badge, R.id.weak_badge_text, key, colour)
+        views.badge(R.id.weak_badge, R.id.weak_badge_text, R.id.weak_badge_glow, key, colour)
         if (key.isEmpty()) {
             views.setTextViewText(R.id.weak_pct, "—")
             views.setViewVisibility(R.id.weak_pct_sign, View.GONE)
@@ -652,15 +654,15 @@ object WidgetViews {
     fun launcher(context: Context, data: SharedPreferences): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_launcher)
         views.glow(R.id.launcher_glow, Ink.indigo)
-        class Mode(val cell: Int, val bg: Int, val glyph: Int, val colour: Int, val uri: String)
+        class Mode(val cell: Int, val bg: Int, val glyph: Int, val glow: Int, val colour: Int, val uri: String)
         val modes = listOf(
-            Mode(R.id.launch_daily, R.id.launch_daily_glyph_bg, R.id.launch_daily_glyph, Ink.gold, "improvy://daily"),
-            Mode(R.id.launch_pocket, R.id.launch_pocket_glyph_bg, R.id.launch_pocket_glyph, Ink.indigo, "improvy://pocket"),
-            Mode(R.id.launch_chromatic, R.id.launch_chromatic_glyph_bg, R.id.launch_chromatic_glyph, Ink.violet, "improvy://chromatic"),
-            Mode(R.id.launch_custom, R.id.launch_custom_glyph_bg, R.id.launch_custom_glyph, Ink.magenta, "improvy://custom")
+            Mode(R.id.launch_daily, R.id.launch_daily_glyph_bg, R.id.launch_daily_glyph, R.id.launch_daily_glyph_glow, Ink.gold, "improvy://daily"),
+            Mode(R.id.launch_pocket, R.id.launch_pocket_glyph_bg, R.id.launch_pocket_glyph, R.id.launch_pocket_glyph_glow, Ink.indigo, "improvy://pocket"),
+            Mode(R.id.launch_chromatic, R.id.launch_chromatic_glyph_bg, R.id.launch_chromatic_glyph, R.id.launch_chromatic_glyph_glow, Ink.violet, "improvy://chromatic"),
+            Mode(R.id.launch_custom, R.id.launch_custom_glyph_bg, R.id.launch_custom_glyph, R.id.launch_custom_glyph_glow, Ink.magenta, "improvy://custom")
         )
         for (m in modes) {
-            views.glyphButton(m.bg, m.glyph, m.colour)
+            views.glyphButton(m.bg, m.glyph, m.glow, m.colour)
             views.link(context, m.cell, m.uri)
         }
         return views
@@ -671,7 +673,7 @@ object WidgetViews {
     fun pocket(context: Context, data: SharedPreferences): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_pocket)
         views.glow(R.id.pocket_glow, Ink.indigo)
-        views.glyphButton(R.id.pocket_glyph_bg, R.id.pocket_glyph, Ink.indigo)
+        views.glyphButton(R.id.pocket_glyph_bg, R.id.pocket_glyph, R.id.pocket_glyph_glow, Ink.indigo)
         views.link(context, R.id.pocket_root, "improvy://pocket")
         return views
     }

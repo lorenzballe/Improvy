@@ -89,6 +89,14 @@ void main() {
     });
   });
 
+  test('every iOS tap target reaches the app', () {
+    // home_widget drops a URL without a homeWidget query item: the tap opens
+    // the app and goes nowhere. Every target goes through Improvy.link.
+    expect(swift, isNot(contains('URL(string: "improvy://')));
+    expect(swift, contains('Improvy.link('));
+    expect(_src('ios/ImprovyWidget/ImprovyKit.swift'), contains('homeWidget'));
+  });
+
   group('Android', () {
     test('every provider the app refreshes exists, and is declared', () {
       for (final (provider, _) in published) {

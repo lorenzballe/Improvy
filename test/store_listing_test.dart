@@ -12,7 +12,7 @@ import 'package:improvy/screens/daily_results_screen.dart';
 import 'package:improvy/screens/pocket_mode_screen.dart';
 import 'package:improvy/screens/root_screen.dart';
 import 'package:improvy/utils/music_engine.dart';
-import 'package:improvy/widgets/phone_column.dart';
+import 'package:improvy/widgets/tablet_fit.dart';
 
 import 'screens_render_test.dart' as layout show loadRealFonts;
 import 'store_screenshot_test.dart' as store show loadRealFonts;
@@ -95,9 +95,9 @@ void main() {
   });
 
   for (final d in _devices) {
-    // As main.dart builds it: on a tablet the app is a phone-wide column.
+    // As main.dart builds it: on a tablet the app fills the screen, scaled.
     Future<void> show(WidgetTester t, Widget home, AppProvider p) => frame(
-        t, PhoneColumn(child: home), p,
+        t, TabletFit(child: home), p,
         points: d.points, scale: d.scale, top: d.top, bottom: d.bottom);
     Future<void> snap(String name) =>
         expectLater(find.byType(MaterialApp), matchesGoldenFile('store/${d.name}_$name.png'));

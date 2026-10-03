@@ -6,6 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:improvy/l10n/l10n.dart';
 import 'package:improvy/models/training_mode.dart';
 import 'package:improvy/providers/app_provider.dart';
+import 'package:improvy/models/stats.dart';
+import 'package:improvy/screens/daily_results_screen.dart';
 import 'package:improvy/screens/root_screen.dart';
 import 'package:improvy/screens/setup_screen.dart';
 import 'package:improvy/screens/stats_screen.dart';
@@ -91,6 +93,36 @@ void main() {
       expect(p.activeMode, isNull);
       await tap(t, 'improvy://daily');
       expect(p.activeMode, isNotNull, reason: 'the run should have started');
+    });
+
+    testWidgets('iOS taps carry homeWidget and still land', (t) async {
+      // home_widget on iOS only passes on URLs with a homeWidget query item.
+      final p = await pumpRoot(t);
+      await tap(t, 'improvy://daily?homeWidget');
+      expect(p.activeMode, isNotNull, reason: 'the run should have started');
+    });
+
+    testWidgets('the daily, once played, opens today\'s result', (t) async {
+      final p = await pumpRoot(t);
+      p.startDailyChallenge();
+      for (final d in p.activeDailyDegrees) {
+        p.recordAnswer(
+          isCorrect: true,
+          responseTime: 1200,
+          answerDetails: AnswerRecord(
+            degree: d, note: 'E', selectedNote: 'E', tonality: p.todayChallenge.key,
+            mode: p.todayChallenge.mode.storageKey, isReverse: false, difficulty: 2,
+            responseTime: 1200, isCorrect: true, timestamp: DateTime.now().millisecondsSinceEpoch,
+          ),
+        );
+      }
+      p.finishSession();
+      p.exitTrainer();
+      await t.pump(const Duration(milliseconds: 500));
+      expect(p.todayDailyResult, isNotNull);
+      await tap(t, 'improvy://daily?homeWidget');
+      expect(find.byType(DailyResultsScreen), findsOneWidget);
+      expect(p.activeMode, isNull, reason: 'one attempt a day: no second run');
     });
 
     testWidgets('the weakest key opens that key', (t) async {

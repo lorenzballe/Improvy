@@ -27,11 +27,15 @@
         android:layout_height="match_parent"
         android:orientation="horizontal"
         android:padding="16dp"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:clipChildren="false"
+        android:clipToPadding="false">
 
         <FrameLayout
             android:layout_width="54dp"
-            android:layout_height="54dp">
+            android:layout_height="54dp"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <ImageView
                 android:layout_width="match_parent"
@@ -54,7 +58,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:layout_marginStart="14dp">
+            android:layout_marginStart="14dp"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <TextView
                 android:id="@+id/streakt_count"
@@ -62,14 +68,14 @@
                 android:layout_height="48dp"
                 android:text="0"
                 android:textColor="#FFFFFF"
-                android:textSize="42sp"
-                android:fontFamily="@font/lexend_bold"
+                android:textSize="44.5sp"
+                android:fontFamily="@font/outfit_semibold"
                 android:maxLines="1"
                 android:includeFontPadding="false"
                 android:gravity="center_vertical"
                 android:autoSizeTextType="uniform"
                 android:autoSizeMinTextSize="20sp"
-                android:autoSizeMaxTextSize="42sp"
+                android:autoSizeMaxTextSize="44.5sp"
                 android:autoSizeStepGranularity="1sp" />
 
             <TextView
@@ -78,8 +84,8 @@
                 android:layout_height="wrap_content"
                 android:text="@string/widget_streak_caption"
                 android:textColor="#7AFFFFFF"
-                android:textSize="12sp"
-                android:fontFamily="@font/lexend_semibold"
+                android:textSize="12.7sp"
+                android:fontFamily="@font/outfit_semibold"
                 android:maxLines="2"
                 android:includeFontPadding="false"
                 android:ellipsize="end"
@@ -91,18 +97,24 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:gravity="end"
-            android:layout_marginStart="10dp">
+            android:layout_marginStart="10dp"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:gravity="center_horizontal">
+                    android:gravity="center_horizontal"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
 
                     <ImageView
                         android:id="@+id/streakt_d0"
@@ -119,8 +131,8 @@
                         android:layout_height="wrap_content"
                         android:text="M"
                         android:textColor="#59FFFFFF"
-                        android:textSize="8.5sp"
-                        android:fontFamily="@font/lexend_semibold"
+                        android:textSize="9.0sp"
+                        android:fontFamily="@font/outfit_semibold"
                         android:maxLines="1"
                         android:includeFontPadding="false"
                         android:layout_marginTop="5dp" />
@@ -131,7 +143,9 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:gravity="center_horizontal"
-                    android:layout_marginStart="11dp">
+                    android:layout_marginStart="11dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
 
                     <ImageView
                         android:id="@+id/streakt_d1"
@@ -148,8 +162,8 @@
                         android:layout_height="wrap_content"
                         android:text="T"
                         android:textColor="#59FFFFFF"
-                        android:textSize="8.5sp"
-                        android:fontFamily="@font/lexend_semibold"
+                        android:textSize="9.0sp"
+                        android:fontFamily="@font/outfit_semibold"
                         android:maxLines="1"
                         android:includeFontPadding="false"
                         android:layout_marginTop="5dp" />
@@ -160,7 +174,9 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:gravity="center_horizontal"
-                    android:layout_marginStart="11dp">
+                    android:layout_marginStart="11dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
 
                     <ImageView
                         android:id="@+id/streakt_d2"
@@ -177,8 +193,8 @@
                         android:layout_height="wrap_content"
                         android:text="W"
                         android:textColor="#59FFFFFF"
-                        android:textSize="8.5sp"
-                        android:fontFamily="@font/lexend_semibold"
+                        android:textSize="9.0sp"
+                        android:fontFamily="@font/outfit_semibold"
                         android:maxLines="1"
                         android:includeFontPadding="false"
                         android:layout_marginTop="5dp" />
@@ -189,7 +205,9 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:gravity="center_horizontal"
-                    android:layout_marginStart="11dp">
+                    android:layout_marginStart="11dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
 
                     <ImageView
                         android:id="@+id/streakt_d3"
@@ -206,8 +224,8 @@
                         android:layout_height="wrap_content"
                         android:text="T"
                         android:textColor="#59FFFFFF"
-                        android:textSize="8.5sp"
-                        android:fontFamily="@font/lexend_semibold"
+                        android:textSize="9.0sp"
+                        android:fontFamily="@font/outfit_semibold"
                         android:maxLines="1"
                         android:includeFontPadding="false"
                         android:layout_marginTop="5dp" />
@@ -218,7 +236,9 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:gravity="center_horizontal"
-                    android:layout_marginStart="11dp">
+                    android:layout_marginStart="11dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
 
                     <ImageView
                         android:id="@+id/streakt_d4"
@@ -235,8 +255,8 @@
                         android:layout_height="wrap_content"
                         android:text="F"
                         android:textColor="#59FFFFFF"
-                        android:textSize="8.5sp"
-                        android:fontFamily="@font/lexend_semibold"
+                        android:textSize="9.0sp"
+                        android:fontFamily="@font/outfit_semibold"
                         android:maxLines="1"
                         android:includeFontPadding="false"
                         android:layout_marginTop="5dp" />
@@ -247,7 +267,9 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:gravity="center_horizontal"
-                    android:layout_marginStart="11dp">
+                    android:layout_marginStart="11dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
 
                     <ImageView
                         android:id="@+id/streakt_d5"
@@ -264,8 +286,8 @@
                         android:layout_height="wrap_content"
                         android:text="S"
                         android:textColor="#59FFFFFF"
-                        android:textSize="8.5sp"
-                        android:fontFamily="@font/lexend_semibold"
+                        android:textSize="9.0sp"
+                        android:fontFamily="@font/outfit_semibold"
                         android:maxLines="1"
                         android:includeFontPadding="false"
                         android:layout_marginTop="5dp" />
@@ -276,7 +298,9 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:gravity="center_horizontal"
-                    android:layout_marginStart="11dp">
+                    android:layout_marginStart="11dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
 
                     <ImageView
                         android:id="@+id/streakt_d6"
@@ -293,8 +317,8 @@
                         android:layout_height="wrap_content"
                         android:text="S"
                         android:textColor="#59FFFFFF"
-                        android:textSize="8.5sp"
-                        android:fontFamily="@font/lexend_semibold"
+                        android:textSize="9.0sp"
+                        android:fontFamily="@font/outfit_semibold"
                         android:maxLines="1"
                         android:includeFontPadding="false"
                         android:layout_marginTop="5dp" />
@@ -303,35 +327,59 @@
 
             <FrameLayout
                 android:layout_width="wrap_content"
-                android:layout_height="12dp" />
+                android:layout_height="12dp"
+                android:clipChildren="false"
+                android:clipToPadding="false" />
 
             <FrameLayout
                 android:id="@+id/streakt_play"
-                android:layout_width="36dp"
-                android:layout_height="36dp">
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_margin="-14dp"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <ImageView
-                    android:id="@+id/streakt_glyph_bg"
+                    android:id="@+id/streakt_glyph_glow"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:src="@drawable/w_circle"
+                    android:src="@drawable/w_soft_glow"
                     android:importantForAccessibility="no"
-                    android:tint="#FCD34D" />
+                    android:tint="#6EFCD34D"
+                    android:tintMode="src_in"
+                    android:scaleType="fitXY"
+                    android:layout_marginTop="4dp" />
 
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/w_circle_shade"
-                    android:importantForAccessibility="no" />
+                <FrameLayout
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_gravity="center"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
 
-                <ImageView
-                    android:id="@+id/streakt_glyph"
-                    android:layout_width="15dp"
-                    android:layout_height="15dp"
-                    android:src="@drawable/w_ic_play"
-                    android:importantForAccessibility="no"
-                    android:tint="#140F1C"
-                    android:layout_gravity="center" />
+                    <ImageView
+                        android:id="@+id/streakt_glyph_bg"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/w_circle"
+                        android:importantForAccessibility="no"
+                        android:tint="#FCD34D" />
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/w_circle_shade"
+                        android:importantForAccessibility="no" />
+
+                    <ImageView
+                        android:id="@+id/streakt_glyph"
+                        android:layout_width="15dp"
+                        android:layout_height="15dp"
+                        android:src="@drawable/w_ic_play"
+                        android:importantForAccessibility="no"
+                        android:tint="#140F1C"
+                        android:layout_gravity="center" />
+                </FrameLayout>
             </FrameLayout>
         </LinearLayout>
     </LinearLayout>
