@@ -53,9 +53,9 @@ Simple Note Names turns off enharmonic spelling everywhere at once, if you would
 
 FREE AND PRO
 
-Free gives you Diatonic mode in C, the Daily Challenge, Free Mode and your stats. Enough to know within a week whether this is for you.
+Free gives you Diatonic mode in all 12 keys, Chromatic in C, and Note to Number, ...Of What? and Pocket Mode with the scale degrees. Plus the Daily Challenge, Free Mode and your stats. Enough to know within a week whether this is for you.
 
-Pro unlocks all 12 keys, Chromatic, Note to Number, ...Of What? with extensions, Custom Mode, adaptive difficulty and the per-key analytics.
+Pro unlocks Chromatic in all 12 keys, the jazz extensions (9, 11, 13 and the altered ones), every chromatic degree in Note to Number, ...Of What? and Pocket Mode, Custom Mode, adaptive difficulty and the per-key analytics.
 
 Pro is a one-time payment. Not a subscription. Buy it once and it stays bought.
 
