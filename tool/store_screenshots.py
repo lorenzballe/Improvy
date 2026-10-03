@@ -10,10 +10,13 @@ the Widgets workflows publish (branches widget-renders and
 android-widget-renders); pass their `unplayed` folders to include it.
 
 Output (JPEG, no alpha — App Store Connect refuses transparency):
-  store_listing/app-store/iphone-6.9/   1320x2868
-  store_listing/app-store/ipad-13/      2064x2752
-  store_listing/google-play/phone/      1080x1920
-  store_listing/google-play/feature-graphic.jpg  1024x500
+  store_listing/1 - Apple App Store (iPhone e iPad)/
+      Telefono - iPhone 6.9 pollici/   1320x2868
+      Tablet - iPad 13 pollici/        2064x2752
+  store_listing/2 - Google Play (Android)/
+      Telefono/                        1080x1920
+      Tablet/                          1536x2048
+      Immagine in evidenza 1024x500.jpg
 """
 import os
 import sys
@@ -238,20 +241,23 @@ def main():
         phone = Image.open(os.path.join(RAW, f"iphone_{name}.png"))
         save(compose(phone, 1320, 2868, (l1, l2, sub, accent), head=128, sub=50,
                      radius=0.125, bezel=0.022, island=True, points_w=440),
-             "app-store", "iphone-6.9", f"{n:02d}_{name[2:]}.jpg")
+             "1 - Apple App Store (iPhone e iPad)", "Telefono - iPhone 6.9 pollici", f"{n:02d}_{name[2:]}.jpg")
         save(compose(phone, 1080, 1920, (l1, l2, sub, accent), head=92, sub=36,
                      radius=0.09, bezel=0.022, island=False, points_w=440, top_ratio=0.055),
-             "google-play", "phone", f"{n:02d}_{name[2:]}.jpg")
+             "2 - Google Play (Android)", "Telefono", f"{n:02d}_{name[2:]}.jpg")
     for n, name in enumerate(TABLET, 1):
         _, l1, l2, sub, accent = by_name[name]
         tablet = Image.open(os.path.join(RAW, f"ipad_{name}.png"))
         save(compose(tablet, 2064, 2752, (l1, l2, sub, accent), head=150, sub=58,
                      radius=0.03, bezel=0.014, island=False, points_w=1032, top_ratio=0.055, side=0.1),
-             "app-store", "ipad-13", f"{n:02d}_{name[2:]}.jpg")
+             "1 - Apple App Store (iPhone e iPad)", "Tablet - iPad 13 pollici", f"{n:02d}_{name[2:]}.jpg")
+        save(compose(tablet, 1536, 2048, (l1, l2, sub, accent), head=112, sub=44,
+                     radius=0.03, bezel=0.014, island=False, points_w=1032, top_ratio=0.055, side=0.1),
+             "2 - Google Play (Android)", "Tablet", f"{n:02d}_{name[2:]}.jpg")
 
     for folder, store, size, island, sizes in [
-        (ios_widgets, ("app-store", "iphone-6.9"), (1320, 2868), True, None),
-        (android_widgets, ("google-play", "phone"), (1080, 1920), False, None),
+        (ios_widgets, ("1 - Apple App Store (iPhone e iPad)", "Telefono - iPhone 6.9 pollici"), (1320, 2868), True, None),
+        (android_widgets, ("2 - Google Play (Android)", "Telefono"), (1080, 1920), False, None),
     ]:
         if not folder:
             continue
@@ -271,11 +277,11 @@ def main():
             [pick("03_level", "_level.png"), pick("05_weakest", "_weakest.png")],
         ]
         screen = home_screen((1320, 2868), rows, (99, 102, 241))
-        if store[0] == "google-play":
+        if store[0].startswith("2 -"):
             screen = screen  # the same widgets, drawn by Android
         n_w = len(PHONE) + 1
         W, H = size
-        if store[0] == "app-store":
+        if store[0].startswith("1 -"):
             save(compose(screen, W, H, WIDGETS, head=128, sub=50, radius=0.125, bezel=0.022,
                          island=True, points_w=440), *store, f"{n_w:02d}_widgets.jpg")
         else:
@@ -297,7 +303,7 @@ def main():
     status_bar(phone, 1, True, 440)
     body = device(phone, 300, 0.125, 0.022)
     place(fg, body, W - body.width - 70, 70)
-    save(fg.convert("RGB"), "google-play", "feature-graphic.jpg")
+    save(fg.convert("RGB"), "2 - Google Play (Android)", "Immagine in evidenza 1024x500.jpg")
 
 
 if __name__ == "__main__":

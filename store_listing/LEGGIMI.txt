@@ -1,0 +1,15 @@
+COSA C'E' QUI E DOVE VA
+
+1 - Apple App Store (iPhone e iPad)
+    Telefono - iPhone 6.9 pollici  -> App Store Connect > versione > Anteprime e screenshot > iPhone 6.9"
+                                       (5 immagini, nell'ordine 01 -> 05)
+    Tablet - iPad 13 pollici       -> stessa pagina > iPad 13"  (5 immagini, 01 -> 05)
+    Testi da incollare.txt         -> nome, sottotitolo, parole chiave, descrizione, novita'
+
+2 - Google Play (Android)
+    Telefono                       -> Play Console > Scheda dello Store > Screenshot del telefono (01 -> 05)
+    Tablet                         -> stessa pagina > Screenshot tablet da 7" e da 10" (gli stessi 5 per entrambi)
+    Immagine in evidenza 1024x500  -> stessa pagina > Grafica in primo piano
+    Testi da incollare.txt         -> nome, descrizione breve, descrizione completa, note di rilascio
+
+Le immagini sono JPEG senza trasparenza, alle misure esatte richieste: si caricano cosi' come sono.

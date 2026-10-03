@@ -1,68 +1,18 @@
-# App Store and Google Play listing
+APP STORE CONNECT - testi da incollare (copia solo il testo sotto ogni titolo)
 
-Every field below is plain ASCII. App Store Connect rejects the description
-when it contains flat and sharp signs, bullets, em dashes, ellipses or curly
-quotes, so degrees are written `b3` and `#11` here even though the app itself
-prints them properly.
-
-Nothing here claims a feature the app does not have. In particular there is no
-minor-key mode and no interval-recognition ear training, and neither is
-mentioned - nor used as a keyword, which Apple treats the same as a claim.
-
-Screenshots: `store_listing/` (made by `tool/store_screenshots.py` from the
-real app screens, see its header). Upload them in their numbered order: the
-first three are the ones people see in search results.
-
----
-
-## Name (30 max, using 29) - App Store and Google Play
-
-The words in the name weigh most in search on both stores, so the name says
-what the app is. "Scale degree" is exactly what people who need this type.
-
-```
+NOME (App Information > Name)
 Improvy: Scale Degree Trainer
-```
 
-## Subtitle (30 max, using 28) - App Store
-
-Apple indexes the subtitle too; no word here repeats one in the name.
-
-```
+SOTTOTITOLO (App Information > Subtitle)
 Music theory for improvisers
-```
 
-## Promotional text (170 max, using 132) - App Store
-
-Editable any time without a review, so this is the field to change when
-something new ships.
-
-```
+TESTO PROMOZIONALE (versione > Promotional Text)
 New: home screen widgets with a question every hour, a new Daily Challenge every day, and Pro as one purchase. Never a subscription.
-```
 
-## Keywords (100 max, using 100) - App Store
-
-No spaces after the commas, and no word that is already in the name or
-subtitle (improvy, scale, degree, trainer, music, theory, improvisers): Apple
-indexes those already, and repeating them wastes characters.
-
-```
+PAROLE CHIAVE (versione > Keywords)
 jazz,improvise,nashville,number system,solfege,chords,keys,guitar,piano,transpose,fretboard,sax,bass
-```
 
-## Short description (80 max, using 74) - Google Play
-
-Play has no keyword field: it reads the title, this line and the description,
-so the same words carry the search there.
-
-```
-Name any scale degree in any key, instantly. Music theory for improvisers.
-```
-
-## Description - App Store and Google Play (4000 max)
-
-```
+DESCRIZIONE (versione > Description)
 Musicians talk in numbers. The flat three. The sharp eleven. The five of the five.
 
 If you still count up from the root every time you hear one, you are doing arithmetic on stage. Improvy closes that gap the only way it closes: a few seconds at a time, hundreds of times.
@@ -116,14 +66,10 @@ Pro unlocks all 12 keys, Chromatic, Note to Number, ...Of What? with extensions,
 Pro is a one-time payment. Not a subscription. Buy it once and it stays bought.
 
 No ads. No account needed: sign in only if you want Pro to follow you to another phone. Nothing to cancel.
-```
 
-## What's New (1.18.1)
-
-```
+NOVITA' DI QUESTA VERSIONE (versione > What's New in This Version)
 Widgets, for real this time. Long-press your Home Screen, tap + and search Improvy: a degree to answer every hour, the Daily Challenge, your streak, your level, your weakest key and all twelve keys. A tap opens exactly what the widget shows.
 
 The whole iPad. On a tablet Improvy now fills the screen instead of a phone-wide strip.
 
 How it works, redrawn. The three pages that explain the numbers now show a full keyboard and let you change key and answer a first question.
-```

@@ -63,7 +63,7 @@ class Release {
 const List<Release> kReleases = [
   Release(
     version: '1.18.1',
-    date: '30 SEP 2026',
+    date: '3 OCT 2026',
     headline: 'Improvy on your Home Screen.',
     lines: [
       ReleaseLine(
@@ -71,8 +71,16 @@ const List<Release> kReleases = [
         color: Color(0xFF22D3EE),
         title: 'Widgets, for real this time',
         detail:
-            'Long-press your Home Screen, tap + and search Improvy: a degree '
-            'to answer, the daily, your streak, your level and more.',
+            'Long-press your Home Screen, tap + and search Improvy. A tap '
+            'opens what the widget shows: the question, the daily, the key.',
+      ),
+      ReleaseLine(
+        icon: Icons.tablet_mac_rounded,
+        color: Color(0xFFA855F7),
+        title: 'The whole iPad',
+        detail:
+            'On a tablet Improvy now fills the screen, larger, instead of '
+            'a phone-wide strip down the middle.',
       ),
       ReleaseLine(
         icon: Icons.piano_rounded,
