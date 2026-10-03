@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-import 'dart:ui' show FontFeature, ImageFilter;
 import 'package:flutter/material.dart';
 import '../l10n/l10n.dart';
 import '../services/analytics_service.dart';
@@ -169,31 +168,28 @@ class _FreeModeScreenState extends State<FreeModeScreen>
           // Slow rainbow aurora, kept low and desaturated so it stays a lit
           // room rather than a poster competing with the number.
           const Positioned.fill(child: _Aurora()),
-          // Ambient wash in the live degree's colour — the same move Pocket
-          // Mode makes, so the background answers the content instead of
-          // ignoring it. Painted once per degree; only opacity breathes.
+          // A quiet wash of the live degree's colour behind the number — the
+          // room answers the content, without a halo standing in for design.
           Positioned.fill(
             child: AnimatedBuilder(
               animation: _pulse,
               builder: (context, child) => Opacity(
-                opacity: 0.62 + 0.38 * Curves.easeInOut.transform(_pulse.value),
+                opacity: 0.75 + 0.25 * Curves.easeInOut.transform(_pulse.value),
                 child: child,
               ),
               child: RepaintBoundary(
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     gradient: RadialGradient(
-                      center: const Alignment(0, -0.15),
-                      radius: 0.95,
-                      colors: [live.withValues(alpha: 0.16), Colors.transparent],
+                      center: const Alignment(0, -0.18),
+                      radius: 0.75,
+                      colors: [live.withValues(alpha: 0.07), Colors.transparent],
                     ),
                   ),
                 ),
               ),
             ),
           ),
-          Positioned(top: -90, right: -70, child: _blob(300, live.withValues(alpha: 0.10))),
-          Positioned(bottom: -80, left: -60, child: _blob(260, const Color(0xFF7C3AED).withValues(alpha: 0.10))),
 
           // The whole stage advances — there is no button to hunt for, which
           // is what makes it usable with your eyes on an instrument. The exit
@@ -363,39 +359,50 @@ class _FreeModeScreenState extends State<FreeModeScreen>
   /// one — at a tap a second that reads as a smear rather than a change. The
   /// swap is now instant, which is also the honest signal: the tap landed.
   Widget _stage(Color live) => LayoutBuilder(builder: (ctx, c) {
-        final side = math.min(340.0, math.min(c.maxWidth - 32, c.maxHeight));
-        return SizedBox(
-          width: side,
-          height: side,
-          child: Center(
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: NoteText(
-                note: _degree,
-                accidentalLift: 0.30,
-                accidentalScale: 0.52,
-                style: TextStyle(
-                  fontSize: 168,
-                  fontWeight: FontWeight.w900,
-                  color: live,
-                  height: 1,
-                  shadows: [
-                    Shadow(color: live.withValues(alpha: 0.55), blurRadius: 44),
-                    Shadow(color: live.withValues(alpha: 0.30), blurRadius: 96),
-                  ],
+        final side = math.min(300.0, math.min(c.maxWidth - 32, c.maxHeight - 40));
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // The same small label the trainer puts over its question, so the
+            // number reads as a degree and not as a score.
+            Text(
+              context.l10n.trainerDegree,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 4.5,
+                color: Colors.white.withValues(alpha: 0.42),
+              ),
+            ),
+            const SizedBox(height: 14),
+            SizedBox(
+              width: side,
+              height: side * 0.78,
+              child: Center(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: NoteText(
+                    note: _degree,
+                    accidentalLift: 0.30,
+                    accidentalScale: 0.52,
+                    style: TextStyle(
+                      fontSize: 168,
+                      fontWeight: FontWeight.w900,
+                      color: live,
+                      height: 1,
+                      // A breath of its own colour, not a neon sign: the number
+                      // is already the brightest thing on the screen.
+                      shadows: [
+                        Shadow(color: live.withValues(alpha: 0.22), blurRadius: 28),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
+          ],
         );
       });
-
-  Widget _blob(double size, Color color) => IgnorePointer(
-        child: ImageFiltered(
-          imageFilter: ImageFilter.blur(sigmaX: 70, sigmaY: 70),
-          child: Container(width: size, height: size, decoration: BoxDecoration(shape: BoxShape.circle, color: color)),
-        ),
-      );
 }
 
 // ── Hint pill ────────────────────────────────────────────────────────────────
@@ -541,7 +548,7 @@ class _DoneCard extends StatelessWidget {
 
 // ── Aurora ───────────────────────────────────────────────────────────────────
 
-/// A slow rainbow wash with a scatter of twinkling stars.
+/// A slow, low colour wash under a fine field of stars.
 ///
 /// Kept low and desaturated on purpose. An earlier pass ran the blobs at full
 /// saturation in additive blend, which blew the overlaps out to white and left
@@ -580,20 +587,42 @@ class _AuroraState extends State<_Aurora> with SingleTickerProviderStateMixin {
   }
 }
 
+class _Star {
+  final Offset at; // 0–1 of the screen
+  final double radius, alpha, phase;
+  final bool glint;
+  const _Star(this.at, this.radius, this.alpha, this.phase, this.glint);
+}
+
 class _AuroraPainter extends CustomPainter {
   /// Loops 0 → 1.
   final double t;
   const _AuroraPainter(this.t);
 
-  // Fixed scatter, generated once from a fixed seed so the stars keep their
-  // places between frames (a fresh Random each paint would make them jump).
-  static final List<Offset> _stars = () {
+  /// Three depths of star: many faint specks far away, fewer brighter ones
+  /// nearer, and a handful that catch the light with a fine cross. Fixed seed,
+  /// so they keep their places from frame to frame.
+  static final List<_Star> _stars = () {
     final r = math.Random(7);
-    return List<Offset>.generate(38, (_) => Offset(r.nextDouble(), r.nextDouble()));
-  }();
-  static final List<double> _starPhase = () {
-    final r = math.Random(21);
-    return List<double>.generate(38, (_) => r.nextDouble());
+    final out = <_Star>[];
+    void layer(int n, double minR, double maxR, double minA, double maxA, {bool glint = false}) {
+      for (var i = 0; i < n; i++) {
+        // Denser toward the top of the screen, thinning out downwards, like a
+        // sky over a horizon rather than confetti spread evenly.
+        final y = math.pow(r.nextDouble(), 1.6).toDouble();
+        out.add(_Star(
+          Offset(r.nextDouble(), y),
+          minR + (maxR - minR) * r.nextDouble(),
+          minA + (maxA - minA) * r.nextDouble(),
+          r.nextDouble(),
+          glint,
+        ));
+      }
+    }
+    layer(110, 0.4, 0.65, 0.22, 0.42);
+    layer(30, 0.65, 0.95, 0.45, 0.70);
+    layer(6, 0.95, 1.2, 0.80, 0.95, glint: true);
+    return out;
   }();
 
   @override
@@ -601,58 +630,67 @@ class _AuroraPainter extends CustomPainter {
     final full = Offset.zero & size;
     canvas.drawRect(full, Paint()..color = AppColors.background);
 
-    // Three wide blobs, each on its own arc of the colour wheel and rotating
-    // through it, so the room is always a slightly different colour.
+    // Two wide, slow washes on the colour wheel, held low and soft: the room
+    // is lit, never painted.
     const blobs = [
-      (Offset(0.16, 0.12), Offset(0.09, 0.06), 1.25),
-      (Offset(0.88, 0.30), Offset(0.08, 0.06), 1.15),
-      (Offset(0.40, 0.88), Offset(0.10, 0.07), 1.30),
+      (Offset(0.12, 0.05), Offset(0.08, 0.05), 1.35),
+      (Offset(0.92, 0.95), Offset(0.08, 0.05), 1.35),
     ];
-
     for (var i = 0; i < blobs.length; i++) {
       final (base, drift, spread) = blobs[i];
       final phase = i / blobs.length;
       final a = 2 * math.pi * (t + phase);
-
       final cx = (base.dx + drift.dx * math.sin(a)) * size.width;
       final cy = (base.dy + drift.dy * math.cos(a * 0.75)) * size.height;
-
       final hue = ((t + phase) * 360) % 360;
-      // Held well below full: this is a lit room, not a poster.
-      final colour = HSVColor.fromAHSV(1, hue, 0.55, 0.80).toColor();
-      final op = 0.16 + 0.06 * math.sin(a * 1.2);
-
+      final colour = HSVColor.fromAHSV(1, hue, 0.45, 0.75).toColor();
+      final op = 0.10 + 0.03 * math.sin(a * 1.2);
       final w = spread * size.width;
       final rect = Rect.fromCenter(center: Offset(cx, cy), width: w, height: w);
       canvas.drawRect(
         rect,
         Paint()
           ..shader = RadialGradient(
-            colors: [colour.withValues(alpha: op.clamp(0.0, 1.0)), colour.withValues(alpha: 0)],
+            colors: [colour.withValues(alpha: op), colour.withValues(alpha: 0)],
           ).createShader(rect),
       );
     }
 
-    // Twinkling stars — the quiet bit of magic, dim enough to stay behind.
-    final star = Paint()..style = PaintingStyle.fill;
-    for (var i = 0; i < _stars.length; i++) {
-      final p = _stars[i];
-      final tw = 0.5 + 0.5 * math.sin(2 * math.pi * (t * 2 + _starPhase[i]));
-      star.color = Colors.white.withValues(alpha: 0.06 + 0.30 * tw);
-      canvas.drawCircle(
-        Offset(p.dx * size.width, p.dy * size.height),
-        0.6 + 1.2 * tw,
-        star,
-      );
+    // Stars. They step aside for the number: a soft clearing around where it
+    // sits keeps the sky from speckling the one thing to read.
+    final clearing = Offset(size.width / 2, size.height * 0.40);
+    final clearR = size.width * 0.42;
+    final dot = Paint()..isAntiAlias = true;
+    final line = Paint()
+      ..isAntiAlias = true
+      ..strokeWidth = 0.6
+      ..strokeCap = StrokeCap.round;
+    for (final s in _stars) {
+      final at = Offset(s.at.dx * size.width, s.at.dy * size.height);
+      final d = (at - clearing).distance / clearR;
+      final fade = d >= 1 ? 1.0 : (d * d);
+      // Twinkle in brightness only — a star that changes size reads as a
+      // bubble.
+      final tw = 0.65 + 0.35 * math.sin(2 * math.pi * (t * 3 + s.phase));
+      final alpha = (s.alpha * tw * fade).clamp(0.0, 1.0);
+      if (alpha < 0.01) continue;
+      dot.color = Colors.white.withValues(alpha: alpha);
+      canvas.drawCircle(at, s.radius, dot);
+      if (s.glint) {
+        line.color = Colors.white.withValues(alpha: alpha * 0.45);
+        const g = 5.0;
+        canvas.drawLine(at.translate(-g, 0), at.translate(g, 0), line);
+        canvas.drawLine(at.translate(0, -g), at.translate(0, g), line);
+      }
     }
 
-    // Vignette: pulls the eye to the ring in the middle.
+    // Vignette: the edges fall away, the middle holds.
     canvas.drawRect(
       full,
       Paint()
         ..shader = RadialGradient(
-          colors: [Colors.transparent, Colors.black.withValues(alpha: 0.45)],
-          stops: const [0.45, 1.0],
+          colors: [Colors.transparent, Colors.black.withValues(alpha: 0.50)],
+          stops: const [0.40, 1.0],
         ).createShader(full),
     );
   }
