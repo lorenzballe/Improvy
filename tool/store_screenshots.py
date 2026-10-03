@@ -38,6 +38,8 @@ SLIDES = [
     ("5_pocket", "Train with the", "screen off.", "Pocket Mode asks out loud, then answers.", (99, 102, 241)),
     ("6_n2n", "Both", "directions.", "See a note, name its degree. And back.", (59, 130, 246)),
 ]
+PHONE = ["1_chromatic", "3_daily", "4_stats", "5_pocket"]
+TABLET = ["1_chromatic", "2_home", "3_daily", "4_stats", "5_pocket"]
 WIDGETS = ("A question on", "your home screen.", "A new degree every hour. Tap to reveal it.", (249, 115, 22))
 
 
@@ -228,9 +230,11 @@ def save(img, *parts):
 def main():
     ios_widgets = sys.argv[1] if len(sys.argv) > 1 else None
     android_widgets = sys.argv[2] if len(sys.argv) > 2 else None
-    n = 0
-    for name, l1, l2, sub, accent in SLIDES:
-        n += 1
+    by_name = {slide[0]: slide for slide in SLIDES}
+    # Five a device: the strongest four screens, then the widgets on phones
+    # (the home-screen slide) and Home on the iPad, which has no widget slide.
+    for n, name in enumerate(PHONE, 1):
+        _, l1, l2, sub, accent = by_name[name]
         phone = Image.open(os.path.join(RAW, f"iphone_{name}.png"))
         save(compose(phone, 1320, 2868, (l1, l2, sub, accent), head=128, sub=50,
                      radius=0.125, bezel=0.022, island=True, points_w=440),
@@ -238,6 +242,8 @@ def main():
         save(compose(phone, 1080, 1920, (l1, l2, sub, accent), head=92, sub=36,
                      radius=0.09, bezel=0.022, island=False, points_w=440, top_ratio=0.055),
              "google-play", "phone", f"{n:02d}_{name[2:]}.jpg")
+    for n, name in enumerate(TABLET, 1):
+        _, l1, l2, sub, accent = by_name[name]
         tablet = Image.open(os.path.join(RAW, f"ipad_{name}.png"))
         save(compose(tablet, 2064, 2752, (l1, l2, sub, accent), head=150, sub=58,
                      radius=0.03, bezel=0.014, island=False, points_w=1032, top_ratio=0.055, side=0.1),
@@ -267,7 +273,7 @@ def main():
         screen = home_screen((1320, 2868), rows, (99, 102, 241))
         if store[0] == "google-play":
             screen = screen  # the same widgets, drawn by Android
-        n_w = len(SLIDES) + 1
+        n_w = len(PHONE) + 1
         W, H = size
         if store[0] == "app-store":
             save(compose(screen, W, H, WIDGETS, head=128, sub=50, radius=0.125, bezel=0.022,
