@@ -15,8 +15,9 @@ import 'screens_render_test.dart' show loadRealFonts;
 /// not become a tablet app, they become a stretched phone — and Apple's
 /// reviewers look at iPad.
 ///
-/// So the app keeps itself to a phone-width column on anything wider. This is
-/// the check that it does, and that the screens still lay out inside it.
+/// So on a tablet the app lays out on a roomy phone and is scaled up whole to
+/// fill the screen (TabletFit). This is the check that it does, and that the
+/// screens still lay out inside it.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(loadRealFonts);
@@ -41,17 +42,20 @@ void main() {
     await t.pump(const Duration(milliseconds: 700));
   }
 
-  testWidgets('on an iPad the app is a phone-width column, not a stretch',
+  testWidgets('on an iPad the app fills the screen, laid out phone-sized',
       (t) async {
     // 12.9" portrait, the widest thing the app can be handed.
     await pumpApp(t, const Size(1024, 1366));
 
-    final width = t.getSize(find.byType(RootScreen)).width;
-    expect(width, lessThanOrEqualTo(480),
-        reason: 'the app should be a column, not the whole slab');
-    // And centred on the app's own ground rather than pinned to one edge.
-    final centre = t.getCenter(find.byType(RootScreen));
-    expect(centre.dx, closeTo(512, 1));
+    // Laid out at a roomy phone's width…
+    final logical = t.getSize(find.byType(RootScreen));
+    expect(logical.width, inInclusiveRange(480, 700));
+    expect(logical.height, greaterThanOrEqualTo(800));
+    // …and drawn edge to edge, not as a strip in the middle.
+    final rect = t.getRect(find.byType(RootScreen));
+    expect(rect.left, closeTo(0, 1));
+    expect(rect.width, closeTo(1024, 1));
+    expect(rect.height, closeTo(1366, 1));
   });
 
   testWidgets('on a phone nothing is constrained at all', (t) async {
