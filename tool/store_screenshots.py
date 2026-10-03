@@ -11,7 +11,8 @@ android-widget-renders); pass their `unplayed` folders to include it.
 
 Output (JPEG, no alpha — App Store Connect refuses transparency):
   store_listing/1 - Apple App Store (iPhone e iPad)/
-      Telefono - iPhone 6.9 pollici/   1320x2868
+      Telefono - iPhone 6.9 pollici (1320x2868)/
+      Telefono - iPhone 6.5 pollici (1284x2778)/
       Tablet - iPad 13 pollici/        2064x2752
   store_listing/2 - Google Play (Android)/
       Telefono/                        1080x1920
@@ -241,7 +242,10 @@ def main():
         phone = Image.open(os.path.join(RAW, f"iphone_{name}.png"))
         save(compose(phone, 1320, 2868, (l1, l2, sub, accent), head=128, sub=50,
                      radius=0.125, bezel=0.022, island=True, points_w=440),
-             "1 - Apple App Store (iPhone e iPad)", "Telefono - iPhone 6.9 pollici", f"{n:02d}_{name[2:]}.jpg")
+             "1 - Apple App Store (iPhone e iPad)", "Telefono - iPhone 6.9 pollici (1320x2868)", f"{n:02d}_{name[2:]}.jpg")
+        save(compose(phone, 1284, 2778, (l1, l2, sub, accent), head=124, sub=48,
+                     radius=0.125, bezel=0.022, island=True, points_w=440),
+             "1 - Apple App Store (iPhone e iPad)", "Telefono - iPhone 6.5 pollici (1284x2778)", f"{n:02d}_{name[2:]}.jpg")
         save(compose(phone, 1080, 1920, (l1, l2, sub, accent), head=92, sub=36,
                      radius=0.09, bezel=0.022, island=False, points_w=440, top_ratio=0.055),
              "2 - Google Play (Android)", "Telefono", f"{n:02d}_{name[2:]}.jpg")
@@ -256,7 +260,8 @@ def main():
              "2 - Google Play (Android)", "Tablet", f"{n:02d}_{name[2:]}.jpg")
 
     for folder, store, size, island, sizes in [
-        (ios_widgets, ("1 - Apple App Store (iPhone e iPad)", "Telefono - iPhone 6.9 pollici"), (1320, 2868), True, None),
+        (ios_widgets, ("1 - Apple App Store (iPhone e iPad)", "Telefono - iPhone 6.9 pollici (1320x2868)"), (1320, 2868), True, None),
+        (ios_widgets, ("1 - Apple App Store (iPhone e iPad)", "Telefono - iPhone 6.5 pollici (1284x2778)"), (1284, 2778), True, None),
         (android_widgets, ("2 - Google Play (Android)", "Telefono"), (1080, 1920), False, None),
     ]:
         if not folder:
